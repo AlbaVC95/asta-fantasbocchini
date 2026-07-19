@@ -529,7 +529,7 @@ function setupTabs() {
   // Rose footer actions
   const btnRoseChiama = document.getElementById('btn-rose-chiama');
   if (btnRoseChiama) btnRoseChiama.addEventListener('click', () => {
-    if (!S.isAdmin) return toast('Solo l'admin può chiamare', 'error');
+    if (!S.isAdmin) return toast("Solo l'admin può chiamare", "error");
     if (S.asta && S.asta.tipoEstrazione === 'manuale') {
       openModal('modal-chiama-manuale');
     } else {
@@ -538,7 +538,7 @@ function setupTabs() {
   });
   const btnRoseAssegna = document.getElementById('btn-rose-assegna');
   if (btnRoseAssegna) btnRoseAssegna.addEventListener('click', () => {
-    if (!S.isAdmin) return toast('Solo l'admin può assegnare', 'error');
+    if (!S.isAdmin) return toast("Solo l'admin può assegnare", "error");
     if (S.attesaConferma) {
       socket.emit('conferma-assegnazione', { astaId: S.astaId });
       nascondiConfermaBox();
