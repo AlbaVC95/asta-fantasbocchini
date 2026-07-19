@@ -3,6 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const fs   = require('fs');
 
 const app = express();
 const server = http.createServer(app);
@@ -13,6 +14,41 @@ app.use(express.json({ limit: '10mb' }));
 
 const aste = new Map();
 const timers = new Map();
+
+// ══ BACKUP ══════════════════════════════════
+const BACKUP_DIR = path.join(__dirname, 'data');
+if (!fs.existsSync(BACKUP_DIR)) { try { fs.mkdirSync(BACKUP_DIR, { recursive: true }); } catch(e) {} }
+
+function saveBackup(asta) {
+  if (!asta || !asta.id) return;
+  try {
+    const snap = { backup: true, timestamp: new Date().toISOString(), asta: JSON.parse(JSON.stringify(asta)) };
+    fs.writeFileSync(path.join(BACKUP_DIR, 'backup_asta_' + asta.id + '.json'), JSON.stringify(snap));
+  } catch(e) { /* non-fatal */ }
+}
+
+function loadBackups() {
+  try {
+    if (!fs.existsSync(BACKUP_DIR)) return;
+    const files = fs.readdirSync(BACKUP_DIR).filter(f => f.startsWith('backup_asta_') && f.endsWith('.json'));
+    let n = 0;
+    files.forEach(file => {
+      try {
+        const raw = fs.readFileSync(path.join(BACKUP_DIR, file), 'utf-8');
+        const data = JSON.parse(raw);
+        if (data.backup && data.asta && data.asta.id && !aste.has(data.asta.id)) {
+          // Restore arrays that may have been serialized
+          data.asta.adminSocketIds = [];
+          data.asta.squadre.forEach(s => { s.utenti = []; s.online = false; });
+          aste.set(data.asta.id, data.asta);
+          n++;
+          console.log('  ♻️  Ripristinata: ' + (data.asta.nome || data.asta.id) + ' (' + data.timestamp + ')');
+        }
+      } catch(e) { /* skip corrupt file */ }
+    });
+    if (n > 0) console.log('✅ ' + n + ' asta/e ripristinate da backup');
+  } catch(e) { console.error('loadBackups error:', e.message); }
+}
 
 // ============ HELPERS ============
 function getSquadra(asta, nome) { return asta.squadre.find(s => s.nome === nome); }
@@ -29,8 +65,9 @@ function emitToAdmins(astaId, event, data) {
   asta.adminSocketIds.forEach(sid => io.to(sid).emit(event, data));
 }
 
-function broadcastStato(astaId) {
+function broadcastStato(astaId, doBackup) {
   const asta = aste.get(astaId); if (!asta) return;
+  if (doBackup && asta.stato !== 'attesa') saveBackup(asta);
   const stato = {
     ...asta, adminSocketIds: undefined,
     squadre: asta.squadre.map(s => ({
@@ -159,7 +196,7 @@ function chiudiAsta(astaId) {
   asta.storico.push({ giocatore, prezzo: offertaAttuale, squadra: squadraOfferente, tipo: 'normale', timestamp: new Date().toISOString() });
   asta.chiamataAttuale = null;
   io.to(astaId).emit('giocatore-assegnato', { giocatore, prezzo: offertaAttuale, squadra: squadraOfferente, tipo: 'normale' });
-  broadcastStato(astaId);
+  broadcastStato(astaId, true);
 }
 
 // Helper: annulla item di storico
@@ -367,7 +404,7 @@ io.on('connection', (socket) => {
   socket.on('inizia-asta', ({ astaId }) => {
     const asta = aste.get(astaId);
     if (!asta || !isAdmin(asta, socket.id)) return;
-    asta.stato = 'in_corso'; broadcastStato(astaId); io.to(astaId).emit('asta-iniziata');
+    asta.stato = 'in_corso'; broadcastStato(astaId, true); io.to(astaId).emit('asta-iniziata');
     if (asta.tipoEstrazione === 'casuale') {
       setTimeout(() => {
         const disp = asta.poolGiocatori.filter(g => !g.estratto && !g.assegnato && !g.scartato);
@@ -553,7 +590,7 @@ io.on('connection', (socket) => {
     if (!asta || !isAdmin(asta, socket.id)) return;
     if (!asta.storico.length) return socket.emit('errore', { msg: 'Nessuna assegnazione da annullare' });
     _annullaItem(asta, asta.storico.length - 1);
-    broadcastStato(astaId); io.to(astaId).emit('assegnazione-annullata', {});
+    broadcastStato(astaId, true); io.to(astaId).emit('assegnazione-annullata', {});
   });
 
   socket.on('annulla-assegnazione-specifica', ({ astaId, index }) => {
@@ -562,7 +599,7 @@ io.on('connection', (socket) => {
     if (index < 0 || index >= asta.storico.length) return socket.emit('errore', { msg: 'Indice non valido' });
     const item = asta.storico[index];
     _annullaItem(asta, index);
-    broadcastStato(astaId); io.to(astaId).emit('assegnazione-annullata', { giocatore: item.giocatore });
+    broadcastStato(astaId, true); io.to(astaId).emit('assegnazione-annullata', { giocatore: item.giocatore });
   });
 
   socket.on('reintroduci-scartati', ({ astaId }) => {
@@ -577,7 +614,7 @@ io.on('connection', (socket) => {
     const asta = aste.get(astaId);
     if (!asta || !isAdmin(asta, socket.id)) return;
     clearTimer(astaId); asta.stato = 'completata'; asta.chiamataAttuale = null;
-    broadcastStato(astaId); io.to(astaId).emit('asta-terminata', { astaId });
+    broadcastStato(astaId, true); io.to(astaId).emit('asta-terminata', { astaId });
   });
 
   socket.on('modifica-timer', ({ astaId, timerPrimaChiamata, timerRilancio }) => {
@@ -601,8 +638,44 @@ io.on('connection', (socket) => {
   });
 });
 
+// ══ BACKUP API ══════════════════════════════
+app.get('/api/asta/:id/backup', (req, res) => {
+  const asta = aste.get(req.params.id);
+  if (asta) {
+    return res.json({ backup: true, timestamp: new Date().toISOString(), asta });
+  }
+  const file = path.join(BACKUP_DIR, 'backup_asta_' + req.params.id + '.json');
+  if (fs.existsSync(file)) {
+    try { return res.json(JSON.parse(fs.readFileSync(file, 'utf-8'))); } catch(e) {}
+  }
+  res.status(404).json({ error: 'Backup non trovato' });
+});
+
+app.get('/api/backup-list', (req, res) => {
+  try {
+    const files = fs.existsSync(BACKUP_DIR)
+      ? fs.readdirSync(BACKUP_DIR).filter(f => f.startsWith('backup_asta_'))
+      : [];
+    const list = files.map(f => {
+      try {
+        const d = JSON.parse(fs.readFileSync(path.join(BACKUP_DIR, f), 'utf-8'));
+        return { id: d.asta.id, nome: d.asta.nome, timestamp: d.timestamp, stato: d.asta.stato };
+      } catch(e) { return null; }
+    }).filter(Boolean);
+    res.json(list);
+  } catch(e) { res.json([]); }
+});
+
+// Auto-save every 30s
+setInterval(() => {
+  aste.forEach(asta => { if (asta.stato !== 'attesa') saveBackup(asta); });
+}, 30000);
+
+// Load backups at startup
+loadBackups();
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`\n🎯 Asta FantaSbocchini v2 — Server attivo`);
-  console.log(`   http://localhost:${PORT}\n`);
+  console.log('\n🎯 Asta FantaSbocchini v2 — Server attivo');
+  console.log('   http://localhost:' + PORT + '\n');
 });
