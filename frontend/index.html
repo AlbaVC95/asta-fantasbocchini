@@ -170,183 +170,165 @@
       </div>
     </header>
 
-    <!-- Arena 3-column layout -->
-    <div class="arena-layout">
+    <!-- RIGA 1: Budget Squadre | Admin Panel | Mio Team -->
+    <div class="asta-row-panels">
 
-      <!-- LEFT SIDEBAR: Budget ranking -->
-      <aside class="sidebar-budget">
-        <div class="sidebar-header">💰 Budget Squadre</div>
+      <!-- Budget Squadre -->
+      <div class="panel-budget">
+        <div class="panel-budget-hdr">💰 Budget Squadre</div>
         <div id="budget-bar" class="sidebar-squadre-list"></div>
-      </aside>
+      </div>
 
-      <!-- CENTER: Arena principale -->
-      <main class="arena-center">
-
-        <!-- Card giocatore (sticky) -->
-        <div class="card-timer-group" id="card-timer-group">
-          <div id="chiamata-card" class="chiamata-card">
-            <p class="chiamata-stato">⏳ In attesa di estrazione...</p>
+      <!-- Admin Panel -->
+      <div id="admin-panel" class="admin-panel hidden">
+        <div class="admin-header">
+          <span class="admin-badge">👑 Admin</span>
+          <div class="admin-header-actions">
+            <button class="btn btn-secondary btn-small" id="btn-backup-download" onclick="apriMenuBackup()">💾 Backup</button>
           </div>
-
-          <!-- Timer Ring SVG -->
-          <div id="timer-wrap" class="timer-ring-container hidden">
-            <svg class="timer-ring" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="timer-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop id="timer-grad-start" offset="0%" stop-color="#00e676"/>
-                  <stop id="timer-grad-end" offset="100%" stop-color="#00b0ff"/>
-                </linearGradient>
-              </defs>
-              <!-- Background track -->
-              <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="7"/>
-              <!-- Animated progress -->
-              <circle cx="60" cy="60" r="54" fill="none"
-                      stroke="url(#timer-gradient)"
-                      stroke-width="7"
-                      stroke-linecap="round"
-                      stroke-dasharray="339.292"
-                      stroke-dashoffset="0"
-                      transform="rotate(-90 60 60)"
-                      class="timer-progress"
-                      id="timer-progress"/>
-            </svg>
-            <div class="timer-inner">
-              <div id="timer-display" class="timer-number">--</div>
-              <div id="timer-label" class="timer-label-text">rilancio</div>
+        </div>
+        <!-- Menu backup -->
+        <div id="backup-menu" class="backup-menu hidden">
+          <button class="bk-btn" onclick="downloadBackupJSON(false)">📄 Scarica JSON</button>
+          <button class="bk-btn" onclick="downloadBackupExcel()">📊 Scarica Excel</button>
+          <button class="bk-btn bk-btn-muted" onclick="document.getElementById('backup-menu').classList.add('hidden')">✕ Chiudi</button>
+        </div>
+        <!-- Box attesa conferma (mostrato dopo timer) -->
+        <div id="admin-conferma-box" class="admin-conferma-box hidden">
+          <p class="conferma-titolo" id="conferma-titolo-testo">⏱️ Timer scaduto!</p>
+          <p id="conferma-info" class="conferma-info-text"></p>
+          <div class="conferma-actions">
+            <button id="btn-conferma-assegnazione" class="btn btn-success btn-lg">✅ Conferma</button>
+            <div class="riapri-row">
+              <button id="btn-riapri-da-prezzo" class="btn btn-secondary">🔄 Riapri (da <span id="riapri-prezzo-label">X</span> cr)</button>
+              <button id="btn-riapri-da-uno" class="btn btn-secondary">🔄 Riapri (da 1)</button>
             </div>
           </div>
         </div>
-
-        <!-- Rilancio bar -->
-        <div id="rilancio-box" class="rilancio-box hidden">
-          <div class="quick-bids-row">
-            <button class="btn-quick" id="btn-quick-5">+5</button>
-            <button class="btn-quick" id="btn-quick-10">+10</button>
-          </div>
-          <button id="btn-rilancio" class="btn-rilancia">🔥 RILANCIA +1</button>
-        </div>
-
-        <!-- Tabs -->
-        <div class="tabs-panel">
-          <div class="tabs-nav">
-            <button class="tab-btn active" data-tab="tab-storico">📋 Storico</button>
-            <button class="tab-btn" data-tab="tab-rose">👥 Rose</button>
-            <button class="tab-btn" data-tab="tab-liberi">📦 Liberi</button>
-          </div>
-          <div id="tab-storico" class="tab-content active">
-            <ul id="storico-list" class="storico-list"></ul>
-          </div>
-          <div id="tab-rose" class="tab-content tab-rose-content">
-            <div id="rose-panel" class="rose-container"></div>
-            <div class="rose-search-row" id="rose-search-row">
-              <select id="rose-filtro-ruolo" class="rose-sel">
-                <option value="">Tutti i Ruoli</option>
-                <option value="Por">Por</option>
-                <option value="P">P</option>
-                <option value="Dc">Dc</option>
-                <option value="Dd">Dd</option>
-                <option value="Ds">Ds</option>
-                <option value="E">E</option>
-                <option value="D">D</option>
-                <option value="M">M</option>
-                <option value="C">C</option>
-                <option value="W">W</option>
-                <option value="T">T</option>
-                <option value="A">A</option>
-                <option value="Pc">Pc</option>
-              </select>
-              <input type="text" id="rose-cerca" class="rose-inp" placeholder="🔍 Cerca giocatore...">
-              <button class="rose-cerca-btn" onclick="aggiornaFiltroRose()">Cerca</button>
-            </div>
-          </div>
-          <div id="tab-liberi" class="tab-content">
-            <div class="filtro-ruolo">
-              <button class="filtro-btn active" data-ruolo="tutti">Tutti</button>
-              <button class="filtro-btn" data-ruolo="Por">Por</button>
-              <button class="filtro-btn" data-ruolo="Dd">Dd</button>
-              <button class="filtro-btn" data-ruolo="Ds">Ds</button>
-              <button class="filtro-btn" data-ruolo="Dc">Dc</button>
-              <button class="filtro-btn" data-ruolo="D">D</button>
-              <button class="filtro-btn" data-ruolo="B">B</button>
-              <button class="filtro-btn" data-ruolo="M">M</button>
-              <button class="filtro-btn" data-ruolo="E">E</button>
-              <button class="filtro-btn" data-ruolo="C">C</button>
-              <button class="filtro-btn" data-ruolo="T">T</button>
-              <button class="filtro-btn" data-ruolo="W">W</button>
-              <button class="filtro-btn" data-ruolo="A">A</button>
-              <button class="filtro-btn" data-ruolo="Pc">Pc</button>
-            </div>
-            <ul id="liberi-list" class="liberi-list"></ul>
+        <!-- Azioni normali — griglia compatta 3 colonne -->
+        <div class="admin-actions" id="admin-actions-box">
+          <div class="admin-btn-grid">
+            <button id="btn-estrai" class="btn btn-primary">🎲 Estrai</button>
+            <button id="btn-chiama-manuale" class="btn btn-secondary">📝 Manuale</button>
+            <button id="btn-annulla" class="btn btn-danger">↩️ Annulla</button>
+            <button id="btn-reintroduci" class="btn btn-secondary">♻️ Reintr.</button>
+            <button id="btn-mod-timer" class="btn btn-secondary">⏱️ Timer</button>
+            <button id="btn-termina" class="btn btn-danger">🏁 Termina</button>
           </div>
         </div>
+        <!-- Override popup inline (NO modal overlay) -->
+        <div id="popup-override-box" class="popup-override hidden">
+          <p>⚠️ Popup in attesa: <strong id="popup-override-chi"></strong></p>
+          <div id="popup-override-actions"></div>
+        </div>
+      </div>
 
-        <!-- Rose footer (visible only on rose tab) -->
-        <div id="rose-footer" class="rose-footer">
-          <button class="btn-rose-assegna" id="btn-rose-assegna">ASSEGNA</button>
-          <button class="btn-rose-chiama" id="btn-rose-chiama">🔨 CHIAMA</button>
+      <!-- Mio Team -->
+      <div id="mio-panel" class="mio-panel hidden">
+        <div class="mio-panel-header">
+          <h3 id="mio-panel-nome" class="mio-nome">La mia squadra</h3>
+          <span id="mio-crediti-badge" class="crediti-badge">💰 500</span>
+        </div>
+        <div id="mio-slot-counter" class="slot-counter hidden"></div>
+        <div class="mio-panel-actions">
+          <button id="btn-tradeoff" class="btn btn-secondary btn-small hidden">🔄 Trade-off</button>
+          <button id="btn-mia-rosa" class="btn btn-secondary btn-small">👕 Mia rosa</button>
+        </div>
+      </div>
+
+    </div><!-- /.asta-row-panels -->
+
+    <!-- RIGA 2: Card giocatore + Timer + Rilancio -->
+    <div class="asta-row-puja">
+
+      <div class="card-timer-group" id="card-timer-group">
+        <div id="chiamata-card" class="chiamata-card">
+          <p class="chiamata-stato">⏳ In attesa di estrazione...</p>
         </div>
 
-      </main>
-
-      <!-- RIGHT PANEL: mia squadra + admin -->
-      <aside class="panel-right">
-
-        <!-- Pannello mia squadra -->
-        <div id="mio-panel" class="mio-panel hidden">
-          <div class="mio-panel-header">
-            <h3 id="mio-panel-nome" class="mio-nome">La mia squadra</h3>
-            <span id="mio-crediti-badge" class="crediti-badge">💰 500</span>
-          </div>
-          <div id="mio-slot-counter" class="slot-counter hidden"></div>
-          <div class="mio-panel-actions">
-            <button id="btn-tradeoff" class="btn btn-secondary btn-small hidden">🔄 Trade-off</button>
-            <button id="btn-mia-rosa" class="btn btn-secondary btn-small">👕 Mia rosa</button>
-          </div>
-        </div>
-
-        <!-- Pannello admin -->
-        <div id="admin-panel" class="admin-panel hidden">
-          <div class="admin-header">
-            <span class="admin-badge">👑 Admin</span>
-            <div class="admin-header-actions">
-              <button class="btn btn-secondary btn-small" id="btn-backup-download" onclick="apriMenuBackup()">💾 Backup</button>
-            </div>
-          </div>
-          <!-- Menu backup -->
-          <div id="backup-menu" class="backup-menu hidden">
-            <button class="bk-btn" onclick="downloadBackupJSON(false)">📄 Scarica JSON</button>
-            <button class="bk-btn" onclick="downloadBackupExcel()">📊 Scarica Excel</button>
-            <button class="bk-btn bk-btn-muted" onclick="document.getElementById('backup-menu').classList.add('hidden')">✕ Chiudi</button>
-          </div>
-          <!-- Box attesa conferma (mostrato dopo timer) -->
-          <div id="admin-conferma-box" class="admin-conferma-box hidden">
-            <p class="conferma-titolo" id="conferma-titolo-testo">⏱️ Timer scaduto!</p>
-            <p id="conferma-info" class="conferma-info-text"></p>
-            <div class="conferma-actions">
-              <button id="btn-conferma-assegnazione" class="btn btn-success btn-lg">✅ Conferma</button>
-              <div class="riapri-row">
-                <button id="btn-riapri-da-prezzo" class="btn btn-secondary">🔄 Riapri (da <span id="riapri-prezzo-label">X</span> cr)</button>
-                <button id="btn-riapri-da-uno" class="btn btn-secondary">🔄 Riapri (da 1)</button>
-              </div>
-            </div>
-          </div>
-          <!-- Azioni normali -->
-          <div class="admin-actions" id="admin-actions-box">
-            <button id="btn-estrai" class="btn btn-primary btn-block">🎲 Estrai giocatore</button>
-            <button id="btn-chiama-manuale" class="btn btn-secondary btn-block">📝 Chiama manuale</button>
-            <button id="btn-annulla" class="btn btn-danger btn-block">📋 Annulla assegnazione</button>
-            <button id="btn-reintroduci" class="btn btn-secondary btn-block">♻️ Reintroduci scartati</button>
-            <button id="btn-mod-timer" class="btn btn-secondary btn-block">⏱️ Modifica timer</button>
-            <button id="btn-termina" class="btn btn-danger btn-block">🏁 Termina asta</button>
-          </div>
-          <div id="popup-override-box" class="popup-override hidden">
-            <p>⚠️ Popup in attesa: <strong id="popup-override-chi"></strong></p>
-            <div id="popup-override-actions"></div>
+        <!-- Timer Ring SVG -->
+        <div id="timer-wrap" class="timer-ring-container hidden">
+          <svg class="timer-ring" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="timer-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop id="timer-grad-start" offset="0%" stop-color="#00e676"/>
+                <stop id="timer-grad-end" offset="100%" stop-color="#00b0ff"/>
+              </linearGradient>
+            </defs>
+            <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="7"/>
+            <circle cx="60" cy="60" r="54" fill="none"
+                    stroke="url(#timer-gradient)"
+                    stroke-width="7"
+                    stroke-linecap="round"
+                    stroke-dasharray="339.292"
+                    stroke-dashoffset="0"
+                    transform="rotate(-90 60 60)"
+                    class="timer-progress"
+                    id="timer-progress"/>
+          </svg>
+          <div class="timer-inner">
+            <div id="timer-display" class="timer-number">--</div>
+            <div id="timer-label" class="timer-label-text">rilancio</div>
           </div>
         </div>
+      </div><!-- /.card-timer-group -->
 
-      </aside>
-    </div><!-- /.arena-layout -->
+      <!-- Rilancio box -->
+      <div id="rilancio-box" class="rilancio-box hidden">
+        <div class="quick-bids-row">
+          <button class="btn-quick" id="btn-quick-5">+5</button>
+          <button class="btn-quick" id="btn-quick-10">+10</button>
+        </div>
+        <button id="btn-rilancio" class="btn-rilancia">🔥 RILANCIA +1</button>
+      </div>
+
+    </div><!-- /.asta-row-puja -->
+
+    <!-- RIGA 3: Tabs a tutta larghezza -->
+    <div class="asta-row-tabs">
+      <div class="tabs-panel">
+        <div class="tabs-nav">
+          <button class="tab-btn active" data-tab="tab-storico">📋 Storico</button>
+          <button class="tab-btn" data-tab="tab-rose">👥 Rose</button>
+          <button class="tab-btn" data-tab="tab-liberi">📦 Liberi</button>
+        </div>
+        <div id="tab-storico" class="tab-content active">
+          <ul id="storico-list" class="storico-list"></ul>
+        </div>
+        <div id="tab-rose" class="tab-content tab-rose-content">
+          <div id="rose-panel" class="rose-container"></div>
+          <div class="rose-search-row" id="rose-search-row">
+            <input type="text" id="rose-cerca" class="rose-inp" placeholder="🔍 Cerca giocatore...">
+            <button class="rose-cerca-btn" onclick="aggiornaFiltroRose()">Cerca</button>
+          </div>
+        </div>
+        <div id="tab-liberi" class="tab-content">
+          <div class="filtro-ruolo">
+            <button class="filtro-btn active" data-ruolo="tutti">Tutti</button>
+            <button class="filtro-btn" data-ruolo="Por">Por</button>
+            <button class="filtro-btn" data-ruolo="Dd">Dd</button>
+            <button class="filtro-btn" data-ruolo="Ds">Ds</button>
+            <button class="filtro-btn" data-ruolo="Dc">Dc</button>
+            <button class="filtro-btn" data-ruolo="D">D</button>
+            <button class="filtro-btn" data-ruolo="B">B</button>
+            <button class="filtro-btn" data-ruolo="M">M</button>
+            <button class="filtro-btn" data-ruolo="E">E</button>
+            <button class="filtro-btn" data-ruolo="C">C</button>
+            <button class="filtro-btn" data-ruolo="T">T</button>
+            <button class="filtro-btn" data-ruolo="W">W</button>
+            <button class="filtro-btn" data-ruolo="A">A</button>
+            <button class="filtro-btn" data-ruolo="Pc">Pc</button>
+          </div>
+          <ul id="liberi-list" class="liberi-list"></ul>
+        </div>
+      </div><!-- /.tabs-panel -->
+
+      <!-- Rose footer -->
+      <div id="rose-footer" class="rose-footer">
+        <button class="btn-rose-assegna" id="btn-rose-assegna">ASSEGNA</button>
+        <button class="btn-rose-chiama" id="btn-rose-chiama">🔨 CHIAMA</button>
+      </div>
+    </div><!-- /.asta-row-tabs -->
 
   </section>
 
@@ -482,6 +464,14 @@
     <button class="btn btn-secondary mt-16" onclick="closeModal()">Chiudi</button>
   </div>
 
+  <!-- Modal: Admin decisione (RIC/PLUS/Recompra) — kept for compatibility -->
+  <div id="modal-admin-override" class="modal hidden">
+    <h2 class="modal-title" id="mao-title">&#x26A0; Decisione richiesta</h2>
+    <div class="modal-body" id="mao-info"></div>
+    <div class="modal-actions" id="mao-actions"></div>
+    <button class="btn btn-secondary mt-16" onclick="closeModal()" style="width:100%">Chiudi</button>
+  </div>
+
 </div>
 
 <div id="toast-container" class="toast-container"></div>
@@ -499,14 +489,6 @@
     </div>
     <p class="emerg-sub">I tuoi dati sono al sicuro in memoria locale</p>
   </div>
-  <!-- Modal: Admin decisione (RIC/PLUS/Recompra) -->
-  <div id="modal-admin-override" class="modal hidden">
-    <h2 class="modal-title" id="mao-title">&#x26A0; Decisione richiesta</h2>
-    <div class="modal-body" id="mao-info"></div>
-    <div class="modal-actions" id="mao-actions"></div>
-    <button class="btn btn-secondary mt-16" onclick="closeModal()" style="width:100%">Chiudi</button>
-  </div>
-
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
