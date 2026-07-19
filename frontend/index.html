@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>🎯 Asta FantaSbocchini</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══════════════════════════════════════════════════ SCREEN HOME -->
+  <section id="screen-home" class="screen active">
+    <header class="header">
+      <h1>🎯 Asta FantaSbocchini</h1>
+      <p class="subtitle">Tool per la tua lega di fantacalcio</p>
+    </header>
+
+    <div class="card">
+      <h2>Crea nuova asta</h2>
+      <form id="form-crea-asta" autocomplete="off">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nome dell'asta</label>
+            <input type="text" id="inp-nome" value="Asta FantaSbocchini 2026/27" required>
+          </div>
+          <div class="form-group">
+            <label>Tipo di asta</label>
+            <select id="inp-tipo-asta">
+              <option value="iniziale">🏆 Asta iniziale</option>
+              <option value="riparazione">🔧 Asta di riparazione</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row" id="row-sottotipo" style="display:none">
+          <div class="form-group">
+            <label>Tipo riparazione</label>
+            <select id="inp-sotto-tipo">
+              <option value="1">1ª riparazione (1/2 svincolo)</option>
+              <option value="2">2ª riparazione (1/3 svincolo)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Svincoli totali per squadra</label>
+            <input type="number" id="inp-svincoli" value="15" min="0" max="30">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Crediti per squadra</label>
+            <input type="number" id="inp-crediti" value="500" min="50">
+          </div>
+          <div class="form-group">
+            <label>Timer 1ª offerta (sec)</label>
+            <input type="number" id="inp-timer-prima" value="7" min="3" max="120">
+          </div>
+          <div class="form-group">
+            <label>Timer rilancio (sec)</label>
+            <input type="number" id="inp-timer-rilancio" value="5" min="3" max="60">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tipo estrazione</label>
+            <select id="inp-estrazione">
+              <option value="manuale">Manuale</option>
+              <option value="casuale">Casuale</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Min. portieri in rosa</label>
+            <input type="number" id="inp-min-por" value="1" min="0" max="5">
+          </div>
+          <div class="form-group">
+            <label>Min. giocatori di movimento</label>
+            <input type="number" id="inp-min-mov" value="7" min="0" max="20">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Importa file JSON (dalla app FantaSbocchini)</label>
+          <div class="file-drop" id="file-drop">
+            <input type="file" id="inp-json" accept=".json" style="display:none">
+            <span id="file-drop-label">📂 Clicca o trascina il file JSON</span>
+          </div>
+          <div id="json-preview" class="json-preview hidden"></div>
+        </div>
+
+        <div class="form-group">
+          <label>Il tuo nome squadra (admin)</label>
+          <input type="text" id="inp-admin-nome" placeholder="Es: Admin FC" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg">🚀 Crea Asta</button>
+      </form>
+    </div>
+
+    <div class="card mt-16">
+      <h2>Entra in un'asta</h2>
+      <div class="form-group">
+        <label>Link o ID dell'asta</label>
+        <input type="text" id="inp-join-id" placeholder="Incolla il link dell'asta...">
+      </div>
+      <div class="form-group">
+        <label>Nome della tua squadra</label>
+        <input type="text" id="inp-join-nome" placeholder="Es: FC Sbocchini">
+      </div>
+      <button id="btn-join" class="btn btn-secondary btn-lg">🎯 Entra nell'asta</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ SCREEN LOBBY -->
+  <section id="screen-lobby" class="screen">
+    <header class="header header-small">
+      <h1>🏟️ Sala d'attesa</h1>
+      <p id="lobby-info-asta" class="subtitle"></p>
+    </header>
+
+    <div class="card">
+      <div class="link-share">
+        <span class="link-label">🔗 Link invito:</span>
+        <span id="lobby-link" class="link-text"></span>
+        <button id="btn-copy-link" class="btn btn-small btn-secondary">📋 Copia</button>
+      </div>
+    </div>
+
+    <div class="card mt-16">
+      <h3>Squadre connesse</h3>
+      <ul id="lobby-squadre" class="squadre-list"></ul>
+    </div>
+
+    <div id="lobby-admin-box" class="card mt-16 hidden">
+      <button id="btn-inizia-asta" class="btn btn-primary btn-lg">▶️ Inizia Asta</button>
+    </div>
+
+    <p class="text-muted text-center mt-16" id="lobby-wait-msg">In attesa che l'admin avvii l'asta...</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ SCREEN ASTA LIVE -->
+  <section id="screen-asta" class="screen">
+
+    <!-- TOP BAR: budget squadre -->
+    <div class="top-bar">
+      <div id="budget-bar" class="budget-bar"></div>
+    </div>
+
+    <!-- CENTRO: giocatore + timer -->
+    <div class="asta-centro">
+      <div id="chiamata-card" class="chiamata-card">
+        <p class="chiamata-stato">⏳ In attesa di estrazione...</p>
+      </div>
+      <div id="timer-wrap" class="timer-wrap hidden">
+        <div id="timer-display" class="timer">--</div>
+        <div id="timer-label" class="timer-label"></div>
+      </div>
+    </div>
+
+    <!-- AZIONI: rilancio -->
+    <div class="asta-actions">
+      <div id="rilancio-box" class="rilancio-box hidden">
+        <button class="btn-rilancio-adj" id="btn-minus">−</button>
+        <input type="number" id="inp-rilancio" min="1" value="1" class="inp-rilancio">
+        <button class="btn-rilancio-adj" id="btn-plus">+</button>
+        <button id="btn-rilancio" class="btn btn-accent">💰 Rilancia</button>
+      </div>
+    </div>
+
+    <!-- PANNELLO MIA SQUADRA -->
+    <div id="mio-panel" class="mio-panel card hidden">
+      <div class="mio-panel-header">
+        <h3 id="mio-panel-nome">La mia squadra</h3>
+        <span id="mio-crediti-badge" class="crediti-badge">💰 500</span>
+      </div>
+      <div id="mio-slot-counter" class="slot-counter hidden"></div>
+      <div class="mio-panel-actions">
+        <button id="btn-tradeoff" class="btn btn-secondary btn-small hidden">🔄 Trade-off slot</button>
+        <button id="btn-mia-rosa" class="btn btn-secondary btn-small">👕 Mia rosa</button>
+      </div>
+    </div>
+
+    <!-- PANNELLO ADMIN -->
+    <div id="admin-panel" class="admin-panel card hidden">
+      <div class="admin-header">
+        <span class="admin-badge">👑 Admin</span>
+        <h3>Pannello Admin</h3>
+      </div>
+      <div class="admin-actions">
+        <button id="btn-estrai" class="btn btn-primary">🎲 Estrai</button>
+        <button id="btn-chiama-manuale" class="btn btn-secondary">📝 Chiama manuale</button>
+        <button id="btn-annulla" class="btn btn-danger">↩️ Annulla ultima</button>
+        <button id="btn-reintroduci" class="btn btn-secondary">♻️ Reintroduci scartati</button>
+        <button id="btn-mod-timer" class="btn btn-secondary">⏱️ Modifica timer</button>
+        <button id="btn-termina" class="btn btn-danger">🏁 Termina asta</button>
+      </div>
+      <div id="popup-override-box" class="popup-override hidden">
+        <p>⚠️ Popup in attesa da: <strong id="popup-override-chi"></strong></p>
+        <div id="popup-override-actions"></div>
+      </div>
+    </div>
+
+    <!-- TABS: storico / rose / giocatori liberi -->
+    <div class="tabs-panel">
+      <div class="tabs-nav">
+        <button class="tab-btn active" data-tab="tab-storico">📋 Storico</button>
+        <button class="tab-btn" data-tab="tab-rose">👥 Rose</button>
+        <button class="tab-btn" data-tab="tab-liberi">📦 Liberi</button>
+      </div>
+
+      <div id="tab-storico" class="tab-content active">
+        <ul id="storico-list" class="storico-list"></ul>
+      </div>
+
+      <div id="tab-rose" class="tab-content">
+        <div id="rose-panel"></div>
+      </div>
+
+      <div id="tab-liberi" class="tab-content">
+        <div class="filtro-ruolo">
+          <button class="filtro-btn active" data-ruolo="tutti">Tutti</button>
+          <button class="filtro-btn" data-ruolo="P">🧤 P</button>
+          <button class="filtro-btn" data-ruolo="D">🛡️ D</button>
+          <button class="filtro-btn" data-ruolo="C">⚙️ C</button>
+          <button class="filtro-btn" data-ruolo="A">⚡ A</button>
+        </div>
+        <ul id="liberi-list" class="liberi-list"></ul>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ SCREEN FINE ASTA -->
+  <section id="screen-fine-asta" class="screen">
+    <header class="header header-small">
+      <h1>🏆 Asta Conclusa!</h1>
+    </header>
+    <div id="riepilogo-asta" class="riepilogo-grid"></div>
+    <div class="card mt-16" style="text-align:center">
+      <button id="btn-export-json" class="btn btn-primary btn-lg">📥 Esporta JSON</button>
+      <p class="text-muted mt-8">Importa questo file nella app FantaSbocchini</p>
+    </div>
+  </section>
+
+</div><!-- /#app -->
+
+<!-- ═══════════════════════════════════════════════════════════ MODALS -->
+<div id="modal-overlay" class="modal-overlay hidden" onclick="closeModalOnOverlay(event)">
+
+  <!-- Modal: RIC conferma -->
+  <div id="modal-ric-conferma" class="modal hidden">
+    <h2 class="modal-title">🔔 Riconferma giocatore</h2>
+    <div class="modal-body">
+      <p>Vuoi confermare <strong id="mrc-giocatore"></strong> alla tua rosa?</p>
+      <p class="modal-detail">Prezzo: <strong id="mrc-prezzo" class="text-accent"></strong> crediti</p>
+      <p class="modal-detail text-muted" id="mrc-tipo-label"></p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-success" onclick="rispostaRicConferma('si')">✅ Sì, confermo</button>
+      <button class="btn btn-danger" onclick="rispostaRicConferma('no')">❌ No, passa all'asta</button>
+    </div>
+  </div>
+
+  <!-- Modal: Post-asta (RIC tripla / PLUS doppia) -->
+  <div id="modal-post-asta" class="modal hidden">
+    <h2 class="modal-title" id="mpa-title">Scegli un'opzione</h2>
+    <div class="modal-body">
+      <p>Il giocatore <strong id="mpa-giocatore"></strong> è stato venduto a <strong id="mpa-vincitore"></strong> per <strong id="mpa-prezzo" class="text-accent"></strong> cr</p>
+    </div>
+    <div class="modal-actions" id="mpa-opzioni">
+      <!-- Generato dinamicamente -->
+    </div>
+  </div>
+
+  <!-- Modal: Trade-off -->
+  <div id="modal-tradeoff" class="modal hidden">
+    <h2 class="modal-title">🔄 Trade-off Slot</h2>
+    <p class="modal-subtitle" id="to-slot-info"></p>
+    <div class="tradeoff-grid" id="to-opzioni">
+      <button class="tradeoff-card" onclick="eseguiTradeoff('ric-to-plus')" id="to-r2p">
+        <span class="to-cedi">1 RIC</span>
+        <span class="to-arrow">→</span>
+        <span class="to-ricevi">2 PLUS</span>
+      </button>
+      <button class="tradeoff-card" onclick="eseguiTradeoff('plus-to-ric')" id="to-p2r">
+        <span class="to-cedi">3 PLUS</span>
+        <span class="to-arrow">→</span>
+        <span class="to-ricevi">1 RIC</span>
+      </button>
+      <button class="tradeoff-card" onclick="eseguiTradeoff('ric-to-crediti')" id="to-r2c">
+        <span class="to-cedi">1 RIC</span>
+        <span class="to-arrow">→</span>
+        <span class="to-ricevi">+12 cr</span>
+      </button>
+      <button class="tradeoff-card" onclick="eseguiTradeoff('plus-to-crediti')" id="to-p2c">
+        <span class="to-cedi">1 PLUS</span>
+        <span class="to-arrow">→</span>
+        <span class="to-ricevi">+6 cr</span>
+      </button>
+    </div>
+    <button class="btn btn-secondary mt-16" onclick="closeModal()">Annulla</button>
+  </div>
+
+  <!-- Modal: Svincolo -->
+  <div id="modal-svincolo" class="modal modal-lg hidden">
+    <h2 class="modal-title">🔓 Svincola giocatori</h2>
+    <div class="modal-body">
+      <p>Hai vinto <strong id="sv-giocatore"></strong> per <strong id="sv-prezzo" class="text-accent"></strong> cr, ma hai solo <strong id="sv-crediti"></strong> cr.</p>
+      <p class="text-muted">Seleziona i giocatori da svincolare per coprire la differenza di <strong id="sv-diff" class="text-danger"></strong> cr.</p>
+      <p class="text-muted" id="sv-svincoli-rem"></p>
+    </div>
+    <div id="sv-lista" class="sv-lista"></div>
+    <div class="sv-totale">
+      Recupero: <strong id="sv-recupero">0</strong> cr | Debito residuo: <strong id="sv-debito" class="text-danger">0</strong> cr
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-success" id="btn-sv-conferma" onclick="confermaSvincolo()">✅ Conferma svincolo</button>
+    </div>
+  </div>
+
+  <!-- Modal: Chiama manuale -->
+  <div id="modal-chiama-manuale" class="modal hidden">
+    <h2 class="modal-title">📝 Chiama giocatore</h2>
+    <div class="form-group">
+      <label>Nome giocatore</label>
+      <input type="text" id="inp-cm-nome" placeholder="Es: Vlahovic" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>Ruolo</label>
+      <select id="inp-cm-ruolo">
+        <option value="">— nessun ruolo —</option>
+        <option value="P">P — Portiere</option>
+        <option value="D">D — Difensore</option>
+        <option value="C">C — Centrocampista</option>
+        <option value="A">A — Attaccante</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="confermaChiamataManuale()">📢 Chiama</button>
+      <button class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+    </div>
+  </div>
+
+  <!-- Modal: Modifica timer -->
+  <div id="modal-mod-timer" class="modal hidden">
+    <h2 class="modal-title">⏱️ Modifica Timer</h2>
+    <div class="form-group">
+      <label>Timer 1ª offerta (sec)</label>
+      <input type="number" id="inp-mt-prima" min="3" max="120">
+    </div>
+    <div class="form-group">
+      <label>Timer rilancio (sec)</label>
+      <input type="number" id="inp-mt-rilancio" min="3" max="60">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="confermaModTimer()">✅ Salva</button>
+      <button class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+    </div>
+  </div>
+
+  <!-- Modal: Mia Rosa -->
+  <div id="modal-mia-rosa" class="modal modal-lg hidden">
+    <h2 class="modal-title" id="mr-title">La mia rosa</h2>
+    <div id="mr-lista" class="mr-lista"></div>
+    <button class="btn btn-secondary mt-16" onclick="closeModal()">Chiudi</button>
+  </div>
+
+</div><!-- /#modal-overlay -->
+
+<!-- ═══════════════════════════════════════════ TOAST -->
+<div id="toast-container" class="toast-container"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
