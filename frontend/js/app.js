@@ -597,10 +597,19 @@ function setupTabs() {
 socket.on('stato-asta', (asta) => {
   S.asta = asta;
   salvaStatoLocale(asta);
-  // Make sure we land on the right screen regardless of how we got here
-  // (manual join form, or automatic rejoin after reload/reconnect).
+  // Navigate to the correct screen based on authoritative server state.
   if (asta.stato === 'attesa') {
     showScreen('screen-lobby');
+    // Show/hide admin controls depending on whether this client is the admin.
+    const adminBox = document.getElementById('lobby-admin-box');
+    const waitMsg  = document.getElementById('lobby-wait-msg');
+    if (S.isAdmin) {
+      if (adminBox) adminBox.classList.remove('hidden');
+      if (waitMsg)  waitMsg.classList.add('hidden');
+    } else {
+      if (adminBox) adminBox.classList.add('hidden');
+      if (waitMsg)  waitMsg.classList.remove('hidden');
+    }
   } else if (asta.stato === 'in_corso') {
     showScreen('screen-asta');
   } else if (asta.stato === 'completata') {
@@ -616,8 +625,11 @@ socket.on('stato-asta', (asta) => {
     renderMioPanel();
     renderAdminPanel(asta);
   }
-  if (!document.getElementById('lobby-link').textContent && S.astaId)
-    document.getElementById('lobby-link').textContent = window.location.origin + '/?id=' + S.astaId;
+  // Always update lobby link (needed on reconnect, not just on first join).
+  if (S.astaId) {
+    const linkEl = document.getElementById('lobby-link');
+    if (linkEl) linkEl.textContent = window.location.origin + '/?id=' + S.astaId;
+  }
   if (asta.nome) document.getElementById('lobby-info-asta').textContent = asta.nome;
 });
 
