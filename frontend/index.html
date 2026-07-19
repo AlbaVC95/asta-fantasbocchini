@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <div id="app">
@@ -191,6 +192,8 @@
       <div class="mio-panel-actions">
         <button id="btn-tradeoff" class="btn btn-secondary btn-small hidden">🔄 Trade-off slot</button>
         <button id="btn-mia-rosa" class="btn btn-secondary btn-small">👕 Mia rosa</button>
+        <button class="btn btn-secondary btn-small" onclick="downloadBackupJSON(false)">📥 Esporta</button>
+        <button class="btn btn-secondary btn-small btn-esci" onclick="esciDallAsta()">🚪 Esci</button>
       </div>
     </div>
 
@@ -198,6 +201,16 @@
     <div id="admin-panel" class="admin-panel card hidden">
       <div class="admin-header">
         <span class="admin-badge">👑 Admin</span>
+        <div class="admin-header-actions">
+          <button class="btn btn-secondary btn-small" id="btn-backup-download" onclick="apriMenuBackup()">💾 Backup</button>
+          <button class="btn btn-secondary btn-small btn-esci" onclick="esciDallAsta()">🚪 Esci</button>
+        </div>
+      </div>
+      <!-- Menu backup -->
+      <div id="backup-menu" class="backup-menu hidden">
+        <button class="bk-btn" onclick="downloadBackupJSON(false)">📄 Scarica JSON</button>
+        <button class="bk-btn" onclick="downloadBackupExcel()">📊 Scarica Excel</button>
+        <button class="bk-btn bk-btn-muted" onclick="document.getElementById('backup-menu').classList.add('hidden')">✕ Chiudi</button>
       </div>
 
       <!-- Box attesa conferma (mostrato dopo timer) -->
@@ -415,6 +428,21 @@
 </div>
 
 <div id="toast-container" class="toast-container"></div>
+
+<!-- ══════════ SCHERMATA EMERGENZA ══════════ -->
+<div id="screen-emergenza" class="screen-emergenza hidden">
+  <div class="emerg-card">
+    <div class="emerg-icon">⚠️</div>
+    <h2 class="emerg-titolo">Connessione persa</h2>
+    <p class="emerg-msg">Tentativo di riconnessione in corso...</p>
+    <div class="emerg-spinner"></div>
+    <div class="emerg-actions">
+      <button class="btn btn-danger emerg-btn" onclick="downloadBackupEmergenza()">💾 Scarica ultimo backup salvato</button>
+      <button class="btn btn-secondary emerg-btn" onclick="location.reload()">🔄 Ricarica pagina</button>
+    </div>
+    <p class="emerg-sub">I tuoi dati sono al sicuro in memoria locale</p>
+  </div>
+</div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="js/app.js"></script>
