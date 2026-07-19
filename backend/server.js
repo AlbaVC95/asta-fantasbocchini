@@ -331,6 +331,23 @@ app.get('/api/asta/:id', (req, res) => {
   res.json(asta);
 });
 
+// Public info endpoint — sanitized, no socket IDs exposed
+app.get('/api/asta/:id/info', (req, res) => {
+  const asta = aste.get(req.params.id);
+  if (!asta) return res.status(404).json({ error: 'Asta non trovata' });
+  res.json({
+    id: asta.id,
+    nome: asta.nome,
+    tipoAsta: asta.tipoAsta,
+    stato: asta.stato,
+    crediti: asta.crediti,
+    squadre: asta.squadre.map(s => ({
+      nome: s.nome,
+      utenti: s.utenti ? s.utenti.length : 0  // count only, no IDs
+    }))
+  });
+});
+
 app.get('/api/aste', (req, res) => {
   res.json(Array.from(aste.values()).map(a => ({ id: a.id, nome: a.nome, stato: a.stato, tipoAsta: a.tipoAsta })));
 });
