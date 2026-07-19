@@ -114,7 +114,7 @@ window.apriMenuBackup = function() {
 };
 
 window.esciDallAsta = function() {
-  if (!confirm('Vuoi uscire dall'asta? I dati rimarranno sul server.')) return;
+  if (!confirm("Vuoi uscire dall'asta? I dati rimarranno sul server.")) return;
   cancSessione();
   socket.disconnect();
   showScreen('screen-home');
