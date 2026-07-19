@@ -126,8 +126,16 @@ window.esciDallAsta = function() {
 // ══ RECONNECTION HANDLERS ════════════════
 socket.on('connect', () => {
   nascondiEmergenza();
+  const schermataHome = document.getElementById('screen-home');
+  const sullaHome = !schermataHome || schermataHome.classList.contains('active');
+  // Re-join only if we were already in an asta (not creating a new one from home)
+  if (!sullaHome && S.astaId && S.miaSquadra) {
+    socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: S.isAdmin });
+    return;
+  }
+  // First load: restore session and join
   const sess = getSessione();
-  if (sess && sess.astaId && !S.asta) {
+  if (sess && sess.astaId && !S.asta && !sullaHome) {
     S.astaId = sess.astaId;
     S.miaSquadra = sess.nomeSquadra;
     S.isAdmin = sess.isAdmin;
@@ -136,16 +144,20 @@ socket.on('connect', () => {
 });
 
 socket.on('disconnect', (reason) => {
-  if (S.astaId && reason !== 'io client disconnect') {
+  if (reason === 'io client disconnect') return; // voluntary exit
+  const schermataAsta = document.getElementById('screen-asta');
+  const inAsta = schermataAsta && schermataAsta.classList.contains('active');
+  if (S.astaId && inAsta) {
     mostraEmergenza();
-    toast('Connessione persa — riconnessione in corso...', 'error');
   }
+  if (inAsta) toast('Connessione persa — riconnessione...', 'error');
 });
 
 socket.on('reconnect', () => {
   nascondiEmergenza();
   toast('Riconnesso!', 'success');
-  if (S.astaId && S.miaSquadra) {
+  // Re-join only if actually in an asta session
+  if (S.astaId && S.miaSquadra && S.asta) {
     socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: S.isAdmin });
   }
 });
@@ -157,11 +169,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('inp-join-id').value = id;
     setTimeout(() => fetchAstaSquadrePerJoin(id), 300);
   }
-  // Restore session from localStorage
+  // Restore session hint (pre-fill join field if no ID in URL)
   const sess = getSessione();
-  if (sess && sess.astaId) {
-    S.astaId = sess.astaId; S.miaSquadra = sess.nomeSquadra; S.isAdmin = sess.isAdmin;
-    if (!id) history.replaceState({}, '', '/?id=' + sess.astaId);
+  if (sess && sess.astaId && !id) {
+    document.getElementById('inp-join-id').value = sess.astaId;
+    history.replaceState({}, '', '/?id=' + sess.astaId);
+    setTimeout(() => fetchAstaSquadrePerJoin(sess.astaId), 400);
   }
   setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs();
   // Warn before leaving page if in active asta
@@ -299,7 +312,7 @@ function setupHome() {
     if (input.includes('id=')) {
       try { input = new URL(input, window.location.origin).searchParams.get('id'); } catch(e) {}
     }
-    S.astaId = input; S.miaSquadra = nome; S.isAdmin = false;
+    S.astaId = input; S.miaSquadra = nome; S.isAdmin = false; S.asta = null;
     socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: false }); salvaSessione();
     showScreen('screen-lobby');
     document.getElementById('lobby-info-asta').textContent = 'Connessione in corso...';
@@ -608,7 +621,14 @@ socket.on('assegnazione-annullata', (item) => toast('Annullato: ' + (item.giocat
 socket.on('scartati-reintrodotti', ({ count }) => toast(count + ' giocatori reintrodotti', 'success'));
 socket.on('tradeoff-ok', () => { closeModal(); toast('Trade-off eseguito!', 'success'); });
 socket.on('asta-terminata', () => { cancSessione(); showScreen('screen-fine-asta'); renderFineAsta(); toast('Asta terminata!', 'success'); });
-socket.on('errore', ({ msg }) => toast(msg, 'error'));
+socket.on('errore', ({ msg }) => {
+  toast(msg, 'error');
+  // If asta not found (stale session), clear localStorage session
+  if (msg && (msg.includes('non trovata') || msg.includes('non trovato'))) {
+    cancSessione();
+    S.astaId = null; S.miaSquadra = null; S.asta = null;
+  }
+});
 
 socket.on('attesa-conferma', ({ giocatore, offerta, squadra }) => {
   S.attesaConferma = true;
