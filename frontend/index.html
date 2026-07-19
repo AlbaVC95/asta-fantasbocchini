@@ -6,22 +6,24 @@
   <title>🎯 Asta FantaSbocchini</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
 </head>
 <body>
 <div id="app">
 
   <!-- ══════════ SCREEN HOME ══════════ -->
   <section id="screen-home" class="screen active">
-    <header class="header">
-      <h1>🎯 Asta FantaSbocchini</h1>
-      <p class="subtitle">Tool per la tua lega di fantacalcio</p>
+    <header class="home-header">
+      <div class="home-logo">🎯</div>
+      <h1 class="home-title">Asta FantaSbocchini</h1>
+      <p class="home-subtitle">Tool per la tua lega di fantacalcio</p>
     </header>
 
     <div class="card">
-      <h2>Crea nuova asta</h2>
+      <h2 class="card-title">Crea nuova asta</h2>
       <form id="form-crea-asta" autocomplete="off">
         <div class="form-row">
           <div class="form-group">
@@ -89,10 +91,10 @@
 
         <div class="form-group">
           <label>Importa file JSON (dalla app FantaSbocchini)</label>
-          <div class="file-drop" id="file-drop">
+          <label class="file-drop" id="file-drop" for="inp-json">
             <input type="file" id="inp-json" accept=".json" style="display:none">
             <span id="file-drop-label">📂 Clicca o trascina il file JSON</span>
-          </div>
+          </label>
           <div id="json-preview" class="json-preview hidden"></div>
         </div>
 
@@ -109,7 +111,7 @@
     </div>
 
     <div class="card mt-16">
-      <h2>Entra in un'asta</h2>
+      <h2 class="card-title">Entra in un'asta</h2>
       <div class="form-group">
         <label>Link o ID dell'asta</label>
         <input type="text" id="inp-join-id" placeholder="Incolla il link dell'asta...">
@@ -127,9 +129,10 @@
 
   <!-- ══════════ SCREEN LOBBY ══════════ -->
   <section id="screen-lobby" class="screen">
-    <header class="header header-small">
-      <h1>🏟️ Sala d'attesa</h1>
-      <p id="lobby-info-asta" class="subtitle"></p>
+    <header class="home-header">
+      <div class="home-logo">🏟️</div>
+      <h1 class="home-title">Sala d'attesa</h1>
+      <p class="home-subtitle" id="lobby-info-asta"></p>
     </header>
     <div class="card">
       <div class="link-share">
@@ -139,7 +142,7 @@
       </div>
     </div>
     <div class="card mt-16">
-      <h3>Squadre connesse</h3>
+      <h3 class="card-title-sm">Squadre connesse</h3>
       <ul id="lobby-squadre" class="squadre-list"></ul>
     </div>
     <div id="lobby-admin-box" class="card mt-16 hidden">
@@ -151,153 +154,201 @@
   <!-- ══════════ SCREEN ASTA LIVE ══════════ -->
   <section id="screen-asta" class="screen">
 
-    <!-- Budget bar -->
-    <div class="top-bar">
-      <div id="budget-bar" class="budget-bar"></div>
-    </div>
+    <!-- Arena header -->
+    <header class="asta-header">
+      <div class="asta-header-left">
+        <span class="asta-header-logo">🎯</span>
+        <span class="asta-header-title">Asta FantaSbocchini</span>
+      </div>
+      <div class="asta-header-right">
+        <button class="btn-sound" id="btn-sound" title="Toggle suoni" onclick="toggleSuoni()">🔊</button>
+        <button class="btn btn-secondary btn-small" onclick="downloadBackupJSON(false)">📥</button>
+        <button class="btn btn-secondary btn-small btn-esci" onclick="esciDallAsta()">🚪</button>
+      </div>
+    </header>
 
-    <!-- Card giocatore sticky -->
-    <div class="asta-sticky">
-      <div id="chiamata-card" class="chiamata-card">
-        <p class="chiamata-stato">⏳ In attesa di estrazione...</p>
-      </div>
-      <div id="timer-wrap" class="timer-wrap hidden">
-        <div id="timer-display" class="timer">--</div>
-        <div id="timer-label" class="timer-label"></div>
-      </div>
+    <!-- Arena 3-column layout -->
+    <div class="arena-layout">
 
-      <!-- Rilancio box -->
-      <div id="rilancio-box" class="rilancio-box hidden">
-        <div class="quick-bids">
-          <button class="btn-quick" id="btn-quick-1">+1</button>
-          <button class="btn-quick" id="btn-quick-5">+5</button>
-          <button class="btn-quick" id="btn-quick-10">+10</button>
-        </div>
-        <div class="rilancio-input-row">
-          <button class="btn-rilancio-adj" id="btn-minus">−</button>
-          <input type="number" id="inp-rilancio" min="1" value="1" class="inp-rilancio">
-          <button class="btn-rilancio-adj" id="btn-plus">+</button>
-          <button id="btn-rilancio" class="btn btn-accent btn-rilancio-big">🪙 Rilancia</button>
-        </div>
-      </div>
-    </div>
+      <!-- LEFT SIDEBAR: Budget ranking -->
+      <aside class="sidebar-budget">
+        <div class="sidebar-header">💰 Budget Squadre</div>
+        <div id="budget-bar" class="sidebar-squadre-list"></div>
+      </aside>
 
-    <!-- Pannello mia squadra -->
-    <div id="mio-panel" class="mio-panel card hidden">
-      <div class="mio-panel-header">
-        <h3 id="mio-panel-nome">La mia squadra</h3>
-        <span id="mio-crediti-badge" class="crediti-badge">💰 500</span>
-      </div>
-      <div id="mio-slot-counter" class="slot-counter hidden"></div>
-      <div class="mio-panel-actions">
-        <button id="btn-tradeoff" class="btn btn-secondary btn-small hidden">🔄 Trade-off slot</button>
-        <button id="btn-mia-rosa" class="btn btn-secondary btn-small">👕 Mia rosa</button>
-        <button class="btn btn-secondary btn-small" onclick="downloadBackupJSON(false)">📥 Esporta</button>
-        <button class="btn btn-secondary btn-small btn-esci" onclick="esciDallAsta()">🚪 Esci</button>
-      </div>
-    </div>
+      <!-- CENTER: Arena principale -->
+      <main class="arena-center">
 
-    <!-- Pannello admin -->
-    <div id="admin-panel" class="admin-panel card hidden">
-      <div class="admin-header">
-        <span class="admin-badge">👑 Admin</span>
-        <div class="admin-header-actions">
-          <button class="btn btn-secondary btn-small" id="btn-backup-download" onclick="apriMenuBackup()">💾 Backup</button>
-          <button class="btn btn-secondary btn-small btn-esci" onclick="esciDallAsta()">🚪 Esci</button>
-        </div>
-      </div>
-      <!-- Menu backup -->
-      <div id="backup-menu" class="backup-menu hidden">
-        <button class="bk-btn" onclick="downloadBackupJSON(false)">📄 Scarica JSON</button>
-        <button class="bk-btn" onclick="downloadBackupExcel()">📊 Scarica Excel</button>
-        <button class="bk-btn bk-btn-muted" onclick="document.getElementById('backup-menu').classList.add('hidden')">✕ Chiudi</button>
-      </div>
+        <!-- Card giocatore (sticky) -->
+        <div class="card-timer-group" id="card-timer-group">
+          <div id="chiamata-card" class="chiamata-card">
+            <p class="chiamata-stato">⏳ In attesa di estrazione...</p>
+          </div>
 
-      <!-- Box attesa conferma (mostrato dopo timer) -->
-      <div id="admin-conferma-box" class="admin-conferma-box hidden">
-        <p class="conferma-titolo" id="conferma-titolo-testo">⏱️ Timer scaduto!</p>
-        <p id="conferma-info" class="conferma-info-text"></p>
-        <div class="conferma-actions">
-          <button id="btn-conferma-assegnazione" class="btn btn-success btn-lg">✅ Conferma assegnazione</button>
-          <div class="riapri-row">
-            <button id="btn-riapri-da-prezzo" class="btn btn-secondary">🔄 Riapri (da <span id="riapri-prezzo-label">X</span> cr)</button>
-            <button id="btn-riapri-da-uno" class="btn btn-secondary">🔄 Riapri (da 1)</button>
+          <!-- Timer Ring SVG -->
+          <div id="timer-wrap" class="timer-ring-container hidden">
+            <svg class="timer-ring" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="timer-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop id="timer-grad-start" offset="0%" stop-color="#00e676"/>
+                  <stop id="timer-grad-end" offset="100%" stop-color="#00b0ff"/>
+                </linearGradient>
+              </defs>
+              <!-- Background track -->
+              <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="7"/>
+              <!-- Animated progress -->
+              <circle cx="60" cy="60" r="54" fill="none"
+                      stroke="url(#timer-gradient)"
+                      stroke-width="7"
+                      stroke-linecap="round"
+                      stroke-dasharray="339.292"
+                      stroke-dashoffset="0"
+                      transform="rotate(-90 60 60)"
+                      class="timer-progress"
+                      id="timer-progress"/>
+            </svg>
+            <div class="timer-inner">
+              <div id="timer-display" class="timer-number">--</div>
+              <div id="timer-label" class="timer-label-text">rilancio</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Azioni normali -->
-      <div class="admin-actions" id="admin-actions-box">
-        <button id="btn-estrai" class="btn btn-primary">🎲 Estrai</button>
-        <button id="btn-chiama-manuale" class="btn btn-secondary">📝 Chiama manuale</button>
-        <button id="btn-annulla" class="btn btn-danger">📋 Annulla assegnazione</button>
-        <button id="btn-reintroduci" class="btn btn-secondary">♻️ Reintroduci scartati</button>
-        <button id="btn-mod-timer" class="btn btn-secondary">⏱️ Modifica timer</button>
-        <button id="btn-termina" class="btn btn-danger">🏁 Termina asta</button>
-      </div>
-
-      <div id="popup-override-box" class="popup-override hidden">
-        <p>⚠️ Popup in attesa: <strong id="popup-override-chi"></strong></p>
-        <div id="popup-override-actions"></div>
-      </div>
-    </div>
-
-    <!-- Tabs -->
-    <div class="tabs-panel">
-      <div class="tabs-nav">
-        <button class="tab-btn active" data-tab="tab-storico">📋 Storico</button>
-        <button class="tab-btn" data-tab="tab-rose">👥 Rose</button>
-        <button class="tab-btn" data-tab="tab-liberi">📦 Liberi</button>
-      </div>
-      <div id="tab-storico" class="tab-content active">
-        <ul id="storico-list" class="storico-list"></ul>
-      </div>
-      <div id="tab-rose" class="tab-content tab-rose-content">
-        <div id="rose-panel" class="rose-container"></div>
-        <div class="rose-search-row" id="rose-search-row">
-          <select id="rose-filtro-ruolo" class="rose-sel">
-            <option value="">Tutti i Ruoli</option>
-            <option value="Por">Por</option>
-            <option value="P">P</option>
-            <option value="Dc">Dc</option>
-            <option value="Dd">Dd</option>
-            <option value="Ds">Ds</option>
-            <option value="E">E</option>
-            <option value="D">D</option>
-            <option value="M">M</option>
-            <option value="C">C</option>
-            <option value="W">W</option>
-            <option value="T">T</option>
-            <option value="A">A</option>
-            <option value="Pc">Pc</option>
-          </select>
-          <input type="text" id="rose-cerca" class="rose-inp" placeholder="🔍 Cerca giocatore...">
-          <button class="rose-cerca-btn" onclick="aggiornaFiltroRose()">Cerca</button>
+        <!-- Rilancio bar -->
+        <div id="rilancio-box" class="rilancio-box hidden">
+          <div class="rilancio-top-row">
+            <button class="btn-rilancio-adj" id="btn-minus">−</button>
+            <input type="number" id="inp-rilancio" min="1" value="1" class="inp-rilancio">
+            <button class="btn-rilancio-adj" id="btn-plus">+</button>
+            <div class="quick-bids">
+              <button class="btn-quick" id="btn-quick-1">+1</button>
+              <button class="btn-quick" id="btn-quick-5">+5</button>
+              <button class="btn-quick" id="btn-quick-10">+10</button>
+            </div>
+          </div>
+          <button id="btn-rilancio" class="btn-rilancia">🔥 RILANCIA</button>
         </div>
-      </div>
-      <div id="tab-liberi" class="tab-content">
-        <div class="filtro-ruolo">
-          <button class="filtro-btn active" data-ruolo="tutti">Tutti</button>
-          <button class="filtro-btn" data-ruolo="P">🧤 P</button>
-          <button class="filtro-btn" data-ruolo="D">🛡️ D</button>
-          <button class="filtro-btn" data-ruolo="C">⚙️ C</button>
-          <button class="filtro-btn" data-ruolo="A">⚡ A</button>
-        </div>
-        <ul id="liberi-list" class="liberi-list"></ul>
-      </div>
-    </div>
 
-  <!-- Rose footer (visible solo su tab rose) -->
-  <div id="rose-footer" class="rose-footer">
-    <button class="btn-rose-assegna" id="btn-rose-assegna">ASSEGNA</button>
-    <button class="btn-rose-chiama" id="btn-rose-chiama">🔨 CHIAMA</button>
-  </div>
+        <!-- Tabs -->
+        <div class="tabs-panel">
+          <div class="tabs-nav">
+            <button class="tab-btn active" data-tab="tab-storico">📋 Storico</button>
+            <button class="tab-btn" data-tab="tab-rose">👥 Rose</button>
+            <button class="tab-btn" data-tab="tab-liberi">📦 Liberi</button>
+          </div>
+          <div id="tab-storico" class="tab-content active">
+            <ul id="storico-list" class="storico-list"></ul>
+          </div>
+          <div id="tab-rose" class="tab-content tab-rose-content">
+            <div id="rose-panel" class="rose-container"></div>
+            <div class="rose-search-row" id="rose-search-row">
+              <select id="rose-filtro-ruolo" class="rose-sel">
+                <option value="">Tutti i Ruoli</option>
+                <option value="Por">Por</option>
+                <option value="P">P</option>
+                <option value="Dc">Dc</option>
+                <option value="Dd">Dd</option>
+                <option value="Ds">Ds</option>
+                <option value="E">E</option>
+                <option value="D">D</option>
+                <option value="M">M</option>
+                <option value="C">C</option>
+                <option value="W">W</option>
+                <option value="T">T</option>
+                <option value="A">A</option>
+                <option value="Pc">Pc</option>
+              </select>
+              <input type="text" id="rose-cerca" class="rose-inp" placeholder="🔍 Cerca giocatore...">
+              <button class="rose-cerca-btn" onclick="aggiornaFiltroRose()">Cerca</button>
+            </div>
+          </div>
+          <div id="tab-liberi" class="tab-content">
+            <div class="filtro-ruolo">
+              <button class="filtro-btn active" data-ruolo="tutti">Tutti</button>
+              <button class="filtro-btn" data-ruolo="P">🧤 P</button>
+              <button class="filtro-btn" data-ruolo="D">🛡️ D</button>
+              <button class="filtro-btn" data-ruolo="C">⚙️ C</button>
+              <button class="filtro-btn" data-ruolo="A">⚡ A</button>
+            </div>
+            <ul id="liberi-list" class="liberi-list"></ul>
+          </div>
+        </div>
+
+        <!-- Rose footer (visible only on rose tab) -->
+        <div id="rose-footer" class="rose-footer">
+          <button class="btn-rose-assegna" id="btn-rose-assegna">ASSEGNA</button>
+          <button class="btn-rose-chiama" id="btn-rose-chiama">🔨 CHIAMA</button>
+        </div>
+
+      </main>
+
+      <!-- RIGHT PANEL: mia squadra + admin -->
+      <aside class="panel-right">
+
+        <!-- Pannello mia squadra -->
+        <div id="mio-panel" class="mio-panel hidden">
+          <div class="mio-panel-header">
+            <h3 id="mio-panel-nome" class="mio-nome">La mia squadra</h3>
+            <span id="mio-crediti-badge" class="crediti-badge">💰 500</span>
+          </div>
+          <div id="mio-slot-counter" class="slot-counter hidden"></div>
+          <div class="mio-panel-actions">
+            <button id="btn-tradeoff" class="btn btn-secondary btn-small hidden">🔄 Trade-off</button>
+            <button id="btn-mia-rosa" class="btn btn-secondary btn-small">👕 Mia rosa</button>
+          </div>
+        </div>
+
+        <!-- Pannello admin -->
+        <div id="admin-panel" class="admin-panel hidden">
+          <div class="admin-header">
+            <span class="admin-badge">👑 Admin</span>
+            <div class="admin-header-actions">
+              <button class="btn btn-secondary btn-small" id="btn-backup-download" onclick="apriMenuBackup()">💾 Backup</button>
+            </div>
+          </div>
+          <!-- Menu backup -->
+          <div id="backup-menu" class="backup-menu hidden">
+            <button class="bk-btn" onclick="downloadBackupJSON(false)">📄 Scarica JSON</button>
+            <button class="bk-btn" onclick="downloadBackupExcel()">📊 Scarica Excel</button>
+            <button class="bk-btn bk-btn-muted" onclick="document.getElementById('backup-menu').classList.add('hidden')">✕ Chiudi</button>
+          </div>
+          <!-- Box attesa conferma (mostrato dopo timer) -->
+          <div id="admin-conferma-box" class="admin-conferma-box hidden">
+            <p class="conferma-titolo" id="conferma-titolo-testo">⏱️ Timer scaduto!</p>
+            <p id="conferma-info" class="conferma-info-text"></p>
+            <div class="conferma-actions">
+              <button id="btn-conferma-assegnazione" class="btn btn-success btn-lg">✅ Conferma</button>
+              <div class="riapri-row">
+                <button id="btn-riapri-da-prezzo" class="btn btn-secondary">🔄 Riapri (da <span id="riapri-prezzo-label">X</span> cr)</button>
+                <button id="btn-riapri-da-uno" class="btn btn-secondary">🔄 Riapri (da 1)</button>
+              </div>
+            </div>
+          </div>
+          <!-- Azioni normali -->
+          <div class="admin-actions" id="admin-actions-box">
+            <button id="btn-estrai" class="btn btn-primary btn-block">🎲 Estrai giocatore</button>
+            <button id="btn-chiama-manuale" class="btn btn-secondary btn-block">📝 Chiama manuale</button>
+            <button id="btn-annulla" class="btn btn-danger btn-block">📋 Annulla assegnazione</button>
+            <button id="btn-reintroduci" class="btn btn-secondary btn-block">♻️ Reintroduci scartati</button>
+            <button id="btn-mod-timer" class="btn btn-secondary btn-block">⏱️ Modifica timer</button>
+            <button id="btn-termina" class="btn btn-danger btn-block">🏁 Termina asta</button>
+          </div>
+          <div id="popup-override-box" class="popup-override hidden">
+            <p>⚠️ Popup in attesa: <strong id="popup-override-chi"></strong></p>
+            <div id="popup-override-actions"></div>
+          </div>
+        </div>
+
+      </aside>
+    </div><!-- /.arena-layout -->
+
   </section>
 
   <!-- ══════════ SCREEN FINE ASTA ══════════ -->
   <section id="screen-fine-asta" class="screen">
-    <header class="header header-small">
-      <h1>🏆 Asta Conclusa!</h1>
+    <header class="home-header">
+      <div class="home-logo">🏆</div>
+      <h1 class="home-title">Asta Conclusa!</h1>
     </header>
     <div id="riepilogo-asta" class="riepilogo-grid"></div>
     <div class="card mt-16" style="text-align:center">
@@ -306,7 +357,7 @@
     </div>
   </section>
 
-</div>
+</div><!-- /#app -->
 
 <!-- ══════════ MODALS ══════════ -->
 <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModalOnOverlay(event)">
@@ -420,7 +471,7 @@
   <!-- Modal: Annulla assegnazione storico -->
   <div id="modal-annulla-storico" class="modal modal-lg hidden">
     <h2 class="modal-title">📋 Annulla assegnazione</h2>
-    <p class="text-muted" style="margin-bottom:12px">Seleziona un'assegnazione da annullare. Tutte le modifiche (crediti, slot) verranno ripristinate.</p>
+    <p class="text-muted" style="margin-bottom:12px">Seleziona un'assegnazione da annullare.</p>
     <div id="annulla-storico-lista" class="annulla-storico-lista"></div>
     <button class="btn btn-secondary mt-16" onclick="closeModal()">Chiudi</button>
   </div>
