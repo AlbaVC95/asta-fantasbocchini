@@ -279,3 +279,7 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--bg-elevated);border-radius:5px}
 ::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
+/* Lobby escape row */
+.lobby-escape-row{display:flex;justify-content:center;margin-top:24px;padding-bottom:16px}
+.lobby-escape-row .btn-secondary{opacity:.7;font-size:.8rem}
+.lobby-escape-row .btn-secondary:hover{opacity:1}
