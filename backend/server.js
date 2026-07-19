@@ -9,15 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
-app.use(express.static(path.join(__dirname, '..', 'frontend'), {
-  setHeaders: (res, filePath) => {
-    if (filePath.endsWith('.js') || filePath.endsWith('.css')) {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-    }
-  }
-}));
+app.use(express.static(path.join(__dirname, '..', 'frontend')));
 app.use(express.json({ limit: '10mb' }));
 
 const aste = new Map();
@@ -336,7 +328,8 @@ app.get('/api/asta/:id/info', (req, res) => {
   if (!asta) return res.status(404).json({ error: 'Asta non trovata' });
   res.json({
     id: asta.id, nome: asta.nome, tipoAsta: asta.tipoAsta, stato: asta.stato, crediti: asta.crediti,
-    squadre: asta.squadre.map(s => ({ nome: s.nome, utenti: s.utenti ? s.utenti.length : 0 }))
+    squadre: asta.squadre.map(s => ({ nome: s.nome, utenti: s.utenti ? s.utenti.length : 0 })),
+    adminNome: asta.adminNome || null
   });
 });
 
