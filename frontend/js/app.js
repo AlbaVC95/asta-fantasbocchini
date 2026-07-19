@@ -425,7 +425,7 @@ function setupAsta() {
   document.getElementById('btn-quick-10').addEventListener('click', () => inviaRilancioRapido(10));
 
   document.getElementById('btn-estrai').addEventListener('click', () => socket.emit('estrai-giocatore', { astaId: S.astaId }));
-  document.getElementById('btn-chiama-manuale').addEventListener('click', () => openModal('modal-chiama-manuale'));
+  document.getElementById('btn-chiama-manuale').addEventListener('click', () => apriModalChiamaManuale());
   document.getElementById('btn-annulla').addEventListener('click', () => apriModalAnnullaStorico());
 
   // Conferma / Riapri
@@ -548,34 +548,24 @@ function setupTabs() {
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById(btn.dataset.tab).classList.add('active');
-      const roseFooter = document.getElementById('rose-footer');
-      if (roseFooter) roseFooter.classList.toggle('visible', btn.dataset.tab === 'tab-rose');
     });
   });
   // Live search on Enter
   const rCerca = document.getElementById('rose-cerca');
   if (rCerca) rCerca.addEventListener('keydown', e => { if (e.key === 'Enter') aggiornaFiltroRose(); });
 
-  // Rose footer actions
+  // Rose footer actions — bottoni admin rapidi (sempre visibili, floating)
   const btnRoseChiama = document.getElementById('btn-rose-chiama');
   if (btnRoseChiama) btnRoseChiama.addEventListener('click', () => {
     if (!S.isAdmin) return toast("Solo l'admin può chiamare", "error");
-    if (S.asta && S.asta.tipoEstrazione === 'manuale') {
-      openModal('modal-chiama-manuale');
-    } else {
-      socket.emit('estrai-giocatore', { astaId: S.astaId });
-    }
+    if (S.asta && S.asta.chiamataAttuale) return toast('Chiamata già in corso', 'error');
+    apriModalChiamaManuale();
   });
   const btnRoseAssegna = document.getElementById('btn-rose-assegna');
   if (btnRoseAssegna) btnRoseAssegna.addEventListener('click', () => {
     if (!S.isAdmin) return toast("Solo l'admin può assegnare", "error");
-    if (S.attesaConferma) {
-      socket.emit('conferma-assegnazione', { astaId: S.astaId });
-      nascondiConfermaBox();
-      toast('Assegnazione confermata!', 'success');
-    } else {
-      toast('Nessuna assegnazione in attesa', 'info');
-    }
+    if (S.asta && S.asta.chiamataAttuale) return toast('Chiamata già in corso', 'error');
+    apriModalAssegnaManuale();
   });
 }
 
@@ -971,19 +961,32 @@ function renderGiocatoriLiberi(pool) {
   if (!pool) { list.innerHTML = ''; return; }
   const disp = pool.filter(g => !g.estratto && !g.assegnato && !g.scartato);
   const scar = pool.filter(g => g.scartato);
-  let tutti = [...disp.sort((a,b) => a.nome.localeCompare(b.nome)), ...scar.sort((a,b) => a.nome.localeCompare(b.nome))];
+  // Ordina per Valore Algoritmico decrescente (fallback: costo, poi nome)
+  const byValore = (a, b) => {
+    const va = a.valore || 0, vb = b.valore || 0;
+    if (vb !== va) return vb - va;
+    const ca = a.costoOriginale || 0, cb = b.costoOriginale || 0;
+    if (cb !== ca) return cb - ca;
+    return a.nome.localeCompare(b.nome);
+  };
+  let tutti = [...disp.sort(byValore), ...scar.sort(byValore)];
   if (S.filtroRuolo !== 'tutti') tutti = tutti.filter(g => {
     const ruoli = (g.ruolo || '').split(/[\/,]/).map(function(x){ return x.trim().toLowerCase(); });
     return ruoli.includes(S.filtroRuolo.toLowerCase());
   });
   list.innerHTML = tutti.map(g => {
     const sc = g.scartato ? ' scartato' : '';
-    const tb = g.tipo && g.tipo !== 'NN' ? '<span class="l-tipo tipo-' + g.tipo + '">' + g.tipo + '</span>' : '';
-    const orig = g.squadraOriginale && g.tipo !== 'NN' ? '<span class="l-orig">(ex ' + g.squadraOriginale + ')</span>' : '';
+    const tipoLabel = g.tipo || 'NN';
+    const tb = '<span class="l-tipo-badge tipo-' + tipoLabel + '">' + tipoLabel + '</span>';
+    const orig = g.squadraOriginale ? '<span class="l-orig">ex ' + g.squadraOriginale + '</span>' : '';
     const click = (!g.scartato && S.isAdmin) ? ' onclick="chiamaLibero(\'' + g.id + '\')"' : '';
-    return '<li class="' + sc + '"' + click + '><span class="l-ruolo">' + (g.ruolo||'?') + '</span>' +
-      '<span class="l-nome">' + g.nome + '</span>' + orig + tb +
-      '<span class="l-costo">' + g.costoOriginale + 'cr' + (g.scartato ? ' ✗' : '') + '</span></li>';
+    const haValore = g.valore !== undefined && g.valore !== null && g.valore !== 0;
+    const valoreHTML = haValore
+      ? '<div class="l-valore-wrap"><span class="l-valore">' + g.valore + '</span><span class="l-valore-label">Valore</span></div>'
+      : '';
+    return '<li class="' + sc + '"' + click + '>' + _getRuoloBadgeHTML(g.ruolo) +
+      '<span class="l-nome">' + g.nome + '</span>' + tb + orig + valoreHTML +
+      '<span class="l-costo">' + g.costoOriginale + 'cr' + (g.scartato ? ' \u2717' : '') + '</span></li>';
   }).join('') || '<li class="text-muted" style="padding:8px">Nessun giocatore</li>';
 }
 
@@ -1020,12 +1023,35 @@ function renderMioPanel() {
 }
 
 function renderAdminPanel(asta) {
+  applyLayoutRuolo();
   const panel = document.getElementById('admin-panel');
   if (!S.isAdmin) { panel.classList.add('hidden'); return; }
   panel.classList.remove('hidden');
   const btnEstrai = document.getElementById('btn-estrai');
   if (asta && asta.tipoEstrazione === 'manuale') btnEstrai.classList.remove('hidden');
   else btnEstrai.classList.add('hidden');
+}
+
+// ══ LAYOUT RUOLO: 2 righe per non-admin (puja nella riga 1), 3 righe compatte per admin ══
+function applyLayoutRuolo() {
+  const slot = document.getElementById('puja-panel-slot');
+  const rowPuja = document.querySelector('.asta-row-puja');
+  const cardGroup = document.getElementById('card-timer-group');
+  const rilancioBox = document.getElementById('rilancio-box');
+  if (!slot || !rowPuja || !cardGroup || !rilancioBox) return;
+  if (S.isAdmin) {
+    if (cardGroup.parentElement !== rowPuja) rowPuja.appendChild(cardGroup);
+    if (rilancioBox.parentElement !== rowPuja) rowPuja.appendChild(rilancioBox);
+    slot.classList.add('hidden');
+    document.body.classList.add('layout-admin');
+    document.body.classList.remove('layout-partecipante');
+  } else {
+    if (cardGroup.parentElement !== slot) slot.appendChild(cardGroup);
+    if (rilancioBox.parentElement !== slot) slot.appendChild(rilancioBox);
+    slot.classList.remove('hidden');
+    document.body.classList.add('layout-partecipante');
+    document.body.classList.remove('layout-admin');
+  }
 }
 
 function renderLobbySquadre(squadre) {
@@ -1165,12 +1191,90 @@ window.confermaSvincolo = function() {
   closeModal(); hidePoupOverride();
 };
 
-window.confermaChiamataManuale = function() {
-  const nome = document.getElementById('inp-cm-nome').value.trim();
-  const ruolo = document.getElementById('inp-cm-ruolo').value;
-  if (!nome) return toast('Inserisci il nome', 'error');
-  socket.emit('chiama-giocatore', { astaId: S.astaId, giocatoreManuale: { nome, ruolo } });
-  document.getElementById('inp-cm-nome').value = '';
+// ══ MODALE CHIAMA MANUALE (ricerca live + filtro ruolo) ══════
+S.cmFiltroRuolo = 'tutti';
+window.apriModalChiamaManuale = function() {
+  S.cmFiltroRuolo = 'tutti';
+  document.querySelectorAll('#cm-filtri-ruolo .filtro-btn').forEach(b => b.classList.toggle('active', b.dataset.ruolo === 'tutti'));
+  const inp = document.getElementById('inp-cm-search'); if (inp) inp.value = '';
+  renderChiamaManualeLista();
+  openModal('modal-chiama-manuale');
+};
+window.setCmFiltroRuolo = function(btn, ruolo) {
+  S.cmFiltroRuolo = ruolo;
+  document.querySelectorAll('#cm-filtri-ruolo .filtro-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderChiamaManualeLista();
+};
+window.renderChiamaManualeLista = function() {
+  const lista = document.getElementById('cm-lista');
+  if (!lista || !S.asta) return;
+  const testo = (document.getElementById('inp-cm-search').value || '').toLowerCase().trim();
+  let disp = (S.asta.poolGiocatori || []).filter(g => !g.estratto && !g.assegnato && !g.scartato);
+  if (S.cmFiltroRuolo !== 'tutti') {
+    disp = disp.filter(g => (g.ruolo || '').split('/').map(x => x.trim().toLowerCase()).includes(S.cmFiltroRuolo.toLowerCase()));
+  }
+  if (testo) disp = disp.filter(g => g.nome.toLowerCase().includes(testo));
+  disp = disp.sort((a, b) => (b.valore || 0) - (a.valore || 0));
+  lista.innerHTML = disp.slice(0, 80).map(g => {
+    const orig = g.squadraOriginale ? ' · ex ' + g.squadraOriginale : '';
+    return '<div class="cm-item" onclick="chiamaDaModale(\'' + g.id + '\')">' +
+      _getRuoloBadgeHTML(g.ruolo) +
+      '<span class="cm-item-nome">' + g.nome + '</span>' +
+      '<span class="cm-item-info">' + (g.tipo && g.tipo !== 'NN' ? g.tipo + ' · ' : '') + (g.costoOriginale || 0) + 'cr' + orig + '</span>' +
+    '</div>';
+  }).join('') || '<p class="text-muted" style="padding:8px">Nessun giocatore trovato</p>';
+};
+window.chiamaDaModale = function(id) {
+  if (!S.isAdmin) return toast("Solo l'admin può chiamare", "error");
+  if (S.asta && S.asta.chiamataAttuale) return toast('Chiamata già in corso', 'error');
+  socket.emit('chiama-giocatore', { astaId: S.astaId, giocatoreId: id });
+  closeModal();
+};
+
+// ══ MODALE ASSEGNA MANUALE (senza puja) ══════
+S.amSelezionato = null;
+window.apriModalAssegnaManuale = function() {
+  S.amSelezionato = null;
+  const inp = document.getElementById('inp-am-search'); if (inp) inp.value = '';
+  const sel = document.getElementById('inp-am-squadra');
+  if (sel && S.asta) {
+    sel.innerHTML = S.asta.squadre.map(sq => '<option value="' + sq.nome + '">' + sq.nome + ' (💰' + sq.crediti + ')</option>').join('');
+  }
+  document.getElementById('inp-am-prezzo').value = 1;
+  renderAssegnaManualeLista();
+  openModal('modal-assegna-manuale');
+};
+window.renderAssegnaManualeLista = function() {
+  const lista = document.getElementById('am-lista');
+  if (!lista || !S.asta) return;
+  const testo = (document.getElementById('inp-am-search').value || '').toLowerCase().trim();
+  let disp = (S.asta.poolGiocatori || []).filter(g => !g.estratto && !g.assegnato && !g.scartato);
+  if (testo) disp = disp.filter(g => g.nome.toLowerCase().includes(testo));
+  disp = disp.sort((a, b) => (b.valore || 0) - (a.valore || 0));
+  lista.innerHTML = disp.slice(0, 80).map(g => {
+    const sel = S.amSelezionato === g.id ? ' selected' : '';
+    const orig = g.squadraOriginale ? ' · ex ' + g.squadraOriginale : '';
+    return '<div class="cm-item' + sel + '" onclick="selezionaGiocatoreAssegna(\'' + g.id + '\')">' +
+      _getRuoloBadgeHTML(g.ruolo) +
+      '<span class="cm-item-nome">' + g.nome + '</span>' +
+      '<span class="cm-item-info">' + (g.tipo && g.tipo !== 'NN' ? g.tipo + ' · ' : '') + (g.costoOriginale || 0) + 'cr' + orig + '</span>' +
+    '</div>';
+  }).join('') || '<p class="text-muted" style="padding:8px">Nessun giocatore trovato</p>';
+};
+window.selezionaGiocatoreAssegna = function(id) {
+  S.amSelezionato = id;
+  const g = S.asta && S.asta.poolGiocatori.find(p => p.id === id);
+  if (g) document.getElementById('inp-am-prezzo').value = g.costoOriginale || 1;
+  renderAssegnaManualeLista();
+};
+window.confermaAssegnaManuale = function() {
+  if (!S.isAdmin) return toast("Solo l'admin può assegnare", "error");
+  if (!S.amSelezionato) return toast('Seleziona un giocatore', 'error');
+  const squadra = document.getElementById('inp-am-squadra').value;
+  const prezzo = parseInt(document.getElementById('inp-am-prezzo').value) || 1;
+  if (!squadra) return toast('Seleziona una squadra', 'error');
+  socket.emit('assegna-manuale', { astaId: S.astaId, giocatoreId: S.amSelezionato, squadraNome: squadra, prezzo });
   closeModal();
 };
 
