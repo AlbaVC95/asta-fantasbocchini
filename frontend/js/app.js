@@ -2,7 +2,8 @@
 const socket = io();
 const S = {
   astaId: null, miaSquadra: null, isAdmin: false, asta: null,
-  filtroRuolo: 'tutti', svincoloSel: new Set(), popupAttivoCli: null
+  filtroRuolo: 'tutti', svincoloSel: new Set(), popupAttivoCli: null,
+  attesaConferma: false
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -102,6 +103,7 @@ function setupHome() {
       tipoAsta: document.getElementById('inp-tipo-asta').value,
       sottoTipoRiparazione: document.getElementById('inp-sotto-tipo').value,
       crediti: parseInt(document.getElementById('inp-crediti').value),
+      numeroPartecipanti: parseInt(document.getElementById('inp-num-partecipanti').value) || 12,
       timerPrimaChiamata: parseInt(document.getElementById('inp-timer-prima').value),
       timerRilancio: parseInt(document.getElementById('inp-timer-rilancio').value),
       tipoEstrazione: document.getElementById('inp-estrazione').value,
@@ -150,6 +152,20 @@ function setupHome() {
   });
 }
 
+function aggiornaAdminNomeDropdown(data) {
+  const wrap = document.getElementById('inp-admin-nome-wrap');
+  if (!wrap || !data || !data.squadre || data.squadre.length === 0) return;
+  const sel = document.createElement('select');
+  sel.id = 'inp-admin-nome'; sel.required = true;
+  sel.innerHTML = '<option value="">— Seleziona la tua squadra —</option>';
+  data.squadre.forEach(sq => {
+    const opt = document.createElement('option');
+    opt.value = sq.nome; opt.textContent = sq.nome;
+    sel.appendChild(opt);
+  });
+  wrap.innerHTML = ''; wrap.appendChild(sel);
+}
+
 function handleJsonFile(file) {
   if (!file) return;
   const reader = new FileReader();
@@ -160,6 +176,7 @@ function handleJsonFile(file) {
       renderJsonPreview(data);
       document.getElementById('file-drop-label').textContent = '✅ ' + file.name + ' caricato';
       toast('JSON caricato: ' + (data.squadre ? data.squadre.length : 0) + ' squadre', 'success');
+      aggiornaAdminNomeDropdown(data);
     } catch (err) { toast('File JSON non valido', 'error'); }
   };
   reader.readAsText(file);
@@ -170,7 +187,7 @@ function renderJsonPreview(data) {
   if (!data.squadre) { box.classList.add('hidden'); return; }
   box.innerHTML = '<strong>Squadre rilevate (' + data.squadre.length + '):</strong>' +
     data.squadre.map(s => '<div class="sq-item"><span class="sq-nome">' + s.nome + '</span>' +
-      '<span>' + (s.giocatori ? s.giocatori.length : 0) + ' gic | RIC:' + (s.riconferme||0) + ' PLUS:' + (s.plusvalenze||0) + ' | ' + (s.crediti||500) + 'cr</span></div>').join('');
+      '<span>Gic:' + (s.giocatori ? s.giocatori.length : 0) + ' RIC:' + (s.riconferme||0) + ' PLUS:' + (s.plusvalenze||0) + ' | SlotRIC:' + (s.slotRiconferme||0) + ' SlotPLUS:' + (s.slotPlusvalenze||0) + ' | ' + (s.crediti||500) + 'cr</span></div>').join('');
   box.classList.remove('hidden');
 }
 
@@ -203,10 +220,24 @@ function setupAsta() {
     const inp = document.getElementById('inp-rilancio');
     inp.value = parseInt(inp.value) + 1;
   });
+  // Quick bid buttons
+  document.getElementById('btn-quick-1').addEventListener('click', () => inviaRilancioRapido(1));
+  document.getElementById('btn-quick-5').addEventListener('click', () => inviaRilancioRapido(5));
+  document.getElementById('btn-quick-10').addEventListener('click', () => inviaRilancioRapido(10));
+
   document.getElementById('btn-estrai').addEventListener('click', () => socket.emit('estrai-giocatore', { astaId: S.astaId }));
   document.getElementById('btn-chiama-manuale').addEventListener('click', () => openModal('modal-chiama-manuale'));
-  document.getElementById('btn-annulla').addEventListener('click', () => {
-    if (confirm('Annullare l\'ultima assegnazione?')) socket.emit('annulla-assegnazione', { astaId: S.astaId });
+  document.getElementById('btn-annulla').addEventListener('click', () => apriModalAnnullaStorico());
+
+  // Conferma / Riapri
+  document.getElementById('btn-conferma-assegnazione').addEventListener('click', () => {
+    socket.emit('conferma-assegnazione', { astaId: S.astaId }); nascondiConfermaBox();
+  });
+  document.getElementById('btn-riapri-da-prezzo').addEventListener('click', () => {
+    socket.emit('riapri-asta', { astaId: S.astaId, tipo: 'da-prezzo' }); nascondiConfermaBox();
+  });
+  document.getElementById('btn-riapri-da-uno').addEventListener('click', () => {
+    socket.emit('riapri-asta', { astaId: S.astaId, tipo: 'da-uno' }); nascondiConfermaBox();
   });
   document.getElementById('btn-reintroduci').addEventListener('click', () => socket.emit('reintroduci-scartati', { astaId: S.astaId }));
   document.getElementById('btn-mod-timer').addEventListener('click', () => {
@@ -246,6 +277,59 @@ function setupAsta() {
     } catch(e) { toast('Errore export', 'error'); }
   });
 }
+
+
+function inviaRilancioRapido(inc) {
+  if (!S.asta || !S.asta.chiamataAttuale) return;
+  if (!canBid()) return;
+  socket.emit('rilancio', { astaId: S.astaId, offerta: S.asta.chiamataAttuale.offertaAttuale + inc });
+}
+
+function aggiornaQuickBids() {
+  const canB = canBid();
+  ['btn-quick-1','btn-quick-5','btn-quick-10'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.disabled = !canB;
+  });
+  const btn = document.getElementById('btn-rilancio');
+  if (btn) btn.disabled = !canB;
+}
+
+function nascondiConfermaBox() {
+  S.attesaConferma = false;
+  const cb = document.getElementById('admin-conferma-box');
+  const ab = document.getElementById('admin-actions-box');
+  if (cb) cb.classList.add('hidden');
+  if (ab) ab.classList.remove('hidden');
+}
+
+function apriModalAnnullaStorico() {
+  const asta = S.asta; if (!asta) return;
+  const lista = document.getElementById('annulla-storico-lista');
+  const items = (asta.storico || []).filter(s => s.tipo !== 'scartato');
+  if (!items.length) {
+    lista.innerHTML = '<p class="text-muted">Nessuna assegnazione da annullare</p>';
+  } else {
+    lista.innerHTML = [...items].reverse().map((item, i) => {
+      const realIdx = asta.storico.lastIndexOf(item);
+      const rb = item.giocatore.ruolo ? '<span class="storico-ruolo ruolo-' + item.giocatore.ruolo + '">' + item.giocatore.ruolo + '</span>' : '';
+      return '<div class="annulla-item">' + rb +
+        '<span class="annulla-nome">' + item.giocatore.nome + '</span>' +
+        '<span class="annulla-sq">' + item.squadra + '</span>' +
+        '<span class="annulla-prezzo">' + item.prezzo + 'cr</span>' +
+        '<span class="storico-tipo tipo-tag-' + item.tipo + '">' + item.tipo + '</span>' +
+        '<button class="btn btn-danger btn-small" onclick="annullaSpecifica(' + realIdx + ')">Annulla</button>' +
+        '</div>';
+    }).join('');
+  }
+  openModal('modal-annulla-storico');
+}
+
+window.annullaSpecifica = function(index) {
+  if (!confirm('Annullare questa assegnazione?')) return;
+  socket.emit('annulla-assegnazione-specifica', { astaId: S.astaId, index });
+  closeModal();
+};
 
 function setupFilters() {
   document.querySelectorAll('.filtro-btn').forEach(btn => {
@@ -293,11 +377,13 @@ socket.on('asta-iniziata', () => {
 });
 
 socket.on('nuova-chiamata', (chiamata) => {
+  S.attesaConferma = false;
+  nascondiConfermaBox();
   renderChiamata(chiamata);
   document.getElementById('rilancio-box').classList.remove('hidden');
   document.getElementById('timer-wrap').classList.remove('hidden');
-  document.getElementById('btn-rilancio').disabled = false;
   document.getElementById('inp-rilancio').value = 1;
+  aggiornaQuickBids();
 });
 
 socket.on('aggiorna-offerta', (chiamata) => {
@@ -310,6 +396,8 @@ socket.on('timer-start', ({ secondi, fase }) => updateTimer(secondi, fase));
 socket.on('timer-tick', ({ secondi, fase }) => updateTimer(secondi, fase));
 
 socket.on('giocatore-assegnato', ({ giocatore, prezzo, squadra, tipo, guadagno, plusvalenzaA }) => {
+  S.attesaConferma = false;
+  nascondiConfermaBox();
   document.getElementById('rilancio-box').classList.add('hidden');
   document.getElementById('timer-wrap').classList.add('hidden');
   let msg = tipo === 'riconferma' ? ('Riconfermato da ' + squadra + ' a ' + prezzo + 'cr') :
@@ -337,6 +425,22 @@ socket.on('scartati-reintrodotti', ({ count }) => toast(count + ' giocatori rein
 socket.on('tradeoff-ok', () => { closeModal(); toast('Trade-off eseguito!', 'success'); });
 socket.on('asta-terminata', () => { showScreen('screen-fine-asta'); renderFineAsta(); toast('Asta terminata!', 'success'); });
 socket.on('errore', ({ msg }) => toast(msg, 'error'));
+
+socket.on('attesa-conferma', ({ giocatore, offerta, squadra }) => {
+  S.attesaConferma = true;
+  document.getElementById('rilancio-box').classList.add('hidden');
+  document.getElementById('timer-wrap').classList.add('hidden');
+  if (S.isAdmin) {
+    const cb = document.getElementById('admin-conferma-box');
+    const ab = document.getElementById('admin-actions-box');
+    if (cb) { cb.classList.remove('hidden'); }
+    if (ab) { ab.classList.add('hidden'); }
+    const ci = document.getElementById('conferma-info');
+    if (ci) ci.textContent = '🏆 ' + giocatore.nome + ' → ' + squadra + ' @ ' + offerta + 'cr';
+  }
+  toast('Offerta finale: ' + squadra + ' ' + offerta + 'cr per ' + giocatore.nome, 'info');
+  aggiornaQuickBids();
+});
 
 socket.on('popup-ric-conferma', ({ giocatore, costoConferma }) => {
   document.getElementById('mrc-giocatore').textContent = giocatore.nome + ' (' + (giocatore.ruolo||'?') + ')';
@@ -409,16 +513,19 @@ function renderChiamata(chiamata) {
   const offerenteTxt = chiamata.squadraOfferente
     ? 'Offerta di: <strong>' + chiamata.squadraOfferente + '</strong>'
     : '<span class="chiamata-stato">In attesa 1ª offerta...</span>';
+  const offertaDisplay = chiamata.offertaAttuale === 0 ? '—' : chiamata.offertaAttuale;
+  const offertaLabel = chiamata.offertaAttuale === 0 ? 'Nessuna offerta' : 'crediti';
   card.innerHTML = '<span class="cc-ruolo-badge ' + ruoloCls + '">' + (g.ruolo||'?') + '</span>' +
     '<p class="cc-nome">' + g.nome + '</p>' + tipoBadge + origTxt +
-    '<p class="cc-offerta">' + chiamata.offertaAttuale + '</p>' +
-    '<p class="cc-offerta-label">crediti</p>' +
+    '<p class="cc-offerta">' + offertaDisplay + '</p>' +
+    '<p class="cc-offerta-label">' + offertaLabel + '</p>' +
     '<p class="cc-offerente">' + offerenteTxt + '</p>';
-  document.getElementById('btn-rilancio').disabled = !canBid();
+  aggiornaQuickBids();
 }
 
 function canBid() {
   if (!S.asta || !S.asta.chiamataAttuale) return false;
+  if (S.attesaConferma) return false;
   const sq = getMiaSquadra();
   return sq && getMaxOfferta() > S.asta.chiamataAttuale.offertaAttuale;
 }
@@ -490,9 +597,11 @@ function renderMioPanel() {
   if (S.asta && S.asta.tipoAsta === 'iniziale') {
     counter.classList.remove('hidden');
     const rD = sq.slotsRIC - sq.slotsRICUsati, pD = sq.slotsPLUS - sq.slotsPLUSUsati;
+    const ricTot = sq.giocatoriRICTotali || sq.slotsRIC;
+    const plusTot = sq.giocatoriPLUSTotali || sq.slotsPLUS;
     counter.innerHTML =
-      '<span class="slot-chip' + (rD===0?' esaurito':'') + '">RIC <span>' + rD + '/' + sq.slotsRIC + '</span></span>' +
-      '<span class="slot-chip' + (pD===0?' esaurito':'') + '">PLUS <span>' + pD + '/' + sq.slotsPLUS + '</span></span>' +
+      '<span class="slot-chip' + (rD===0?' esaurito':'') + '">RIC <span>' + sq.slotsRICUsati + '/' + sq.slotsRIC + '</span> <small class="slot-sub">(' + ricTot + ' da estrarre)</small></span>' +
+      '<span class="slot-chip' + (pD===0?' esaurito':'') + '">PLUS <span>' + sq.slotsPLUSUsati + '/' + sq.slotsPLUS + '</span> <small class="slot-sub">(' + plusTot + ' da estrarre)</small></span>' +
       '<span class="slot-chip' + (sq.recompraUsata?' esaurito':'') + '">Recompra <span>' + (sq.recompraUsata?'usata':'✓') + '</span></span>' +
       '<span class="slot-chip">Max <span class="text-accent">' + getMaxOfferta() + 'cr</span></span>';
     document.getElementById('btn-tradeoff').classList.remove('hidden');
