@@ -555,8 +555,7 @@ function setupTabs() {
   // Live search on Enter
   const rCerca = document.getElementById('rose-cerca');
   if (rCerca) rCerca.addEventListener('keydown', e => { if (e.key === 'Enter') aggiornaFiltroRose(); });
-  const rFiltro = document.getElementById('rose-filtro-ruolo');
-  if (rFiltro) rFiltro.addEventListener('change', aggiornaFiltroRose);
+
   // Rose footer actions
   const btnRoseChiama = document.getElementById('btn-rose-chiama');
   if (btnRoseChiama) btnRoseChiama.addEventListener('click', () => {
@@ -739,16 +738,12 @@ socket.on('popup-ric-conferma-admin', function(data) {
   if (!S.isAdmin) return;
   var giocatore = data.giocatore || {}, proprietario = data.proprietario;
   var costo = data.costoConferma || giocatore.costoOriginale || '?';
-  document.getElementById('mao-title').textContent = '\uD83D\uDD14 RIC \u2014 Riconferma richiesta';
-  document.getElementById('mao-info').innerHTML =
-    '<p><strong>' + proprietario + '</strong> vuole riconfermare <strong>' + (giocatore.nome || '?') + '</strong></p>' +
-    '<p class="modal-detail">Prezzo riconferma: <strong class="text-accent">' + costo + ' cr</strong></p>' +
-    '<p class="modal-detail text-muted">Consuma 1 slot RIC a ' + proprietario + '</p>';
-  document.getElementById('mao-actions').innerHTML =
-    '<button class="btn btn-success" data-ric="si" onclick="adminRicConferma(this.dataset.ric)">\u2705 S\u00EC \u2014 confermato</button>' +
-    '<button class="btn btn-danger" data-ric="no" onclick="adminRicConferma(this.dataset.ric)">\u274C No \u2014 passa all\'asta</button>';
+  document.getElementById('popup-override-chi').textContent = proprietario + ' — RIC: ' + (giocatore.nome || '?') + ' (' + costo + 'cr)';
+  document.getElementById('popup-override-actions').innerHTML =
+    '<button class="btn btn-success" data-ric="si" onclick="adminRicConferma(this.dataset.ric)">✅ Sì — confermato</button>' +
+    '<button class="btn btn-danger" data-ric="no" onclick="adminRicConferma(this.dataset.ric)">❌ No — passa all\'asta</button>';
+  document.getElementById('popup-override-box').classList.remove('hidden');
   S.popupAttivoCli = { tipo: 'ric-conferma-admin', giocatore: giocatore, proprietario: proprietario };
-  openModal('modal-admin-override');
 });
 
 socket.on('popup-post-asta', (popup) => {
@@ -761,20 +756,17 @@ socket.on('popup-post-asta-admin', function(popup) {
   if (!S.isAdmin) return;
   var g = Math.max(0, popup.prezzoFinale - popup.giocatore.costoOriginale);
   var tipoLabel = popup.tipo === 'post-asta-ric' ? 'RIC' : 'PLUS';
-  document.getElementById('mao-title').textContent = '\u26A1 ' + tipoLabel + ' \u2014 Decisione admin';
-  document.getElementById('mao-info').innerHTML =
-    '<p>Giocatore: <strong>' + popup.giocatore.nome + '</strong></p>' +
-    '<p>Venduto a <strong>' + popup.squadraVincitrice + '</strong> per <strong class="text-accent">' + popup.prezzoFinale + ' cr</strong></p>' +
-    '<p class="text-muted">Prop. precedente: <strong>' + popup.proprietarioPrecedente + '</strong></p>' +
-    (popup.opzioni.plusvalenza ? '<p>\uD83D\uDCB0 Plusvalenza: <strong class="text-accent">+' + g + ' cr</strong></p>' : '') +
-    (popup.opzioni.recompra   ? '<p>\uD83D\uDD04 Recompra a: <strong class="text-accent">' + (popup.prezzoFinale + 1) + ' cr</strong></p>' : '');
+  var infoTxt = tipoLabel + ' — ' + popup.giocatore.nome + ' → ' + popup.squadraVincitrice + ' @ ' + popup.prezzoFinale + 'cr';
+  if (popup.opzioni.plusvalenza) infoTxt += ' | Plus +' + g + 'cr';
+  if (popup.opzioni.recompra) infoTxt += ' | Recompra ' + (popup.prezzoFinale + 1) + 'cr';
+  document.getElementById('popup-override-chi').textContent = infoTxt;
   var btns = '';
-  if (popup.opzioni.plusvalenza) btns += '<button class="btn btn-accent" data-scelta="plusvalenza" onclick="adminPostAsta(this.dataset.scelta)">\uD83D\uDCB0 Plusvalenza (+' + g + 'cr)</button>';
-  if (popup.opzioni.recompra)   btns += '<button class="btn btn-primary" data-scelta="recompra" onclick="adminPostAsta(this.dataset.scelta)">\uD83D\uDD04 Recompra (' + (popup.prezzoFinale + 1) + 'cr)</button>';
+  if (popup.opzioni.plusvalenza) btns += '<button class="btn btn-accent" data-scelta="plusvalenza" onclick="adminPostAsta(this.dataset.scelta)">💰 Plus (+' + g + 'cr)</button>';
+  if (popup.opzioni.recompra)   btns += '<button class="btn btn-primary" data-scelta="recompra" onclick="adminPostAsta(this.dataset.scelta)">🔄 Recompra (' + (popup.prezzoFinale + 1) + 'cr)</button>';
   btns += '<button class="btn btn-secondary" data-scelta="niente" onclick="adminPostAsta(this.dataset.scelta)">Niente</button>';
-  document.getElementById('mao-actions').innerHTML = btns;
+  document.getElementById('popup-override-actions').innerHTML = btns;
+  document.getElementById('popup-override-box').classList.remove('hidden');
   S.popupAttivoCli = Object.assign({ tipo: 'post-asta-admin' }, popup);
-  openModal('modal-admin-override');
 });
 
 socket.on('popup-svincolo', (popupData) => {
@@ -786,12 +778,9 @@ socket.on('popup-svincolo', (popupData) => {
 
 socket.on('popup-svincolo-admin', function(popup) {
   if (!S.isAdmin) return;
-  document.getElementById('mao-title').textContent = '\uD83D\uDD13 Svincolo in attesa';
-  document.getElementById('mao-info').innerHTML =
-    '<p><strong>' + popup.squadraVincitrice + '</strong> sta decidendo su <strong>' + popup.giocatore.nome + '</strong></p>' +
-    '<p class="text-muted">In attesa della scelta della squadra...</p>';
-  document.getElementById('mao-actions').innerHTML = '<em class="text-muted">Nessuna azione richiesta</em>';
-  openModal('modal-admin-override');
+  document.getElementById('popup-override-chi').textContent = popup.squadraVincitrice + ' sta decidendo su ' + popup.giocatore.nome + '...';
+  document.getElementById('popup-override-actions').innerHTML = '<em class="text-muted">⏳ In attesa della scelta della squadra...</em>';
+  document.getElementById('popup-override-box').classList.remove('hidden');
 });
 
 // ════ RENDER FUNCTIONS ════════════════════════
@@ -839,6 +828,9 @@ function renderChiamata(chiamata) {
     : '<span class="chiamata-stato">In attesa 1ª offerta...</span>';
   const offertaDisplay = chiamata.offertaAttuale === 0 ? '—' : chiamata.offertaAttuale;
   const offertaLabel = chiamata.offertaAttuale === 0 ? 'Nessuna offerta' : 'crediti';
+  const attesaBadge = chiamata.aspettandoConferma
+    ? '<p class="cc-attesa-badge">⏳ In attesa decisione di <strong>' + (chiamata.proprietario || chiamata.giocatore.squadraOriginale || 'squadra') + '</strong></p>'
+    : '';
   card.innerHTML =
     '<div class="cc-header">' +
       ruoloBadge +
@@ -851,6 +843,7 @@ function renderChiamata(chiamata) {
       '<p class="cc-offerta" id="cc-prezzo">' + offertaDisplay + '</p>' +
       '<p class="cc-offerta-label">' + offertaLabel + '</p>' +
       '<p class="cc-offerente">' + offerenteTxt + '</p>' +
+      attesaBadge +
     '</div>';
   aggiornaQuickBids();
 }
@@ -912,7 +905,7 @@ function renderRose(squadre) {
   if (!squadre) return;
   const chiamata = S.asta && S.asta.chiamataAttuale;
   const squadraAttiva = chiamata && chiamata.squadraOfferente;
-  const filtroRuolo = (document.getElementById('rose-filtro-ruolo') || {}).value || '';
+  const filtroRuolo = '';
   const cercaTesto = ((document.getElementById('rose-cerca') || {}).value || '').toLowerCase().trim();
 
   document.getElementById('rose-panel').innerHTML = squadre.map(sq => {
