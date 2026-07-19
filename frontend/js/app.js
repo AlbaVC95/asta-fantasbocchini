@@ -256,7 +256,6 @@ function setupHome() {
   });
   const drop = document.getElementById('file-drop');
   const inpJson = document.getElementById('inp-json');
-  drop.addEventListener('click', () => inpJson.click());
   drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
   drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
   drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('dragover'); handleJsonFile(e.dataTransfer.files[0]); });
