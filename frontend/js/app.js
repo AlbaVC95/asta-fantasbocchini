@@ -349,7 +349,35 @@ function setupTabs() {
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById(btn.dataset.tab).classList.add('active');
+      const roseFooter = document.getElementById('rose-footer');
+      if (roseFooter) roseFooter.classList.toggle('visible', btn.dataset.tab === 'tab-rose');
     });
+  });
+  // Live search on Enter
+  const rCerca = document.getElementById('rose-cerca');
+  if (rCerca) rCerca.addEventListener('keydown', e => { if (e.key === 'Enter') aggiornaFiltroRose(); });
+  const rFiltro = document.getElementById('rose-filtro-ruolo');
+  if (rFiltro) rFiltro.addEventListener('change', aggiornaFiltroRose);
+  // Rose footer actions
+  const btnRoseChiama = document.getElementById('btn-rose-chiama');
+  if (btnRoseChiama) btnRoseChiama.addEventListener('click', () => {
+    if (!S.isAdmin) return toast('Solo l'admin può chiamare', 'error');
+    if (S.asta && S.asta.tipoEstrazione === 'manuale') {
+      openModal('modal-chiama-manuale');
+    } else {
+      socket.emit('estrai-giocatore', { astaId: S.astaId });
+    }
+  });
+  const btnRoseAssegna = document.getElementById('btn-rose-assegna');
+  if (btnRoseAssegna) btnRoseAssegna.addEventListener('click', () => {
+    if (!S.isAdmin) return toast('Solo l'admin può assegnare', 'error');
+    if (S.attesaConferma) {
+      socket.emit('conferma-assegnazione', { astaId: S.astaId });
+      nascondiConfermaBox();
+      toast('Assegnazione confermata!', 'success');
+    } else {
+      toast('Nessuna assegnazione in attesa', 'info');
+    }
   });
 }
 
@@ -555,14 +583,69 @@ function renderStorico(storico) {
 }
 
 function renderRose(squadre) {
-  document.getElementById('rose-panel').innerHTML = squadre.map(sq =>
-    '<details class="rosa-card"><summary>' +
-    '<span>' + sq.nome + ' <small>(' + sq.rosa.length + ')</small></span>' +
-    '<span class="rosa-sq-info">' + sq.crediti + 'cr</span></summary><ul>' +
-    (sq.rosa.length === 0 ? '<li class="text-muted" style="padding:4px 8px">Vuota</li>' :
-      sq.rosa.map(g => '<li><span class="g-ruolo">' + (g.ruolo||'?') + '</span><span>' + g.nome + '</span><span class="g-prezzo">' + g.prezzo + 'cr</span></li>').join('')) +
-    '</ul></details>').join('');
+  if (!squadre) return;
+  const chiamata = S.asta && S.asta.chiamataAttuale;
+  const squadraAttiva = chiamata && chiamata.squadraOfferente;
+  const filtroRuolo = (document.getElementById('rose-filtro-ruolo') || {}).value || '';
+  const cercaTesto = ((document.getElementById('rose-cerca') || {}).value || '').toLowerCase().trim();
+
+  document.getElementById('rose-panel').innerHTML = squadre.map(sq => {
+    const isAttiva = sq.nome === squadraAttiva;
+    let giocatori = sq.rosa || [];
+    if (filtroRuolo) giocatori = giocatori.filter(g => (g.ruolo||'') === filtroRuolo);
+    if (cercaTesto) giocatori = giocatori.filter(g => g.nome.toLowerCase().includes(cercaTesto));
+    const portieri = giocatori.filter(g => _isPortiere(g.ruolo));
+    const movimento = giocatori.filter(g => !_isPortiere(g.ruolo));
+    return '<div class="rose-col' + (isAttiva ? ' attiva' : '') + '">' +
+      '<div class="rose-col-header">' +
+        '<span class="rose-col-nome">' + sq.nome + '</span>' +
+        '<span class="rose-col-budget' + (isAttiva ? ' attiva' : '') + '">🪙 ' + sq.crediti + '</span>' +
+      '</div>' +
+      _renderRoseSez('⛳ Por', portieri, 'por', sq.nome) +
+      _renderRoseSez('⚡ Mov', movimento, 'mov', sq.nome) +
+    '</div>';
+  }).join('');
 }
+
+function _isPortiere(ruolo) { return ruolo === 'Por' || ruolo === 'P'; }
+
+function _renderRoseSez(titolo, giocatori, tipo, sqNome) {
+  const secId = 'rsec-' + tipo + '-' + sqNome.replace(/\W/g,'');
+  const collapsed = window._roseCollapsed && window._roseCollapsed[secId];
+  return '<div class="rose-section ' + tipo + '">' +
+    '<div class="rose-sec-hdr' + (collapsed ? ' collapsed' : '') + '" onclick="_toggleRoseSec(this,\'' + secId + '\')">' +
+      '<span>' + titolo + ' <small>(' + giocatori.length + ')</small></span>' +
+      '<span class="rose-arrow">' + (collapsed ? '▸' : '▾') + '</span>' +
+    '</div>' +
+    '<div class="rose-sec-body' + (collapsed ? ' collapsed' : '') + '">' +
+      (giocatori.length === 0
+        ? '<div class="rose-empty">—</div>'
+        : giocatori.map(g => {
+            const r = (g.ruolo || 'NN').toLowerCase();
+            return '<div class="rose-player">' +
+              '<span class="rose-badge ruolo-rose-' + r + '">' + (g.ruolo||'?') + '</span>' +
+              '<span class="rose-nome">' + g.nome + '</span>' +
+              '<span class="rose-prezzo">🪙' + g.prezzo + '</span>' +
+            '</div>';
+          }).join('')
+      ) +
+    '</div>' +
+  '</div>';
+}
+
+window._roseCollapsed = {};
+window._toggleRoseSec = function(hdrEl, secId) {
+  window._roseCollapsed[secId] = !window._roseCollapsed[secId];
+  hdrEl.classList.toggle('collapsed', !!window._roseCollapsed[secId]);
+  const body = hdrEl.nextElementSibling;
+  if (body) body.classList.toggle('collapsed', !!window._roseCollapsed[secId]);
+  const arrow = hdrEl.querySelector('.rose-arrow');
+  if (arrow) arrow.textContent = window._roseCollapsed[secId] ? '▸' : '▾';
+};
+
+window.aggiornaFiltroRose = function() {
+  if (S.asta && S.asta.squadre) renderRose(S.asta.squadre);
+};
 
 function renderGiocatoriLiberi(pool) {
   const list = document.getElementById('liberi-list');
