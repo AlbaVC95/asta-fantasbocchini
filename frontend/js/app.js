@@ -1,0 +1,645 @@
+// ASTA FANTASBOCCHINI — CLIENT v2
+const socket = io();
+const S = {
+  astaId: null, miaSquadra: null, isAdmin: false, asta: null,
+  filtroRuolo: 'tutti', svincoloSel: new Set(), popupAttivoCli: null
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  if (id) document.getElementById('inp-join-id').value = id;
+  setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs();
+});
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ════ HOME ════════════════════════════════════
+function setupHome() {
+  const inpTipo = document.getElementById('inp-tipo-asta');
+  inpTipo.addEventListener('change', () => {
+    document.getElementById('row-sottotipo').style.display = inpTipo.value === 'riparazione' ? 'flex' : 'none';
+  });
+  const drop = document.getElementById('file-drop');
+  const inpJson = document.getElementById('inp-json');
+  drop.addEventListener('click', () => inpJson.click());
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('dragover'); handleJsonFile(e.dataTransfer.files[0]); });
+  inpJson.addEventListener('change', () => handleJsonFile(inpJson.files[0]));
+
+  document.getElementById('form-crea-asta').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const adminNome = document.getElementById('inp-admin-nome').value.trim();
+    if (!adminNome) return toast('Inserisci il tuo nome squadra', 'error');
+    const body = {
+      nome: document.getElementById('inp-nome').value,
+      tipoAsta: document.getElementById('inp-tipo-asta').value,
+      sottoTipoRiparazione: document.getElementById('inp-sotto-tipo').value,
+      crediti: parseInt(document.getElementById('inp-crediti').value),
+      timerPrimaChiamata: parseInt(document.getElementById('inp-timer-prima').value),
+      timerRilancio: parseInt(document.getElementById('inp-timer-rilancio').value),
+      tipoEstrazione: document.getElementById('inp-estrazione').value,
+      minimoPortieri: parseInt(document.getElementById('inp-min-por').value),
+      minimoMovimento: parseInt(document.getElementById('inp-min-mov').value),
+      svincoliTotali: parseInt(document.getElementById('inp-svincoli').value) || 15,
+      squadreJson: window._jsonData ? window._jsonData.squadre : null
+    };
+    try {
+      const res = await fetch('/api/asta', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (data.success) {
+        S.astaId = data.astaId; S.miaSquadra = adminNome; S.isAdmin = true;
+        socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: true });
+        showScreen('screen-lobby');
+        const link = window.location.origin + '/?id=' + S.astaId;
+        document.getElementById('lobby-link').textContent = link;
+        document.getElementById('lobby-info-asta').textContent = body.nome + ' — ' + (body.tipoAsta === 'iniziale' ? 'Iniziale' : 'Riparazione');
+        document.getElementById('lobby-admin-box').classList.remove('hidden');
+        document.getElementById('lobby-wait-msg').classList.add('hidden');
+        history.replaceState({}, '', '/?id=' + S.astaId);
+      }
+    } catch (err) { toast('Errore nella creazione', 'error'); }
+  });
+
+  document.getElementById('btn-join').addEventListener('click', () => {
+    let input = document.getElementById('inp-join-id').value.trim();
+    const nome = document.getElementById('inp-join-nome').value.trim();
+    if (!input || !nome) return toast('Compila tutti i campi', 'error');
+    if (input.includes('id=')) {
+      try { input = new URL(input, window.location.origin).searchParams.get('id'); } catch(e) {}
+    }
+    S.astaId = input; S.miaSquadra = nome; S.isAdmin = false;
+    socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: false });
+    showScreen('screen-lobby');
+    document.getElementById('lobby-info-asta').textContent = 'Connessione in corso...';
+    history.replaceState({}, '', '/?id=' + S.astaId);
+  });
+}
+
+function handleJsonFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      window._jsonData = data;
+      renderJsonPreview(data);
+      document.getElementById('file-drop-label').textContent = '✅ ' + file.name + ' caricato';
+      toast('JSON caricato: ' + (data.squadre ? data.squadre.length : 0) + ' squadre', 'success');
+    } catch (err) { toast('File JSON non valido', 'error'); }
+  };
+  reader.readAsText(file);
+}
+
+function renderJsonPreview(data) {
+  const box = document.getElementById('json-preview');
+  if (!data.squadre) { box.classList.add('hidden'); return; }
+  box.innerHTML = '<strong>Squadre rilevate (' + data.squadre.length + '):</strong>' +
+    data.squadre.map(s => '<div class="sq-item"><span class="sq-nome">' + s.nome + '</span>' +
+      '<span>' + (s.giocatori ? s.giocatori.length : 0) + ' gic | RIC:' + (s.riconferme||0) + ' PLUS:' + (s.plusvalenze||0) + ' | ' + (s.crediti||500) + 'cr</span></div>').join('');
+  box.classList.remove('hidden');
+}
+
+// ════ LOBBY ═══════════════════════════════════
+function setupLobby() {
+  document.getElementById('btn-copy-link').addEventListener('click', () => {
+    navigator.clipboard.writeText(document.getElementById('lobby-link').textContent).then(() => {
+      document.getElementById('btn-copy-link').textContent = '✅ Copiato!';
+      setTimeout(() => document.getElementById('btn-copy-link').textContent = '📋 Copia', 2000);
+    });
+  });
+  document.getElementById('btn-inizia-asta').addEventListener('click', () => {
+    socket.emit('inizia-asta', { astaId: S.astaId });
+  });
+}
+
+// ════ ASTA SETUP ══════════════════════════════
+function setupAsta() {
+  document.getElementById('btn-rilancio').addEventListener('click', () => {
+    if (!S.asta || !S.asta.chiamataAttuale) return;
+    const base = S.asta.chiamataAttuale.offertaAttuale;
+    const inc = parseInt(document.getElementById('inp-rilancio').value) || 1;
+    socket.emit('rilancio', { astaId: S.astaId, offerta: base + inc });
+  });
+  document.getElementById('btn-minus').addEventListener('click', () => {
+    const inp = document.getElementById('inp-rilancio');
+    inp.value = Math.max(1, parseInt(inp.value) - 1);
+  });
+  document.getElementById('btn-plus').addEventListener('click', () => {
+    const inp = document.getElementById('inp-rilancio');
+    inp.value = parseInt(inp.value) + 1;
+  });
+  document.getElementById('btn-estrai').addEventListener('click', () => socket.emit('estrai-giocatore', { astaId: S.astaId }));
+  document.getElementById('btn-chiama-manuale').addEventListener('click', () => openModal('modal-chiama-manuale'));
+  document.getElementById('btn-annulla').addEventListener('click', () => {
+    if (confirm('Annullare l\'ultima assegnazione?')) socket.emit('annulla-assegnazione', { astaId: S.astaId });
+  });
+  document.getElementById('btn-reintroduci').addEventListener('click', () => socket.emit('reintroduci-scartati', { astaId: S.astaId }));
+  document.getElementById('btn-mod-timer').addEventListener('click', () => {
+    if (S.asta) {
+      document.getElementById('inp-mt-prima').value = S.asta.timerPrimaChiamata;
+      document.getElementById('inp-mt-rilancio').value = S.asta.timerRilancio;
+    }
+    openModal('modal-mod-timer');
+  });
+  document.getElementById('btn-termina').addEventListener('click', () => {
+    if (confirm('Terminare l\'asta?')) socket.emit('termina-asta', { astaId: S.astaId });
+  });
+  document.getElementById('btn-tradeoff').addEventListener('click', () => {
+    const sq = getMiaSquadra();
+    if (sq) {
+      document.getElementById('to-slot-info').textContent = 'RIC disp: ' + (sq.slotsRIC - sq.slotsRICUsati) + ' | PLUS disp: ' + (sq.slotsPLUS - sq.slotsPLUSUsati) + ' (1° protetto)';
+      updateTradeoffButtons(sq);
+    }
+    openModal('modal-tradeoff');
+  });
+  document.getElementById('btn-mia-rosa').addEventListener('click', () => {
+    const sq = getMiaSquadra();
+    if (sq) renderMiaRosa(sq);
+    openModal('modal-mia-rosa');
+  });
+  document.getElementById('btn-export-json').addEventListener('click', async () => {
+    try {
+      const res = await fetch('/api/asta/' + S.astaId + '/export');
+      const data = await res.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'asta-export.json';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+      toast('JSON esportato!', 'success');
+    } catch(e) { toast('Errore export', 'error'); }
+  });
+}
+
+function setupFilters() {
+  document.querySelectorAll('.filtro-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      S.filtroRuolo = btn.dataset.ruolo;
+      if (S.asta) renderGiocatoriLiberi(S.asta.poolGiocatori);
+    });
+  });
+}
+
+function setupTabs() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+}
+
+// ════ SOCKET EVENTS ═══════════════════════════
+socket.on('stato-asta', (asta) => {
+  S.asta = asta;
+  renderLobbySquadre(asta.squadre);
+  if (asta.stato === 'in_corso' || asta.stato === 'completata') {
+    renderBudgetBar(asta.squadre);
+    renderStorico(asta.storico);
+    renderRose(asta.squadre);
+    renderGiocatoriLiberi(asta.poolGiocatori);
+    renderMioPanel();
+    renderAdminPanel(asta);
+  }
+  if (!document.getElementById('lobby-link').textContent && S.astaId)
+    document.getElementById('lobby-link').textContent = window.location.origin + '/?id=' + S.astaId;
+  if (asta.nome) document.getElementById('lobby-info-asta').textContent = asta.nome;
+});
+
+socket.on('asta-iniziata', () => {
+  showScreen('screen-asta');
+  toast('Asta iniziata!', 'success');
+  if (S.asta) renderAdminPanel(S.asta);
+});
+
+socket.on('nuova-chiamata', (chiamata) => {
+  renderChiamata(chiamata);
+  document.getElementById('rilancio-box').classList.remove('hidden');
+  document.getElementById('timer-wrap').classList.remove('hidden');
+  document.getElementById('btn-rilancio').disabled = false;
+  document.getElementById('inp-rilancio').value = 1;
+});
+
+socket.on('aggiorna-offerta', (chiamata) => {
+  renderChiamata(chiamata);
+  flashChiamataCard();
+  if (chiamata.squadraOfferente === S.miaSquadra) toast('Offerta accettata!', 'success');
+});
+
+socket.on('timer-start', ({ secondi, fase }) => updateTimer(secondi, fase));
+socket.on('timer-tick', ({ secondi, fase }) => updateTimer(secondi, fase));
+
+socket.on('giocatore-assegnato', ({ giocatore, prezzo, squadra, tipo, guadagno, plusvalenzaA }) => {
+  document.getElementById('rilancio-box').classList.add('hidden');
+  document.getElementById('timer-wrap').classList.add('hidden');
+  let msg = tipo === 'riconferma' ? ('Riconfermato da ' + squadra + ' a ' + prezzo + 'cr') :
+    tipo === 'plusvalenza' ? (squadra + ' + ' + plusvalenzaA + ' +' + guadagno + 'cr plusvalenza') :
+    tipo === 'recompra' ? (squadra + ' recompra ' + prezzo + 'cr') :
+    tipo === 'con_svincolo' ? (squadra + ' ' + prezzo + 'cr (svincolo)') :
+    (squadra + ' ' + prezzo + 'cr');
+  toast(giocatore.nome + ' → ' + msg, 'success');
+  const card = document.getElementById('chiamata-card');
+  card.className = 'chiamata-card assegnata';
+  card.innerHTML = '<p class="cc-esito">✅ ' + giocatore.nome + '</p><p class="chiamata-stato">' + msg + '</p>';
+});
+
+socket.on('giocatore-scartato', ({ giocatore }) => {
+  document.getElementById('rilancio-box').classList.add('hidden');
+  document.getElementById('timer-wrap').classList.add('hidden');
+  const card = document.getElementById('chiamata-card');
+  card.className = 'chiamata-card scartata';
+  card.innerHTML = '<p class="chiamata-stato">🚫 ' + giocatore.nome + ' — deserto</p>';
+  toast(giocatore.nome + ' deserto (nessuna offerta)', 'info');
+});
+
+socket.on('assegnazione-annullata', (item) => toast('Annullato: ' + (item.giocatore ? item.giocatore.nome : '?'), 'info'));
+socket.on('scartati-reintrodotti', ({ count }) => toast(count + ' giocatori reintrodotti', 'success'));
+socket.on('tradeoff-ok', () => { closeModal(); toast('Trade-off eseguito!', 'success'); });
+socket.on('asta-terminata', () => { showScreen('screen-fine-asta'); renderFineAsta(); toast('Asta terminata!', 'success'); });
+socket.on('errore', ({ msg }) => toast(msg, 'error'));
+
+socket.on('popup-ric-conferma', ({ giocatore, costoConferma }) => {
+  document.getElementById('mrc-giocatore').textContent = giocatore.nome + ' (' + (giocatore.ruolo||'?') + ')';
+  document.getElementById('mrc-prezzo').textContent = costoConferma;
+  document.getElementById('mrc-tipo-label').textContent = 'RIC — consuma 1 slot riconferma';
+  S.popupAttivoCli = { tipo: 'ric-conferma', giocatore };
+  openModal('modal-ric-conferma');
+});
+
+socket.on('popup-ric-conferma-admin', ({ giocatore, proprietario }) => {
+  if (!S.isAdmin) return;
+  document.getElementById('popup-override-chi').textContent = proprietario + ' (RIC: ' + giocatore.nome + ')';
+  document.getElementById('popup-override-actions').innerHTML =
+    '<button class="btn btn-success" onclick="adminRicConferma(\'si\')">Si per ' + proprietario + '</button>' +
+    '<button class="btn btn-danger" onclick="adminRicConferma(\'no\')">No per ' + proprietario + '</button>';
+  document.getElementById('popup-override-box').classList.remove('hidden');
+  S.popupAttivoCli = { tipo: 'ric-conferma-admin', giocatore, proprietario };
+});
+
+socket.on('popup-post-asta', (popup) => {
+  renderPopupPostAsta(popup);
+  S.popupAttivoCli = Object.assign({ tipo: 'post-asta' }, popup);
+  openModal('modal-post-asta');
+});
+
+socket.on('popup-post-asta-admin', (popup) => {
+  if (!S.isAdmin) return;
+  document.getElementById('popup-override-chi').textContent = popup.proprietarioPrecedente + ' (' + popup.giocatore.nome + ')';
+  let btns = '';
+  if (popup.opzioni.plusvalenza) btns += '<button class="btn btn-accent" onclick="adminPostAsta(\'plusvalenza\')">Plusvalenza</button>';
+  if (popup.opzioni.recompra) btns += '<button class="btn btn-primary" onclick="adminPostAsta(\'recompra\')">Recompra</button>';
+  btns += '<button class="btn btn-secondary" onclick="adminPostAsta(\'niente\')">Niente</button>';
+  document.getElementById('popup-override-actions').innerHTML = btns;
+  document.getElementById('popup-override-box').classList.remove('hidden');
+  S.popupAttivoCli = Object.assign({ tipo: 'post-asta-admin' }, popup);
+});
+
+socket.on('popup-svincolo', (popupData) => {
+  S.svincoloSel.clear();
+  S.popupAttivoCli = Object.assign({ tipo: 'svincolo' }, popupData);
+  renderPopupSvincolo(popupData);
+  openModal('modal-svincolo');
+});
+
+socket.on('popup-svincolo-admin', (popup) => {
+  if (!S.isAdmin) return;
+  document.getElementById('popup-override-chi').textContent = popup.squadraVincitrice + ' (svincolo ' + popup.giocatore.nome + ')';
+  document.getElementById('popup-override-actions').innerHTML = '<em class="text-muted">In attesa decisione squadra...</em>';
+  document.getElementById('popup-override-box').classList.remove('hidden');
+});
+
+// ════ RENDER FUNCTIONS ════════════════════════
+function renderBudgetBar(squadre) {
+  document.getElementById('budget-bar').innerHTML = squadre.map(sq => {
+    const cls = sq.nome === S.miaSquadra ? 'budget-chip mia' :
+      sq.crediti < 50 ? 'budget-chip critica' : sq.crediti < 150 ? 'budget-chip bassa' : 'budget-chip';
+    return '<div class="' + cls + '" title="' + sq.nome + '">' +
+      '<span class="bc-nome">' + (sq.online ? '🟢' : '⚪') + ' ' + sq.nome + '</span>' +
+      '<span class="bc-cred">' + sq.crediti + '</span></div>';
+  }).join('');
+}
+
+function renderChiamata(chiamata) {
+  const card = document.getElementById('chiamata-card');
+  card.className = 'chiamata-card attiva';
+  const g = chiamata.giocatore;
+  const ruoloCls = g.ruolo ? 'ruolo-' + g.ruolo : 'ruolo-XX';
+  const tipoBadge = g.tipo && g.tipo !== 'NN' ? '<span class="cc-tipo-badge tipo-' + g.tipo + '">' + g.tipo + '</span>' : '';
+  const origTxt = g.squadraOriginale && g.tipo !== 'NN' ? '<small class="text-muted">ex: ' + g.squadraOriginale + '</small>' : '';
+  const offerenteTxt = chiamata.squadraOfferente
+    ? 'Offerta di: <strong>' + chiamata.squadraOfferente + '</strong>'
+    : '<span class="chiamata-stato">In attesa 1ª offerta...</span>';
+  card.innerHTML = '<span class="cc-ruolo-badge ' + ruoloCls + '">' + (g.ruolo||'?') + '</span>' +
+    '<p class="cc-nome">' + g.nome + '</p>' + tipoBadge + origTxt +
+    '<p class="cc-offerta">' + chiamata.offertaAttuale + '</p>' +
+    '<p class="cc-offerta-label">crediti</p>' +
+    '<p class="cc-offerente">' + offerenteTxt + '</p>';
+  document.getElementById('btn-rilancio').disabled = !canBid();
+}
+
+function canBid() {
+  if (!S.asta || !S.asta.chiamataAttuale) return false;
+  const sq = getMiaSquadra();
+  return sq && getMaxOfferta() > S.asta.chiamataAttuale.offertaAttuale;
+}
+
+function updateTimer(secondi, fase) {
+  const el = document.getElementById('timer-display');
+  el.textContent = secondi;
+  el.className = secondi <= 5 ? 'timer urgente' : 'timer normale';
+  document.getElementById('timer-label').textContent = fase === 'prima' ? 'prima offerta' : 'rilancio';
+}
+
+function flashChiamataCard() {
+  const card = document.getElementById('chiamata-card');
+  card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash');
+}
+
+function renderStorico(storico) {
+  const list = document.getElementById('storico-list');
+  if (!storico || !storico.length) { list.innerHTML = '<li class="text-muted" style="padding:8px">Nessun acquisto</li>'; return; }
+  list.innerHTML = [...storico].reverse().slice(0, 50).map(s => {
+    if (s.tipo === 'scartato') return '<li><span class="storico-nome text-muted">' + s.giocatore.nome + '</span><span class="storico-tipo tipo-tag-scartato">deserto</span></li>';
+    return '<li><span class="storico-nome">' + s.giocatore.nome + '</span>' +
+      '<span class="storico-sq">' + s.squadra + '</span>' +
+      '<span class="storico-prezzo">' + s.prezzo + 'cr</span>' +
+      '<span class="storico-tipo tipo-tag-' + s.tipo + '">' + s.tipo + '</span></li>';
+  }).join('');
+}
+
+function renderRose(squadre) {
+  document.getElementById('rose-panel').innerHTML = squadre.map(sq =>
+    '<details class="rosa-card"><summary>' +
+    '<span>' + sq.nome + ' <small>(' + sq.rosa.length + ')</small></span>' +
+    '<span class="rosa-sq-info">' + sq.crediti + 'cr</span></summary><ul>' +
+    (sq.rosa.length === 0 ? '<li class="text-muted" style="padding:4px 8px">Vuota</li>' :
+      sq.rosa.map(g => '<li><span class="g-ruolo">' + (g.ruolo||'?') + '</span><span>' + g.nome + '</span><span class="g-prezzo">' + g.prezzo + 'cr</span></li>').join('')) +
+    '</ul></details>').join('');
+}
+
+function renderGiocatoriLiberi(pool) {
+  const list = document.getElementById('liberi-list');
+  if (!pool) { list.innerHTML = ''; return; }
+  const disp = pool.filter(g => !g.estratto && !g.assegnato && !g.scartato);
+  const scar = pool.filter(g => g.scartato);
+  let tutti = [...disp.sort((a,b) => a.nome.localeCompare(b.nome)), ...scar.sort((a,b) => a.nome.localeCompare(b.nome))];
+  if (S.filtroRuolo !== 'tutti') tutti = tutti.filter(g => g.ruolo === S.filtroRuolo);
+  list.innerHTML = tutti.map(g => {
+    const sc = g.scartato ? ' scartato' : '';
+    const tb = g.tipo && g.tipo !== 'NN' ? '<span class="l-tipo tipo-' + g.tipo + '">' + g.tipo + '</span>' : '';
+    const orig = g.squadraOriginale && g.tipo !== 'NN' ? '<span class="l-orig">(ex ' + g.squadraOriginale + ')</span>' : '';
+    const click = (!g.scartato && S.isAdmin) ? ' onclick="chiamaLibero(\'' + g.id + '\')"' : '';
+    return '<li class="' + sc + '"' + click + '><span class="l-ruolo">' + (g.ruolo||'?') + '</span>' +
+      '<span class="l-nome">' + g.nome + '</span>' + orig + tb +
+      '<span class="l-costo">' + g.costoOriginale + 'cr' + (g.scartato ? ' ✗' : '') + '</span></li>';
+  }).join('') || '<li class="text-muted" style="padding:8px">Nessun giocatore</li>';
+}
+
+window.chiamaLibero = function(id) {
+  if (!S.isAdmin || (S.asta && S.asta.chiamataAttuale)) return toast('Chiamata in corso', 'error');
+  socket.emit('chiama-giocatore', { astaId: S.astaId, giocatoreId: id });
+};
+
+function renderMioPanel() {
+  const sq = getMiaSquadra();
+  if (!sq) return;
+  document.getElementById('mio-panel').classList.remove('hidden');
+  document.getElementById('mio-panel-nome').textContent = sq.nome;
+  document.getElementById('mio-crediti-badge').textContent = '💰 ' + sq.crediti;
+  const counter = document.getElementById('mio-slot-counter');
+  if (S.asta && S.asta.tipoAsta === 'iniziale') {
+    counter.classList.remove('hidden');
+    const rD = sq.slotsRIC - sq.slotsRICUsati, pD = sq.slotsPLUS - sq.slotsPLUSUsati;
+    counter.innerHTML =
+      '<span class="slot-chip' + (rD===0?' esaurito':'') + '">RIC <span>' + rD + '/' + sq.slotsRIC + '</span></span>' +
+      '<span class="slot-chip' + (pD===0?' esaurito':'') + '">PLUS <span>' + pD + '/' + sq.slotsPLUS + '</span></span>' +
+      '<span class="slot-chip' + (sq.recompraUsata?' esaurito':'') + '">Recompra <span>' + (sq.recompraUsata?'usata':'✓') + '</span></span>' +
+      '<span class="slot-chip">Max <span class="text-accent">' + getMaxOfferta() + 'cr</span></span>';
+    document.getElementById('btn-tradeoff').classList.remove('hidden');
+  } else if (S.asta && S.asta.tipoAsta === 'riparazione') {
+    counter.classList.remove('hidden');
+    const sR = S.asta.svincoliTotali - (sq.svincoliUsati || 0);
+    counter.innerHTML =
+      '<span class="slot-chip' + (sR<=0?' esaurito':'') + '">Svincoli <span>' + sR + '/' + S.asta.svincoliTotali + '</span></span>' +
+      '<span class="slot-chip">Max <span class="text-accent">' + getMaxOfferta() + 'cr</span></span>';
+  }
+}
+
+function renderAdminPanel(asta) {
+  const panel = document.getElementById('admin-panel');
+  if (!S.isAdmin) { panel.classList.add('hidden'); return; }
+  panel.classList.remove('hidden');
+  const btnEstrai = document.getElementById('btn-estrai');
+  if (asta && asta.tipoEstrazione === 'manuale') btnEstrai.classList.remove('hidden');
+  else btnEstrai.classList.add('hidden');
+}
+
+function renderLobbySquadre(squadre) {
+  const ul = document.getElementById('lobby-squadre');
+  if (!ul) return;
+  ul.innerHTML = squadre.map(s =>
+    '<li><span class="sq-dot ' + (s.online?'online':'offline') + '">●</span><strong>' + s.nome + '</strong>' +
+    '<span class="text-muted" style="font-size:0.75rem">' + (s.online?'(online)':'(offline)') + ' | ' + s.crediti + 'cr</span></li>').join('');
+}
+
+function renderFineAsta() {
+  const asta = S.asta; if (!asta) return;
+  document.getElementById('riepilogo-asta').innerHTML = asta.squadre.map(sq =>
+    '<div class="riepilogo-card"><h3><span>' + sq.nome + '</span><span class="rc-crediti">💰 ' + sq.crediti + 'cr</span></h3>' +
+    (asta.tipoAsta === 'iniziale' ? '<p class="rc-slot">RIC ' + sq.slotsRICUsati + '/' + sq.slotsRIC + ' | PLUS ' + sq.slotsPLUSUsati + '/' + sq.slotsPLUS + ' | Recompra: ' + (sq.recompraUsata?'usata':'no') + '</p>' : '') +
+    '<table><thead><tr><th>Giocatore</th><th>Ruolo</th><th>Tipo</th><th>Prezzo</th></tr></thead><tbody>' +
+    (sq.rosa.map(g => '<tr><td>' + g.nome + '</td><td>' + (g.ruolo||'?') + '</td><td>' + (g.tipo||'NN') + '</td><td>' + g.prezzo + 'cr</td></tr>').join('') ||
+      '<tr><td colspan="4" class="text-muted">Nessun giocatore</td></tr>') +
+    '</tbody></table></div>').join('');
+}
+
+// ════ POPUPS ══════════════════════════════════
+window.rispostaRicConferma = function(risposta) {
+  socket.emit('risposta-ric-conferma', { astaId: S.astaId, risposta });
+  closeModal(); hidePoupOverride();
+};
+
+window.adminRicConferma = function(risposta) {
+  socket.emit('risposta-ric-conferma', { astaId: S.astaId, risposta });
+  hidePoupOverride();
+};
+
+function renderPopupPostAsta(popup) {
+  document.getElementById('mpa-title').textContent = popup.tipo === 'post-asta-ric' ? 'RIC — Scegli opzione' : 'PLUS — Scegli opzione';
+  document.getElementById('mpa-giocatore').textContent = popup.giocatore.nome;
+  document.getElementById('mpa-vincitore').textContent = popup.squadraVincitrice;
+  document.getElementById('mpa-prezzo').textContent = popup.prezzoFinale;
+  const g = Math.max(0, popup.prezzoFinale - popup.giocatore.costoOriginale);
+  let html = '';
+  if (popup.opzioni.plusvalenza) html += '<button class="btn btn-accent" onclick="rispostaPostAsta(\'plusvalenza\')">Plusvalenza (+' + g + 'cr)</button>';
+  if (popup.opzioni.recompra) html += '<button class="btn btn-primary" onclick="rispostaPostAsta(\'recompra\')">Recompra (' + (popup.prezzoFinale+1) + 'cr)</button>';
+  html += '<button class="btn btn-secondary" onclick="rispostaPostAsta(\'niente\')">Niente — va bene</button>';
+  document.getElementById('mpa-opzioni').innerHTML = html;
+}
+
+window.rispostaPostAsta = function(scelta) {
+  socket.emit('risposta-post-asta', { astaId: S.astaId, scelta });
+  closeModal(); hidePoupOverride();
+};
+
+window.adminPostAsta = function(scelta) {
+  socket.emit('risposta-post-asta', { astaId: S.astaId, scelta });
+  hidePoupOverride();
+};
+
+function updateTradeoffButtons(sq) {
+  const rD = sq.slotsRIC - sq.slotsRICUsati, pD = sq.slotsPLUS - sq.slotsPLUSUsati;
+  const rT = Math.max(0, rD - 1), pT = Math.max(0, pD - 1);
+  document.getElementById('to-r2p').disabled = rT < 1;
+  document.getElementById('to-p2r').disabled = pT < 3;
+  document.getElementById('to-r2c').disabled = rT < 1;
+  document.getElementById('to-p2c').disabled = pT < 1;
+}
+
+window.eseguiTradeoff = function(tipo) {
+  socket.emit('tradeoff', { astaId: S.astaId, tipo });
+};
+
+function renderPopupSvincolo(popupData) {
+  document.getElementById('sv-giocatore').textContent = popupData.giocatore.nome;
+  document.getElementById('sv-prezzo').textContent = popupData.prezzoFinale;
+  const sq = getMiaSquadra();
+  document.getElementById('sv-crediti').textContent = sq ? sq.crediti : 0;
+  document.getElementById('sv-diff').textContent = popupData.differenza;
+  document.getElementById('sv-svincoli-rem').textContent = 'Svincoli rimanenti: ' + popupData.svincoliRimanenti;
+  const fattore = popupData.fattoreSvincolo || 0.5;
+  document.getElementById('sv-lista').innerHTML = (popupData.rosa || []).map(g => {
+    const recup = Math.floor(g.prezzo * fattore);
+    return '<div class="sv-item" id="svi-' + g.id + '" onclick="toggleSvincolo(\'' + g.id + '\',' + recup + ')">' +
+      '<input type="checkbox" id="svc-' + g.id + '" onclick="event.stopPropagation();toggleSvincolo(\'' + g.id + '\',' + recup + ')">' +
+      '<div class="sv-item-info"><div class="sv-item-nome">' + g.nome + '</div>' +
+      '<div class="sv-item-detail">' + (g.ruolo||'?') + ' — ' + g.prezzo + 'cr</div></div>' +
+      '<span class="sv-item-recup">+' + recup + 'cr</span></div>';
+  }).join('');
+  aggiornaTotaleSvincolo(popupData.differenza);
+}
+
+window.toggleSvincolo = function(id, crediti) {
+  const cb = document.getElementById('svc-' + id);
+  const item = document.getElementById('svi-' + id);
+  if (S.svincoloSel.has(id)) {
+    S.svincoloSel.delete(id);
+    if (cb) cb.checked = false;
+    if (item) item.classList.remove('selezionato');
+  } else {
+    S.svincoloSel.add(id);
+    if (cb) cb.checked = true;
+    if (item) item.classList.add('selezionato');
+  }
+  aggiornaTotaleSvincolo(S.popupAttivoCli ? S.popupAttivoCli.differenza : 0);
+};
+
+function aggiornaTotaleSvincolo(differenza) {
+  const popup = S.popupAttivoCli; if (!popup) return;
+  const fattore = popup.fattoreSvincolo || 0.5;
+  let recupero = 0;
+  S.svincoloSel.forEach(id => {
+    const g = (popup.rosa || []).find(r => r.id === id);
+    if (g) recupero += Math.floor(g.prezzo * fattore);
+  });
+  const debito = Math.max(0, differenza - recupero);
+  document.getElementById('sv-recupero').textContent = recupero;
+  document.getElementById('sv-debito').textContent = debito;
+  document.getElementById('btn-sv-conferma').disabled = debito > 0;
+}
+
+window.confermaSvincolo = function() {
+  socket.emit('esegui-svincolo', { astaId: S.astaId, giocatoriIds: [...S.svincoloSel] });
+  closeModal(); hidePoupOverride();
+};
+
+window.confermaChiamataManuale = function() {
+  const nome = document.getElementById('inp-cm-nome').value.trim();
+  const ruolo = document.getElementById('inp-cm-ruolo').value;
+  if (!nome) return toast('Inserisci il nome', 'error');
+  socket.emit('chiama-giocatore', { astaId: S.astaId, giocatoreManuale: { nome, ruolo } });
+  document.getElementById('inp-cm-nome').value = '';
+  closeModal();
+};
+
+window.confermaModTimer = function() {
+  socket.emit('modifica-timer', {
+    astaId: S.astaId,
+    timerPrimaChiamata: parseInt(document.getElementById('inp-mt-prima').value),
+    timerRilancio: parseInt(document.getElementById('inp-mt-rilancio').value)
+  });
+  closeModal(); toast('Timer aggiornato', 'success');
+};
+
+function renderMiaRosa(sq) {
+  document.getElementById('mr-title').textContent = 'Rosa di ' + sq.nome;
+  const lista = document.getElementById('mr-lista');
+  if (!sq.rosa.length) { lista.innerHTML = '<p class="text-muted">Nessun giocatore</p>'; return; }
+  lista.innerHTML = sq.rosa.map(g => '<div class="mr-item">' +
+    '<span class="mr-ruolo">' + (g.ruolo||'?') + '</span><span class="mr-nome">' + g.nome + '</span>' +
+    (g.tipo && g.tipo !== 'NN' ? '<span class="mr-tipo tipo-' + g.tipo + '">' + g.tipo + '</span>' : '') +
+    '<span class="mr-prezzo">' + g.prezzo + 'cr</span></div>').join('');
+}
+
+// ════ UTILS ═══════════════════════════════════
+function getMiaSquadra() {
+  if (!S.asta || !S.miaSquadra) return null;
+  return S.asta.squadre.find(s => s.nome === S.miaSquadra) || null;
+}
+
+function getMaxOfferta() {
+  const sq = getMiaSquadra();
+  if (!sq || !S.asta) return 0;
+  if (S.asta.tipoAsta === 'iniziale') return sq.crediti;
+  const fattore = S.asta.fattoreSvincolo || 0.5;
+  const svinR = S.asta.svincoliTotali - (sq.svincoliUsati || 0);
+  if (svinR <= 0) return sq.crediti;
+  const sorted = [...sq.rosa].sort((a, b) => Math.floor(b.prezzo * fattore) - Math.floor(a.prezzo * fattore));
+  let recup = 0;
+  for (let i = 0; i < Math.min(svinR, sorted.length); i++) recup += Math.floor(sorted[i].prezzo * fattore);
+  const minTot = (S.asta.minimoPortieri || 0) + (S.asta.minimoMovimento || 0);
+  return Math.max(1, sq.crediti + recup - Math.max(0, minTot - sq.rosa.length - 1));
+}
+
+function openModal(id) {
+  document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+  document.getElementById('modal-overlay').classList.remove('hidden');
+  document.getElementById(id).classList.remove('hidden');
+}
+
+window.closeModal = function() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+  document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+  S.popupAttivoCli = null;
+};
+
+window.closeModalOnOverlay = function(e) {
+  if (e.target.id !== 'modal-overlay') return;
+  if (S.popupAttivoCli && ['ric-conferma','post-asta','svincolo'].includes(S.popupAttivoCli.tipo)) return;
+  closeModal();
+};
+
+function hidePoupOverride() {
+  document.getElementById('popup-override-box').classList.add('hidden');
+  document.getElementById('popup-override-actions').innerHTML = '';
+}
+
+function toast(msg, tipo) {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = 'toast ' + (tipo || 'info');
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => { try { container.removeChild(el); } catch(e){} }, 3200);
+}
