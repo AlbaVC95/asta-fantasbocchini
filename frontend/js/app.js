@@ -418,22 +418,9 @@ function setupLobby() {
 
 // ════ ASTA SETUP ══════════════════════════════
 function setupAsta() {
-  document.getElementById('btn-rilancio').addEventListener('click', () => {
-    if (!S.asta || !S.asta.chiamataAttuale) return;
-    const base = S.asta.chiamataAttuale.offertaAttuale;
-    const inc = parseInt(document.getElementById('inp-rilancio').value) || 1;
-    socket.emit('rilancio', { astaId: S.astaId, offerta: base + inc });
-  });
-  document.getElementById('btn-minus').addEventListener('click', () => {
-    const inp = document.getElementById('inp-rilancio');
-    inp.value = Math.max(1, parseInt(inp.value) - 1);
-  });
-  document.getElementById('btn-plus').addEventListener('click', () => {
-    const inp = document.getElementById('inp-rilancio');
-    inp.value = parseInt(inp.value) + 1;
-  });
-  // Quick bid buttons
-  document.getElementById('btn-quick-1').addEventListener('click', () => inviaRilancioRapido(1));
+  // 🔥 RILANCIA sempre +1 rispetto all'offerta attuale
+  document.getElementById('btn-rilancio').addEventListener('click', () => inviaRilancioRapido(1));
+  // Quick bid: somma direttamente all'offerta attuale
   document.getElementById('btn-quick-5').addEventListener('click', () => inviaRilancioRapido(5));
   document.getElementById('btn-quick-10').addEventListener('click', () => inviaRilancioRapido(10));
 
@@ -499,7 +486,7 @@ function inviaRilancioRapido(inc) {
 
 function aggiornaQuickBids() {
   const canB = canBid();
-  ['btn-quick-1','btn-quick-5','btn-quick-10'].forEach(id => {
+  ['btn-quick-5','btn-quick-10'].forEach(id => {
     const btn = document.getElementById(id);
     if (btn) btn.disabled = !canB;
   });
@@ -643,11 +630,17 @@ socket.on('nuova-chiamata', (chiamata) => {
   S.attesaConferma = false;
   nascondiConfermaBox();
   renderChiamata(chiamata);
-  document.getElementById('rilancio-box').classList.remove('hidden');
-  document.getElementById('timer-wrap').classList.remove('hidden');
-  document.getElementById('inp-rilancio').value = 1;
+  const timerWrap = document.getElementById('timer-wrap');
+  const rilBox    = document.getElementById('rilancio-box');
+  if (chiamata.aspettandoConferma) {
+    // RIC waiting — show card but NOT rilancio box (bid frozen)
+    if (rilBox)    rilBox.classList.add('hidden');
+    if (timerWrap) timerWrap.classList.add('hidden');
+  } else {
+    if (rilBox)    rilBox.classList.remove('hidden');
+    if (timerWrap) timerWrap.classList.remove('hidden');
+  }
   aggiornaQuickBids();
-  // Remove card-enter after animation completes
   const card = document.getElementById('chiamata-card');
   setTimeout(function() { if (card) card.classList.remove('card-enter'); }, 600);
 });
@@ -707,19 +700,30 @@ socket.on('errore', ({ msg }) => {
   }
 });
 
-socket.on('attesa-conferma', ({ giocatore, offerta, squadra }) => {
+socket.on('attesa-conferma', (chiamata) => {
+  // Server sends the full chiamataAttuale object (fields: giocatore, offertaAttuale, squadraOfferente)
+  const giocatore = chiamata.giocatore || {};
+  const offerta   = chiamata.offertaAttuale || chiamata.offerta || 0;
+  const squadra   = chiamata.squadraOfferente || chiamata.squadra || null;
   S.attesaConferma = true;
   document.getElementById('rilancio-box').classList.add('hidden');
   document.getElementById('timer-wrap').classList.add('hidden');
   if (S.isAdmin) {
     const cb = document.getElementById('admin-conferma-box');
     const ab = document.getElementById('admin-actions-box');
-    if (cb) { cb.classList.remove('hidden'); }
-    if (ab) { ab.classList.add('hidden'); }
-    const ci = document.getElementById('conferma-info');
-    if (ci) ci.textContent = '🏆 ' + giocatore.nome + ' → ' + squadra + ' @ ' + offerta + 'cr';
+    if (cb) cb.classList.remove('hidden');
+    if (ab) ab.classList.add('hidden');
+    const ci  = document.getElementById('conferma-info');
+    const rl  = document.getElementById('riapri-prezzo-label');
+    if (rl)  rl.textContent = offerta;
+    if (ci)  ci.textContent = squadra
+      ? '🏆 ' + (giocatore.nome || '?') + ' → ' + squadra + ' @ ' + offerta + 'cr'
+      : '⚠️ ' + (giocatore.nome || '?') + ' — nessuna offerta';
   }
-  toast('Offerta finale: ' + squadra + ' ' + offerta + 'cr per ' + giocatore.nome, 'info');
+  const toastMsg = squadra
+    ? 'Offerta finale: ' + squadra + ' ' + offerta + 'cr per ' + (giocatore.nome || '?')
+    : (giocatore.nome || '?') + ' — nessuna offerta, admin decide';
+  toast(toastMsg, 'info');
   aggiornaQuickBids();
 });
 
@@ -731,14 +735,20 @@ socket.on('popup-ric-conferma', ({ giocatore, costoConferma }) => {
   openModal('modal-ric-conferma');
 });
 
-socket.on('popup-ric-conferma-admin', ({ giocatore, proprietario }) => {
+socket.on('popup-ric-conferma-admin', function(data) {
   if (!S.isAdmin) return;
-  document.getElementById('popup-override-chi').textContent = proprietario + ' (RIC: ' + giocatore.nome + ')';
-  document.getElementById('popup-override-actions').innerHTML =
-    '<button class="btn btn-success" onclick="adminRicConferma(\'si\')">Si per ' + proprietario + '</button>' +
-    '<button class="btn btn-danger" onclick="adminRicConferma(\'no\')">No per ' + proprietario + '</button>';
-  document.getElementById('popup-override-box').classList.remove('hidden');
-  S.popupAttivoCli = { tipo: 'ric-conferma-admin', giocatore, proprietario };
+  var giocatore = data.giocatore || {}, proprietario = data.proprietario;
+  var costo = data.costoConferma || giocatore.costoOriginale || '?';
+  document.getElementById('mao-title').textContent = '\uD83D\uDD14 RIC \u2014 Riconferma richiesta';
+  document.getElementById('mao-info').innerHTML =
+    '<p><strong>' + proprietario + '</strong> vuole riconfermare <strong>' + (giocatore.nome || '?') + '</strong></p>' +
+    '<p class="modal-detail">Prezzo riconferma: <strong class="text-accent">' + costo + ' cr</strong></p>' +
+    '<p class="modal-detail text-muted">Consuma 1 slot RIC a ' + proprietario + '</p>';
+  document.getElementById('mao-actions').innerHTML =
+    '<button class="btn btn-success" data-ric="si" onclick="adminRicConferma(this.dataset.ric)">\u2705 S\u00EC \u2014 confermato</button>' +
+    '<button class="btn btn-danger" data-ric="no" onclick="adminRicConferma(this.dataset.ric)">\u274C No \u2014 passa all\'asta</button>';
+  S.popupAttivoCli = { tipo: 'ric-conferma-admin', giocatore: giocatore, proprietario: proprietario };
+  openModal('modal-admin-override');
 });
 
 socket.on('popup-post-asta', (popup) => {
@@ -747,16 +757,24 @@ socket.on('popup-post-asta', (popup) => {
   openModal('modal-post-asta');
 });
 
-socket.on('popup-post-asta-admin', (popup) => {
+socket.on('popup-post-asta-admin', function(popup) {
   if (!S.isAdmin) return;
-  document.getElementById('popup-override-chi').textContent = popup.proprietarioPrecedente + ' (' + popup.giocatore.nome + ')';
-  let btns = '';
-  if (popup.opzioni.plusvalenza) btns += '<button class="btn btn-accent" onclick="adminPostAsta(\'plusvalenza\')">Plusvalenza</button>';
-  if (popup.opzioni.recompra) btns += '<button class="btn btn-primary" onclick="adminPostAsta(\'recompra\')">Recompra</button>';
-  btns += '<button class="btn btn-secondary" onclick="adminPostAsta(\'niente\')">Niente</button>';
-  document.getElementById('popup-override-actions').innerHTML = btns;
-  document.getElementById('popup-override-box').classList.remove('hidden');
+  var g = Math.max(0, popup.prezzoFinale - popup.giocatore.costoOriginale);
+  var tipoLabel = popup.tipo === 'post-asta-ric' ? 'RIC' : 'PLUS';
+  document.getElementById('mao-title').textContent = '\u26A1 ' + tipoLabel + ' \u2014 Decisione admin';
+  document.getElementById('mao-info').innerHTML =
+    '<p>Giocatore: <strong>' + popup.giocatore.nome + '</strong></p>' +
+    '<p>Venduto a <strong>' + popup.squadraVincitrice + '</strong> per <strong class="text-accent">' + popup.prezzoFinale + ' cr</strong></p>' +
+    '<p class="text-muted">Prop. precedente: <strong>' + popup.proprietarioPrecedente + '</strong></p>' +
+    (popup.opzioni.plusvalenza ? '<p>\uD83D\uDCB0 Plusvalenza: <strong class="text-accent">+' + g + ' cr</strong></p>' : '') +
+    (popup.opzioni.recompra   ? '<p>\uD83D\uDD04 Recompra a: <strong class="text-accent">' + (popup.prezzoFinale + 1) + ' cr</strong></p>' : '');
+  var btns = '';
+  if (popup.opzioni.plusvalenza) btns += '<button class="btn btn-accent" data-scelta="plusvalenza" onclick="adminPostAsta(this.dataset.scelta)">\uD83D\uDCB0 Plusvalenza (+' + g + 'cr)</button>';
+  if (popup.opzioni.recompra)   btns += '<button class="btn btn-primary" data-scelta="recompra" onclick="adminPostAsta(this.dataset.scelta)">\uD83D\uDD04 Recompra (' + (popup.prezzoFinale + 1) + 'cr)</button>';
+  btns += '<button class="btn btn-secondary" data-scelta="niente" onclick="adminPostAsta(this.dataset.scelta)">Niente</button>';
+  document.getElementById('mao-actions').innerHTML = btns;
   S.popupAttivoCli = Object.assign({ tipo: 'post-asta-admin' }, popup);
+  openModal('modal-admin-override');
 });
 
 socket.on('popup-svincolo', (popupData) => {
@@ -766,11 +784,14 @@ socket.on('popup-svincolo', (popupData) => {
   openModal('modal-svincolo');
 });
 
-socket.on('popup-svincolo-admin', (popup) => {
+socket.on('popup-svincolo-admin', function(popup) {
   if (!S.isAdmin) return;
-  document.getElementById('popup-override-chi').textContent = popup.squadraVincitrice + ' (svincolo ' + popup.giocatore.nome + ')';
-  document.getElementById('popup-override-actions').innerHTML = '<em class="text-muted">In attesa decisione squadra...</em>';
-  document.getElementById('popup-override-box').classList.remove('hidden');
+  document.getElementById('mao-title').textContent = '\uD83D\uDD13 Svincolo in attesa';
+  document.getElementById('mao-info').innerHTML =
+    '<p><strong>' + popup.squadraVincitrice + '</strong> sta decidendo su <strong>' + popup.giocatore.nome + '</strong></p>' +
+    '<p class="text-muted">In attesa della scelta della squadra...</p>';
+  document.getElementById('mao-actions').innerHTML = '<em class="text-muted">Nessuna azione richiesta</em>';
+  openModal('modal-admin-override');
 });
 
 // ════ RENDER FUNCTIONS ════════════════════════
@@ -958,7 +979,10 @@ function renderGiocatoriLiberi(pool) {
   const disp = pool.filter(g => !g.estratto && !g.assegnato && !g.scartato);
   const scar = pool.filter(g => g.scartato);
   let tutti = [...disp.sort((a,b) => a.nome.localeCompare(b.nome)), ...scar.sort((a,b) => a.nome.localeCompare(b.nome))];
-  if (S.filtroRuolo !== 'tutti') tutti = tutti.filter(g => g.ruolo === S.filtroRuolo);
+  if (S.filtroRuolo !== 'tutti') tutti = tutti.filter(g => {
+    const ruoli = (g.ruolo || '').split(/[\/,]/).map(function(x){ return x.trim().toLowerCase(); });
+    return ruoli.includes(S.filtroRuolo.toLowerCase());
+  });
   list.innerHTML = tutti.map(g => {
     const sc = g.scartato ? ' scartato' : '';
     const tb = g.tipo && g.tipo !== 'NN' ? '<span class="l-tipo tipo-' + g.tipo + '">' + g.tipo + '</span>' : '';
@@ -1038,7 +1062,7 @@ window.rispostaRicConferma = function(risposta) {
 
 window.adminRicConferma = function(risposta) {
   socket.emit('risposta-ric-conferma', { astaId: S.astaId, risposta });
-  hidePoupOverride();
+  closeModal(); hidePoupOverride();
 };
 
 function renderPopupPostAsta(popup) {
@@ -1061,7 +1085,7 @@ window.rispostaPostAsta = function(scelta) {
 
 window.adminPostAsta = function(scelta) {
   socket.emit('risposta-post-asta', { astaId: S.astaId, scelta });
-  hidePoupOverride();
+  closeModal(); hidePoupOverride();
 };
 
 function updateTradeoffButtons(sq) {
@@ -1074,8 +1098,26 @@ function updateTradeoffButtons(sq) {
 }
 
 window.eseguiTradeoff = function(tipo) {
+  const labels = {
+    'ric-to-plus':    '1 slot RIC  →  2 slot PLUS',
+    'plus-to-ric':    '3 slot PLUS  →  1 slot RIC',
+    'ric-to-crediti': '1 slot RIC  →  12 crediti',
+    'plus-to-crediti':'1 slot PLUS  →  6 crediti'
+  };
+  if (!confirm('Eseguire il Trade-off?\n\n' + (labels[tipo] || tipo) + '\n\nQuesta operazione è irreversibile.')) return;
   socket.emit('tradeoff', { astaId: S.astaId, tipo });
+  closeModal();
 };
+
+socket.on('tradeoff-usato', function({ nomeSquadra, tipo }) {
+  const labels = {
+    'ric-to-plus':    '1 RIC → 2 PLUS',
+    'plus-to-ric':    '3 PLUS → 1 RIC',
+    'ric-to-crediti': '1 RIC → 12cr',
+    'plus-to-crediti':'1 PLUS → 6cr'
+  };
+  toast('⚡ ' + nomeSquadra + ' ha usato Trade-off: ' + (labels[tipo] || tipo), 'info');
+});
 
 function renderPopupSvincolo(popupData) {
   document.getElementById('sv-giocatore').textContent = popupData.giocatore.nome;
