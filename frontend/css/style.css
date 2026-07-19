@@ -43,7 +43,7 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .mt-8{margin-top:8px}.mt-16{margin-top:16px}
 .text-muted{color:var(--text-muted)}.text-center{text-align:center}
 .text-accent{color:var(--gold);font-weight:700}.text-danger{color:var(--danger)}.hidden{display:none!important}
-#screen-asta{min-height:100vh;background:var(--bg-deep)}
+#screen-asta{background:var(--bg-deep)}#screen-asta.active{display:flex!important;flex-direction:column;height:100vh;overflow:hidden}
 .asta-header{position:sticky;top:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 16px;background:rgba(6,12,24,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
 .asta-header-left{display:flex;align-items:center;gap:10px}
 .asta-header-logo{font-size:1.3rem}
@@ -51,26 +51,31 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .asta-header-right{display:flex;align-items:center;gap:8px}
 .btn-sound{background:none;border:1px solid var(--border);border-radius:8px;color:var(--text-secondary);font-size:1rem;padding:6px 10px;cursor:pointer;transition:all .2s}
 .btn-sound:hover{border-color:var(--primary);color:var(--primary-bright)}.btn-sound.muted{opacity:.4}
-.arena-layout{display:grid;grid-template-columns:220px 1fr 290px;min-height:calc(100vh - 52px)}
-.sidebar-budget{background:var(--bg-abyss);border-right:1px solid var(--border);padding:16px 10px;overflow-y:auto;max-height:calc(100vh - 52px);position:sticky;top:52px;z-index:100}
-.sidebar-header{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:4px 6px 12px;border-bottom:1px solid var(--border);margin-bottom:10px}
-.sidebar-squadre-list{display:flex;flex-direction:column;gap:6px}
-.sidebar-squadra{padding:10px 12px;border-radius:10px;border-left:3px solid transparent;transition:all .2s;background:var(--bg-card)}
+.asta-row-panels{display:flex;gap:10px;padding:8px 12px;flex-shrink:0}
+.asta-row-panels>#admin-panel{flex:1.2;max-height:195px;overflow-y:auto}
+.asta-row-panels>#mio-panel{flex:1;max-height:195px;overflow-y:auto}
+.panel-budget{background:var(--bg-abyss);border:1px solid var(--border);border-radius:12px;padding:10px;flex:1.5;min-width:0;overflow-y:auto;max-height:195px}
+.panel-budget-hdr{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:0 0 6px;border-bottom:1px solid var(--border);margin-bottom:6px}
+.sidebar-squadre-list{display:flex;flex-direction:column;gap:5px}
+.sidebar-squadra{padding:6px 9px;border-radius:8px;border-left:3px solid transparent;transition:all .2s;background:var(--bg-card)}
 .sidebar-squadra:hover{background:var(--bg-elevated)}
 .sidebar-squadra.mia-squadra{border-left-color:var(--primary);background:var(--primary-subtle)}
 .sidebar-squadra.offerente-attuale{border-left-color:var(--gold);background:var(--gold-subtle)}
 .sidebar-squadra.critica{border-left-color:var(--danger)}
-.sq-top{display:flex;align-items:center;gap:5px;margin-bottom:5px}
+.sq-top{display:flex;align-items:center;gap:5px;margin-bottom:2px}
 .sq-dot-online{font-size:.55rem;flex-shrink:0}
-.sq-nome{flex:1;font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-secondary)}
+.sq-nome{flex:1;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-secondary)}
 .sidebar-squadra.mia-squadra .sq-nome{color:var(--primary-bright)}
 .sidebar-squadra.offerente-attuale .sq-nome{color:var(--gold-bright)}
-.sq-crediti{font-family:var(--font-display);font-size:.85rem;font-weight:800;color:var(--gold);flex-shrink:0}
-.budget-progress{height:3px;border-radius:3px;background:rgba(255,255,255,.06);margin-bottom:5px;overflow:hidden}
+.sq-crediti{font-family:var(--font-display);font-size:.78rem;font-weight:800;color:var(--gold);flex-shrink:0}
+.budget-progress{height:3px;border-radius:3px;background:rgba(255,255,255,.06);margin-bottom:2px;overflow:hidden}
 .budget-progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--success),var(--gold));transition:width .5s}
-.sq-bottom{font-size:.7rem;color:var(--text-muted)}
-.arena-center{background:var(--bg-main);padding:16px;display:flex;flex-direction:column;gap:12px;overflow:hidden;height:calc(100vh - 68px)}
-.card-timer-group{position:sticky;top:52px;z-index:200;display:flex;flex-direction:column;align-items:center}
+.sq-bottom{font-size:.65rem;color:var(--text-muted)}
+.asta-row-puja{display:flex;align-items:flex-start;gap:12px;padding:0 12px 6px;flex-shrink:0}
+.asta-row-puja .card-timer-group{flex:1;min-width:0}
+.asta-row-puja .rilancio-box{flex:0 0 200px}
+.asta-row-tabs{flex:1;min-height:0;display:flex;flex-direction:column;padding:0 12px 8px;overflow:hidden}
+.card-timer-group{display:flex;flex-direction:column;align-items:center}
 .chiamata-card{width:100%;background:linear-gradient(170deg,var(--bg-card) 0%,var(--bg-main) 100%);border:1px solid rgba(0,168,255,.2);border-radius:20px 20px 0 0;padding:24px 28px 20px;text-align:center;box-shadow:0 0 80px rgba(0,168,255,.05),0 20px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05);position:relative;overflow:hidden;transition:border-color .3s,box-shadow .3s}
 .chiamata-card::before{content:'';position:absolute;top:0;left:10%;right:10%;height:2px;background:linear-gradient(90deg,transparent,var(--primary),transparent);border-radius:2px}
 .chiamata-card .chiamata-stato{color:var(--text-muted);font-size:1rem;padding:20px 0}
@@ -141,7 +146,9 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .btn-rilancia:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
 .btn-rilancia::after{content:'';position:absolute;top:-50%;left:-60%;width:40%;height:200%;background:linear-gradient(105deg,transparent 0%,rgba(255,255,255,.18) 50%,transparent 100%);transform:skewX(-15deg);transition:left .6s}
 .btn-rilancia:hover::after{left:120%}
-.panel-right{background:var(--bg-abyss);border-left:1px solid var(--border);padding:16px 14px;overflow-y:auto;max-height:calc(100vh - 52px);position:sticky;top:52px;display:flex;flex-direction:column;gap:12px}
+.admin-btn-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:4px}
+.admin-btn-grid .btn{font-size:.72rem;padding:6px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-attesa-badge{background:rgba(0,168,255,.1);border:1px solid rgba(0,168,255,.25);border-radius:8px;padding:6px 12px;font-size:.82rem;color:var(--primary-bright);margin-top:6px;text-align:center}
 .mio-panel{background:var(--bg-card);border:1px solid rgba(0,168,255,.15);border-radius:14px;padding:16px}
 .mio-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .mio-nome{font-family:var(--font-display);font-size:.95rem;font-weight:800;text-transform:uppercase;color:var(--primary-bright)}
@@ -258,24 +265,23 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .riepilogo-giocatore:last-child{border-bottom:none}
 .riepilogo-crediti{font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:var(--gold);text-align:right;margin-top:10px}
 @keyframes screen-flash{0%{box-shadow:inset 0 0 100px rgba(255,184,0,.08)}100%{box-shadow:inset 0 0 0 transparent}}
-.arena-center.flash-rilancio{animation:screen-flash .4s ease-out}
+.arena-center.flash-rilancio,.asta-row-puja.flash-rilancio{animation:screen-flash .4s ease-out}
 @media(max-width:768px){
-.arena-layout{display:block}
-.sidebar-budget{position:sticky;top:52px;z-index:900;max-height:none;overflow-x:auto;overflow-y:hidden;padding:8px 12px;border-right:none;border-bottom:1px solid var(--border)}
-.sidebar-header{display:none}
-.sidebar-squadre-list{flex-direction:row;gap:8px;width:max-content}
-.sidebar-squadra{min-width:130px;flex-shrink:0;padding:8px 10px}.sq-bottom{display:none}
-.budget-progress{margin-bottom:0}.arena-center{padding:10px 12px}
-.card-timer-group{position:sticky;top:104px;z-index:800}
+.asta-row-panels{flex-wrap:wrap;max-height:none!important}
+.asta-row-panels>#admin-panel,.asta-row-panels>#mio-panel,.panel-budget{max-height:none!important;flex:1 1 200px}
+.asta-row-puja .rilancio-box{flex:0 0 auto;width:100%}
+.card-timer-group{top:104px}
 .timer-ring{width:70px;height:70px}.timer-number{font-size:1.4rem}
 .rilancio-box{position:fixed;bottom:0;left:0;right:0;z-index:700;border-radius:16px 16px 0 0;border:1px solid var(--border);border-bottom:none;padding:12px 12px calc(12px + env(safe-area-inset-bottom));background:rgba(15,31,56,.96);backdrop-filter:blur(16px)}
-.rilancio-top-row{justify-content:center}.tabs-panel{margin-bottom:120px}
-.panel-right{max-height:none;position:static;border-left:none;border-top:1px solid var(--border);padding:12px}
+.rilancio-top-row{justify-content:center}
+.asta-row-puja .rilancio-box{position:static!important;border-radius:12px;border:1px solid var(--border);padding:12px}
+#screen-asta.active{height:auto;overflow-y:auto}
+.asta-row-tabs{min-height:300px}
 .card{max-width:100%;margin:0 0 12px}.modal{padding:20px;border-radius:16px 16px 0 0}
 .modal-overlay{align-items:flex-end;padding:0}.tradeoff-grid{grid-template-columns:1fr}
 .toast-container{bottom:140px;right:12px;left:12px;max-width:100%}
 }
-@media(max-width:1024px) and (min-width:769px){.arena-layout{grid-template-columns:180px 1fr 240px}}
+
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--bg-elevated);border-radius:5px}
 ::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
