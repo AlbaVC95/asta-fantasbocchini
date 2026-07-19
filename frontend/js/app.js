@@ -8,7 +8,11 @@ const S = {
 document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
-  if (id) document.getElementById('inp-join-id').value = id;
+  if (id) {
+    document.getElementById('inp-join-id').value = id;
+    // Auto-load team dropdown if ID is in URL
+    setTimeout(() => fetchAstaSquadrePerJoin(id), 300);
+  }
   setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs();
 });
 
@@ -19,6 +23,63 @@ function showScreen(id) {
 }
 
 // ════ HOME ════════════════════════════════════
+
+// Fetch squads from the asta and show dropdown
+async function fetchAstaSquadrePerJoin(rawId) {
+  if (!rawId) return;
+  let astaId = rawId.trim();
+  if (astaId.includes('id=')) {
+    try { astaId = new URL(astaId, window.location.origin).searchParams.get('id'); } catch(e) {}
+  }
+  if (astaId.length < 8) return;
+  const infoEl = document.getElementById('inp-join-asta-info');
+  const wrap = document.getElementById('inp-join-nome-wrap');
+  try {
+    const res = await fetch('/api/asta/' + astaId + '/info');
+    if (!res.ok) {
+      infoEl.style.display = 'none';
+      wrap.innerHTML = '<input type="text" id="inp-join-nome" placeholder="Es: FC Sbocchini">';
+      return;
+    }
+    const asta = await res.json();
+    if (asta.squadre && asta.squadre.length > 0) {
+      // Show dropdown with team names
+      const sel = document.createElement('select');
+      sel.id = 'inp-join-nome';
+      sel.innerHTML = '<option value="">— Scegli la tua squadra —</option>';
+      asta.squadre.forEach(sq => {
+        const opt = document.createElement('option');
+        opt.value = sq.nome;
+        const nConn = typeof sq.utenti === 'number' ? sq.utenti : (sq.utenti ? sq.utenti.length : 0);
+        opt.textContent = sq.nome + (nConn > 0 ? ' (' + nConn + ' connesso/i)' : '');
+        sel.appendChild(opt);
+      });
+      // Free text option
+      const optAlt = document.createElement('option');
+      optAlt.value = '__altro__';
+      optAlt.textContent = '➕ Altro nome...';
+      sel.appendChild(optAlt);
+      sel.addEventListener('change', () => {
+        if (sel.value === '__altro__') {
+          wrap.innerHTML = '<input type="text" id="inp-join-nome" placeholder="Es: FC Sbocchini" autofocus>';
+          wrap.querySelector('input').focus();
+        }
+      });
+      wrap.innerHTML = '';
+      wrap.appendChild(sel);
+      infoEl.textContent = '🏟️ ' + (asta.nome || 'Asta') + ' · ' + asta.squadre.length + ' squadre';
+      infoEl.style.display = 'block';
+    } else {
+      // No pre-defined squads — free text
+      wrap.innerHTML = '<input type="text" id="inp-join-nome" placeholder="Es: FC Sbocchini">';
+      infoEl.textContent = '🏟️ ' + (asta.nome || 'Asta trovata');
+      infoEl.style.display = 'block';
+    }
+  } catch(e) {
+    infoEl.style.display = 'none';
+  }
+}
+
 function setupHome() {
   const inpTipo = document.getElementById('inp-tipo-asta');
   inpTipo.addEventListener('change', () => {
@@ -66,9 +127,17 @@ function setupHome() {
     } catch (err) { toast('Errore nella creazione', 'error'); }
   });
 
+  // Debounced auto-fetch squads when asta ID is typed
+  let _debounceJoin;
+  document.getElementById('inp-join-id').addEventListener('input', (e) => {
+    clearTimeout(_debounceJoin);
+    _debounceJoin = setTimeout(() => fetchAstaSquadrePerJoin(e.target.value), 600);
+  });
+
   document.getElementById('btn-join').addEventListener('click', () => {
     let input = document.getElementById('inp-join-id').value.trim();
-    const nome = document.getElementById('inp-join-nome').value.trim();
+    let nome = document.getElementById('inp-join-nome').value.trim();
+    if (nome === '__altro__') nome = '';
     if (!input || !nome) return toast('Compila tutti i campi', 'error');
     if (input.includes('id=')) {
       try { input = new URL(input, window.location.origin).searchParams.get('id'); } catch(e) {}
