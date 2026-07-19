@@ -904,3 +904,82 @@ body {
   .rose-footer { padding: 8px 10px; }
   .btn-rose-assegna, .btn-rose-chiama { font-size: 0.85rem; padding: 12px 8px; }
 }
+
+/* ══════════════════════════════════════════════════
+   EMERGENCY SCREEN / DISCONNESSO
+══════════════════════════════════════════════════ */
+.screen-emergenza {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(10, 8, 20, 0.97);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(8px);
+}
+.screen-emergenza.hidden { display: none; }
+
+.emerg-card {
+  background: var(--bg-card);
+  border: 2px solid var(--danger);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 380px;
+  width: 100%;
+  box-shadow: 0 0 40px rgba(234,67,53,0.3);
+  animation: modal-in 0.3s ease;
+}
+.emerg-icon { font-size: 3rem; margin-bottom: 12px; }
+.emerg-titolo { font-size: 1.4rem; font-weight: 800; margin-bottom: 8px; color: var(--danger); }
+.emerg-msg { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px; }
+.emerg-spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--danger);
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.emerg-actions { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.emerg-btn { width: 100%; }
+.emerg-sub { font-size: 0.75rem; color: var(--text-muted); font-style: italic; }
+
+/* ══════════════════════════════════════════════════
+   BACKUP MENU (admin)
+══════════════════════════════════════════════════ */
+.admin-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.admin-header-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn-esci { color: var(--text-muted) !important; }
+.btn-esci:hover { color: var(--danger) !important; border-color: var(--danger) !important; }
+
+.backup-menu {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  margin-bottom: 10px;
+  display: flex; gap: 6px; flex-wrap: wrap;
+  animation: modal-in 0.15s ease;
+}
+.backup-menu.hidden { display: none; }
+.bk-btn {
+  flex: 1; min-width: 120px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.82rem; font-weight: 600;
+  padding: 9px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.bk-btn:hover { border-color: var(--primary); color: var(--primary); }
+.bk-btn-muted { color: var(--text-muted) !important; }
+.bk-btn-muted:hover { border-color: var(--danger) !important; color: var(--danger) !important; }
+
+/* Extra bottom space when asta is active */
+#screen-asta.active { padding-bottom: 16px; }
