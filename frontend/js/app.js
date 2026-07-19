@@ -9,8 +9,43 @@ const socket = io({
 const S = {
   astaId: null, miaSquadra: null, isAdmin: false, asta: null,
   filtroRuolo: 'tutti', svincoloSel: new Set(), popupAttivoCli: null,
-  attesaConferma: false
+  attesaConferma: false, timerTotal: 30
 };
+
+// ══ SOUND SYSTEM ════════════════════════
+let _audioCtx = null;
+function _initAudio() { if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+function _beep(freq, dur, type, vol) {
+  type = type || 'sine'; vol = vol || 0.3;
+  try {
+    _initAudio();
+    const o = _audioCtx.createOscillator(), g = _audioCtx.createGain();
+    o.connect(g); g.connect(_audioCtx.destination);
+    o.frequency.value = freq; o.type = type;
+    g.gain.setValueAtTime(vol, _audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime + dur);
+    o.start(); o.stop(_audioCtx.currentTime + dur);
+  } catch(e) {}
+}
+function playSound(t) {
+  if (localStorage.getItem('suoni') === '0') return;
+  if (t === 'tick')     _beep(800,  0.1,  'square',   0.15);
+  else if (t === 'rilancio') _beep(1200, 0.15, 'sine',  0.3);
+  else if (t === 'buzzer')   _beep(200,  0.5,  'sawtooth', 0.4);
+  else if (t === 'chaching') {
+    _beep(880,  0.1,  'sine', 0.4);
+    setTimeout(() => _beep(1320, 0.15, 'sine', 0.3),  100);
+    setTimeout(() => _beep(1760, 0.2,  'sine', 0.25), 200);
+  }
+}
+window.toggleSuoni = function() {
+  const on = localStorage.getItem('suoni') !== '0';
+  localStorage.setItem('suoni', on ? '0' : '1');
+  const btn = document.getElementById('btn-sound');
+  if (btn) { btn.textContent = on ? '🔇' : '🔊'; btn.classList.toggle('muted', on); }
+};
+
+
 
 // ══ SESSION PERSISTENCE ══════════════════
 function salvaSessione() {
@@ -256,7 +291,6 @@ function setupHome() {
   });
   const drop = document.getElementById('file-drop');
   const inpJson = document.getElementById('inp-json');
-  drop.addEventListener('click', () => inpJson.click());
   drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
   drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
   drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('dragover'); handleJsonFile(e.dataTransfer.files[0]); });
@@ -581,15 +615,22 @@ socket.on('nuova-chiamata', (chiamata) => {
   document.getElementById('timer-wrap').classList.remove('hidden');
   document.getElementById('inp-rilancio').value = 1;
   aggiornaQuickBids();
+  // Remove card-enter after animation completes
+  const card = document.getElementById('chiamata-card');
+  setTimeout(function() { if (card) card.classList.remove('card-enter'); }, 600);
 });
 
 socket.on('aggiorna-offerta', (chiamata) => {
   renderChiamata(chiamata);
   flashChiamataCard();
+  // Price bump animation
+  const prezzoEl = document.getElementById('cc-prezzo');
+  if (prezzoEl) { prezzoEl.classList.remove('price-bump'); void prezzoEl.offsetWidth; prezzoEl.classList.add('price-bump'); setTimeout(function(){ prezzoEl.classList.remove('price-bump'); }, 400); }
   if (chiamata.squadraOfferente === S.miaSquadra) toast('Offerta accettata!', 'success');
+  else playSound('rilancio');
 });
 
-socket.on('timer-start', ({ secondi, fase }) => updateTimer(secondi, fase));
+socket.on('timer-start', ({ secondi, fase }) => { S.timerTotal = secondi; updateTimer(secondi, fase); });
 socket.on('timer-tick', ({ secondi, fase }) => updateTimer(secondi, fase));
 
 socket.on('giocatore-assegnato', ({ giocatore, prezzo, squadra, tipo, guadagno, plusvalenzaA }) => {
@@ -597,6 +638,9 @@ socket.on('giocatore-assegnato', ({ giocatore, prezzo, squadra, tipo, guadagno, 
   nascondiConfermaBox();
   document.getElementById('rilancio-box').classList.add('hidden');
   document.getElementById('timer-wrap').classList.add('hidden');
+  // Confetti 🎉
+  if (typeof confetti !== 'undefined') confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+  playSound('chaching');
   let msg = tipo === 'riconferma' ? ('Riconfermato da ' + squadra + ' a ' + prezzo + 'cr') :
     tipo === 'plusvalenza' ? (squadra + ' + ' + plusvalenzaA + ' +' + guadagno + 'cr plusvalenza') :
     tipo === 'recompra' ? (squadra + ' recompra ' + prezzo + 'cr') :
@@ -611,6 +655,7 @@ socket.on('giocatore-assegnato', ({ giocatore, prezzo, squadra, tipo, guadagno, 
 socket.on('giocatore-scartato', ({ giocatore }) => {
   document.getElementById('rilancio-box').classList.add('hidden');
   document.getElementById('timer-wrap').classList.add('hidden');
+  playSound('buzzer');
   const card = document.getElementById('chiamata-card');
   card.className = 'chiamata-card scartata';
   card.innerHTML = '<p class="chiamata-stato">🚫 ' + giocatore.nome + ' — deserto</p>';
@@ -698,20 +743,42 @@ socket.on('popup-svincolo-admin', (popup) => {
 
 // ════ RENDER FUNCTIONS ════════════════════════
 function renderBudgetBar(squadre) {
+  const creditiIniziali = S.asta ? (S.asta.creditiPerSquadra || 500) : 500;
   document.getElementById('budget-bar').innerHTML = squadre.map(sq => {
-    const cls = sq.nome === S.miaSquadra ? 'budget-chip mia' :
-      sq.crediti < 50 ? 'budget-chip critica' : sq.crediti < 150 ? 'budget-chip bassa' : 'budget-chip';
-    return '<div class="' + cls + '" title="' + sq.nome + '">' +
-      '<span class="bc-nome">' + (sq.online ? '🟢' : '⚪') + ' ' + sq.nome + '</span>' +
-      '<span class="bc-cred">' + sq.crediti + '</span></div>';
+    const pct = Math.round(Math.max(0, sq.crediti / creditiIniziali * 100));
+    const isOff = S.asta && S.asta.chiamataAttuale && S.asta.chiamataAttuale.squadraOfferente === sq.nome;
+    const cls = ['sidebar-squadra',
+      sq.nome === S.miaSquadra ? 'mia-squadra' : '',
+      isOff ? 'offerente-attuale' : '',
+      sq.crediti < 50 ? 'critica' : ''
+    ].filter(Boolean).join(' ');
+    const dot  = sq.online ? '🟢' : '⚪';
+    const gioc = sq.giocatori ? sq.giocatori.length : ((sq.rosa || []).length);
+    return '<div class="' + cls + '">' +
+      '<div class="sq-top">' +
+        '<span class="sq-dot-online">' + dot + '</span>' +
+        '<span class="sq-nome">' + sq.nome + '</span>' +
+        '<span class="sq-crediti">💰 ' + sq.crediti + '</span>' +
+      '</div>' +
+      '<div class="budget-progress"><div class="budget-progress-fill" style="width:' + pct + '%"></div></div>' +
+      '<div class="sq-bottom">🏆 ' + gioc + ' giocatori</div>' +
+    '</div>';
+  }).join('');
+}
+
+function _getRuoloBadgeHTML(ruolo) {
+  const r = ruolo || 'XX';
+  return r.split('/').map(function(x) {
+    x = x.trim();
+    return '<span class="badge-ruolo r-' + x + '">' + x + '</span>';
   }).join('');
 }
 
 function renderChiamata(chiamata) {
   const card = document.getElementById('chiamata-card');
-  card.className = 'chiamata-card attiva';
+  card.className = 'chiamata-card attiva card-enter';
   const g = chiamata.giocatore;
-  const ruoloCls = g.ruolo ? 'ruolo-' + g.ruolo : 'ruolo-XX';
+  const ruoloBadge = _getRuoloBadgeHTML(g.ruolo);
   const tipoBadge = g.tipo && g.tipo !== 'NN' ? '<span class="cc-tipo-badge tipo-' + g.tipo + '">' + g.tipo + '</span>' : '';
   const origTxt = g.squadraOriginale && g.tipo !== 'NN' ? '<small class="text-muted">ex: ' + g.squadraOriginale + '</small>' : '';
   const offerenteTxt = chiamata.squadraOfferente
@@ -719,11 +786,19 @@ function renderChiamata(chiamata) {
     : '<span class="chiamata-stato">In attesa 1ª offerta...</span>';
   const offertaDisplay = chiamata.offertaAttuale === 0 ? '—' : chiamata.offertaAttuale;
   const offertaLabel = chiamata.offertaAttuale === 0 ? 'Nessuna offerta' : 'crediti';
-  card.innerHTML = '<span class="cc-ruolo-badge ' + ruoloCls + '">' + (g.ruolo||'?') + '</span>' +
-    '<p class="cc-nome">' + g.nome + '</p>' + tipoBadge + origTxt +
-    '<p class="cc-offerta">' + offertaDisplay + '</p>' +
-    '<p class="cc-offerta-label">' + offertaLabel + '</p>' +
-    '<p class="cc-offerente">' + offerenteTxt + '</p>';
+  card.innerHTML =
+    '<div class="cc-header">' +
+      ruoloBadge +
+      '<div class="cc-info">' +
+        '<p class="cc-nome">' + g.nome + '</p>' +
+        '<div class="cc-meta">' + tipoBadge + origTxt + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="cc-body">' +
+      '<p class="cc-offerta" id="cc-prezzo">' + offertaDisplay + '</p>' +
+      '<p class="cc-offerta-label">' + offertaLabel + '</p>' +
+      '<p class="cc-offerente">' + offerenteTxt + '</p>' +
+    '</div>';
   aggiornaQuickBids();
 }
 
@@ -735,10 +810,32 @@ function canBid() {
 }
 
 function updateTimer(secondi, fase) {
-  const el = document.getElementById('timer-display');
-  el.textContent = secondi;
-  el.className = secondi <= 5 ? 'timer urgente' : 'timer normale';
-  document.getElementById('timer-label').textContent = fase === 'prima' ? 'prima offerta' : 'rilancio';
+  const total = S.timerTotal || secondi || 10;
+  const CIRC = 339.292;
+  const offset = CIRC * (1 - Math.max(0, secondi) / total);
+  const progress = document.getElementById('timer-progress');
+  const numEl    = document.getElementById('timer-display');
+  const labelEl  = document.getElementById('timer-label');
+  const container = document.getElementById('timer-wrap');
+  const gs = document.getElementById('timer-grad-start');
+  const ge = document.getElementById('timer-grad-end');
+  if (progress) progress.style.strokeDashoffset = offset;
+  if (numEl)    numEl.textContent  = secondi;
+  if (labelEl)  labelEl.textContent = fase === 'prima' ? 'prima offerta' : 'rilancio';
+  if (secondi <= 5) {
+    container && container.classList.add('urgent');
+    if (gs) gs.setAttribute('stop-color', '#ff1744');
+    if (ge) ge.setAttribute('stop-color', '#ff6b6b');
+    playSound('tick');
+  } else if (secondi <= 10) {
+    container && container.classList.remove('urgent');
+    if (gs) gs.setAttribute('stop-color', '#ffb800');
+    if (ge) ge.setAttribute('stop-color', '#ff9500');
+  } else {
+    container && container.classList.remove('urgent');
+    if (gs) gs.setAttribute('stop-color', '#00e676');
+    if (ge) ge.setAttribute('stop-color', '#00b0ff');
+  }
 }
 
 function flashChiamataCard() {
