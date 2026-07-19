@@ -179,6 +179,9 @@
         <div id="budget-bar" class="sidebar-squadre-list"></div>
       </div>
 
+      <!-- Puja slot (usato SOLO per i partecipanti NON admin: qui viene spostata la card puja) -->
+      <div id="puja-panel-slot" class="puja-panel-slot hidden"></div>
+
       <!-- Admin Panel -->
       <div id="admin-panel" class="admin-panel hidden">
         <div class="admin-header">
@@ -409,25 +412,52 @@
     </div>
   </div>
 
-  <!-- Modal: Chiama manuale -->
-  <div id="modal-chiama-manuale" class="modal hidden">
-    <h2 class="modal-title">📝 Chiama giocatore</h2>
+  <!-- Modal: Chiama manuale (ricerca live + filtro ruolo) -->
+  <div id="modal-chiama-manuale" class="modal modal-lg hidden">
+    <h2 class="modal-title">🔨 Chiama giocatore</h2>
+    <p class="modal-subtitle">Cerca un giocatore libero e clicca per chiamarlo direttamente alla puja.</p>
     <div class="form-group">
-      <label>Nome giocatore</label>
-      <input type="text" id="inp-cm-nome" placeholder="Es: Vlahovic" autocomplete="off">
+      <input type="text" id="inp-cm-search" placeholder="🔍 Cerca giocatore..." autocomplete="off" oninput="renderChiamaManualeLista()">
     </div>
+    <div class="cm-filtri-ruolo" id="cm-filtri-ruolo">
+      <button class="filtro-btn active" data-ruolo="tutti" onclick="setCmFiltroRuolo(this,'tutti')">Tutti</button>
+      <button class="filtro-btn" data-ruolo="Por" onclick="setCmFiltroRuolo(this,'Por')">Por</button>
+      <button class="filtro-btn" data-ruolo="Dc" onclick="setCmFiltroRuolo(this,'Dc')">Dc</button>
+      <button class="filtro-btn" data-ruolo="Ds" onclick="setCmFiltroRuolo(this,'Ds')">Ds</button>
+      <button class="filtro-btn" data-ruolo="Dd" onclick="setCmFiltroRuolo(this,'Dd')">Dd</button>
+      <button class="filtro-btn" data-ruolo="B" onclick="setCmFiltroRuolo(this,'B')">B</button>
+      <button class="filtro-btn" data-ruolo="M" onclick="setCmFiltroRuolo(this,'M')">M</button>
+      <button class="filtro-btn" data-ruolo="E" onclick="setCmFiltroRuolo(this,'E')">E</button>
+      <button class="filtro-btn" data-ruolo="C" onclick="setCmFiltroRuolo(this,'C')">C</button>
+      <button class="filtro-btn" data-ruolo="T" onclick="setCmFiltroRuolo(this,'T')">T</button>
+      <button class="filtro-btn" data-ruolo="W" onclick="setCmFiltroRuolo(this,'W')">W</button>
+      <button class="filtro-btn" data-ruolo="A" onclick="setCmFiltroRuolo(this,'A')">A</button>
+      <button class="filtro-btn" data-ruolo="Pc" onclick="setCmFiltroRuolo(this,'Pc')">Pc</button>
+    </div>
+    <div id="cm-lista" class="cm-lista"></div>
+    <button class="btn btn-secondary mt-16" onclick="closeModal()">Chiudi</button>
+  </div>
+
+  <!-- Modal: Assegna manuale (senza puja) -->
+  <div id="modal-assegna-manuale" class="modal modal-lg hidden">
+    <h2 class="modal-title">✅ Assegna giocatore</h2>
+    <p class="modal-subtitle">Cerca il giocatore, seleziona la squadra e il prezzo, poi conferma.</p>
     <div class="form-group">
-      <label>Ruolo</label>
-      <select id="inp-cm-ruolo">
-        <option value="">— nessun ruolo —</option>
-        <option value="P">P — Portiere</option>
-        <option value="D">D — Difensore</option>
-        <option value="C">C — Centrocampista</option>
-        <option value="A">A — Attaccante</option>
-      </select>
+      <input type="text" id="inp-am-search" placeholder="🔍 Cerca giocatore..." autocomplete="off" oninput="renderAssegnaManualeLista()">
+    </div>
+    <div id="am-lista" class="cm-lista"></div>
+    <div class="form-group mt-16">
+      <label>Squadra</label>
+      <select id="inp-am-squadra"></select>
+    </div>
+    <div class="am-prezzo-row">
+      <div class="form-group" style="flex:1;margin-bottom:0">
+        <label>Prezzo (crediti)</label>
+        <input type="number" id="inp-am-prezzo" min="1" value="1">
+      </div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-primary" onclick="confermaChiamataManuale()">📢 Chiama</button>
+      <button class="btn btn-success" onclick="confermaAssegnaManuale()">✅ Assegna</button>
       <button class="btn btn-secondary" onclick="closeModal()">Annulla</button>
     </div>
   </div>
