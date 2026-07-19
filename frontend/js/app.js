@@ -161,19 +161,20 @@ window.esciDallAsta = function() {
 // ══ RECONNECTION HANDLERS ════════════════
 socket.on('connect', () => {
   nascondiEmergenza();
-  const schermataHome = document.getElementById('screen-home');
-  const sullaHome = !schermataHome || schermataHome.classList.contains('active');
-  // Re-join only if we were already in an asta (not creating a new one from home)
-  if (!sullaHome && S.astaId && S.miaSquadra) {
+  // Already have an active in-memory session (e.g. reconnect mid-asta): rejoin immediately
+  if (S.astaId && S.miaSquadra) {
     socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: S.isAdmin });
     return;
   }
-  // First load: restore session and join
+  // Fresh page load: restore any saved session from localStorage and rejoin proactively,
+  // regardless of which screen the static HTML marks as active by default.
   const sess = getSessione();
-  if (sess && sess.astaId && !S.asta && !sullaHome) {
+  if (sess && sess.astaId && sess.nomeSquadra) {
     S.astaId = sess.astaId;
     S.miaSquadra = sess.nomeSquadra;
-    S.isAdmin = sess.isAdmin;
+    S.isAdmin = !!sess.isAdmin;
+    document.getElementById('lobby-info-asta').textContent = 'Connessione in corso...';
+    showScreen('screen-lobby');
     socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: S.isAdmin });
   }
 });
@@ -229,6 +230,7 @@ function showScreen(id) {
 // ════ HOME ════════════════════════════════════
 
 // Fetch squads from the asta and show dropdown
+let _joinAstaInfo = null; // caches last fetched asta info (id + adminNome) for the join form
 async function fetchAstaSquadrePerJoin(rawId) {
   if (!rawId) return;
   let astaId = rawId.trim();
@@ -246,6 +248,7 @@ async function fetchAstaSquadrePerJoin(rawId) {
       return;
     }
     const asta = await res.json();
+    _joinAstaInfo = { astaId, adminNome: asta.adminNome || null };
     if (asta.squadre && asta.squadre.length > 0) {
       // Show dropdown with team names
       const sel = document.createElement('select');
@@ -346,8 +349,15 @@ function setupHome() {
     if (input.includes('id=')) {
       try { input = new URL(input, window.location.origin).searchParams.get('id'); } catch(e) {}
     }
-    S.astaId = input; S.miaSquadra = nome; S.isAdmin = false; S.asta = null;
-    socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: false }); salvaSessione();
+    // Determine real admin status: either we already know it from a saved session,
+    // or by comparing the chosen team name against the asta's known adminNome.
+    const sessPrev = getSessione();
+    const isAdminReale = !!(
+      (sessPrev && sessPrev.astaId === input && sessPrev.nomeSquadra === nome && sessPrev.isAdmin) ||
+      (_joinAstaInfo && _joinAstaInfo.astaId === input && _joinAstaInfo.adminNome && _joinAstaInfo.adminNome === nome)
+    );
+    S.astaId = input; S.miaSquadra = nome; S.isAdmin = isAdminReale; S.asta = null;
+    socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: isAdminReale }); salvaSessione();
     showScreen('screen-lobby');
     document.getElementById('lobby-info-asta').textContent = 'Connessione in corso...';
     history.replaceState({}, '', '/?id=' + S.astaId);
@@ -587,6 +597,16 @@ function setupTabs() {
 socket.on('stato-asta', (asta) => {
   S.asta = asta;
   salvaStatoLocale(asta);
+  // Make sure we land on the right screen regardless of how we got here
+  // (manual join form, or automatic rejoin after reload/reconnect).
+  if (asta.stato === 'attesa') {
+    showScreen('screen-lobby');
+  } else if (asta.stato === 'in_corso') {
+    showScreen('screen-asta');
+  } else if (asta.stato === 'completata') {
+    showScreen('screen-fine-asta');
+    renderFineAsta();
+  }
   renderLobbySquadre(asta.squadre);
   if (asta.stato === 'in_corso' || asta.stato === 'completata') {
     renderBudgetBar(asta.squadre);
