@@ -306,7 +306,7 @@ app.post('/api/asta', (req, res) => {
           const tipo = g.tipo === 'RIC' ? 'RIC' : g.tipo === 'PLUS' ? 'PLUS' : 'NN';
           asta.poolGiocatori.push({
             id: uuidv4(), nome: g.nome, ruolo: g.ruolo || '', tipo,
-            costoOriginale: g.costo || 1, squadraOriginale: sq.nome,
+            costoOriginale: g.costo || 1, valore: g.valore || 0, squadraOriginale: sq.nome,
             estratto: false, assegnato: false, scartato: false
           });
         });
@@ -440,6 +440,23 @@ io.on('connection', (socket) => {
     avviaChiamata(astaId, giocatore);
   });
 
+  socket.on('assegna-manuale', ({ astaId, giocatoreId, squadraNome, prezzo }) => {
+    const asta = aste.get(astaId);
+    if (!asta || asta.stato !== 'in_corso' || !isAdmin(asta, socket.id)) return;
+    if (asta.chiamataAttuale) return socket.emit('errore', { msg: 'Chiamata già in corso, termina prima' });
+    const giocatore = asta.poolGiocatori.find(g => g.id === giocatoreId && !g.estratto && !g.assegnato && !g.scartato);
+    const squadra = getSquadra(asta, squadraNome);
+    if (!giocatore) return socket.emit('errore', { msg: 'Giocatore non trovato o non disponibile' });
+    if (!squadra) return socket.emit('errore', { msg: 'Squadra non trovata' });
+    const p = Math.max(1, parseInt(prezzo) || 1);
+    if (squadra.crediti < p) return socket.emit('errore', { msg: 'Crediti insufficienti per questa squadra' });
+    giocatore.estratto = true;
+    assegnaGiocatoreASquadra(asta, giocatore, squadra, p);
+    asta.storico.push({ giocatore, prezzo: p, squadra: squadra.nome, tipo: 'normale', timestamp: new Date().toISOString() });
+    io.to(astaId).emit('giocatore-assegnato', { giocatore, prezzo: p, squadra: squadra.nome, tipo: 'normale' });
+    broadcastStato(astaId, true);
+  });
+
   socket.on('rilancio', ({ astaId, offerta }) => {
     const asta = aste.get(astaId);
     if (!asta || !asta.chiamataAttuale || asta.chiamataAttuale.aspettandoConferma) return;
@@ -563,7 +580,7 @@ io.on('connection', (socket) => {
       squadra.svincoliUsati = (squadra.svincoliUsati || 0) + 1;
       const gPool = asta.poolGiocatori.find(p => p.id === gId);
       if (gPool) { gPool.estratto = false; gPool.assegnato = false; gPool.scartato = false; }
-      else asta.poolGiocatori.push({ id: gId, nome: g.nome, ruolo: g.ruolo || '', tipo: 'NN', costoOriginale: g.prezzo, squadraOriginale: null, estratto: false, assegnato: false, scartato: false });
+      else asta.poolGiocatori.push({ id: gId, nome: g.nome, ruolo: g.ruolo || '', tipo: 'NN', costoOriginale: g.prezzo, valore: g.valore || 0, squadraOriginale: null, estratto: false, assegnato: false, scartato: false });
     });
     squadra.crediti += creditiRecuperati;
     assegnaGiocatoreASquadra(asta, popup.giocatore, squadra, popup.prezzoFinale);
