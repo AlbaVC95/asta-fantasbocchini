@@ -117,6 +117,8 @@ function avviaChiamata(astaId, giocatore) {
       };
       broadcastStato(astaId);
       const popupData = { giocatore, costoConferma: giocatore.costoOriginale, proprietario: giocatore.squadraOriginale };
+      // Show card to ALL players (aspettandoConferma=true suppresses rilancio box on client)
+      io.to(astaId).emit('nuova-chiamata', asta.chiamataAttuale);
       emitToSquadra(astaId, giocatore.squadraOriginale, 'popup-ric-conferma', popupData);
       emitToAdmins(astaId, 'popup-ric-conferma-admin', popupData);
       return;
@@ -478,7 +480,9 @@ io.on('connection', (socket) => {
       startTimer(astaId, 'prima');
     } else {
       // Riapri dal prezzo attuale, timer rilancio
-      io.to(astaId).emit('aggiorna-offerta', asta.chiamataAttuale);
+      asta.chiamataAttuale.fase = 'rilancio';
+      asta.chiamataAttuale.aspettandoConferma = false;
+      io.to(astaId).emit('nuova-chiamata', asta.chiamataAttuale);
       startTimer(astaId, 'rilancio');
     }
     broadcastStato(astaId);
@@ -584,6 +588,7 @@ io.on('connection', (socket) => {
       default: return socket.emit('errore', { msg: 'Tipo trade-off non valido' });
     }
     broadcastStato(astaId); socket.emit('tradeoff-ok');
+    io.to(astaId).emit('tradeoff-usato', { nomeSquadra: sq.nome, tipo });
   });
 
   socket.on('annulla-assegnazione', ({ astaId }) => {
