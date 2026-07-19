@@ -239,8 +239,28 @@
       <div id="tab-storico" class="tab-content active">
         <ul id="storico-list" class="storico-list"></ul>
       </div>
-      <div id="tab-rose" class="tab-content">
-        <div id="rose-panel"></div>
+      <div id="tab-rose" class="tab-content tab-rose-content">
+        <div id="rose-panel" class="rose-container"></div>
+        <div class="rose-search-row" id="rose-search-row">
+          <select id="rose-filtro-ruolo" class="rose-sel">
+            <option value="">Tutti i Ruoli</option>
+            <option value="Por">Por</option>
+            <option value="P">P</option>
+            <option value="Dc">Dc</option>
+            <option value="Dd">Dd</option>
+            <option value="Ds">Ds</option>
+            <option value="E">E</option>
+            <option value="D">D</option>
+            <option value="M">M</option>
+            <option value="C">C</option>
+            <option value="W">W</option>
+            <option value="T">T</option>
+            <option value="A">A</option>
+            <option value="Pc">Pc</option>
+          </select>
+          <input type="text" id="rose-cerca" class="rose-inp" placeholder="🔍 Cerca giocatore...">
+          <button class="rose-cerca-btn" onclick="aggiornaFiltroRose()">Cerca</button>
+        </div>
       </div>
       <div id="tab-liberi" class="tab-content">
         <div class="filtro-ruolo">
@@ -253,6 +273,12 @@
         <ul id="liberi-list" class="liberi-list"></ul>
       </div>
     </div>
+
+  <!-- Rose footer (visible solo su tab rose) -->
+  <div id="rose-footer" class="rose-footer">
+    <button class="btn-rose-assegna" id="btn-rose-assegna">ASSEGNA</button>
+    <button class="btn-rose-chiama" id="btn-rose-chiama">🔨 CHIAMA</button>
+  </div>
   </section>
 
   <!-- ══════════ SCREEN FINE ASTA ══════════ -->
