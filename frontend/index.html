@@ -219,17 +219,11 @@
 
         <!-- Rilancio bar -->
         <div id="rilancio-box" class="rilancio-box hidden">
-          <div class="rilancio-top-row">
-            <button class="btn-rilancio-adj" id="btn-minus">−</button>
-            <input type="number" id="inp-rilancio" min="1" value="1" class="inp-rilancio">
-            <button class="btn-rilancio-adj" id="btn-plus">+</button>
-            <div class="quick-bids">
-              <button class="btn-quick" id="btn-quick-1">+1</button>
-              <button class="btn-quick" id="btn-quick-5">+5</button>
-              <button class="btn-quick" id="btn-quick-10">+10</button>
-            </div>
+          <div class="quick-bids-row">
+            <button class="btn-quick" id="btn-quick-5">+5</button>
+            <button class="btn-quick" id="btn-quick-10">+10</button>
           </div>
-          <button id="btn-rilancio" class="btn-rilancia">🔥 RILANCIA</button>
+          <button id="btn-rilancio" class="btn-rilancia">🔥 RILANCIA +1</button>
         </div>
 
         <!-- Tabs -->
@@ -268,10 +262,19 @@
           <div id="tab-liberi" class="tab-content">
             <div class="filtro-ruolo">
               <button class="filtro-btn active" data-ruolo="tutti">Tutti</button>
-              <button class="filtro-btn" data-ruolo="P">🧤 P</button>
-              <button class="filtro-btn" data-ruolo="D">🛡️ D</button>
-              <button class="filtro-btn" data-ruolo="C">⚙️ C</button>
-              <button class="filtro-btn" data-ruolo="A">⚡ A</button>
+              <button class="filtro-btn" data-ruolo="Por">Por</button>
+              <button class="filtro-btn" data-ruolo="Dd">Dd</button>
+              <button class="filtro-btn" data-ruolo="Ds">Ds</button>
+              <button class="filtro-btn" data-ruolo="Dc">Dc</button>
+              <button class="filtro-btn" data-ruolo="D">D</button>
+              <button class="filtro-btn" data-ruolo="B">B</button>
+              <button class="filtro-btn" data-ruolo="M">M</button>
+              <button class="filtro-btn" data-ruolo="E">E</button>
+              <button class="filtro-btn" data-ruolo="C">C</button>
+              <button class="filtro-btn" data-ruolo="T">T</button>
+              <button class="filtro-btn" data-ruolo="W">W</button>
+              <button class="filtro-btn" data-ruolo="A">A</button>
+              <button class="filtro-btn" data-ruolo="Pc">Pc</button>
             </div>
             <ul id="liberi-list" class="liberi-list"></ul>
           </div>
@@ -496,6 +499,14 @@
     </div>
     <p class="emerg-sub">I tuoi dati sono al sicuro in memoria locale</p>
   </div>
+  <!-- Modal: Admin decisione (RIC/PLUS/Recompra) -->
+  <div id="modal-admin-override" class="modal hidden">
+    <h2 class="modal-title" id="mao-title">&#x26A0; Decisione richiesta</h2>
+    <div class="modal-body" id="mao-info"></div>
+    <div class="modal-actions" id="mao-actions"></div>
+    <button class="btn btn-secondary mt-16" onclick="closeModal()" style="width:100%">Chiudi</button>
+  </div>
+
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
