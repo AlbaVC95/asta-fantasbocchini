@@ -1,20 +1,175 @@
 // ASTA FANTASBOCCHINI — CLIENT v2
-const socket = io();
+const socket = io({
+  reconnection: true,
+  reconnectionAttempts: Infinity,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000
+});
+
 const S = {
   astaId: null, miaSquadra: null, isAdmin: false, asta: null,
   filtroRuolo: 'tutti', svincoloSel: new Set(), popupAttivoCli: null,
   attesaConferma: false
 };
 
+// ══ SESSION PERSISTENCE ══════════════════
+function salvaSessione() {
+  if (!S.astaId || !S.miaSquadra) return;
+  localStorage.setItem('asta_session', JSON.stringify({
+    astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: S.isAdmin
+  }));
+}
+function cancSessione() { localStorage.removeItem('asta_session'); }
+function getSessione() {
+  try { return JSON.parse(localStorage.getItem('asta_session') || 'null'); } catch(e) { return null; }
+}
+
+// ══ STATO LOCALE ═════════════════════════
+function salvaStatoLocale(asta) {
+  if (!asta || !asta.id) return;
+  try {
+    localStorage.setItem('asta_stato_' + asta.id,
+      JSON.stringify({ timestamp: new Date().toISOString(), asta }));
+  } catch(e) {}
+}
+function getStatoLocale(id) {
+  try { return JSON.parse(localStorage.getItem('asta_stato_' + (id || S.astaId)) || 'null'); } catch(e) { return null; }
+}
+
+// ══ EMERGENCY / DISCONNECT ═══════════════
+function mostraEmergenza() {
+  const el = document.getElementById('screen-emergenza');
+  if (el) el.classList.remove('hidden');
+}
+function nascondiEmergenza() {
+  const el = document.getElementById('screen-emergenza');
+  if (el) el.classList.add('hidden');
+}
+
+// ══ BACKUP DOWNLOAD ══════════════════════
+window.downloadBackupJSON = function(fromLocal) {
+  let data;
+  if (fromLocal || !S.asta) {
+    const saved = getStatoLocale();
+    if (!saved) return toast('Nessun backup locale disponibile', 'error');
+    data = saved;
+  } else {
+    data = { backup: true, timestamp: new Date().toISOString(), asta: S.asta };
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const ts   = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  a.href = url; a.download = 'backup-asta-' + ts + '.json';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  const bm = document.getElementById('backup-menu');
+  if (bm) bm.classList.add('hidden');
+};
+
+window.downloadBackupExcel = function() {
+  const asta = S.asta;
+  if (!asta) return toast('Nessun dato disponibile', 'error');
+  const XLSX = window.XLSX;
+  if (!XLSX) return toast('Libreria Excel non disponibile', 'error');
+  const wb = XLSX.utils.book_new();
+  // Foglio 1: Riepilogo
+  const riepilogo = asta.squadre.map(sq => ({
+    'Squadra': sq.nome, 'Crediti': sq.crediti,
+    'Giocatori': (sq.rosa||[]).length,
+    'Slot RIC usati': sq.slotsRICUsati||0, 'Slot RIC tot': sq.slotsRIC||0,
+    'Slot PLUS usati': sq.slotsPLUSUsati||0, 'Slot PLUS tot': sq.slotsPLUS||0,
+    'Recompra usata': sq.recompraUsata ? 'Sì' : 'No'
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riepilogo), 'Riepilogo');
+  // Foglio 2: Rose
+  const roseRows = [];
+  asta.squadre.forEach(sq => (sq.rosa||[]).forEach(g => {
+    roseRows.push({ 'Squadra': sq.nome, 'Giocatore': g.nome, 'Ruolo': g.ruolo||'?', 'Prezzo': g.prezzo, 'Tipo': g.tipo||'normale' });
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(roseRows.length ? roseRows : [{}]), 'Rose');
+  // Foglio 3: Storico
+  const storico = (asta.storico||[]).map((s,i) => ({
+    '#': i+1, 'Giocatore': s.giocatore ? s.giocatore.nome : '?',
+    'Ruolo': s.giocatore ? (s.giocatore.ruolo||'?') : '?',
+    'Prezzo': s.prezzo, 'Squadra': s.squadra||'', 'Tipo': s.tipo||''
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(storico.length ? storico : [{}]), 'Storico');
+  // Foglio 4: Liberi
+  const liberi = (asta.poolGiocatori||[])
+    .filter(g => !g.assegnato && !g.scartato)
+    .map(g => ({ 'Giocatore': g.nome, 'Ruolo': g.ruolo||'?', 'Costo': g.costoOriginale, 'Tipo': g.tipo||'NN', 'Squadra orig.': g.squadraOriginale||'' }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(liberi.length ? liberi : [{}]), 'Liberi');
+  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  XLSX.writeFile(wb, 'backup-asta-' + ts + '.xlsx');
+  const bm = document.getElementById('backup-menu');
+  if (bm) bm.classList.add('hidden');
+};
+
+window.downloadBackupEmergenza = function() { downloadBackupJSON(true); };
+
+window.apriMenuBackup = function() {
+  const bm = document.getElementById('backup-menu');
+  if (bm) bm.classList.toggle('hidden');
+};
+
+window.esciDallAsta = function() {
+  if (!confirm('Vuoi uscire dall'asta? I dati rimarranno sul server.')) return;
+  cancSessione();
+  socket.disconnect();
+  showScreen('screen-home');
+  S.astaId = null; S.miaSquadra = null; S.isAdmin = false; S.asta = null;
+  history.replaceState({}, '', '/');
+  setTimeout(() => socket.connect(), 500);
+};
+
+// ══ RECONNECTION HANDLERS ════════════════
+socket.on('connect', () => {
+  nascondiEmergenza();
+  const sess = getSessione();
+  if (sess && sess.astaId && !S.asta) {
+    S.astaId = sess.astaId;
+    S.miaSquadra = sess.nomeSquadra;
+    S.isAdmin = sess.isAdmin;
+    socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: S.isAdmin });
+  }
+});
+
+socket.on('disconnect', (reason) => {
+  if (S.astaId && reason !== 'io client disconnect') {
+    mostraEmergenza();
+    toast('Connessione persa — riconnessione in corso...', 'error');
+  }
+});
+
+socket.on('reconnect', () => {
+  nascondiEmergenza();
+  toast('Riconnesso!', 'success');
+  if (S.astaId && S.miaSquadra) {
+    socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: S.isAdmin });
+  }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
   if (id) {
     document.getElementById('inp-join-id').value = id;
-    // Auto-load team dropdown if ID is in URL
     setTimeout(() => fetchAstaSquadrePerJoin(id), 300);
   }
+  // Restore session from localStorage
+  const sess = getSessione();
+  if (sess && sess.astaId) {
+    S.astaId = sess.astaId; S.miaSquadra = sess.nomeSquadra; S.isAdmin = sess.isAdmin;
+    if (!id) history.replaceState({}, '', '/?id=' + sess.astaId);
+  }
   setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs();
+  // Warn before leaving page if in active asta
+  window.addEventListener('beforeunload', (e) => {
+    if (S.astaId && S.asta && S.asta.stato === 'in_corso') {
+      e.preventDefault(); e.returnValue = '';
+    }
+  });
 });
 
 function showScreen(id) {
@@ -117,7 +272,7 @@ function setupHome() {
       const data = await res.json();
       if (data.success) {
         S.astaId = data.astaId; S.miaSquadra = adminNome; S.isAdmin = true;
-        socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: true });
+        socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: true }); salvaSessione();
         showScreen('screen-lobby');
         const link = window.location.origin + '/?id=' + S.astaId;
         document.getElementById('lobby-link').textContent = link;
@@ -145,7 +300,7 @@ function setupHome() {
       try { input = new URL(input, window.location.origin).searchParams.get('id'); } catch(e) {}
     }
     S.astaId = input; S.miaSquadra = nome; S.isAdmin = false;
-    socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: false });
+    socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: false }); salvaSessione();
     showScreen('screen-lobby');
     document.getElementById('lobby-info-asta').textContent = 'Connessione in corso...';
     history.replaceState({}, '', '/?id=' + S.astaId);
@@ -384,6 +539,7 @@ function setupTabs() {
 // ════ SOCKET EVENTS ═══════════════════════════
 socket.on('stato-asta', (asta) => {
   S.asta = asta;
+  salvaStatoLocale(asta);
   renderLobbySquadre(asta.squadre);
   if (asta.stato === 'in_corso' || asta.stato === 'completata') {
     renderBudgetBar(asta.squadre);
@@ -451,7 +607,7 @@ socket.on('giocatore-scartato', ({ giocatore }) => {
 socket.on('assegnazione-annullata', (item) => toast('Annullato: ' + (item.giocatore ? item.giocatore.nome : '?'), 'info'));
 socket.on('scartati-reintrodotti', ({ count }) => toast(count + ' giocatori reintrodotti', 'success'));
 socket.on('tradeoff-ok', () => { closeModal(); toast('Trade-off eseguito!', 'success'); });
-socket.on('asta-terminata', () => { showScreen('screen-fine-asta'); renderFineAsta(); toast('Asta terminata!', 'success'); });
+socket.on('asta-terminata', () => { cancSessione(); showScreen('screen-fine-asta'); renderFineAsta(); toast('Asta terminata!', 'success'); });
 socket.on('errore', ({ msg }) => toast(msg, 'error'));
 
 socket.on('attesa-conferma', ({ giocatore, offerta, squadra }) => {
