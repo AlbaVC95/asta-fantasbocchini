@@ -915,7 +915,7 @@ body {
   padding: 20px;
   backdrop-filter: blur(8px);
 }
-.screen-emergenza.hidden { display: none; }
+.screen-emergenza.hidden { display: none; pointer-events: none; }
 
 .emerg-card {
   background: var(--bg-card);
