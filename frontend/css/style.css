@@ -215,9 +215,9 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .filtro-btn.active{background:var(--primary-subtle);border-color:var(--primary);color:var(--primary-bright)}
 .liberi-list{list-style:none;display:flex;flex-direction:column;gap:3px;max-height:320px;overflow-y:auto}
 .liberi-list li{display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--bg-main);border-radius:7px;font-size:.78rem}
-.liberi-list li.scartato{opacity:.45;filter:grayscale(.6)}
+.liberi-list li.scartato{opacity:.5;filter:grayscale(.7);cursor:default}
 .liberi-list li.scartato .l-nome{text-decoration:line-through}
-.liberi-list li.scartato{cursor:default}
+.l-scartato-tag{font-size:.6rem;font-weight:800;letter-spacing:.04em;color:var(--text-muted);background:rgba(255,255,255,.08);padding:1px 6px;border-radius:5px;text-transform:uppercase}
 .libero-nome{flex:1;font-weight:500}.libero-sq{font-size:.72rem;color:var(--text-muted)}
 .libero-costo{font-family:var(--font-display);font-weight:700;color:var(--gold);font-size:.85rem}
 .btn-chiama-libero{background:var(--primary-subtle);border:1px solid rgba(0,168,255,.3);color:var(--primary-bright);border-radius:7px;padding:4px 10px;font-size:.75rem;cursor:pointer;transition:all .15s}
