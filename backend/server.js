@@ -99,9 +99,10 @@ function calcolaMaxOfferta(asta, squadra) {
   return Math.max(1, squadra.crediti + creditiRecuperabili - creditiRiservati);
 }
 
-function assegnaGiocatoreASquadra(asta, giocatore, squadra, prezzo) {
+function assegnaGiocatoreASquadra(asta, giocatore, squadra, prezzo, usatoSlotRIC) {
   giocatore.assegnato = true;
-  squadra.rosa.push({ ...giocatore, prezzo, id: giocatore.id });
+  const tipoFinale = usatoSlotRIC ? 'PLUS' : (prezzo >= 20 ? 'NN' : 'RIC');
+  squadra.rosa.push({ ...giocatore, prezzo, id: giocatore.id, tipo: tipoFinale });
   squadra.crediti -= prezzo;
 }
 
@@ -516,7 +517,7 @@ io.on('connection', (socket) => {
     clearTimer(astaId); chiamata.aspettandoConferma = false;
     if (risposta === 'si') {
       const squadra = getSquadra(asta, chiamata.proprietarioPrecedente);
-      assegnaGiocatoreASquadra(asta, chiamata.giocatore, squadra, chiamata.giocatore.costoOriginale);
+      assegnaGiocatoreASquadra(asta, chiamata.giocatore, squadra, chiamata.giocatore.costoOriginale, true);
       squadra.slotsRICUsati++;
       asta.storico.push({ giocatore: chiamata.giocatore, prezzo: chiamata.giocatore.costoOriginale, squadra: chiamata.proprietarioPrecedente, tipo: 'riconferma', timestamp: new Date().toISOString() });
       asta.chiamataAttuale = null;
