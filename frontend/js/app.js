@@ -432,6 +432,20 @@ function setupAsta() {
   document.getElementById('btn-estrai').addEventListener('click', () => socket.emit('estrai-giocatore', { astaId: S.astaId }));
   document.getElementById('btn-chiama-manuale').addEventListener('click', () => apriModalChiamaManuale());
   document.getElementById('btn-assegna-manuale').addEventListener('click', () => apriModalAssegnaManuale());
+
+  // Pillola flottante compatta (angolo basso-destra) — stessa funzione dei bottoni admin, solo admin
+  const pillChiama = document.getElementById('pill-chiama');
+  if (pillChiama) pillChiama.addEventListener('click', () => {
+    if (!S.isAdmin) return;
+    if (S.asta && S.asta.chiamataAttuale) return toast('Chiamata già in corso', 'error');
+    apriModalChiamaManuale();
+  });
+  const pillAssegna = document.getElementById('pill-assegna');
+  if (pillAssegna) pillAssegna.addEventListener('click', () => {
+    if (!S.isAdmin) return;
+    if (S.asta && S.asta.chiamataAttuale) return toast('Chiamata già in corso', 'error');
+    apriModalAssegnaManuale();
+  });
   document.getElementById('btn-annulla').addEventListener('click', () => apriModalAnnullaStorico());
 
   // Conferma / Riapri
