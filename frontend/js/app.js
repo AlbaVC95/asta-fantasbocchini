@@ -807,7 +807,8 @@ socket.on('popup-svincolo-admin', function(popup) {
 // ════ RENDER FUNCTIONS ════════════════════════
 function renderBudgetBar(squadre) {
   const creditiIniziali = S.asta ? (S.asta.creditiPerSquadra || 500) : 500;
-  document.getElementById('budget-bar').innerHTML = squadre.map(sq => {
+  const squadreOrdinate = squadre.slice().sort((a, b) => b.crediti - a.crediti);
+  document.getElementById('budget-bar').innerHTML = squadreOrdinate.map(sq => {
     const pct = Math.round(Math.max(0, sq.crediti / creditiIniziali * 100));
     const isOff = S.asta && S.asta.chiamataAttuale && S.asta.chiamataAttuale.squadraOfferente === sq.nome;
     const cls = ['sidebar-squadra',
