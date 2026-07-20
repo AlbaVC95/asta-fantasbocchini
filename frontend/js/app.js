@@ -1040,10 +1040,10 @@ function renderMioPanel() {
     const ricTot = sq.giocatoriRICTotali || sq.slotsRIC;
     const plusTot = sq.giocatoriPLUSTotali || sq.slotsPLUS;
     counter.innerHTML =
-      '<span class="slot-chip' + (rD===0?' esaurito':'') + '">RIC <span>' + sq.slotsRICUsati + '/' + sq.slotsRIC + '</span> <small class="slot-sub">(' + ricTot + ' da estrarre)</small></span>' +
-      '<span class="slot-chip' + (pD===0?' esaurito':'') + '">PLUS <span>' + sq.slotsPLUSUsati + '/' + sq.slotsPLUS + '</span> <small class="slot-sub">(' + plusTot + ' da estrarre)</small></span>' +
-      '<span class="slot-chip' + (sq.recompraUsata?' esaurito':'') + '">Recompra <span>' + (sq.recompraUsata?'usata':'✓') + '</span></span>' +
-      '<span class="slot-chip">Max <span class="text-accent">' + getMaxOfferta() + 'cr</span></span>';
+      '<span class="slot-chip' + (rD===0?' esaurito':'') + '"><span class="slot-main">RIC <span>' + sq.slotsRICUsati + '/' + sq.slotsRIC + '</span></span><small class="slot-sub">(' + ricTot + ' da estrarre)</small></span>' +
+      '<span class="slot-chip' + (pD===0?' esaurito':'') + '"><span class="slot-main">PLUS <span>' + sq.slotsPLUSUsati + '/' + sq.slotsPLUS + '</span></span><small class="slot-sub">(' + plusTot + ' da estrarre)</small></span>' +
+      '<span class="slot-chip' + (sq.recompraUsata?' esaurito':'') + '"><span class="slot-main">Recompra <span>' + (sq.recompraUsata?'usata':'✓') + '</span></span></span>' +
+      '<span class="slot-chip"><span class="slot-main">Max <span class="text-accent">' + getMaxOfferta() + 'cr</span></span></span>';
     document.getElementById('btn-tradeoff').classList.remove('hidden');
   } else if (S.asta && S.asta.tipoAsta === 'riparazione') {
     counter.classList.remove('hidden');
