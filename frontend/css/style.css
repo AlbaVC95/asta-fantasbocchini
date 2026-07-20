@@ -44,33 +44,33 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .text-muted{color:var(--text-muted)}.text-center{text-align:center}
 .text-accent{color:var(--gold);font-weight:700}.text-danger{color:var(--danger)}.hidden{display:none!important}
 #screen-asta{background:var(--bg-deep)}#screen-asta.active{display:flex!important;flex-direction:column;height:100vh;overflow:hidden}
-.asta-header{position:sticky;top:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 16px;background:rgba(6,12,24,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.asta-header{position:sticky;top:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;height:40px;padding:0 12px;background:rgba(6,12,24,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
 .asta-header-left{display:flex;align-items:center;gap:10px}
-.asta-header-logo{font-size:1.3rem}
-.asta-header-title{font-family:var(--font-display);font-size:1rem;font-weight:800;background:linear-gradient(90deg,var(--primary-bright),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.asta-header-logo{font-size:1.05rem}
+.asta-header-title{font-family:var(--font-display);font-size:.85rem;font-weight:800;background:linear-gradient(90deg,var(--primary-bright),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .asta-header-right{display:flex;align-items:center;gap:8px}
-.btn-sound{background:none;border:1px solid var(--border);border-radius:8px;color:var(--text-secondary);font-size:1rem;padding:6px 10px;cursor:pointer;transition:all .2s}
+.btn-sound{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text-secondary);font-size:.85rem;padding:4px 7px;cursor:pointer;transition:all .2s}
 .btn-sound:hover{border-color:var(--primary);color:var(--primary-bright)}.btn-sound.muted{opacity:.4}
 .asta-row-panels{display:flex;gap:10px;padding:8px 12px;flex-shrink:0}
-.asta-row-panels>#admin-panel{flex:1.6;max-height:320px;overflow-y:auto}
-.asta-row-panels>#mio-panel{flex:1.3;max-height:195px;overflow-y:auto}
-.panel-budget{background:var(--bg-abyss);border:1px solid var(--border);border-radius:12px;padding:10px;flex:0.8;min-width:0;overflow-y:auto;max-height:140px}
-.panel-budget-hdr{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:0 0 6px;border-bottom:1px solid var(--border);margin-bottom:6px}
-.sidebar-squadre-list{display:flex;flex-direction:column;gap:5px}
-.sidebar-squadra{padding:6px 9px;border-radius:8px;border-left:3px solid transparent;transition:all .2s;background:var(--bg-card)}
+.asta-row-panels>#admin-panel{flex:1;max-height:320px;overflow-y:auto}
+.asta-row-panels>#mio-panel{flex:1;max-height:195px;overflow-y:auto}
+.panel-budget{background:var(--bg-abyss);border:1px solid var(--border);border-radius:12px;padding:6px 8px;flex:1;min-width:0;overflow-y:auto;max-height:140px}
+.panel-budget-hdr{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:0 0 3px;border-bottom:1px solid var(--border);margin-bottom:3px}
+.sidebar-squadre-list{display:flex;flex-direction:column;gap:2px}
+.sidebar-squadra{padding:3px 6px;border-radius:6px;border-left:2px solid transparent;transition:all .2s;background:var(--bg-card)}
 .sidebar-squadra:hover{background:var(--bg-elevated)}
 .sidebar-squadra.mia-squadra{border-left-color:var(--primary);background:var(--primary-subtle)}
 .sidebar-squadra.offerente-attuale{border-left-color:var(--gold);background:var(--gold-subtle)}
 .sidebar-squadra.critica{border-left-color:var(--danger)}
-.sq-top{display:flex;align-items:center;gap:5px;margin-bottom:2px}
-.sq-dot-online{font-size:.55rem;flex-shrink:0}
-.sq-nome{flex:1;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-secondary)}
+.sq-top{display:flex;align-items:center;gap:5px;margin-bottom:0}
+.sq-dot-online{font-size:.5rem;flex-shrink:0}
+.sq-nome{flex:1;font-size:.66rem;font-weight:600;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-secondary);line-height:1.2}
 .sidebar-squadra.mia-squadra .sq-nome{color:var(--primary-bright)}
 .sidebar-squadra.offerente-attuale .sq-nome{color:var(--gold-bright)}
-.sq-crediti{font-family:var(--font-display);font-size:.78rem;font-weight:800;color:var(--gold);flex-shrink:0}
-.budget-progress{height:3px;border-radius:3px;background:rgba(255,255,255,.06);margin-bottom:2px;overflow:hidden}
+.sq-crediti{font-family:var(--font-display);font-size:.7rem;font-weight:800;color:var(--gold);flex-shrink:0;line-height:1.2}
+.budget-progress{height:2px;border-radius:2px;background:rgba(255,255,255,.06);margin-top:1px;overflow:hidden}
 .budget-progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--success),var(--gold));transition:width .5s}
-.sq-bottom{font-size:.65rem;color:var(--text-muted)}
+.sq-bottom{display:none}
 .asta-row-puja{display:flex;align-items:flex-start;gap:12px;padding:0 12px 6px;flex-shrink:0}
 .asta-row-puja .card-timer-group{flex:1;min-width:0}
 .asta-row-puja .rilancio-box{flex:0 0 200px}
@@ -96,7 +96,7 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .card-enter{animation:card-enter .4s cubic-bezier(.34,1.56,.64,1)}
 @keyframes price-up{0%{transform:scale(1.35);color:var(--gold-bright);filter:brightness(1.5)}100%{transform:scale(1);color:var(--gold);filter:brightness(1)}}
 .price-bump{animation:price-up .35s ease-out}
-.badge-ruolo{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:28px;padding:0 8px;border-radius:7px;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;flex-shrink:0}
+.badge-ruolo{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;padding:0 6px;border-radius:6px;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;flex-shrink:0}
 .badge-ruolo.r-Por{background:linear-gradient(135deg,#f5a623,#e09000);color:#000}
 .badge-ruolo.r-P{background:linear-gradient(135deg,#f5a623,#e09000);color:#000}
 .badge-ruolo.r-Dc{background:linear-gradient(135deg,#2ecc71,#229954);color:#fff}
@@ -180,8 +180,8 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .tab-btn:hover{color:var(--text-primary);background:var(--bg-elevated)}
 .tab-btn.active{color:var(--primary-bright);border-bottom-color:var(--primary);background:var(--primary-subtle)}
 .tab-content{display:none;padding:14px;overflow-y:auto}.tab-content.active{display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto}.tab-content.active.tab-rose-content{padding:0;overflow:hidden;display:flex;flex-direction:column}
-.storico-list{list-style:none;display:flex;flex-direction:column;gap:4px}
-.storico-list li{display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--bg-main);border-radius:8px;font-size:.82rem;flex-wrap:wrap}
+.storico-list{list-style:none;display:flex;flex-direction:column;gap:3px}
+.storico-list li{display:flex;align-items:center;gap:5px;padding:5px 8px;background:var(--bg-main);border-radius:7px;font-size:.78rem;flex-wrap:wrap}
 .storico-nome{flex:1;font-weight:600;color:var(--text-primary)}.storico-sq{color:var(--text-secondary);font-size:.75rem}
 .storico-prezzo{color:var(--gold);font-weight:700;font-family:var(--font-display)}
 .storico-tipo{padding:1px 6px;border-radius:4px;font-size:.68rem;font-weight:700;text-transform:uppercase}
@@ -191,11 +191,11 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .tipo-tag-plusvalenza{background:rgba(165,94,234,.15);color:#c49bff}
 .tipo-tag-con_svincolo{background:rgba(255,77,42,.12);color:var(--fire-bright)}
 .tipo-tag-scartato{background:rgba(74,99,128,.2);color:var(--text-muted)}
-.filtro-ruolo{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-.filtro-btn{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-secondary);border-radius:8px;padding:5px 12px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s}
+.filtro-ruolo{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.filtro-btn{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-secondary);border-radius:7px;padding:4px 8px;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .15s}
 .filtro-btn.active{background:var(--primary-subtle);border-color:var(--primary);color:var(--primary-bright)}
-.liberi-list{list-style:none;display:flex;flex-direction:column;gap:4px;max-height:320px;overflow-y:auto}
-.liberi-list li{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg-main);border-radius:8px;font-size:.82rem}
+.liberi-list{list-style:none;display:flex;flex-direction:column;gap:3px;max-height:320px;overflow-y:auto}
+.liberi-list li{display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--bg-main);border-radius:7px;font-size:.78rem}
 .libero-nome{flex:1;font-weight:500}.libero-sq{font-size:.72rem;color:var(--text-muted)}
 .libero-costo{font-family:var(--font-display);font-weight:700;color:var(--gold);font-size:.85rem}
 .btn-chiama-libero{background:var(--primary-subtle);border:1px solid rgba(0,168,255,.3);color:var(--primary-bright);border-radius:7px;padding:4px 10px;font-size:.75rem;cursor:pointer;transition:all .15s}
@@ -303,14 +303,14 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .rose-sec-hdr:hover{border-color:var(--primary);color:var(--text-primary)}
 .rose-sec-hdr.collapsed + .rose-sec-body{display:none}
 .rose-sec-body{}
-.rose-player{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;margin-bottom:2px;background:var(--bg-main);font-size:.78rem}
+.rose-player{display:flex;align-items:center;gap:5px;padding:3px 5px;border-radius:5px;margin-bottom:1px;background:var(--bg-main);font-size:.74rem}
 .rose-badge{font-size:.65rem;font-weight:800;padding:2px 5px;border-radius:4px;background:var(--bg-elevated);color:var(--text-secondary);min-width:22px;text-align:center}
 .rose-nome{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rose-prezzo{font-family:var(--font-display);font-weight:700;color:var(--gold);font-size:.75rem}
 .rose-empty{color:var(--text-muted);font-size:.75rem;padding:4px 6px;font-style:italic}
 
 /* ══════ RIGA 1 middle slot (puja per NON-admin) ══════ */
-.puja-panel-slot{flex:1.7;min-width:0;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.puja-panel-slot{flex:1;min-width:0;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
 .puja-panel-slot .card-timer-group{width:100%;gap:4px}
 .puja-panel-slot .rilancio-box{width:100%}
 /* Ultra-compact sizing so full puja content (card+timer+rilancio incl. Rilancia btn + manual input) always fits within the capped height without needing inner scroll */
@@ -339,30 +339,30 @@ body.layout-partecipante .asta-row-panels>#mio-panel{max-height:100%;align-self:
 body.layout-partecipante .asta-row-puja{display:none!important}
 
 /* ══════ RIGA 2 compatta orizzontale (puja per ADMIN) ══════ */
-body.layout-admin .asta-row-puja{align-items:center;padding:4px 12px;gap:10px;height:84px;min-height:84px;max-height:84px;overflow:hidden}
-body.layout-admin .asta-row-puja .card-timer-group{flex-direction:row;align-items:center;gap:10px;flex:1;min-width:0;min-height:0;overflow:hidden}
-body.layout-admin .asta-row-puja .chiamata-card{border-radius:10px;padding:8px 14px;text-align:left;box-shadow:none;min-height:0;overflow:hidden}
-body.layout-admin .asta-row-puja .cc-attesa-badge{display:none}
-body.layout-admin .asta-row-puja .chiamata-card .chiamata-stato{padding:0;font-size:.8rem;white-space:nowrap}
-body.layout-admin .asta-row-puja .chiamata-card{display:flex;align-items:center;gap:14px;flex-wrap:nowrap;overflow:hidden}
-body.layout-admin .asta-row-puja .cc-header{margin-bottom:0;align-items:center;gap:8px;flex:1 1 auto;min-width:0;overflow:hidden}
+body.layout-admin .asta-row-puja{align-items:center;padding:8px 14px;gap:14px;height:150px;min-height:150px;max-height:150px;overflow:hidden}
+body.layout-admin .asta-row-puja .card-timer-group{flex-direction:row;align-items:center;gap:16px;flex:1;min-width:0;min-height:0;overflow:hidden}
+body.layout-admin .asta-row-puja .chiamata-card{border-radius:14px;padding:16px 22px;text-align:left;box-shadow:none;min-height:0;overflow:hidden}
+body.layout-admin .asta-row-puja .cc-attesa-badge{display:block;font-size:.85rem}
+body.layout-admin .asta-row-puja .chiamata-card .chiamata-stato{padding:0;font-size:1.05rem;white-space:nowrap}
+body.layout-admin .asta-row-puja .chiamata-card{display:flex;align-items:center;gap:20px;flex-wrap:nowrap;overflow:hidden}
+body.layout-admin .asta-row-puja .cc-header{margin-bottom:0;align-items:center;gap:12px;flex:1 1 auto;min-width:0;overflow:hidden}
 body.layout-admin .asta-row-puja .cc-info{min-width:0;overflow:hidden}
-body.layout-admin .asta-row-puja .cc-nome{font-size:.95rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body.layout-admin .asta-row-puja .cc-meta{margin-top:0;flex-wrap:nowrap;overflow:hidden}
-body.layout-admin .asta-row-puja .cc-offerta{font-size:1.3rem}
-body.layout-admin .asta-row-puja .cc-offerta-label{display:none}
-body.layout-admin .asta-row-puja .cc-body{margin-bottom:0;display:flex;align-items:center;gap:10px;flex:0 0 auto;white-space:nowrap}
-body.layout-admin .asta-row-puja .cc-offerente{font-size:.75rem;white-space:nowrap}
+body.layout-admin .asta-row-puja .cc-nome{font-size:1.4rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.layout-admin .asta-row-puja .cc-meta{margin-top:2px;flex-wrap:nowrap;overflow:hidden}
+body.layout-admin .asta-row-puja .cc-offerta{font-size:2rem}
+body.layout-admin .asta-row-puja .cc-offerta-label{display:block;font-size:.65rem}
+body.layout-admin .asta-row-puja .cc-body{margin-bottom:0;display:flex;align-items:center;gap:14px;flex:0 0 auto;white-space:nowrap}
+body.layout-admin .asta-row-puja .cc-offerente{font-size:.95rem;white-space:nowrap}
 body.layout-admin .asta-row-puja .timer-ring-container{padding:0;border:none;border-radius:0;width:auto;flex:0 0 auto;background:transparent;box-shadow:none}
-body.layout-admin .asta-row-puja .timer-ring{width:44px;height:44px}
-body.layout-admin .asta-row-puja .timer-number{font-size:1rem}
-body.layout-admin .asta-row-puja .timer-label-text{display:none}
-body.layout-admin .asta-row-puja .rilancio-box{flex-direction:row;align-items:center;padding:6px 10px;gap:8px;flex:0 0 auto;border-radius:10px}
+body.layout-admin .asta-row-puja .timer-ring{width:76px;height:76px}
+body.layout-admin .asta-row-puja .timer-number{font-size:1.5rem}
+body.layout-admin .asta-row-puja .timer-label-text{display:block;font-size:.62rem}
+body.layout-admin .asta-row-puja .rilancio-box{flex-direction:row;align-items:center;padding:10px 16px;gap:12px;flex:0 0 auto;border-radius:14px}
 body.layout-admin .asta-row-puja .quick-bids-row{margin-bottom:0}
-body.layout-admin .asta-row-puja .btn-rilancia{padding:8px 16px;font-size:.85rem;width:auto;white-space:nowrap}
-body.layout-admin .asta-row-puja .inp-rilancio{width:50px!important;font-size:1rem}
+body.layout-admin .asta-row-puja .btn-rilancia{padding:12px 24px;font-size:1.05rem;width:auto;white-space:nowrap}
+body.layout-admin .asta-row-puja .inp-rilancio{width:64px!important;font-size:1.2rem}
 body.layout-admin .asta-row-puja .manual-bid-row{margin:0}
-body.layout-admin .asta-row-puja .btn-manuale{padding:6px 10px;font-size:.85rem}
+body.layout-admin .asta-row-puja .btn-manuale{padding:9px 14px;font-size:1rem}
 
 /* ══════ Bottoni ASSEGNA/CHIAMA floating admin-only ══════ */
 .rose-footer{display:none!important;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--bg-glass);backdrop-filter:blur(16px);border:1px solid var(--border-light);border-radius:16px;padding:10px 14px;gap:10px;flex-wrap:nowrap;box-shadow:0 10px 40px rgba(0,0,0,.5);z-index:900}
@@ -370,7 +370,7 @@ body.layout-admin .rose-footer{display:flex!important}
 .btn-rose-assegna,.btn-rose-chiama{flex:0 0 auto;padding:10px 18px}
 
 /* ══════ Liberi list — nuovo layout con Valore Algoritmico ══════ */
-.liberi-list li{gap:10px}
+.liberi-list li{gap:6px}
 .l-nome{flex:1;font-weight:600;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .l-tipo-badge{font-size:.62rem;font-weight:800;text-transform:uppercase;padding:2px 6px;border-radius:5px;flex-shrink:0}
 .l-tipo-badge.tipo-NN{background:var(--bg-elevated);color:var(--text-muted)}
