@@ -431,6 +431,7 @@ function setupAsta() {
 
   document.getElementById('btn-estrai').addEventListener('click', () => socket.emit('estrai-giocatore', { astaId: S.astaId }));
   document.getElementById('btn-chiama-manuale').addEventListener('click', () => apriModalChiamaManuale());
+  document.getElementById('btn-assegna-manuale').addEventListener('click', () => apriModalAssegnaManuale());
   document.getElementById('btn-annulla').addEventListener('click', () => apriModalAnnullaStorico());
 
   // Conferma / Riapri
@@ -574,19 +575,6 @@ function setupTabs() {
   const rCerca = document.getElementById('rose-cerca');
   if (rCerca) rCerca.addEventListener('keydown', e => { if (e.key === 'Enter') aggiornaFiltroRose(); });
 
-  // Rose footer actions — bottoni admin rapidi (sempre visibili, floating)
-  const btnRoseChiama = document.getElementById('btn-rose-chiama');
-  if (btnRoseChiama) btnRoseChiama.addEventListener('click', () => {
-    if (!S.isAdmin) return toast("Solo l'admin può chiamare", "error");
-    if (S.asta && S.asta.chiamataAttuale) return toast('Chiamata già in corso', 'error');
-    apriModalChiamaManuale();
-  });
-  const btnRoseAssegna = document.getElementById('btn-rose-assegna');
-  if (btnRoseAssegna) btnRoseAssegna.addEventListener('click', () => {
-    if (!S.isAdmin) return toast("Solo l'admin può assegnare", "error");
-    if (S.asta && S.asta.chiamataAttuale) return toast('Chiamata già in corso', 'error');
-    apriModalAssegnaManuale();
-  });
 }
 
 // ════ SOCKET EVENTS ═══════════════════════════
