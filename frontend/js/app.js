@@ -482,7 +482,12 @@ function setupAsta() {
   document.getElementById('btn-riapri-da-uno').addEventListener('click', () => {
     socket.emit('riapri-asta', { astaId: S.astaId, tipo: 'da-uno' }); nascondiConfermaBox();
   });
-  document.getElementById('btn-reintroduci').addEventListener('click', () => socket.emit('reintroduci-scartati', { astaId: S.astaId }));
+  document.getElementById('btn-reintroduci').addEventListener('click', () => {
+    const nScartati = ((S.asta && S.asta.poolGiocatori) || []).filter(g => g.scartato).length;
+    if (!nScartati) return toast('Nessun giocatore scartato da reintrodurre', 'info');
+    if (!confirm('Reintrodurre TUTTI i ' + nScartati + ' giocatori scartati? Torneranno disponibili per una nuova chiamata.')) return;
+    socket.emit('reintroduci-scartati', { astaId: S.astaId });
+  });
   document.getElementById('btn-mod-timer').addEventListener('click', () => {
     if (S.asta) {
       document.getElementById('inp-mt-prima').value = S.asta.timerPrimaChiamata;
@@ -1012,9 +1017,12 @@ function _renderRoseSez(titolo, giocatori, tipo, sqNome) {
       (giocatori.length === 0
         ? '<div class="rose-empty">—</div>'
         : giocatori.map(g => {
-            const r = (g.ruolo || 'NN').toLowerCase();
+            const ruoloBadgeHTML = (g.ruolo || 'NN').split('/').map(function(x) {
+              x = x.trim();
+              return '<span class="rose-badge ruolo-rose-' + x.toLowerCase() + '">' + x + '</span>';
+            }).join('');
             return '<div class="rose-player">' +
-              '<span class="rose-badge ruolo-rose-' + r + '">' + (g.ruolo||'?') + '</span>' +
+              ruoloBadgeHTML +
               '<span class="rose-nome">' + g.nome + '</span>' +
               '<span class="rose-prezzo">🪙' + g.prezzo + '</span>' +
             '</div>';
@@ -1070,6 +1078,7 @@ function renderGiocatoriLiberi(pool) {
       : '';
     return '<li class="' + sc + '"' + click + '>' + _getRuoloBadgeHTML(g.ruolo) +
       '<span class="l-nome">' + g.nome + '</span>' + tb + orig + valoreHTML +
+      (g.scartato ? '<span class="l-scartato-tag">Scartato</span>' : '') +
       '<span class="l-costo">' + g.costoOriginale + 'cr' + (g.scartato ? ' \u2717' : '') + '</span></li>';
   }).join('') || '<li class="text-muted" style="padding:8px">Nessun giocatore</li>';
 }
@@ -1417,7 +1426,7 @@ function renderMiaRosa(sq) {
     return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
   });
   lista.innerHTML = rosaOrdinata.map(g => '<div class="mr-item">' +
-    '<span class="mr-ruolo">' + (g.ruolo||'?') + '</span><span class="mr-nome">' + g.nome + '</span>' +
+    _getRuoloBadgeHTML(g.ruolo) + '<span class="mr-nome">' + g.nome + '</span>' +
     (g.tipo && g.tipo !== 'NN' ? '<span class="mr-tipo tipo-' + g.tipo + '">' + g.tipo + '</span>' : '') +
     '<span class="mr-prezzo">' + g.prezzo + 'cr</span></div>').join('');
 }
