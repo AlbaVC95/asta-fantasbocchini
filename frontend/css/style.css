@@ -150,6 +150,9 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .btn-rilancia:hover::after{left:120%}
 .admin-btn-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-top:3px}
 .admin-btn-grid .btn{font-size:.68rem;padding:5px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Estrai è il bottone più premuto durante la puja — deve risaltare su tutti gli altri */
+#btn-estrai{grid-column:1/-1;font-size:.82rem;font-weight:800;padding:9px 3px;letter-spacing:.02em;animation:pulse-estrai 2.2s ease-in-out infinite}
+@keyframes pulse-estrai{0%,100%{box-shadow:0 4px 15px var(--primary-glow)}50%{box-shadow:0 4px 22px rgba(0,168,255,.75),0 0 0 3px rgba(0,168,255,.18)}}
 .cc-attesa-badge{background:rgba(0,168,255,.1);border:1px solid rgba(0,168,255,.25);border-radius:8px;padding:6px 12px;font-size:.82rem;color:var(--primary-bright);margin-top:6px;text-align:center}
 .mio-panel{background:var(--bg-card);border:1px solid rgba(0,168,255,.15);border-radius:14px;padding:8px 10px}
 .mio-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
@@ -179,6 +182,11 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
    (Estrai/Manuale/Assegna/Annulla/Reintr./Timer/Termina) finché la decisione non è risolta */
 .admin-panel:has(#popup-override-box:not(.hidden)) .admin-btn-grid,
 .admin-panel:has(#admin-conferma-box:not(.hidden)) .admin-btn-grid{display:none}
+/* Ripristino manuale: l'admin può comunque far tornare visibili i bottoni azione con un click */
+.admin-panel.force-show-btns .admin-btn-grid{display:grid!important}
+.toggle-admin-btns{display:none}
+.admin-panel:has(#popup-override-box:not(.hidden)) .toggle-admin-btns,
+.admin-panel:has(#admin-conferma-box:not(.hidden)) .toggle-admin-btns{display:inline-flex}
 .tabs-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;flex:1;min-height:0}
 .tabs-nav{display:flex;border-bottom:1px solid var(--border);background:var(--bg-main)}
 .tab-btn{flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-muted);font-family:var(--font-main);font-size:.78rem;font-weight:600;padding:6px 8px;cursor:pointer;transition:all .2s;white-space:nowrap}
