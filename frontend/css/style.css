@@ -325,32 +325,35 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .rose-empty{color:var(--text-muted);font-size:.68rem;padding:3px 6px;font-style:italic}
 
 /* ══════ RIGA 1 middle slot (puja per NON-admin) ══════ */
-.puja-panel-slot{flex:1.8;min-width:0;max-height:clamp(200px,30vh,280px);overflow-y:auto;display:flex;flex-direction:column;gap:8px}
-.puja-panel-slot .card-timer-group{width:100%;gap:6px}
-.puja-panel-slot .rilancio-box{width:100%}
-/* Ultra-compact sizing so full puja content (card+timer+rilancio incl. Rilancia btn + manual input) always fits within the capped height without needing inner scroll */
-.puja-panel-slot .chiamata-card{padding:10px 16px 8px;border-radius:14px 14px 0 0}
-.puja-panel-slot .chiamata-card .chiamata-stato{padding:6px 0;font-size:.88rem}
-.puja-panel-slot .cc-header{margin-bottom:5px;gap:8px}
-.puja-panel-slot .cc-nome{font-size:1.15rem;line-height:1.15}
-.puja-panel-slot .cc-meta{margin-top:2px;font-size:.85rem}
-.puja-panel-slot .cc-offerta{font-size:2rem}
-.puja-panel-slot .cc-offerta-label{font-size:.68rem;margin-top:1px}
-.puja-panel-slot .cc-body{margin-bottom:2px}
-.puja-panel-slot .cc-offerente{font-size:.8rem}
-.puja-panel-slot .timer-ring-container{padding:5px 0 6px;border-radius:0 0 14px 14px}
-.puja-panel-slot .timer-ring{width:50px;height:50px}
-.puja-panel-slot .timer-number{font-size:1.15rem}
-.puja-panel-slot .timer-label-text{font-size:.68rem}
-.puja-panel-slot .rilancio-box{padding:8px 12px;gap:7px}
-.puja-panel-slot .quick-bids-row{margin-bottom:2px;gap:8px}
-.puja-panel-slot .btn-quick{padding:7px 13px;font-size:.85rem}
-.puja-panel-slot .btn-rilancia{padding:9px 20px;font-size:.92rem}
+/* ══ Layout partecipante NON-admin: riga puja tutta orizzontale (card+timer+rilancio in fila),
+   niente stacking verticale → niente scroll, sfrutta la larghezza extra lasciata da admin-panel nascosto ══ */
+.puja-panel-slot{flex:4;min-width:0;overflow:visible;display:flex;flex-direction:row;align-items:stretch;gap:10px}
+.puja-panel-slot .card-timer-group{width:auto;flex:1.5;min-width:0;flex-direction:row;align-items:stretch;gap:10px}
+.puja-panel-slot .rilancio-box{width:auto;flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+/* La card diventa orizzontale (badge+nome+meta a sinistra, offerta a destra) come nel layout admin, per restare bassa */
+.puja-panel-slot .chiamata-card{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-radius:14px;text-align:left;overflow:hidden}
+.puja-panel-slot .chiamata-card .chiamata-stato{padding:0;font-size:.88rem}
+.puja-panel-slot .cc-header{margin-bottom:0;align-items:center;gap:8px;flex:1 1 auto;min-width:0;overflow:hidden}
+.puja-panel-slot .cc-nome{font-size:1.1rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.puja-panel-slot .cc-meta{margin-top:0;font-size:.82rem;flex-wrap:nowrap;overflow:hidden}
+.puja-panel-slot .cc-body{margin-bottom:0;display:flex;align-items:center;gap:8px;flex:0 0 auto;white-space:nowrap}
+.puja-panel-slot .cc-offerta{font-size:1.9rem}
+.puja-panel-slot .cc-offerta-label{font-size:.66rem;margin-top:0}
+.puja-panel-slot .cc-offerente{font-size:.78rem}
+.puja-panel-slot .timer-ring-container{padding:0;flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.puja-panel-slot .timer-ring{width:56px;height:56px}
+.puja-panel-slot .timer-number{font-size:1.2rem}
+.puja-panel-slot .timer-label-text{font-size:.66rem}
+.puja-panel-slot .rilancio-box{padding:8px 12px;gap:6px}
+.puja-panel-slot .quick-bids-row{margin-bottom:0;gap:8px}
+.puja-panel-slot .btn-quick{padding:6px 12px;font-size:.82rem}
+.puja-panel-slot .btn-rilancia{padding:8px 18px;font-size:.88rem}
 .puja-panel-slot .manual-bid-row{margin:0}
-.puja-panel-slot .inp-rilancio{padding:5px!important;font-size:.95rem;width:68px!important}
+.puja-panel-slot .inp-rilancio{padding:5px!important;font-size:.9rem;width:64px!important}
+/* Budget squadre e Mio team più stretti quando è visibile la riga puja del partecipante */
 body.layout-partecipante .asta-row-panels{align-items:stretch;max-height:28vh}
-body.layout-partecipante .asta-row-panels>.panel-budget{max-height:100%;align-self:stretch;overflow-y:auto}
-body.layout-partecipante .asta-row-panels>#mio-panel{max-height:100%;align-self:stretch;overflow-y:auto}
+body.layout-partecipante .asta-row-panels>.panel-budget{max-height:100%;align-self:stretch;overflow-y:auto;flex:0.6}
+body.layout-partecipante .asta-row-panels>#mio-panel{max-height:100%;align-self:stretch;overflow-y:auto;flex:0.7}
 body.layout-partecipante .asta-row-puja{display:none!important}
 
 /* ══════ RIGA 2 compatta orizzontale (puja per ADMIN) ══════ */
