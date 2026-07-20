@@ -52,9 +52,9 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .btn-sound{background:none;border:1px solid var(--border);border-radius:8px;color:var(--text-secondary);font-size:1rem;padding:6px 10px;cursor:pointer;transition:all .2s}
 .btn-sound:hover{border-color:var(--primary);color:var(--primary-bright)}.btn-sound.muted{opacity:.4}
 .asta-row-panels{display:flex;gap:10px;padding:8px 12px;flex-shrink:0}
-.asta-row-panels>#admin-panel{flex:1.2;max-height:320px;overflow-y:auto}
-.asta-row-panels>#mio-panel{flex:1;max-height:195px;overflow-y:auto}
-.panel-budget{background:var(--bg-abyss);border:1px solid var(--border);border-radius:12px;padding:10px;flex:1.5;min-width:0;overflow-y:auto;max-height:195px}
+.asta-row-panels>#admin-panel{flex:1.6;max-height:320px;overflow-y:auto}
+.asta-row-panels>#mio-panel{flex:1.3;max-height:195px;overflow-y:auto}
+.panel-budget{background:var(--bg-abyss);border:1px solid var(--border);border-radius:12px;padding:10px;flex:0.8;min-width:0;overflow-y:auto;max-height:140px}
 .panel-budget-hdr{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:0 0 6px;border-bottom:1px solid var(--border);margin-bottom:6px}
 .sidebar-squadre-list{display:flex;flex-direction:column;gap:5px}
 .sidebar-squadra{padding:6px 9px;border-radius:8px;border-left:3px solid transparent;transition:all .2s;background:var(--bg-card)}
@@ -310,30 +310,31 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .rose-empty{color:var(--text-muted);font-size:.75rem;padding:4px 6px;font-style:italic}
 
 /* ══════ RIGA 1 middle slot (puja per NON-admin) ══════ */
-.puja-panel-slot{flex:1.3;min-width:0;max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
-.puja-panel-slot .card-timer-group{width:100%}
+.puja-panel-slot{flex:1.7;min-width:0;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.puja-panel-slot .card-timer-group{width:100%;gap:4px}
 .puja-panel-slot .rilancio-box{width:100%}
-/* Compact sizing so full puja content (card+timer+rilancio) fits within the capped height, matching right-side panels, without needing inner scroll */
-.puja-panel-slot .chiamata-card{padding:10px 14px 8px;border-radius:14px 14px 0 0}
-.puja-panel-slot .chiamata-card .chiamata-stato{padding:8px 0;font-size:.85rem}
-.puja-panel-slot .cc-header{margin-bottom:6px;gap:10px}
-.puja-panel-slot .cc-nome{font-size:1.15rem;line-height:1.15}
-.puja-panel-slot .cc-meta{margin-top:2px}
-.puja-panel-slot .cc-offerta{font-size:1.9rem}
-.puja-panel-slot .cc-offerta-label{font-size:.68rem;margin-top:0}
+/* Ultra-compact sizing so full puja content (card+timer+rilancio incl. Rilancia btn + manual input) always fits within the capped height without needing inner scroll */
+.puja-panel-slot .chiamata-card{padding:6px 10px 5px;border-radius:12px 12px 0 0}
+.puja-panel-slot .chiamata-card .chiamata-stato{padding:5px 0;font-size:.78rem}
+.puja-panel-slot .cc-header{margin-bottom:3px;gap:6px}
+.puja-panel-slot .cc-nome{font-size:.95rem;line-height:1.1}
+.puja-panel-slot .cc-meta{margin-top:1px}
+.puja-panel-slot .cc-offerta{font-size:1.4rem}
+.puja-panel-slot .cc-offerta-label{font-size:.6rem;margin-top:0}
 .puja-panel-slot .cc-body{margin-bottom:0}
-.puja-panel-slot .cc-offerente{font-size:.78rem}
-.puja-panel-slot .timer-ring-container{padding:6px 0 8px;border-radius:0 0 14px 14px}
-.puja-panel-slot .timer-ring{width:52px;height:52px}
-.puja-panel-slot .timer-number{font-size:1.15rem}
-.puja-panel-slot .timer-label-text{font-size:.65rem}
-.puja-panel-slot .rilancio-box{padding:10px;gap:8px}
-.puja-panel-slot .quick-bids-row{margin-bottom:0}
-.puja-panel-slot .btn-rilancia{padding:10px 20px;font-size:.95rem}
+.puja-panel-slot .cc-offerente{font-size:.68rem}
+.puja-panel-slot .timer-ring-container{padding:3px 0 4px;border-radius:0 0 12px 12px}
+.puja-panel-slot .timer-ring{width:38px;height:38px}
+.puja-panel-slot .timer-number{font-size:.9rem}
+.puja-panel-slot .timer-label-text{font-size:.58rem}
+.puja-panel-slot .rilancio-box{padding:6px 8px;gap:5px}
+.puja-panel-slot .quick-bids-row{margin-bottom:0;gap:6px}
+.puja-panel-slot .btn-quick{padding:5px 9px;font-size:.75rem}
+.puja-panel-slot .btn-rilancia{padding:6px 14px;font-size:.8rem}
 .puja-panel-slot .manual-bid-row{margin:0}
-.puja-panel-slot .inp-rilancio{padding:5px!important;font-size:1rem}
+.puja-panel-slot .inp-rilancio{padding:3px!important;font-size:.85rem;width:60px!important}
 body.layout-partecipante .asta-row-panels{align-items:stretch;max-height:42vh}
-body.layout-partecipante .asta-row-panels>.panel-budget,
+body.layout-partecipante .asta-row-panels>.panel-budget{max-height:140px;align-self:flex-start;overflow-y:auto}
 body.layout-partecipante .asta-row-panels>#mio-panel{max-height:100%;align-self:stretch;overflow-y:auto}
 body.layout-partecipante .asta-row-puja{display:none!important}
 
