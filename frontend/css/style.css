@@ -52,7 +52,7 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .btn-sound{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text-secondary);font-size:.72rem;padding:2px 6px;cursor:pointer;transition:all .2s}
 .btn-sound:hover{border-color:var(--primary);color:var(--primary-bright)}.btn-sound.muted{opacity:.4}
 .asta-row-panels{display:flex;gap:10px;padding:0 12px;flex-shrink:0;align-items:stretch}
-.asta-row-panels>#admin-panel{flex:1;max-height:clamp(160px,26vh,230px);overflow-y:auto}
+.asta-row-panels>#admin-panel{flex:1.6;max-height:clamp(160px,26vh,230px);overflow-y:auto}
 .asta-row-panels>#mio-panel{flex:1;max-height:clamp(160px,26vh,230px);overflow-y:auto}
 .panel-budget{background:var(--bg-abyss);border:1px solid var(--border);border-radius:12px;padding:6px 8px;flex:1;min-width:0;overflow-y:auto;max-height:clamp(160px,26vh,230px)}
 .panel-budget-hdr{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:0 0 3px;border-bottom:1px solid var(--border);margin-bottom:3px}
@@ -182,7 +182,12 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
    (Estrai/Manuale/Assegna/Annulla/Reintr./Timer/Termina) finché la decisione non è risolta */
 .admin-panel:has(#popup-override-box:not(.hidden)) .admin-btn-grid,
 .admin-panel:has(#admin-conferma-box:not(.hidden)) .admin-btn-grid{display:none}
-/* Ripristino manuale: l'admin può comunque far tornare visibili i bottoni azione con un click */
+/* Il pannello non deve più tagliare/scrollare quando c'è una decisione in attesa: si espande per intero */
+.admin-panel:has(#popup-override-box:not(.hidden)),
+.admin-panel:has(#admin-conferma-box:not(.hidden)),
+.admin-panel.force-show-btns{max-height:none!important;overflow-y:visible!important}
+/* Ripristino manuale: l'admin può comunque far tornare visibili i bottoni azione con un click
+   (il JS toglie anche .hidden da #admin-actions-box, che altrimenti resterebbe display:none) */
 .admin-panel.force-show-btns .admin-btn-grid{display:grid!important}
 .toggle-admin-btns{display:none}
 .admin-panel:has(#popup-override-box:not(.hidden)) .toggle-admin-btns,
