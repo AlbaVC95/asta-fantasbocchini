@@ -332,23 +332,26 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .puja-panel-slot .btn-rilancia{padding:10px 20px;font-size:.95rem}
 .puja-panel-slot .manual-bid-row{margin:0}
 .puja-panel-slot .inp-rilancio{padding:5px!important;font-size:1rem}
-body.layout-partecipante .asta-row-panels{align-items:flex-start}
+body.layout-partecipante .asta-row-panels{align-items:stretch;max-height:42vh}
 body.layout-partecipante .asta-row-panels>.panel-budget,
-body.layout-partecipante .asta-row-panels>#mio-panel{max-height:none;align-self:stretch}
+body.layout-partecipante .asta-row-panels>#mio-panel{max-height:100%;align-self:stretch;overflow-y:auto}
 body.layout-partecipante .asta-row-puja{display:none!important}
 
 /* ══════ RIGA 2 compatta orizzontale (puja per ADMIN) ══════ */
 body.layout-admin .asta-row-puja{align-items:center;padding:4px 12px;gap:10px;height:84px;min-height:84px;max-height:84px;overflow:hidden}
-body.layout-admin .asta-row-puja .card-timer-group{flex-direction:row;align-items:center;gap:10px;flex:1;min-width:0}
-body.layout-admin .asta-row-puja .chiamata-card{border-radius:10px;padding:8px 14px;text-align:left;box-shadow:none}
-body.layout-admin .asta-row-puja .chiamata-card .chiamata-stato{padding:4px 0;font-size:.85rem}
-body.layout-admin .asta-row-puja .cc-header{margin-bottom:0;align-items:center;gap:8px}
-body.layout-admin .asta-row-puja .cc-nome{font-size:.95rem;line-height:1.15}
-body.layout-admin .asta-row-puja .cc-meta{margin-top:0}
-body.layout-admin .asta-row-puja .cc-offerta{font-size:1.4rem}
+body.layout-admin .asta-row-puja .card-timer-group{flex-direction:row;align-items:center;gap:10px;flex:1;min-width:0;min-height:0;overflow:hidden}
+body.layout-admin .asta-row-puja .chiamata-card{border-radius:10px;padding:8px 14px;text-align:left;box-shadow:none;min-height:0;overflow:hidden}
+body.layout-admin .asta-row-puja .cc-attesa-badge{display:none}
+body.layout-admin .asta-row-puja .chiamata-card .chiamata-stato{padding:0;font-size:.8rem;white-space:nowrap}
+body.layout-admin .asta-row-puja .chiamata-card{display:flex;align-items:center;gap:14px;flex-wrap:nowrap;overflow:hidden}
+body.layout-admin .asta-row-puja .cc-header{margin-bottom:0;align-items:center;gap:8px;flex:1 1 auto;min-width:0;overflow:hidden}
+body.layout-admin .asta-row-puja .cc-info{min-width:0;overflow:hidden}
+body.layout-admin .asta-row-puja .cc-nome{font-size:.95rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.layout-admin .asta-row-puja .cc-meta{margin-top:0;flex-wrap:nowrap;overflow:hidden}
+body.layout-admin .asta-row-puja .cc-offerta{font-size:1.3rem}
 body.layout-admin .asta-row-puja .cc-offerta-label{display:none}
-body.layout-admin .asta-row-puja .cc-body{margin-bottom:0}
-body.layout-admin .asta-row-puja .cc-offerente{font-size:.75rem}
+body.layout-admin .asta-row-puja .cc-body{margin-bottom:0;display:flex;align-items:center;gap:10px;flex:0 0 auto;white-space:nowrap}
+body.layout-admin .asta-row-puja .cc-offerente{font-size:.75rem;white-space:nowrap}
 body.layout-admin .asta-row-puja .timer-ring-container{padding:0;border:none;border-radius:0;width:auto;flex:0 0 auto;background:transparent;box-shadow:none}
 body.layout-admin .asta-row-puja .timer-ring{width:44px;height:44px}
 body.layout-admin .asta-row-puja .timer-number{font-size:1rem}
