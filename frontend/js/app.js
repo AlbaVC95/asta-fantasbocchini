@@ -433,6 +433,12 @@ function setupAsta() {
   document.getElementById('btn-chiama-manuale').addEventListener('click', () => apriModalChiamaManuale());
   document.getElementById('btn-assegna-manuale').addEventListener('click', () => apriModalAssegnaManuale());
 
+  // Toggle manuale: se l'admin vuole vedere i bottoni azione anche mentre c'è un popup/conferma in attesa
+  const btnToggleAdminBtns = document.getElementById('btn-toggle-admin-btns');
+  if (btnToggleAdminBtns) btnToggleAdminBtns.addEventListener('click', () => {
+    document.getElementById('admin-panel').classList.toggle('force-show-btns');
+  });
+
   // Pillola flottante compatta (angolo basso-destra) — stessa funzione dei bottoni admin, solo admin
   const pillChiama = document.getElementById('pill-chiama');
   if (pillChiama) pillChiama.addEventListener('click', () => {
