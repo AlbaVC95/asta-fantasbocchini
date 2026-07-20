@@ -340,7 +340,7 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .puja-panel-slot .cc-offerta{font-size:1.9rem}
 .puja-panel-slot .cc-offerta-label{font-size:.66rem;margin-top:0}
 .puja-panel-slot .cc-offerente{font-size:.78rem}
-.puja-panel-slot .timer-ring-container{padding:0;flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.puja-panel-slot .timer-ring-container{padding:0;flex:0 0 auto;width:auto;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .puja-panel-slot .timer-ring{width:56px;height:56px}
 .puja-panel-slot .timer-number{font-size:1.2rem}
 .puja-panel-slot .timer-label-text{font-size:.66rem}
