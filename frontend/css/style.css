@@ -375,11 +375,11 @@ body.layout-admin .asta-row-puja .timer-ring-container{padding:0;border:none;bor
 body.layout-admin .asta-row-puja .timer-ring{width:52px;height:52px}
 body.layout-admin .asta-row-puja .timer-number{font-size:1.05rem}
 body.layout-admin .asta-row-puja .timer-label-text{display:block;font-size:.52rem}
-body.layout-admin .asta-row-puja .rilancio-box{flex-direction:column;align-items:stretch;justify-content:center;padding:6px 10px;gap:4px;flex:0 0 230px;border-radius:10px}
-body.layout-admin .asta-row-puja .quick-bids-row{margin-bottom:0}
-body.layout-admin .asta-row-puja .btn-rilancia{padding:7px 14px;font-size:.85rem;width:100%;white-space:nowrap}
+body.layout-admin .asta-row-puja .rilancio-box{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;align-items:center;justify-content:center;padding:6px 10px;gap:4px 6px;flex:0 0 230px;border-radius:10px}
+body.layout-admin .asta-row-puja .quick-bids-row{margin-bottom:0;grid-column:1;grid-row:1}
+body.layout-admin .asta-row-puja .btn-rilancia{padding:7px 14px;font-size:.85rem;width:100%;white-space:nowrap;grid-column:2;grid-row:1}
 body.layout-admin .asta-row-puja .inp-rilancio{width:50px!important;font-size:.92rem}
-body.layout-admin .asta-row-puja .manual-bid-row{margin:0}
+body.layout-admin .asta-row-puja .manual-bid-row{margin:0;grid-column:1 / 3;grid-row:2}
 body.layout-admin .asta-row-puja .btn-manuale{padding:6px 10px;font-size:.82rem}
 
 /* ══════ Pillola compatta Assegna/Chiama — dentro tabs-nav, attaccata a destra, admin-only ══════ */
