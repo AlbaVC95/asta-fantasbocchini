@@ -423,6 +423,11 @@ function setupAsta() {
   // Quick bid: somma direttamente all'offerta attuale
   document.getElementById('btn-quick-5').addEventListener('click', () => inviaRilancioRapido(5));
   document.getElementById('btn-quick-10').addEventListener('click', () => inviaRilancioRapido(10));
+  // Offerta manuale: importo esatto scritto dall'utente
+  const btnManuale = document.getElementById('btn-rilancio-manuale');
+  if (btnManuale) btnManuale.addEventListener('click', inviaRilancioManuale);
+  const inpManuale = document.getElementById('inp-rilancio-manuale');
+  if (inpManuale) inpManuale.addEventListener('keydown', e => { if (e.key === 'Enter') inviaRilancioManuale(); });
 
   document.getElementById('btn-estrai').addEventListener('click', () => socket.emit('estrai-giocatore', { astaId: S.astaId }));
   document.getElementById('btn-chiama-manuale').addEventListener('click', () => apriModalChiamaManuale());
@@ -484,6 +489,17 @@ function inviaRilancioRapido(inc) {
   socket.emit('rilancio', { astaId: S.astaId, offerta: S.asta.chiamataAttuale.offertaAttuale + inc });
 }
 
+function inviaRilancioManuale() {
+  if (!S.asta || !S.asta.chiamataAttuale) return;
+  if (!canBid()) return;
+  const inp = document.getElementById('inp-rilancio-manuale');
+  if (!inp) return;
+  const val = parseInt(inp.value, 10);
+  if (isNaN(val) || val <= 0) { toast('Inserisci un importo valido', 'error'); return; }
+  socket.emit('rilancio', { astaId: S.astaId, offerta: val });
+  inp.value = '';
+}
+
 function aggiornaQuickBids() {
   const canB = canBid();
   ['btn-quick-5','btn-quick-10'].forEach(id => {
@@ -492,6 +508,10 @@ function aggiornaQuickBids() {
   });
   const btn = document.getElementById('btn-rilancio');
   if (btn) btn.disabled = !canB;
+  const btnM = document.getElementById('btn-rilancio-manuale');
+  if (btnM) btnM.disabled = !canB;
+  const inpM = document.getElementById('inp-rilancio-manuale');
+  if (inpM) inpM.disabled = !canB;
 }
 
 function nascondiConfermaBox() {
@@ -573,6 +593,14 @@ function setupTabs() {
 socket.on('stato-asta', (asta) => {
   S.asta = asta;
   salvaStatoLocale(asta);
+  // Item 6 fix: auto-hide admin popup-override-box as soon as the pending
+  // popup/conferma is resolved server-side (by EITHER admin or the user),
+  // instead of relying only on the admin's own manual click.
+  if (!asta.popupAttivo && !(asta.chiamataAttuale && asta.chiamataAttuale.aspettandoConferma)) {
+    const pob = document.getElementById('popup-override-box');
+    if (pob && !pob.classList.contains('hidden')) pob.classList.add('hidden');
+    S.popupAttivoCli = null;
+  }
   // Navigate to the correct screen based on authoritative server state.
   if (asta.stato === 'attesa') {
     showScreen('screen-lobby');
@@ -617,6 +645,7 @@ socket.on('asta-iniziata', () => {
 
 socket.on('nuova-chiamata', (chiamata) => {
   S.attesaConferma = false;
+  if (S.asta) S.asta.chiamataAttuale = chiamata;
   nascondiConfermaBox();
   renderChiamata(chiamata);
   const timerWrap = document.getElementById('timer-wrap');
@@ -635,6 +664,7 @@ socket.on('nuova-chiamata', (chiamata) => {
 });
 
 socket.on('aggiorna-offerta', (chiamata) => {
+  if (S.asta) S.asta.chiamataAttuale = chiamata;
   renderChiamata(chiamata);
   flashChiamataCard();
   // Price bump animation
@@ -691,6 +721,7 @@ socket.on('errore', ({ msg }) => {
 
 socket.on('attesa-conferma', (chiamata) => {
   // Server sends the full chiamataAttuale object (fields: giocatore, offertaAttuale, squadraOfferente)
+  if (S.asta) S.asta.chiamataAttuale = chiamata;
   const giocatore = chiamata.giocatore || {};
   const offerta   = chiamata.offertaAttuale || chiamata.offerta || 0;
   const squadra   = chiamata.squadraOfferente || chiamata.squadra || null;
