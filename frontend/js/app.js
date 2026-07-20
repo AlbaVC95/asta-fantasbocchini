@@ -204,6 +204,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (id) {
     document.getElementById('inp-join-id').value = id;
     setTimeout(() => fetchAstaSquadrePerJoin(id), 300);
+    const creaCard = document.getElementById('form-crea-asta').closest('.card');
+    if (creaCard) creaCard.style.display = 'none';
+    const header = document.querySelector('#screen-home .home-header');
+    if (header) header.style.display = 'none';
+    const linkIdGroup = document.getElementById('inp-join-id').closest('.form-group');
+    if (linkIdGroup) linkIdGroup.style.display = 'none';
   }
   // Restore session hint (pre-fill join field if no ID in URL)
   const sess = getSessione();
@@ -432,6 +438,12 @@ function setupAsta() {
   document.getElementById('btn-estrai').addEventListener('click', () => socket.emit('estrai-giocatore', { astaId: S.astaId }));
   document.getElementById('btn-chiama-manuale').addEventListener('click', () => apriModalChiamaManuale());
   document.getElementById('btn-assegna-manuale').addEventListener('click', () => apriModalAssegnaManuale());
+  const btnScartaAttuale = document.getElementById('btn-scarta-attuale');
+  if (btnScartaAttuale) btnScartaAttuale.addEventListener('click', () => {
+    if (!S.asta || !S.asta.chiamataAttuale) return;
+    if (!confirm('Scartare ' + S.asta.chiamataAttuale.giocatore.nome + ' senza aspettare il timer?')) return;
+    socket.emit('scarta-manuale', { astaId: S.astaId });
+  });
 
   // Toggle manuale: se l'admin vuole vedere i bottoni azione anche mentre c'è un popup/conferma in attesa.
   // NOTA: #admin-actions-box viene nascosto con .hidden (display:none!important) da JS quando c'è
@@ -539,6 +551,8 @@ function aggiornaQuickBids() {
   if (btnM) btnM.disabled = !canB;
   const inpM = document.getElementById('inp-rilancio-manuale');
   if (inpM) inpM.disabled = !canB;
+  const btnScarta = document.getElementById('btn-scarta-attuale');
+  if (btnScarta) btnScarta.disabled = !(S.asta && S.asta.chiamataAttuale);
 }
 
 function nascondiConfermaBox() {
@@ -552,7 +566,7 @@ function nascondiConfermaBox() {
 function apriModalAnnullaStorico() {
   const asta = S.asta; if (!asta) return;
   const lista = document.getElementById('annulla-storico-lista');
-  const items = (asta.storico || []).filter(s => s.tipo !== 'scartato');
+  const items = (asta.storico || []);
   if (!items.length) {
     lista.innerHTML = '<p class="text-muted">Nessuna assegnazione da annullare</p>';
   } else {
@@ -564,7 +578,7 @@ function apriModalAnnullaStorico() {
         '<span class="annulla-sq">' + item.squadra + '</span>' +
         '<span class="annulla-prezzo">' + item.prezzo + 'cr</span>' +
         '<span class="storico-tipo tipo-tag-' + item.tipo + '">' + item.tipo + '</span>' +
-        '<button class="btn btn-danger btn-small" onclick="annullaSpecifica(' + realIdx + ')">Annulla</button>' +
+        '<button class="btn btn-danger btn-small" onclick="annullaSpecifica(' + realIdx + ')">' + (item.tipo === 'scartato' ? '↩️ Riapri' : 'Annulla') + '</button>' +
         '</div>';
     }).join('');
   }
@@ -586,6 +600,8 @@ function setupFilters() {
       if (S.asta) renderGiocatoriLiberi(S.asta.poolGiocatori);
     });
   });
+  const liberiCerca = document.getElementById('liberi-cerca');
+  if (liberiCerca) liberiCerca.addEventListener('input', () => { if (S.asta) renderGiocatoriLiberi(S.asta.poolGiocatori); });
 }
 
 function setupTabs() {
@@ -716,8 +732,8 @@ socket.on('giocatore-scartato', ({ giocatore }) => {
   playSound('buzzer');
   const card = document.getElementById('chiamata-card');
   card.className = 'chiamata-card scartata';
-  card.innerHTML = '<p class="chiamata-stato">🚫 ' + giocatore.nome + ' — deserto</p>';
-  toast(giocatore.nome + ' deserto (nessuna offerta)', 'info');
+  card.innerHTML = '<p class="chiamata-stato">🚫 ' + giocatore.nome + ' — scartato</p>';
+  toast(giocatore.nome + ' scartato (nessuna offerta)', 'info');
 });
 
 socket.on('assegnazione-annullata', (item) => toast('Annullato: ' + (item.giocatore ? item.giocatore.nome : '?'), 'info'));
@@ -934,7 +950,7 @@ function renderStorico(storico) {
   if (!storico || !storico.length) { list.innerHTML = '<li class="text-muted" style="padding:8px">Nessun acquisto</li>'; return; }
   list.innerHTML = [...storico].reverse().slice(0, 50).map(s => {
     if (s.tipo === 'tradeoff') return '<li><span class="storico-nome">' + s.squadra + '</span><span class="storico-tipo tipo-tag-tradeoff">trade-off: ' + (TRADEOFF_LABELS[s.tradeoffTipo] || s.tradeoffTipo) + '</span></li>';
-    if (s.tipo === 'scartato') return '<li><span class="storico-nome text-muted">' + s.giocatore.nome + '</span><span class="storico-tipo tipo-tag-scartato">deserto</span></li>';
+    if (s.tipo === 'scartato') return '<li><span class="storico-nome text-muted">' + s.giocatore.nome + '</span><span class="storico-tipo tipo-tag-scartato">scartato</span></li>';
     return '<li><span class="storico-nome">' + s.giocatore.nome + '</span>' +
       '<span class="storico-sq">' + s.squadra + '</span>' +
       '<span class="storico-prezzo">' + s.prezzo + 'cr</span>' +
@@ -956,6 +972,13 @@ function renderRose(squadre) {
     if (cercaTesto) giocatori = giocatori.filter(g => g.nome.toLowerCase().includes(cercaTesto));
     const portieri = giocatori.filter(g => _isPortiere(g.ruolo));
     const movimento = giocatori.filter(g => !_isPortiere(g.ruolo));
+    const ORDINE_RUOLI = ['Dd','Dc','Ds','D','B','M','E','C','T','W','A','Pc'];
+    const _ruoloKey = (r) => (r || '').split('/')[0].trim();
+    movimento.sort((a, b) => {
+      const ia = ORDINE_RUOLI.indexOf(_ruoloKey(a.ruolo));
+      const ib = ORDINE_RUOLI.indexOf(_ruoloKey(b.ruolo));
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    });
     const slotsRow = (S.asta && S.asta.tipoAsta === 'iniziale') ?
       '<div class="rose-col-slots">' +
         '<span class="slot-chip"><span class="slot-main">Max <span class="text-accent">' + calcolaMaxOffertaSquadra(sq) + 'cr</span></span></span>' +
@@ -1018,6 +1041,7 @@ window.aggiornaFiltroRose = function() {
 function renderGiocatoriLiberi(pool) {
   const list = document.getElementById('liberi-list');
   if (!pool) { list.innerHTML = ''; return; }
+  const cercaTesto = ((document.getElementById('liberi-cerca') || {}).value || '').toLowerCase().trim();
   const disp = pool.filter(g => !g.estratto && !g.assegnato && !g.scartato);
   const scar = pool.filter(g => g.scartato);
   // Ordina per Valore Algoritmico decrescente (fallback: costo, poi nome)
@@ -1029,6 +1053,7 @@ function renderGiocatoriLiberi(pool) {
     return a.nome.localeCompare(b.nome);
   };
   let tutti = [...disp.sort(byValore), ...scar.sort(byValore)];
+  if (cercaTesto) tutti = tutti.filter(g => g.nome.toLowerCase().includes(cercaTesto));
   if (S.filtroRuolo !== 'tutti') tutti = tutti.filter(g => {
     const ruoli = (g.ruolo || '').split(/[\/,]/).map(function(x){ return x.trim().toLowerCase(); });
     return ruoli.includes(S.filtroRuolo.toLowerCase());
@@ -1310,7 +1335,7 @@ window.renderAssegnaManualeLista = function() {
   const lista = document.getElementById('am-lista');
   if (!lista || !S.asta) return;
   const testo = (document.getElementById('inp-am-search').value || '').toLowerCase().trim();
-  let disp = (S.asta.poolGiocatori || []).filter(g => !g.estratto && !g.assegnato && !g.scartato);
+  let disp = (S.asta.poolGiocatori || []).filter(g => !g.assegnato && (!g.estratto || g.scartato));
   if (testo) disp = disp.filter(g => g.nome.toLowerCase().includes(testo));
   disp = disp.sort((a, b) => (b.valore || 0) - (a.valore || 0));
   lista.innerHTML = disp.slice(0, 80).map(g => {
@@ -1319,7 +1344,7 @@ window.renderAssegnaManualeLista = function() {
     return '<div class="cm-item' + sel + '" onclick="selezionaGiocatoreAssegna(\'' + g.id + '\')">' +
       _getRuoloBadgeHTML(g.ruolo) +
       '<span class="cm-item-nome">' + g.nome + '</span>' +
-      '<span class="cm-item-info">' + (g.tipo && g.tipo !== 'NN' ? g.tipo + ' · ' : '') + (g.costoOriginale || 0) + 'cr' + orig + '</span>' +
+      '<span class="cm-item-info">' + (g.tipo && g.tipo !== 'NN' ? g.tipo + ' · ' : '') + (g.costoOriginale || 0) + 'cr' + orig + (g.scartato ? ' · ✗ scartato' : '') + '</span>' +
     '</div>';
   }).join('') || '<p class="text-muted" style="padding:8px">Nessun giocatore trovato</p>';
 };
@@ -1384,7 +1409,14 @@ function renderMiaRosa(sq) {
   document.getElementById('mr-title').textContent = 'Rosa di ' + sq.nome;
   const lista = document.getElementById('mr-lista');
   if (!sq.rosa.length) { lista.innerHTML = '<p class="text-muted">Nessun giocatore</p>'; return; }
-  lista.innerHTML = sq.rosa.map(g => '<div class="mr-item">' +
+  const ORDINE_RUOLI = ['Por','P','Dd','Dc','Ds','D','B','M','E','C','T','W','A','Pc'];
+  const _ruoloKey = (r) => (r || '').split('/')[0].trim();
+  const rosaOrdinata = [...sq.rosa].sort((a, b) => {
+    const ia = ORDINE_RUOLI.indexOf(_ruoloKey(a.ruolo));
+    const ib = ORDINE_RUOLI.indexOf(_ruoloKey(b.ruolo));
+    return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+  });
+  lista.innerHTML = rosaOrdinata.map(g => '<div class="mr-item">' +
     '<span class="mr-ruolo">' + (g.ruolo||'?') + '</span><span class="mr-nome">' + g.nome + '</span>' +
     (g.tipo && g.tipo !== 'NN' ? '<span class="mr-tipo tipo-' + g.tipo + '">' + g.tipo + '</span>' : '') +
     '<span class="mr-prezzo">' + g.prezzo + 'cr</span></div>').join('');
