@@ -248,14 +248,9 @@ function startTimer(astaId, fase) {
     io.to(astaId).emit('timer-tick', { secondi: a.chiamataAttuale.timer, fase: a.chiamataAttuale.fase });
     if (a.chiamataAttuale.timer <= 0) {
       clearTimer(astaId);
-      if (fase === 'prima' && !a.chiamataAttuale.squadraOfferente) {
-        scartaGiocatore(astaId);
-      } else {
-        // Timer scaduto con offerente → admin deve confermare
-        a.chiamataAttuale.fase = 'attesa-conferma';
-        io.to(astaId).emit('attesa-conferma', a.chiamataAttuale);
-        broadcastStato(astaId);
-      }
+      a.chiamataAttuale.fase = 'attesa-conferma';
+      io.to(astaId).emit('attesa-conferma', a.chiamataAttuale);
+      broadcastStato(astaId);
     }
   }, 1000);
   timers.set(astaId, interval);
@@ -486,6 +481,7 @@ io.on('connection', (socket) => {
     const asta = aste.get(astaId);
     if (!asta || !isAdmin(asta, socket.id)) return;
     if (!asta.chiamataAttuale || asta.chiamataAttuale.fase !== 'attesa-conferma') return socket.emit('errore', { msg: 'Nessuna assegnazione in attesa' });
+    if (!asta.chiamataAttuale.squadraOfferente) { scartaGiocatore(astaId); return; }
     chiudiAsta(astaId);
   });
 
