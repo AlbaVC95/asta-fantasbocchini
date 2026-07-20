@@ -433,10 +433,16 @@ function setupAsta() {
   document.getElementById('btn-chiama-manuale').addEventListener('click', () => apriModalChiamaManuale());
   document.getElementById('btn-assegna-manuale').addEventListener('click', () => apriModalAssegnaManuale());
 
-  // Toggle manuale: se l'admin vuole vedere i bottoni azione anche mentre c'è un popup/conferma in attesa
+  // Toggle manuale: se l'admin vuole vedere i bottoni azione anche mentre c'è un popup/conferma in attesa.
+  // NOTA: #admin-actions-box viene nascosto con .hidden (display:none!important) da JS quando c'è
+  // una conferma in attesa (nascondiConfermaBox/attesa-conferma) — va tolta anche quella classe,
+  // altrimenti mostrare solo .admin-btn-grid non ha effetto perché il genitore resta display:none.
   const btnToggleAdminBtns = document.getElementById('btn-toggle-admin-btns');
   if (btnToggleAdminBtns) btnToggleAdminBtns.addEventListener('click', () => {
-    document.getElementById('admin-panel').classList.toggle('force-show-btns');
+    const panel = document.getElementById('admin-panel');
+    const actionsBox = document.getElementById('admin-actions-box');
+    const showing = panel.classList.toggle('force-show-btns');
+    if (actionsBox) actionsBox.classList.toggle('hidden', !showing);
   });
 
   // Pillola flottante compatta (angolo basso-destra) — stessa funzione dei bottoni admin, solo admin
