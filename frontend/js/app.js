@@ -911,10 +911,15 @@ function flashChiamataCard() {
   card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash');
 }
 
+const TRADEOFF_LABELS = {
+  'ric-to-plus': 'RIC\u2192PLUS', 'plus-to-ric': 'PLUS\u2192RIC',
+  'ric-to-crediti': 'RIC\u219212cr', 'plus-to-crediti': 'PLUS\u21926cr'
+};
 function renderStorico(storico) {
   const list = document.getElementById('storico-list');
   if (!storico || !storico.length) { list.innerHTML = '<li class="text-muted" style="padding:8px">Nessun acquisto</li>'; return; }
   list.innerHTML = [...storico].reverse().slice(0, 50).map(s => {
+    if (s.tipo === 'tradeoff') return '<li><span class="storico-nome">' + s.squadra + '</span><span class="storico-tipo tipo-tag-tradeoff">trade-off: ' + (TRADEOFF_LABELS[s.tradeoffTipo] || s.tradeoffTipo) + '</span></li>';
     if (s.tipo === 'scartato') return '<li><span class="storico-nome text-muted">' + s.giocatore.nome + '</span><span class="storico-tipo tipo-tag-scartato">deserto</span></li>';
     return '<li><span class="storico-nome">' + s.giocatore.nome + '</span>' +
       '<span class="storico-sq">' + s.squadra + '</span>' +
@@ -937,11 +942,19 @@ function renderRose(squadre) {
     if (cercaTesto) giocatori = giocatori.filter(g => g.nome.toLowerCase().includes(cercaTesto));
     const portieri = giocatori.filter(g => _isPortiere(g.ruolo));
     const movimento = giocatori.filter(g => !_isPortiere(g.ruolo));
+    const slotsRow = (S.asta && S.asta.tipoAsta === 'iniziale') ?
+      '<div class="rose-col-slots">' +
+        '<span class="slot-chip"><span class="slot-main">Max <span class="text-accent">' + calcolaMaxOffertaSquadra(sq) + 'cr</span></span></span>' +
+        '<span class="slot-chip' + (sq.recompraUsata?' esaurito':'') + '"><span class="slot-main">Recompra <span>' + (sq.recompraUsata?'usata':'✓') + '</span></span></span>' +
+        '<span class="slot-chip"><span class="slot-main">RIC <span>' + sq.slotsRICUsati + '/' + sq.slotsRIC + '</span></span></span>' +
+        '<span class="slot-chip"><span class="slot-main">PLUS <span>' + sq.slotsPLUSUsati + '/' + sq.slotsPLUS + '</span></span></span>' +
+      '</div>' : '';
     return '<div class="rose-col' + (isAttiva ? ' attiva' : '') + '">' +
       '<div class="rose-col-header">' +
         '<span class="rose-col-nome">' + sq.nome + '</span>' +
         '<span class="rose-col-budget' + (isAttiva ? ' attiva' : '') + '">🪙 ' + sq.crediti + '</span>' +
       '</div>' +
+      slotsRow +
       _renderRoseSez('⛳ Por', portieri, 'por', sq.nome) +
       _renderRoseSez('⚡ Mov', movimento, 'mov', sq.nome) +
     '</div>';
@@ -1057,8 +1070,10 @@ function renderMioPanel() {
 function renderAdminPanel(asta) {
   applyLayoutRuolo();
   const panel = document.getElementById('admin-panel');
-  if (!S.isAdmin) { panel.classList.add('hidden'); return; }
+  const btnCfg = document.getElementById('btn-admin-config');
+  if (!S.isAdmin) { panel.classList.add('hidden'); if (btnCfg) btnCfg.classList.add('hidden'); return; }
   panel.classList.remove('hidden');
+  if (btnCfg) btnCfg.classList.remove('hidden');
   const btnEstrai = document.getElementById('btn-estrai');
   if (asta && asta.tipoEstrazione === 'manuale') btnEstrai.classList.remove('hidden');
   else btnEstrai.classList.add('hidden');
@@ -1319,6 +1334,38 @@ window.confermaModTimer = function() {
   closeModal(); toast('Timer aggiornato', 'success');
 };
 
+window.apriModalAdminConfig = function() {
+  if (!S.asta || !S.isAdmin) return;
+  document.getElementById('inp-ac-timer-prima').value = S.asta.timerPrimaChiamata;
+  document.getElementById('inp-ac-timer-rilancio').value = S.asta.timerRilancio;
+  document.getElementById('inp-ac-min-portieri').value = S.asta.minimoPortieri;
+  document.getElementById('inp-ac-min-movimento').value = S.asta.minimoMovimento;
+  const lista = document.getElementById('ac-crediti-lista');
+  lista.innerHTML = (S.asta.squadre || []).map(sq =>
+    '<div class="form-row" style="align-items:end">' +
+      '<div class="form-group" style="margin-bottom:0"><label>' + sq.nome + '</label>' +
+      '<input type="number" min="0" value="' + sq.crediti + '" onblur="confermaAdminCrediti(\'' + sq.nome.replace(/'/g,"\\'") + '\', this.value)"></div>' +
+    '</div>'
+  ).join('');
+  openModal('modal-admin-config');
+};
+
+window.confermaAdminConfig = function() {
+  socket.emit('admin-update-config', {
+    astaId: S.astaId,
+    timerPrimaChiamata: parseInt(document.getElementById('inp-ac-timer-prima').value),
+    timerRilancio: parseInt(document.getElementById('inp-ac-timer-rilancio').value),
+    minimoPortieri: parseInt(document.getElementById('inp-ac-min-portieri').value),
+    minimoMovimento: parseInt(document.getElementById('inp-ac-min-movimento').value)
+  });
+  toast('Impostazioni aggiornate', 'success');
+};
+
+window.confermaAdminCrediti = function(squadraNome, crediti) {
+  socket.emit('admin-update-crediti', { astaId: S.astaId, squadraNome, crediti: parseInt(crediti) });
+  toast('Crediti di ' + squadraNome + ' aggiornati', 'success');
+};
+
 function renderMiaRosa(sq) {
   document.getElementById('mr-title').textContent = 'Rosa di ' + sq.nome;
   const lista = document.getElementById('mr-lista');
@@ -1338,7 +1385,28 @@ function getMiaSquadra() {
 function getMaxOfferta() {
   const sq = getMiaSquadra();
   if (!sq || !S.asta) return 0;
-  if (S.asta.tipoAsta === 'iniziale') return sq.crediti;
+  if (S.asta.tipoAsta === 'iniziale') {
+    const minTot = (S.asta.minimoPortieri || 0) + (S.asta.minimoMovimento || 0);
+    const slotVuoti = Math.max(0, minTot - sq.rosa.length - 1);
+    return Math.max(1, sq.crediti - slotVuoti);
+  }
+  const fattore = S.asta.fattoreSvincolo || 0.5;
+  const svinR = S.asta.svincoliTotali - (sq.svincoliUsati || 0);
+  if (svinR <= 0) return sq.crediti;
+  const sorted = [...sq.rosa].sort((a, b) => Math.floor(b.prezzo * fattore) - Math.floor(a.prezzo * fattore));
+  let recup = 0;
+  for (let i = 0; i < Math.min(svinR, sorted.length); i++) recup += Math.floor(sorted[i].prezzo * fattore);
+  const minTot = (S.asta.minimoPortieri || 0) + (S.asta.minimoMovimento || 0);
+  return Math.max(1, sq.crediti + recup - Math.max(0, minTot - sq.rosa.length - 1));
+}
+
+function calcolaMaxOffertaSquadra(sq) {
+  if (!sq || !S.asta) return 0;
+  if (S.asta.tipoAsta === 'iniziale') {
+    const minTot = (S.asta.minimoPortieri || 0) + (S.asta.minimoMovimento || 0);
+    const slotVuoti = Math.max(0, minTot - sq.rosa.length - 1);
+    return Math.max(1, sq.crediti - slotVuoti);
+  }
   const fattore = S.asta.fattoreSvincolo || 0.5;
   const svinR = S.asta.svincoliTotali - (sq.svincoliUsati || 0);
   if (svinR <= 0) return sq.crediti;
