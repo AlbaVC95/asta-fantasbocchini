@@ -51,7 +51,7 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .asta-header-right{display:flex;align-items:center;gap:6px}.asta-header-right .btn-small{padding:3px 8px;font-size:.68rem;border-radius:6px}
 .btn-sound{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text-secondary);font-size:.72rem;padding:2px 6px;cursor:pointer;transition:all .2s}
 .btn-sound:hover{border-color:var(--primary);color:var(--primary-bright)}.btn-sound.muted{opacity:.4}
-.asta-row-panels{display:flex;gap:10px;padding:6px 12px;flex-shrink:0;align-items:stretch}
+.asta-row-panels{display:flex;gap:10px;padding:0 12px;flex-shrink:0;align-items:stretch}
 .asta-row-panels>#admin-panel{flex:1;max-height:clamp(160px,26vh,230px);overflow-y:auto}
 .asta-row-panels>#mio-panel{flex:1;max-height:clamp(160px,26vh,230px);overflow-y:auto}
 .panel-budget{background:var(--bg-abyss);border:1px solid var(--border);border-radius:12px;padding:6px 8px;flex:1;min-width:0;overflow-y:auto;max-height:clamp(160px,26vh,230px)}
@@ -71,10 +71,10 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .budget-progress{height:2px;border-radius:2px;background:rgba(255,255,255,.06);margin-top:1px;overflow:hidden}
 .budget-progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--success),var(--gold));transition:width .5s}
 .sq-bottom{display:none}
-.asta-row-puja{display:flex;align-items:flex-start;gap:12px;padding:0 12px 6px;flex-shrink:0}
+.asta-row-puja{display:flex;align-items:flex-start;gap:12px;padding:0 12px;flex-shrink:0}
 .asta-row-puja .card-timer-group{flex:1;min-width:0}
 .asta-row-puja .rilancio-box{flex:0 0 200px}
-.asta-row-tabs{flex:1;min-height:0;display:flex;flex-direction:column;padding:0 12px 8px;overflow:hidden}
+.asta-row-tabs{flex:1;min-height:0;display:flex;flex-direction:column;padding:0 12px 4px;overflow:hidden}
 .card-timer-group{display:flex;flex-direction:column;align-items:center}
 .chiamata-card{width:100%;background:linear-gradient(170deg,var(--bg-card) 0%,var(--bg-main) 100%);border:1px solid rgba(0,168,255,.2);border-radius:20px 20px 0 0;padding:24px 28px 20px;text-align:center;box-shadow:0 0 80px rgba(0,168,255,.05),0 20px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05);position:relative;overflow:hidden;transition:border-color .3s,box-shadow .3s}
 .chiamata-card::before{content:'';position:absolute;top:0;left:10%;right:10%;height:2px;background:linear-gradient(90deg,transparent,var(--primary),transparent);border-radius:2px}
