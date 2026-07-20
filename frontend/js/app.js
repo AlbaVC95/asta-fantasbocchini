@@ -622,6 +622,15 @@ function setupTabs() {
   const rCerca = document.getElementById('rose-cerca');
   if (rCerca) rCerca.addEventListener('keydown', e => { if (e.key === 'Enter') aggiornaFiltroRose(); });
 
+  const btnRoseSearchToggle = document.getElementById('btn-rose-search-toggle');
+  if (btnRoseSearchToggle) {
+    btnRoseSearchToggle.addEventListener('click', () => {
+      const row = document.getElementById('rose-search-row');
+      row.classList.toggle('hidden');
+      if (!row.classList.contains('hidden')) document.getElementById('rose-cerca').focus();
+    });
+  }
+
 }
 
 // ════ SOCKET EVENTS ═══════════════════════════
