@@ -79,7 +79,12 @@ function broadcastStato(astaId, doBackup) {
 
 // ============ GAME MECHANICS ============
 function calcolaMaxOfferta(asta, squadra) {
-  if (asta.tipoAsta !== 'riparazione') return squadra.crediti;
+  if (asta.tipoAsta === 'iniziale') {
+    const minimoTotale = (asta.minimoPortieri || 0) + (asta.minimoMovimento || 0);
+    const slotVuoti = Math.max(0, minimoTotale - squadra.rosa.length - 1);
+    const creditiRiservati = slotVuoti;
+    return Math.max(1, squadra.crediti - creditiRiservati);
+  }
   const fattore = asta.fattoreSvincolo || 0.5;
   const svincoliRimanenti = asta.svincoliTotali - (squadra.svincoliUsati || 0);
   if (svincoliRimanenti <= 0) return squadra.crediti;
@@ -291,7 +296,7 @@ app.post('/api/asta', (req, res) => {
       }
       const squadra = {
         nome: sq.nome,
-        crediti: sq.crediti !== undefined ? sq.crediti : asta.crediti,
+        crediti: asta.tipoAsta === 'iniziale' ? (sq.crediti !== undefined ? sq.crediti : 0) + asta.crediti : (sq.crediti !== undefined ? sq.crediti : asta.crediti),
         slotsRIC: sq.slotRiconferme || 0,       // CORRETTO: slotRiconferme
         slotsRICUsati: 0,
         slotsPLUS: sq.slotPlusvalenze || 0,     // CORRETTO: slotPlusvalenze
@@ -604,8 +609,28 @@ io.on('connection', (socket) => {
       case 'plus-to-crediti': if (plusTrad < 1) return socket.emit('errore', { msg: 'Nessun slot PLUS cedibile' }); sq.slotsPLUS--; sq.crediti += 6; break;
       default: return socket.emit('errore', { msg: 'Tipo trade-off non valido' });
     }
+    asta.storico.push({ tipo: 'tradeoff', squadra: sq.nome, tradeoffTipo: tipo, timestamp: new Date().toISOString() });
     broadcastStato(astaId); socket.emit('tradeoff-ok');
     io.to(astaId).emit('tradeoff-usato', { nomeSquadra: sq.nome, tipo });
+  });
+
+  socket.on('admin-update-config', ({ astaId, timerPrimaChiamata, timerRilancio, minimoPortieri, minimoMovimento }) => {
+    const asta = aste.get(astaId);
+    if (!asta || !isAdmin(asta, socket.id)) return;
+    if (timerPrimaChiamata !== undefined) asta.timerPrimaChiamata = Math.max(1, parseInt(timerPrimaChiamata) || asta.timerPrimaChiamata);
+    if (timerRilancio !== undefined) asta.timerRilancio = Math.max(1, parseInt(timerRilancio) || asta.timerRilancio);
+    if (minimoPortieri !== undefined) asta.minimoPortieri = Math.max(0, parseInt(minimoPortieri) || 0);
+    if (minimoMovimento !== undefined) asta.minimoMovimento = Math.max(0, parseInt(minimoMovimento) || 0);
+    broadcastStato(astaId);
+  });
+
+  socket.on('admin-update-crediti', ({ astaId, squadraNome, crediti }) => {
+    const asta = aste.get(astaId);
+    if (!asta || !isAdmin(asta, socket.id)) return;
+    const sq = getSquadra(asta, squadraNome);
+    if (!sq) return socket.emit('errore', { msg: 'Squadra non trovata' });
+    sq.crediti = Math.max(0, parseInt(crediti) || 0);
+    broadcastStato(astaId);
   });
 
   socket.on('annulla-assegnazione', ({ astaId }) => {
