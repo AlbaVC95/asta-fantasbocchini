@@ -577,11 +577,12 @@ function apriModalAnnullaStorico() {
   } else {
     lista.innerHTML = [...items].reverse().map((item, i) => {
       const realIdx = asta.storico.lastIndexOf(item);
-      const rb = item.giocatore.ruolo ? '<span class="storico-ruolo ruolo-' + item.giocatore.ruolo + '">' + item.giocatore.ruolo + '</span>' : '';
+      const g = item.giocatore || {};
+      const rb = g.ruolo ? '<span class="storico-ruolo ruolo-' + g.ruolo + '">' + g.ruolo + '</span>' : '';
       return '<div class="annulla-item">' + rb +
-        '<span class="annulla-nome">' + item.giocatore.nome + '</span>' +
-        '<span class="annulla-sq">' + item.squadra + '</span>' +
-        '<span class="annulla-prezzo">' + item.prezzo + 'cr</span>' +
+        '<span class="annulla-nome">' + (g.nome || 'N/D') + '</span>' +
+        '<span class="annulla-sq">' + (item.squadra || '') + '</span>' +
+        '<span class="annulla-prezzo">' + (item.prezzo || 0) + 'cr</span>' +
         '<span class="storico-tipo tipo-tag-' + item.tipo + '">' + item.tipo + '</span>' +
         '<button class="btn btn-danger btn-small" onclick="annullaSpecifica(' + realIdx + ')">' + (item.tipo === 'scartato' ? '↩️ Riapri' : 'Annulla') + '</button>' +
         '</div>';
