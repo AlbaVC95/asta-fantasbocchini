@@ -212,12 +212,6 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .rose-sq-title{font-family:var(--font-display);font-size:.9rem;font-weight:800;color:var(--primary-bright);margin-bottom:8px;text-transform:uppercase}
 .rose-giocatore{display:flex;align-items:center;gap:7px;padding:6px 10px;background:var(--bg-main);border-radius:7px;margin-bottom:4px;font-size:.8rem}
 .rose-nome{flex:1}.rose-prezzo{font-family:var(--font-display);font-weight:700;color:var(--gold);font-size:.82rem}
-.rose-footer{display:none;position:sticky;bottom:0;background:var(--bg-abyss);border-top:1px solid var(--border);padding:10px 16px;gap:10px;flex-wrap:wrap}
-.rose-footer.visible{display:flex}
-.btn-rose-assegna,.btn-rose-chiama{flex:1;padding:12px;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;border:none;transition:all .15s}
-.btn-rose-assegna{background:linear-gradient(135deg,var(--success),#00c853);color:#000}
-.btn-rose-chiama{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff}
-.btn-rose-assegna:hover,.btn-rose-chiama:hover{transform:translateY(-1px)}
 .modal-overlay{position:fixed;inset:0;z-index:2000;background:rgba(3,6,10,.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.hidden{display:none!important}
 .modal{background:var(--bg-card);border:1px solid var(--border-light);border-radius:20px;padding:28px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 30px 60px rgba(0,0,0,.6)}
@@ -366,11 +360,6 @@ body.layout-admin .asta-row-puja .btn-rilancia{padding:7px 14px;font-size:.85rem
 body.layout-admin .asta-row-puja .inp-rilancio{width:50px!important;font-size:.92rem}
 body.layout-admin .asta-row-puja .manual-bid-row{margin:0}
 body.layout-admin .asta-row-puja .btn-manuale{padding:6px 10px;font-size:.82rem}
-
-/* ══════ Bottoni ASSEGNA/CHIAMA floating admin-only ══════ */
-.rose-footer{display:none!important;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--bg-glass);backdrop-filter:blur(16px);border:1px solid var(--border-light);border-radius:16px;padding:10px 14px;gap:10px;flex-wrap:nowrap;box-shadow:0 10px 40px rgba(0,0,0,.5);z-index:900}
-body.layout-admin .rose-footer{display:flex!important}
-.btn-rose-assegna,.btn-rose-chiama{flex:0 0 auto;padding:10px 18px}
 
 /* ══════ Liberi list — nuovo layout con Valore Algoritmico ══════ */
 .liberi-list li{gap:6px}
