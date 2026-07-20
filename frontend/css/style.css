@@ -328,10 +328,10 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 /* ══ Layout partecipante NON-admin: riga puja tutta orizzontale (card+timer+rilancio in fila),
    niente stacking verticale → niente scroll, sfrutta la larghezza extra lasciata da admin-panel nascosto ══ */
 .puja-panel-slot{flex:4;min-width:0;overflow:visible;display:flex;flex-direction:row;align-items:stretch;gap:10px}
-.puja-panel-slot .card-timer-group{width:auto;flex:1.5;min-width:0;flex-direction:row;align-items:stretch;gap:10px}
-.puja-panel-slot .rilancio-box{width:auto;flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.puja-panel-slot .card-timer-group{width:auto;flex:1;min-width:0;flex-direction:row;align-items:stretch;gap:10px}
+.puja-panel-slot .rilancio-box{width:auto;flex:0 0 220px;min-width:0;display:flex;flex-direction:column;justify-content:center}
 /* La card diventa orizzontale (badge+nome+meta a sinistra, offerta a destra) come nel layout admin, per restare bassa */
-.puja-panel-slot .chiamata-card{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-radius:14px;text-align:left;overflow:hidden}
+.puja-panel-slot .chiamata-card{flex:1 1 0%;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-radius:14px;text-align:left;overflow:hidden}
 .puja-panel-slot .chiamata-card .chiamata-stato{padding:0;font-size:.88rem}
 .puja-panel-slot .cc-header{margin-bottom:0;align-items:center;gap:8px;flex:1 1 auto;min-width:0;overflow:hidden}
 .puja-panel-slot .cc-nome{font-size:1.1rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -347,7 +347,7 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .puja-panel-slot .rilancio-box{padding:8px 12px;gap:6px}
 .puja-panel-slot .quick-bids-row{margin-bottom:0;gap:8px}
 .puja-panel-slot .btn-quick{padding:6px 12px;font-size:.82rem}
-.puja-panel-slot .btn-rilancia{padding:8px 18px;font-size:.88rem}
+.puja-panel-slot .btn-rilancia{padding:8px 18px;font-size:.88rem;width:100%}
 .puja-panel-slot .manual-bid-row{margin:0}
 .puja-panel-slot .inp-rilancio{padding:5px!important;font-size:.9rem;width:64px!important}
 /* Budget squadre e Mio team più stretti quando è visibile la riga puja del partecipante */
