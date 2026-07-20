@@ -165,6 +165,7 @@
       </div>
       <div class="asta-header-right">
         <button class="btn-sound" id="btn-sound" title="Toggle suoni" onclick="toggleSuoni()">🔊</button>
+        <button class="btn btn-secondary btn-small hidden" id="btn-admin-config" title="Impostazioni admin" onclick="apriModalAdminConfig()">⚙️</button>
         <button class="btn btn-secondary btn-small" onclick="downloadBackupJSON(false)">📥</button>
         <button class="btn btn-secondary btn-small btn-esci" onclick="esciDallAsta()">🚪</button>
       </div>
@@ -480,6 +481,38 @@
     <div class="modal-actions">
       <button class="btn btn-primary" onclick="confermaModTimer()">✅ Salva</button>
       <button class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+    </div>
+  </div>
+
+  <!-- Modal: Admin Config (impostazioni asta + crediti a caldo) -->
+  <div id="modal-admin-config" class="modal modal-lg hidden">
+    <h2 class="modal-title">⚙️ Impostazioni Admin</h2>
+    <h3 class="card-title-sm mt-16">Impostazioni asta</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Timer 1ª offerta (sec)</label>
+        <input type="number" id="inp-ac-timer-prima" min="1">
+      </div>
+      <div class="form-group">
+        <label>Timer rilancio (sec)</label>
+        <input type="number" id="inp-ac-timer-rilancio" min="1">
+      </div>
+      <div class="form-group">
+        <label>Minimo portieri</label>
+        <input type="number" id="inp-ac-min-portieri" min="0">
+      </div>
+      <div class="form-group">
+        <label>Minimo movimento</label>
+        <input type="number" id="inp-ac-min-movimento" min="0">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="confermaAdminConfig()">✅ Salva impostazioni</button>
+    </div>
+    <h3 class="card-title-sm mt-16">Crediti squadre</h3>
+    <div id="ac-crediti-lista" class="ac-crediti-lista"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Chiudi</button>
     </div>
   </div>
 
