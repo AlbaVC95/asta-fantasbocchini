@@ -201,7 +201,7 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .libero-costo{font-family:var(--font-display);font-weight:700;color:var(--gold);font-size:.85rem}
 .btn-chiama-libero{background:var(--primary-subtle);border:1px solid rgba(0,168,255,.3);color:var(--primary-bright);border-radius:7px;padding:4px 10px;font-size:.75rem;cursor:pointer;transition:all .15s}
 .btn-chiama-libero:hover{background:var(--primary);color:#fff}
-.tab-content.active.tab-rose-content{padding:0;display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}.rose-container{flex:1;min-height:0;overflow-x:auto;overflow-y:hidden;display:flex;gap:8px;padding:10px;align-items:stretch}
+.tab-content.active.tab-rose-content{padding:0;display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}.rose-container{flex:1;min-height:0;overflow-x:auto;overflow-y:hidden;display:flex;gap:6px;padding:8px;align-items:stretch}
 .rose-search-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .rose-sel,.rose-inp{flex:1;min-width:100px}
 .rose-cerca-btn{padding:8px 14px;border-radius:9px;background:var(--primary-subtle);border:1px solid rgba(0,168,255,.3);color:var(--primary-bright);cursor:pointer;font-size:.82rem;transition:all .15s;white-space:nowrap}
@@ -294,23 +294,23 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .lobby-escape-row .btn-secondary{opacity:.7;font-size:.8rem}
 .lobby-escape-row .btn-secondary:hover{opacity:1}
 /* ── Rose columns (full-screen horizontal layout) ── */
-.rose-col{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;min-width:185px;flex:0 0 auto;height:100%;overflow-y:auto;overflow-x:hidden;transition:box-shadow .2s;padding:10px}
+.rose-col{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;min-width:170px;flex:0 0 auto;height:100%;overflow-y:auto;overflow-x:hidden;transition:box-shadow .2s;padding:8px}
 .rose-col.attiva{border-color:var(--gold);box-shadow:0 0 20px var(--gold-glow)}
-.rose-col-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:8px}
-.rose-col-slots{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px}.rose-col-slots .slot-chip{font-size:.68rem;padding:3px 6px}
-.rose-col-nome{font-family:var(--font-display);font-size:.85rem;font-weight:800;color:var(--text-primary)}
-.rose-col-budget{font-size:.8rem;font-weight:700;color:var(--gold)}
+.rose-col-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:6px;border-bottom:1px solid var(--border);margin-bottom:6px}
+.rose-col-slots{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:6px}.rose-col-slots .slot-chip{font-size:.62rem;padding:2px 5px}
+.rose-col-nome{font-family:var(--font-display);font-size:.78rem;font-weight:800;color:var(--text-primary)}
+.rose-col-budget{font-size:.74rem;font-weight:700;color:var(--gold)}
 .rose-col-budget.attiva{color:var(--fire-bright)}
-.rose-section{margin-bottom:8px}
-.rose-sec-hdr{cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:var(--bg-main);border:1px solid var(--border);border-radius:7px;margin-bottom:4px;font-size:.78rem;font-weight:700;color:var(--text-secondary)}
+.rose-section{margin-bottom:5px}
+.rose-sec-hdr{cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:3px 7px;background:var(--bg-main);border:1px solid var(--border);border-radius:7px;margin-bottom:3px;font-size:.7rem;font-weight:700;color:var(--text-secondary)}
 .rose-sec-hdr:hover{border-color:var(--primary);color:var(--text-primary)}
 .rose-sec-hdr.collapsed + .rose-sec-body{display:none}
 .rose-sec-body{}
-.rose-player{display:flex;align-items:center;gap:5px;padding:3px 5px;border-radius:5px;margin-bottom:1px;background:var(--bg-main);font-size:.74rem}
-.rose-badge{font-size:.65rem;font-weight:800;padding:2px 5px;border-radius:4px;background:var(--bg-elevated);color:var(--text-secondary);min-width:22px;text-align:center}
+.rose-player{display:flex;align-items:center;gap:5px;padding:2px 4px;border-radius:5px;margin-bottom:1px;background:var(--bg-main);font-size:.68rem}
+.rose-badge{font-size:.58rem;font-weight:800;padding:1px 4px;border-radius:4px;background:var(--bg-elevated);color:var(--text-secondary);min-width:18px;text-align:center}
 .rose-nome{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rose-prezzo{font-family:var(--font-display);font-weight:700;color:var(--gold);font-size:.75rem}
-.rose-empty{color:var(--text-muted);font-size:.75rem;padding:4px 6px;font-style:italic}
+.rose-prezzo{font-family:var(--font-display);font-weight:700;color:var(--gold);font-size:.68rem}
+.rose-empty{color:var(--text-muted);font-size:.68rem;padding:3px 6px;font-style:italic}
 
 /* ══════ RIGA 1 middle slot (puja per NON-admin) ══════ */
 .puja-panel-slot{flex:1;min-width:0;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
