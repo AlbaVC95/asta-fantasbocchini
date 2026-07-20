@@ -191,6 +191,7 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .tipo-tag-plusvalenza{background:rgba(165,94,234,.15);color:#c49bff}
 .tipo-tag-con_svincolo{background:rgba(255,77,42,.12);color:var(--fire-bright)}
 .tipo-tag-scartato{background:rgba(74,99,128,.2);color:var(--text-muted)}
+.tipo-tag-tradeoff{background:rgba(0,168,255,.12);color:var(--primary-bright)}
 .filtro-ruolo{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
 .filtro-btn{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-secondary);border-radius:7px;padding:4px 8px;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .15s}
 .filtro-btn.active{background:var(--primary-subtle);border-color:var(--primary);color:var(--primary-bright)}
@@ -228,6 +229,7 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .modal-body strong{color:var(--text-primary)}.modal-detail{font-size:.85rem}
 .modal-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:16px}
 .modal-actions .btn{flex:1;min-width:120px}
+.ac-crediti-lista{max-height:260px;overflow-y:auto;margin-top:8px}
 .tradeoff-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
 .tradeoff-card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px;font-family:var(--font-main)}
 .tradeoff-card:hover{background:var(--primary-subtle);border-color:var(--primary);transform:translateY(-2px)}
@@ -295,6 +297,7 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .rose-col{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;min-width:185px;flex:0 0 auto;height:100%;overflow-y:auto;overflow-x:hidden;transition:box-shadow .2s;padding:10px}
 .rose-col.attiva{border-color:var(--gold);box-shadow:0 0 20px var(--gold-glow)}
 .rose-col-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.rose-col-slots{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px}.rose-col-slots .slot-chip{font-size:.68rem;padding:3px 6px}
 .rose-col-nome{font-family:var(--font-display);font-size:.85rem;font-weight:800;color:var(--text-primary)}
 .rose-col-budget{font-size:.8rem;font-weight:700;color:var(--gold)}
 .rose-col-budget.attiva{color:var(--fire-bright)}
