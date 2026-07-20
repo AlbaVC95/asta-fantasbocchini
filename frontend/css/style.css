@@ -359,7 +359,7 @@ body.layout-partecipante .asta-row-puja{display:none!important}
 /* ══════ RIGA 2 compatta orizzontale (puja per ADMIN) ══════ */
 body.layout-admin .asta-row-puja{align-items:stretch;padding:5px 10px;gap:8px;height:clamp(110px,16vh,160px);min-height:clamp(110px,16vh,160px);max-height:clamp(110px,16vh,160px);overflow:hidden}
 body.layout-admin .asta-row-puja .card-timer-group{flex-direction:row;align-items:stretch;gap:10px;flex:1;min-width:0;min-height:0;overflow:hidden;height:100%}
-body.layout-admin .asta-row-puja .chiamata-card{border-radius:10px;padding:6px 14px;text-align:left;box-shadow:none;min-height:0;overflow:hidden;height:100%}
+body.layout-admin .asta-row-puja .chiamata-card{border-radius:10px;padding:6px 14px;text-align:left;box-shadow:none;min-height:0;overflow:hidden;height:100%;flex:1 1 0%;min-width:0}
 body.layout-admin .asta-row-puja .cc-attesa-badge{display:block;font-size:.7rem}
 body.layout-admin .asta-row-puja .chiamata-card .chiamata-stato{padding:0;font-size:.82rem;white-space:nowrap}
 body.layout-admin .asta-row-puja .chiamata-card{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:nowrap;overflow:hidden;height:100%}
@@ -375,9 +375,9 @@ body.layout-admin .asta-row-puja .timer-ring-container{padding:0;border:none;bor
 body.layout-admin .asta-row-puja .timer-ring{width:52px;height:52px}
 body.layout-admin .asta-row-puja .timer-number{font-size:1.05rem}
 body.layout-admin .asta-row-puja .timer-label-text{display:block;font-size:.52rem}
-body.layout-admin .asta-row-puja .rilancio-box{flex-direction:row;align-items:center;padding:5px 10px;gap:8px;flex:0 0 auto;border-radius:10px}
+body.layout-admin .asta-row-puja .rilancio-box{flex-direction:column;align-items:stretch;justify-content:center;padding:6px 10px;gap:4px;flex:0 0 230px;border-radius:10px}
 body.layout-admin .asta-row-puja .quick-bids-row{margin-bottom:0}
-body.layout-admin .asta-row-puja .btn-rilancia{padding:7px 14px;font-size:.85rem;width:auto;white-space:nowrap}
+body.layout-admin .asta-row-puja .btn-rilancia{padding:7px 14px;font-size:.85rem;width:100%;white-space:nowrap}
 body.layout-admin .asta-row-puja .inp-rilancio{width:50px!important;font-size:.92rem}
 body.layout-admin .asta-row-puja .manual-bid-row{margin:0}
 body.layout-admin .asta-row-puja .btn-manuale{padding:6px 10px;font-size:.82rem}
