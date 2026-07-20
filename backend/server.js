@@ -449,7 +449,7 @@ io.on('connection', (socket) => {
     const asta = aste.get(astaId);
     if (!asta || asta.stato !== 'in_corso' || !isAdmin(asta, socket.id)) return;
     if (asta.chiamataAttuale) return socket.emit('errore', { msg: 'Chiamata già in corso, termina prima' });
-    const giocatore = asta.poolGiocatori.find(g => g.id === giocatoreId && !g.estratto && !g.assegnato && !g.scartato);
+    const giocatore = asta.poolGiocatori.find(g => g.id === giocatoreId && !g.assegnato && (!g.estratto || g.scartato));
     const squadra = getSquadra(asta, squadraNome);
     if (!giocatore) return socket.emit('errore', { msg: 'Giocatore non trovato o non disponibile' });
     if (!squadra) return socket.emit('errore', { msg: 'Squadra non trovata' });
@@ -648,6 +648,14 @@ io.on('connection', (socket) => {
     const item = asta.storico[index];
     _annullaItem(asta, index);
     broadcastStato(astaId, true); io.to(astaId).emit('assegnazione-annullata', { giocatore: item.giocatore });
+  });
+
+  socket.on('scarta-manuale', ({ astaId }) => {
+    const asta = aste.get(astaId);
+    if (!asta || !isAdmin(asta, socket.id)) return;
+    if (!asta.chiamataAttuale) return socket.emit('errore', { msg: 'Nessuna chiamata attiva' });
+    clearTimer(astaId);
+    scartaGiocatore(astaId);
   });
 
   socket.on('reintroduci-scartati', ({ astaId }) => {
