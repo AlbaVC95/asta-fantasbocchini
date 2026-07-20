@@ -151,14 +151,14 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .admin-btn-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-top:3px}
 .admin-btn-grid .btn{font-size:.68rem;padding:5px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cc-attesa-badge{background:rgba(0,168,255,.1);border:1px solid rgba(0,168,255,.25);border-radius:8px;padding:6px 12px;font-size:.82rem;color:var(--primary-bright);margin-top:6px;text-align:center}
-.mio-panel{background:var(--bg-card);border:1px solid rgba(0,168,255,.15);border-radius:14px;padding:16px}
-.mio-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.mio-panel{background:var(--bg-card);border:1px solid rgba(0,168,255,.15);border-radius:14px;padding:12px 14px}
+.mio-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .mio-nome{font-family:var(--font-display);font-size:.95rem;font-weight:800;text-transform:uppercase;color:var(--primary-bright)}
 .crediti-badge{font-family:var(--font-display);font-size:1rem;font-weight:800;color:var(--gold);background:var(--gold-subtle);border:1px solid rgba(255,184,0,.25);border-radius:8px;padding:3px 10px}
-.slot-counter{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
-.slot-chip{display:flex;align-items:center;justify-content:space-between;font-size:.78rem;padding:5px 10px;background:var(--bg-main);border-radius:7px;border:1px solid var(--border)}
+.slot-counter{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}#mio-slot-counter{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.slot-chip{display:flex;align-items:center;justify-content:space-between;font-size:.78rem;padding:5px 10px;background:var(--bg-main);border-radius:7px;border:1px solid var(--border);min-width:0}#mio-slot-counter .slot-chip{flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;padding:4px 8px}#mio-slot-counter .slot-chip>.slot-main{display:flex;align-items:center;justify-content:space-between;width:100%;gap:4px}#mio-slot-counter .slot-sub{align-self:flex-start;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .slot-chip span{font-weight:700;color:var(--primary)}.slot-chip.esaurito span{color:var(--danger)}
-.slot-sub{font-size:.68rem;color:var(--text-muted)}.mio-panel-actions{display:flex;flex-direction:column;gap:6px}
+.slot-sub{font-size:.68rem;color:var(--text-muted)}.mio-panel-actions{display:flex;flex-direction:row;gap:6px}.mio-panel-actions .btn{flex:1;min-width:0}
 .admin-panel{background:var(--bg-glass);backdrop-filter:blur(12px);border:1px solid rgba(255,184,0,.2);border-radius:14px;padding:10px 12px}
 .admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .admin-badge{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,rgba(255,184,0,.15),rgba(255,184,0,.05));border:1px solid rgba(255,184,0,.3);border-radius:7px;padding:3px 8px;font-size:.7rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.05em}
