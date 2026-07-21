@@ -1,4 +1,44 @@
-:root{--bg-abyss:#03060a;--bg-deep:#060c18;--bg-main:#0a1628;--bg-card:#0f1f38;--bg-elevated:#152a4a;--bg-glass:rgba(15,31,56,.7);--primary:#00a8ff;--primary-bright:#33bbff;--primary-dark:#0077cc;--primary-glow:rgba(0,168,255,.3);--primary-subtle:rgba(0,168,255,.08);--gold:#ffb800;--gold-bright:#ffd000;--gold-deep:#cc9200;--gold-glow:rgba(255,184,0,.35);--gold-subtle:rgba(255,184,0,.08);--fire:#ff4d2a;--fire-bright:#ff6b4a;--fire-glow:rgba(255,77,42,.4);--success:#00e676;--success-glow:rgba(0,230,118,.3);--danger:#ff1744;--danger-glow:rgba(255,23,68,.3);--text-primary:#fff;--text-secondary:#8ba3c0;--text-muted:#4a6380;--border:rgba(255,255,255,.07);--border-light:rgba(255,255,255,.12);--font-main:Inter,-apple-system,BlinkMacSystemFont,sans-serif;--font-display:Outfit,Inter,sans-serif;--font-mono:JetBrains Mono,Fira Code,monospace}
+:root{
+  --bg-abyss:#02040a;
+  --bg-deep:#050912;
+  --bg-main:#050b18;
+  --bg-card:#0a1428;
+  --bg-elevated:#101f3d;
+  --bg-glass:rgba(10,20,40,.7);
+
+  --primary:#00d4ff;
+  --primary-bright:#4de3ff;
+  --primary-dark:#0099cc;
+  --primary-glow:rgba(0,212,255,.35);
+  --primary-subtle:rgba(0,212,255,.08);
+
+  --gold:#ff2d95;
+  --gold-bright:#ff5cac;
+  --gold-deep:#cc1f78;
+  --gold-glow:rgba(255,45,149,.35);
+  --gold-subtle:rgba(255,45,149,.08);
+
+  --fire:#c400ff;
+  --fire-bright:#e63aff;
+  --fire-glow:rgba(196,0,255,.4);
+
+  --success:#00e0a0;
+  --success-glow:rgba(0,224,160,.3);
+
+  --danger:#ff3860;
+  --danger-glow:rgba(255,56,96,.3);
+
+  --text-primary:#f0f6ff;
+  --text-secondary:#9fb3d0;
+  --text-muted:#5d7599;
+
+  --border:rgba(255,255,255,.07);
+  --border-light:rgba(255,255,255,.12);
+
+  --font-main:Inter,-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-display:Outfit,Inter,sans-serif;
+  --font-mono:JetBrains Mono,Fira Code,monospace;
+}
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
@@ -1018,7 +1058,7 @@ body.layout-admin .asta-row-puja .timer-ring-container{flex:1 1 60px!important;m
   body.layout-admin .asta-row-puja .btn-manuale{font-size:.55rem!important;padding:3px 4px!important}
 }
 
-@media (max-width:700px){
+@media (max-width:768px){
   .puja-panel-slot{flex-wrap:wrap!important;padding:10px 12px!important;gap:8px!important}
   .puja-panel-slot .card-timer-group{flex:1 1 100%!important;border-right:none!important;padding-right:0!important;min-width:0!important}
   .puja-panel-slot .chiamata-card{flex:0 1 150px!important;max-width:150px!important}
@@ -1079,4 +1119,27 @@ body.layout-admin .asta-row-puja .timer-ring-container{flex:1 1 60px!important;m
 .ruolo-rose-a,.ruolo-rose-pc,
 .storico-ruolo.ruolo-A,.storico-ruolo.ruolo-Pc{
   background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;
+}
+
+/* ══ Rebalance panel participante: laterales más anchos, medio menos dominante ══ */
+body.layout-partecipante .asta-row-panels>.panel-budget{flex:1.2!important}
+body.layout-partecipante .asta-row-panels>#puja-panel-slot{flex:2!important}
+body.layout-partecipante .asta-row-panels>#mio-panel{flex:1.2!important}
+
+/* ══ Rebalance panel admin: card/timer/rilancio más homogéneos ══ */
+body.layout-admin .asta-row-puja .chiamata-card{
+  flex:1.4 1 0%!important;max-width:420px!important;min-width:200px!important;
+}
+body.layout-admin .asta-row-puja .timer-ring-container{
+  flex:0.8 1 auto!important;
+}
+body.layout-admin .asta-row-puja .rilancio-box{
+  flex:1.4 1 0%!important;max-width:420px!important;min-width:220px!important;
+}
+
+/* ══ Ajuste móvil: preservar wrap de los 3 paneles participante bajo 768px ══ */
+@media (max-width:768px){
+  body.layout-partecipante .asta-row-panels>.panel-budget{flex:1 1 200px!important}
+  body.layout-partecipante .asta-row-panels>#puja-panel-slot{flex:1 1 280px!important}
+  body.layout-partecipante .asta-row-panels>#mio-panel{flex:1 1 200px!important}
 }
