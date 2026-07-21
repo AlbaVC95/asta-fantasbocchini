@@ -1122,9 +1122,9 @@ body.layout-admin .asta-row-puja .timer-ring-container{flex:1 1 60px!important;m
 }
 
 /* ══ Rebalance panel participante: laterales más anchos, medio menos dominante ══ */
-body.layout-partecipante .asta-row-panels>.panel-budget{flex:1.2!important}
-body.layout-partecipante .asta-row-panels>#puja-panel-slot{flex:2!important}
-body.layout-partecipante .asta-row-panels>#mio-panel{flex:1.2!important}
+body.layout-partecipante .asta-row-panels>.panel-budget{flex:1!important}
+body.layout-partecipante .asta-row-panels>#puja-panel-slot{flex:2.8!important}
+body.layout-partecipante .asta-row-panels>#mio-panel{flex:1!important}
 
 /* ══ Rebalance panel admin: card/timer/rilancio más homogéneos ══ */
 body.layout-admin .asta-row-puja .chiamata-card{
