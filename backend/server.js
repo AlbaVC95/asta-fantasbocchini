@@ -309,8 +309,8 @@ app.post('/api/asta', (req, res) => {
             id: uuidv4(), nome: g.nome, ruolo: g.ruolo || '', tipo,
             costoOriginale: g.costo || 1, valore: g.valore || 0, squadraOriginale: sq.nome,
             estratto: false, assegnato: false, scartato: false,
-            // campi extra: non mostrati ancora da nessuna parte, servono per una funzione futura
-            squadraSerieA: g.squadraSerieA || null,
+            // campi extra: club reale (mostrato in Puja/confirma) + statistiche non mostrate ancora da nessuna parte, servono per una funzione futura
+            squadra: g.squadra || null,
             pgv: g.pgv ?? null, mv: g.mv ?? null, fm: g.fm ?? null,
             fvmp600: g.fvmp600 ?? null, qam: g.qam ?? null
           });
