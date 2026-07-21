@@ -114,7 +114,7 @@ window.downloadBackupExcel = function() {
     'Giocatori': (sq.rosa||[]).length,
     'Slot RIC usati': sq.slotsRICUsati||0, 'Slot RIC tot': sq.slotsRIC||0,
     'Slot PLUS usati': sq.slotsPLUSUsati||0, 'Slot PLUS tot': sq.slotsPLUS||0,
-    'Recompra usata': sq.recompraUsata ? 'Sì' : 'No'
+    'Recompra usati': (sq.recompraUsati||0) + '/' + (sq.recompra!==undefined?sq.recompra:1)
   }));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riepilogo), 'Riepilogo');
   // Foglio 2: Rose
@@ -876,7 +876,7 @@ socket.on('attesa-conferma', (chiamata) => {
 });
 
 socket.on('popup-ric-conferma', ({ giocatore, costoConferma }) => {
-  document.getElementById('mrc-giocatore').textContent = giocatore.nome + ' (' + (giocatore.ruolo||'?') + ')';
+  document.getElementById('mrc-giocatore').textContent = giocatore.nome + ' (' + (giocatore.ruolo||'?') + ')' + (giocatore.squadra ? ' - ' + giocatore.squadra : '');
   document.getElementById('mrc-prezzo').textContent = costoConferma;
   document.getElementById('mrc-tipo-label').textContent = 'RIC — consuma 1 slot riconferma';
   S.popupAttivoCli = { tipo: 'ric-conferma', giocatore };
@@ -887,7 +887,7 @@ socket.on('popup-ric-conferma-admin', function(data) {
   if (!S.isAdmin) return;
   var giocatore = data.giocatore || {}, proprietario = data.proprietario;
   var costo = data.costoConferma || giocatore.costoOriginale || '?';
-  document.getElementById('popup-override-chi').textContent = proprietario + ' — RIC: ' + (giocatore.nome || '?') + ' (' + costo + 'cr)';
+  document.getElementById('popup-override-chi').textContent = proprietario + ' — RIC: ' + (giocatore.nome || '?') + (giocatore.squadra ? ' [' + giocatore.squadra + ']' : '') + ' (' + costo + 'cr)';
   document.getElementById('popup-override-actions').innerHTML =
     '<button class="btn btn-success" data-ric="si" onclick="adminRicConferma(this.dataset.ric)">✅ Sì — confermato</button>' +
     '<button class="btn btn-danger" data-ric="no" onclick="adminRicConferma(this.dataset.ric)">❌ No — passa all\'asta</button>';
@@ -973,6 +973,7 @@ function renderChiamata(chiamata) {
   const ruoloBadge = _getRuoloBadgeHTML(g.ruolo);
   const tipoBadge = g.tipo && g.tipo !== 'NN' ? '<span class="cc-tipo-badge tipo-' + g.tipo + '">' + g.tipo + '</span>' : '';
   const origTxt = g.squadraOriginale && g.tipo !== 'NN' ? '<small class="text-muted">ex: ' + g.squadraOriginale + '</small>' : '';
+  const clubTxt = g.squadra ? '<span class="cc-club">' + g.squadra + '</span>' : '';
   const offerenteTxt = chiamata.squadraOfferente
     ? 'Offerta di: <strong>' + chiamata.squadraOfferente + '</strong>'
     : '<span class="chiamata-stato">In attesa 1ª offerta...</span>';
@@ -986,7 +987,7 @@ function renderChiamata(chiamata) {
       ruoloBadge +
       '<div class="cc-info">' +
         '<p class="cc-nome">' + g.nome + '</p>' +
-        '<div class="cc-meta">' + tipoBadge + origTxt + '</div>' +
+        '<div class="cc-meta">' + clubTxt + tipoBadge + origTxt + '</div>' +
       '</div>' +
     '</div>' +
     '<div class="cc-body">' +
@@ -1080,7 +1081,7 @@ function renderRose(squadre) {
     const slotsRow = (S.asta && S.asta.tipoAsta === 'iniziale') ?
       '<div class="rose-col-slots">' +
         '<span class="slot-chip"><span class="slot-main">Max <span class="text-accent">' + calcolaMaxOffertaSquadra(sq) + 'cr</span></span></span>' +
-        '<span class="slot-chip' + (sq.recompraUsata?' esaurito':'') + '"><span class="slot-main">Recompra <span>' + (sq.recompraUsata?'usata':'✓') + '</span></span></span>' +
+        '<span class="slot-chip' + (((sq.recompra||0) - (sq.recompraUsati||0) <= 0)?' esaurito':'') + '"><span class="slot-main">Recompra <span>' + (sq.recompraUsati||0) + '/' + (sq.recompra!==undefined?sq.recompra:1) + '</span></span></span>' +
         '<span class="slot-chip"><span class="slot-main">RIC <span>' + sq.slotsRICUsati + '/' + sq.slotsRIC + '</span></span></span>' +
         '<span class="slot-chip"><span class="slot-main">PLUS <span>' + sq.slotsPLUSUsati + '/' + sq.slotsPLUS + '</span></span></span>' +
       '</div>' : '';
@@ -1164,13 +1165,14 @@ function renderGiocatoriLiberi(pool) {
     const tipoLabel = g.tipo || 'NN';
     const tb = '<span class="l-tipo-badge tipo-' + tipoLabel + '">' + tipoLabel + '</span>';
     const orig = g.squadraOriginale ? '<span class="l-orig">ex ' + g.squadraOriginale + '</span>' : '';
+    const club = g.squadra ? '<span class="l-orig">' + g.squadra + '</span>' : '';
     const click = (!g.scartato && S.isAdmin) ? ' onclick="chiamaLibero(\'' + g.id + '\')"' : '';
     const haValore = g.valore !== undefined && g.valore !== null && g.valore !== 0;
     const valoreHTML = haValore
       ? '<div class="l-valore-wrap"><span class="l-valore">' + g.valore + '</span><span class="l-valore-label">Valore</span></div>'
       : '';
     return '<li class="' + sc + '"' + click + '>' + _getRuoloBadgeHTML(g.ruolo) +
-      '<span class="l-nome">' + g.nome + '</span>' + tb + orig + valoreHTML +
+      '<span class="l-nome">' + g.nome + '</span>' + tb + club + orig + valoreHTML +
       (g.scartato ? '<span class="l-scartato-tag">Scartato</span>' : '') +
       '<span class="l-costo">' + g.costoOriginale + 'cr' + (g.scartato ? ' \u2717' : '') + '</span></li>';
   }).join('') || '<li class="text-muted" style="padding:8px">Nessun giocatore</li>';
@@ -1196,7 +1198,7 @@ function renderMioPanel() {
     counter.innerHTML =
       '<span class="slot-chip' + (rD===0?' esaurito':'') + '"><span class="slot-main">RIC <span>' + sq.slotsRICUsati + '/' + sq.slotsRIC + '</span></span><small class="slot-sub">(' + ricTot + ' da estrarre)</small></span>' +
       '<span class="slot-chip' + (pD===0?' esaurito':'') + '"><span class="slot-main">PLUS <span>' + sq.slotsPLUSUsati + '/' + sq.slotsPLUS + '</span></span><small class="slot-sub">(' + plusTot + ' da estrarre)</small></span>' +
-      '<span class="slot-chip' + (sq.recompraUsata?' esaurito':'') + '"><span class="slot-main">Recompra <span>' + (sq.recompraUsata?'usata':'✓') + '</span></span></span>' +
+      '<span class="slot-chip' + (((sq.recompra||0) - (sq.recompraUsati||0) <= 0)?' esaurito':'') + '"><span class="slot-main">Recompra <span>' + (sq.recompraUsati||0) + '/' + (sq.recompra!==undefined?sq.recompra:1) + '</span></span></span>' +
       '<span class="slot-chip"><span class="slot-main">Max <span class="text-accent">' + getMaxOfferta() + 'cr</span></span></span>';
     document.getElementById('btn-tradeoff').classList.remove('hidden');
   } else if (S.asta && S.asta.tipoAsta === 'riparazione') {
@@ -1254,7 +1256,7 @@ function renderFineAsta() {
   const asta = S.asta; if (!asta) return;
   document.getElementById('riepilogo-asta').innerHTML = asta.squadre.map(sq =>
     '<div class="riepilogo-card"><h3><span>' + sq.nome + '</span><span class="rc-crediti">💰 ' + sq.crediti + 'cr</span></h3>' +
-    (asta.tipoAsta === 'iniziale' ? '<p class="rc-slot">RIC ' + sq.slotsRICUsati + '/' + sq.slotsRIC + ' | PLUS ' + sq.slotsPLUSUsati + '/' + sq.slotsPLUS + ' | Recompra: ' + (sq.recompraUsata?'usata':'no') + '</p>' : '') +
+    (asta.tipoAsta === 'iniziale' ? '<p class="rc-slot">RIC ' + sq.slotsRICUsati + '/' + sq.slotsRIC + ' | PLUS ' + sq.slotsPLUSUsati + '/' + sq.slotsPLUS + ' | Recompra: ' + ((sq.recompraUsati||0) + '/' + (sq.recompra!==undefined?sq.recompra:1)) + '</p>' : '') +
     '<table><thead><tr><th>Giocatore</th><th>Ruolo</th><th>Tipo</th><th>Prezzo</th></tr></thead><tbody>' +
     (sq.rosa.map(g => '<tr><td>' + g.nome + '</td><td>' + (g.ruolo||'?') + '</td><td>' + (g.tipo||'NN') + '</td><td>' + g.prezzo + 'cr</td></tr>').join('') ||
       '<tr><td colspan="4" class="text-muted">Nessun giocatore</td></tr>') +
