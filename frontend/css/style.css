@@ -1039,3 +1039,44 @@ body.layout-admin .asta-row-puja .timer-ring-container{flex:1 1 60px!important;m
   .puja-panel-slot .btn-rilancia{font-size:.65rem!important;padding:6px 8px!important}
   .puja-panel-slot .inp-rilancio{width:56px!important;font-size:.75rem!important}
 }
+
+/* ══ Colori ufficiali ruoli — applicato su Chiamata/Liberi/Rose/Annulla ══ */
+
+/* Base badge per .storico-ruolo (oggi senza stile, solo testo semplice) */
+.storico-ruolo{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:24px;height:22px;padding:0 6px;border-radius:6px;
+  font-size:.65rem;font-weight:800;text-transform:uppercase;
+  letter-spacing:.03em;flex-shrink:0;
+}
+
+/* Por → giallo */
+.badge-ruolo.r-Por,.badge-ruolo.r-P,
+.ruolo-rose-por,.rose-badge.ruolo-rose-p,
+.storico-ruolo.ruolo-Por,.storico-ruolo.ruolo-P{
+  background:linear-gradient(135deg,#ffd93b,#f2b400);color:#000;
+}
+/* Dd,Ds,Dc,D,B → verde */
+.badge-ruolo.r-Dd,.badge-ruolo.r-Ds,.badge-ruolo.r-Dc,.badge-ruolo.r-D,.badge-ruolo.r-B,
+.ruolo-rose-dd,.ruolo-rose-ds,.ruolo-rose-dc,.ruolo-rose-d,.ruolo-rose-b,
+.storico-ruolo.ruolo-Dd,.storico-ruolo.ruolo-Ds,.storico-ruolo.ruolo-Dc,.storico-ruolo.ruolo-D,.storico-ruolo.ruolo-B{
+  background:linear-gradient(135deg,#2ecc71,#229954);color:#fff;
+}
+/* M,C,E → azzurro */
+.badge-ruolo.r-M,.badge-ruolo.r-C,.badge-ruolo.r-E,
+.ruolo-rose-m,.ruolo-rose-c,.ruolo-rose-e,
+.storico-ruolo.ruolo-M,.storico-ruolo.ruolo-C,.storico-ruolo.ruolo-E{
+  background:linear-gradient(135deg,#4b7bec,#3867d6);color:#fff;
+}
+/* T,W → viola */
+.badge-ruolo.r-T,.badge-ruolo.r-W,
+.ruolo-rose-t,.ruolo-rose-w,
+.storico-ruolo.ruolo-T,.storico-ruolo.ruolo-W{
+  background:linear-gradient(135deg,#a55eea,#8854d0);color:#fff;
+}
+/* A,Pc → rosso */
+.badge-ruolo.r-A,.badge-ruolo.r-Pc,
+.ruolo-rose-a,.ruolo-rose-pc,
+.storico-ruolo.ruolo-A,.storico-ruolo.ruolo-Pc{
+  background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;
+}
