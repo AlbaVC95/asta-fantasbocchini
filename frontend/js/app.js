@@ -294,6 +294,14 @@ async function fetchAstaSquadrePerJoin(rawId) {
 }
 
 function setupHome() {
+  const btnChoiceExcel = document.getElementById('btn-choice-excel');
+  const btnChoiceJson = document.getElementById('btn-choice-json');
+  const inpExcelChoice = document.getElementById('inp-excel-choice');
+  const btnBackHome = document.getElementById('btn-back-home');
+  if (btnChoiceJson) btnChoiceJson.addEventListener('click', () => showScreen('screen-crea-asta'));
+  if (btnChoiceExcel) btnChoiceExcel.addEventListener('click', () => inpExcelChoice.click());
+  if (inpExcelChoice) inpExcelChoice.addEventListener('change', () => handleExcelFile(inpExcelChoice.files[0]));
+  if (btnBackHome) btnBackHome.addEventListener('click', () => showScreen('screen-home'));
   const inpTipo = document.getElementById('inp-tipo-asta');
   inpTipo.addEventListener('change', () => {
     document.getElementById('row-sottotipo').style.display = inpTipo.value === 'riparazione' ? 'flex' : 'none';
@@ -398,6 +406,81 @@ function handleJsonFile(file) {
     } catch (err) { toast('File JSON non valido', 'error'); }
   };
   reader.readAsText(file);
+}
+
+function handleExcelFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+      if (!rows.length) return toast('Il file Excel è vuoto', 'error');
+
+      const norm = s => (s || '').toString().trim().toLowerCase();
+      const headers = Object.keys(rows[0]);
+      const findCol = (...names) => headers.find(h => names.some(n => norm(h) === norm(n)));
+
+      const colGiocatore = findCol('Giocatore');
+      const colSquadra = findCol('Squadra');
+      const colRuolo = findCol('Ruolo');
+      const colPgv = findCol('PGv');
+      const colMv = findCol('MV');
+      const colFm = findCol('FM');
+      const colFvmp600 = findCol('FVMp600');
+      const colQam = findCol('QAM');
+      const colFantaSquadra = findCol('FantaSquadra');
+      const colCosto = findCol('Costo');
+      const colRP = findCol('R/P', 'RP');
+
+      const obbligatorie = [
+        ['Giocatore', colGiocatore], ['Ruolo', colRuolo],
+        ['FantaSquadra', colFantaSquadra], ['Costo', colCosto], ['R/P', colRP]
+      ];
+      const mancanti = obbligatorie.filter(([_, c]) => !c).map(([nome]) => nome);
+      if (mancanti.length) {
+        return toast('Colonna obbligatoria mancante nell\'Excel: ' + mancanti.join(', '), 'error');
+      }
+
+      const giocatoriPerSquadra = {};
+      rows.forEach(row => {
+        const nome = row[colGiocatore];
+        if (!nome) return;
+        const fantaSquadra = row[colFantaSquadra] || 'Senza squadra';
+        const g = {
+          nome,
+          squadraSerieA: colSquadra && row[colSquadra] !== '' ? row[colSquadra] : null,
+          ruolo: row[colRuolo],
+          pgv: colPgv && row[colPgv] !== '' ? row[colPgv] : null,
+          mv: colMv && row[colMv] !== '' ? row[colMv] : null,
+          fm: colFm && row[colFm] !== '' ? row[colFm] : null,
+          fvmp600: colFvmp600 && row[colFvmp600] !== '' ? row[colFvmp600] : null,
+          qam: colQam && row[colQam] !== '' ? row[colQam] : null,
+          tipo: (row[colRP] || 'NN').toString().toUpperCase(),
+          costo: row[colCosto] || 1,
+          squadraOriginale: fantaSquadra
+        };
+        if (!giocatoriPerSquadra[fantaSquadra]) giocatoriPerSquadra[fantaSquadra] = [];
+        giocatoriPerSquadra[fantaSquadra].push(g);
+      });
+
+      const squadre = Object.keys(giocatoriPerSquadra).map(nome => ({ nome, giocatori: giocatoriPerSquadra[nome] }));
+      if (!squadre.length) return toast('Nessun giocatore valido trovato nel file', 'error');
+
+      const data = { squadre };
+      window._jsonData = data;
+      renderJsonPreview(data);
+      const dropLabel = document.getElementById('file-drop-label');
+      if (dropLabel) dropLabel.textContent = '✅ ' + file.name + ' importato (Excel)';
+      toast('Excel importato: ' + squadre.length + ' squadre', 'success');
+      aggiornaAdminNomeDropdown(data);
+      showScreen('screen-crea-asta');
+    } catch (err) {
+      toast('Errore nella lettura del file Excel: ' + err.message, 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 function renderJsonPreview(data) {
@@ -1320,7 +1403,15 @@ window.renderChiamaManualeLista = function() {
     disp = disp.filter(g => (g.ruolo || '').split('/').map(x => x.trim().toLowerCase()).includes(S.cmFiltroRuolo.toLowerCase()));
   }
   if (testo) disp = disp.filter(g => g.nome.toLowerCase().includes(testo));
-  disp = disp.sort((a, b) => (b.valore || 0) - (a.valore || 0));
+  const hayValore = disp.some(g => g.valore);
+  const ORDINE_RUOLI_LIB = ['Por','P','Dd','Dc','Ds','D','B','M','E','C','T','W','A','Pc'];
+  disp = disp.sort((a, b) => {
+    if (hayValore) return (b.valore || 0) - (a.valore || 0);
+    const ra = ORDINE_RUOLI_LIB.indexOf((a.ruolo || '').split('/')[0].trim());
+    const rb = ORDINE_RUOLI_LIB.indexOf((b.ruolo || '').split('/')[0].trim());
+    if (ra !== rb) return (ra === -1 ? 999 : ra) - (rb === -1 ? 999 : rb);
+    return (a.nome || '').localeCompare(b.nome || '');
+  });
   lista.innerHTML = disp.slice(0, 80).map(g => {
     const orig = g.squadraOriginale ? ' · ex ' + g.squadraOriginale : '';
     return '<div class="cm-item" onclick="chiamaDaModale(\'' + g.id + '\')">' +
@@ -1356,7 +1447,15 @@ window.renderAssegnaManualeLista = function() {
   const testo = (document.getElementById('inp-am-search').value || '').toLowerCase().trim();
   let disp = (S.asta.poolGiocatori || []).filter(g => !g.assegnato && (!g.estratto || g.scartato));
   if (testo) disp = disp.filter(g => g.nome.toLowerCase().includes(testo));
-  disp = disp.sort((a, b) => (b.valore || 0) - (a.valore || 0));
+  const hayValore = disp.some(g => g.valore);
+  const ORDINE_RUOLI_LIB = ['Por','P','Dd','Dc','Ds','D','B','M','E','C','T','W','A','Pc'];
+  disp = disp.sort((a, b) => {
+    if (hayValore) return (b.valore || 0) - (a.valore || 0);
+    const ra = ORDINE_RUOLI_LIB.indexOf((a.ruolo || '').split('/')[0].trim());
+    const rb = ORDINE_RUOLI_LIB.indexOf((b.ruolo || '').split('/')[0].trim());
+    if (ra !== rb) return (ra === -1 ? 999 : ra) - (rb === -1 ? 999 : rb);
+    return (a.nome || '').localeCompare(b.nome || '');
+  });
   lista.innerHTML = disp.slice(0, 80).map(g => {
     const sel = S.amSelezionato === g.id ? ' selected' : '';
     const orig = g.squadraOriginale ? ' · ex ' + g.squadraOriginale : '';
@@ -1399,12 +1498,17 @@ window.apriModalAdminConfig = function() {
   document.getElementById('inp-ac-min-portieri').value = S.asta.minimoPortieri;
   document.getElementById('inp-ac-min-movimento').value = S.asta.minimoMovimento;
   const lista = document.getElementById('ac-crediti-lista');
-  lista.innerHTML = (S.asta.squadre || []).map(sq =>
-    '<div class="form-row" style="align-items:end">' +
+  lista.innerHTML = (S.asta.squadre || []).map(sq => {
+    const nomeEsc = sq.nome.replace(/'/g,"\\'");
+    return '<div class="form-row" style="align-items:end">' +
       '<div class="form-group" style="margin-bottom:0"><label>' + sq.nome + '</label>' +
-      '<input type="number" min="0" value="' + sq.crediti + '" onblur="confermaAdminCrediti(\'' + sq.nome.replace(/'/g,"\\'") + '\', this.value)"></div>' +
-    '</div>'
-  ).join('');
+      '<input type="number" min="0" value="' + sq.crediti + '" onblur="confermaAdminCrediti(\'' + nomeEsc + '\', this.value)"></div>' +
+      '<div class="form-group" style="margin-bottom:0"><label>Slot RIC</label>' +
+      '<input type="number" min="0" value="' + (sq.slotsRIC || 0) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', this.value, null)"></div>' +
+      '<div class="form-group" style="margin-bottom:0"><label>Slot PLUS</label>' +
+      '<input type="number" min="0" value="' + (sq.slotsPLUS || 0) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', null, this.value)"></div>' +
+    '</div>';
+  }).join('');
   openModal('modal-admin-config');
 };
 
@@ -1422,6 +1526,14 @@ window.confermaAdminConfig = function() {
 window.confermaAdminCrediti = function(squadraNome, crediti) {
   socket.emit('admin-update-crediti', { astaId: S.astaId, squadraNome, crediti: parseInt(crediti) });
   toast('Crediti di ' + squadraNome + ' aggiornati', 'success');
+};
+
+window.confermaAdminSlot = function(squadraNome, slotsRIC, slotsPLUS) {
+  const payload = { astaId: S.astaId, squadraNome };
+  if (slotsRIC !== null) payload.slotsRIC = parseInt(slotsRIC);
+  if (slotsPLUS !== null) payload.slotsPLUS = parseInt(slotsPLUS);
+  socket.emit('admin-update-slot', payload);
+  toast('Slot di ' + squadraNome + ' aggiornati', 'success');
 };
 
 function renderMiaRosa(sq) {
