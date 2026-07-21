@@ -431,3 +431,34 @@ body.layout-admin .quick-pill{display:flex}
 .cm-item-nome{flex:1;font-weight:600;font-size:.85rem}
 .cm-item-info{font-size:.72rem;color:var(--text-muted)}
 .am-prezzo-row{display:flex;gap:10px;align-items:center;margin:12px 0}
+
+/* ══════ Impostazioni Admin — card squadra (Crediti/Slot RIC/Slot PLUS/Recompra) ══════ */
+.settings-team-card {
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  background: rgba(255,255,255,.02);
+}
+.settings-team-nome {
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  font-size: .8rem;
+  opacity: .85;
+}
+.settings-team-fields {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.settings-field label {
+  display: block;
+  font-size: .68rem;
+  text-transform: uppercase;
+  opacity: .7;
+  margin-bottom: 4px;
+}
+@media (max-width: 480px) {
+  .settings-team-fields { grid-template-columns: repeat(2, 1fr); }
+}
