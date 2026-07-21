@@ -220,6 +220,8 @@
         <div id="backup-menu" class="backup-menu hidden">
           <button class="bk-btn" onclick="downloadBackupJSON(false)">📄 Scarica JSON</button>
           <button class="bk-btn" onclick="downloadBackupExcel()">📊 Scarica Excel</button>
+          <button class="bk-btn" onclick="downloadFantaleghe()">📤 Fantaleghe</button>
+          <button class="bk-btn" onclick="downloadRecap()">📤 Esporta Recap</button>
           <button class="bk-btn bk-btn-muted" onclick="document.getElementById('backup-menu').classList.add('hidden')">✕ Chiudi</button>
         </div>
         <!-- Box attesa conferma (mostrato dopo timer) -->
@@ -331,6 +333,12 @@
           </div>
         </div>
         <div id="tab-storico" class="tab-content active">
+          <div id="storico-filtri" class="filtro-ruolo hidden">
+            <button class="storico-filtro-btn active" data-storico-filtro="tutti">Tutti</button>
+            <button class="storico-filtro-btn hidden" id="btn-recap-iniziale" data-storico-filtro="recap-iniziale">📋 Recap Asta Iniziale</button>
+            <button class="storico-filtro-btn hidden" id="btn-recap-riparazione1" data-storico-filtro="recap-riparazione">📋 Recap Riparazione 1</button>
+            <button class="storico-filtro-btn hidden" id="btn-recap-riparazione2" data-storico-filtro="recap-riparazione">📋 Recap Riparazione 2</button>
+          </div>
           <ul id="storico-list" class="storico-list"></ul>
         </div>
         <div id="tab-rose" class="tab-content tab-rose-content">
