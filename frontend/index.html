@@ -22,6 +22,45 @@
       <p class="home-subtitle">Tool per la tua lega di fantacalcio</p>
     </header>
 
+    
+    <div class="card">
+      <h2 class="card-title">Crea nuova asta</h2>
+      <p class="hint-text">Scegli come importare le squadre e i giocatori</p>
+      <div class="import-choice-buttons">
+        <button type="button" id="btn-choice-excel" class="btn btn-primary btn-lg">📁 Importa da Excel</button>
+        <button type="button" id="btn-choice-json" class="btn btn-secondary btn-lg">📋 Incolla JSON</button>
+      </div>
+      <input type="file" id="inp-excel-choice" accept=".xlsx,.xls" style="display:none">
+    </div>
+
+
+    <div class="card mt-16">
+      <h2 class="card-title">Entra in un'asta</h2>
+      <div class="form-group">
+        <label>Link o ID dell'asta</label>
+        <input type="text" id="inp-join-id" placeholder="Incolla il link dell'asta...">
+      </div>
+      <div class="form-group">
+        <label>Nome della tua squadra</label>
+        <div id="inp-join-nome-wrap">
+          <input type="text" id="inp-join-nome" placeholder="Es: FC Sbocchini">
+        </div>
+        <p id="inp-join-asta-info" class="hint-text" style="display:none"></p>
+      </div>
+      <button id="btn-join" class="btn btn-secondary btn-lg">🎯 Entra nell'asta</button>
+    </div>
+  </section>
+
+  <!-- ══════════ SCREEN CREA ASTA (form) ══════════ -->
+  <section id="screen-crea-asta" class="screen">
+    <header class="home-header">
+      <div class="home-logo">🎯</div>
+      <h1 class="home-title">Crea nuova asta</h1>
+      <p class="home-subtitle">Compila i dettagli e crea la tua asta</p>
+    </header>
+
+    <button type="button" id="btn-back-home" class="btn btn-secondary" style="margin-bottom:16px">← Torna indietro</button>
+
     <div class="card">
       <h2 class="card-title">Crea nuova asta</h2>
       <form id="form-crea-asta" autocomplete="off">
@@ -108,22 +147,6 @@
 
         <button type="submit" class="btn btn-primary btn-lg">🚀 Crea Asta</button>
       </form>
-    </div>
-
-    <div class="card mt-16">
-      <h2 class="card-title">Entra in un'asta</h2>
-      <div class="form-group">
-        <label>Link o ID dell'asta</label>
-        <input type="text" id="inp-join-id" placeholder="Incolla il link dell'asta...">
-      </div>
-      <div class="form-group">
-        <label>Nome della tua squadra</label>
-        <div id="inp-join-nome-wrap">
-          <input type="text" id="inp-join-nome" placeholder="Es: FC Sbocchini">
-        </div>
-        <p id="inp-join-asta-info" class="hint-text" style="display:none"></p>
-      </div>
-      <button id="btn-join" class="btn btn-secondary btn-lg">🎯 Entra nell'asta</button>
     </div>
   </section>
 
