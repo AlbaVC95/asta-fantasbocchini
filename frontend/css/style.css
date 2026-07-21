@@ -907,3 +907,49 @@ body.layout-admin .quick-pill{display:flex}
   color: var(--primary-bright);
   letter-spacing: .02em;
 }
+
+/* ══════ VISTA PARTICIPANTE: superficie única integrada ══════ */
+.puja-panel-slot{
+  background:linear-gradient(170deg,var(--bg-card) 0%,var(--bg-main) 100%);
+  border:1px solid var(--primary-glow);
+  border-radius:18px;
+  box-shadow:0 0 40px -12px var(--primary-glow);padding:14px 20px;
+}
+.puja-panel-slot .chiamata-card{
+  background:none;border:none;box-shadow:none;border-radius:0;padding:0;
+  flex:0 1 auto;justify-content:flex-start;
+}
+.puja-panel-slot .chiamata-card::before{display:none}
+.puja-panel-slot .card-timer-group{border-right:1px solid var(--border-light);padding-right:18px}
+.puja-panel-slot .timer-ring-container{
+  flex:1;width:auto;background:none;border:none;box-shadow:none;
+}
+.puja-panel-slot .timer-ring{width:96px;height:96px}
+.puja-panel-slot .timer-number{font-size:1.8rem}
+.puja-panel-slot .timer-label-text{font-size:.72rem}
+.puja-panel-slot .rilancio-box{
+  background:none;border:none;box-shadow:none;padding:0;padding-left:18px;
+}
+.puja-panel-slot .inp-rilancio{width:85px!important}
+
+/* ══════ VISTA ADMIN: superficie única integrada ══════ */
+body.layout-admin .asta-row-puja{
+  background:linear-gradient(170deg,var(--bg-card) 0%,var(--bg-main) 100%);
+  border:1px solid var(--primary-glow);
+  border-radius:14px;
+}
+body.layout-admin .asta-row-puja .chiamata-card{
+  background:none;border:none;box-shadow:none;border-radius:0;
+  flex:0 1 auto;border-right:1px solid var(--border-light);
+}
+.asta-row-puja .chiamata-card::before{display:none}
+body.layout-admin .asta-row-puja .timer-ring-container{
+  flex:1;background:none;border:none;box-shadow:none;
+}
+body.layout-admin .asta-row-puja .timer-ring{width:72px;height:72px}
+body.layout-admin .asta-row-puja .timer-number{font-size:1.3rem}
+body.layout-admin .asta-row-puja .timer-label-text{font-size:.6rem}
+body.layout-admin .asta-row-puja .rilancio-box{
+  background:none;border:none;box-shadow:none;border-left:1px solid var(--border-light);
+}
+body.layout-admin .asta-row-puja .inp-rilancio{width:85px!important}
