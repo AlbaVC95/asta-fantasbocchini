@@ -1500,15 +1500,18 @@ window.apriModalAdminConfig = function() {
   const lista = document.getElementById('ac-crediti-lista');
   lista.innerHTML = (S.asta.squadre || []).map(sq => {
     const nomeEsc = sq.nome.replace(/'/g,"\\'");
-    return '<div class="form-row" style="align-items:end">' +
-      '<div class="form-group" style="margin-bottom:0"><label>' + sq.nome + '</label>' +
-      '<input type="number" min="0" value="' + sq.crediti + '" onblur="confermaAdminCrediti(\'' + nomeEsc + '\', this.value)"></div>' +
-      '<div class="form-group" style="margin-bottom:0"><label>Slot RIC</label>' +
-      '<input type="number" min="0" value="' + (sq.slotsRIC || 0) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', this.value, null, null)"></div>' +
-      '<div class="form-group" style="margin-bottom:0"><label>Slot PLUS</label>' +
-      '<input type="number" min="0" value="' + (sq.slotsPLUS || 0) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', null, this.value, null)"></div>' +
-      '<div class="form-group" style="margin-bottom:0"><label>Recompra</label>' +
-      '<input type="number" min="0" value="' + (sq.recompra !== undefined ? sq.recompra : 1) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', null, null, this.value)"></div>' +
+    return '<div class="settings-team-card">' +
+      '<div class="settings-team-nome">' + sq.nome + '</div>' +
+      '<div class="settings-team-fields">' +
+        '<div class="settings-field"><label>Crediti</label>' +
+        '<input type="number" min="0" value="' + sq.crediti + '" onblur="confermaAdminCrediti(\'' + nomeEsc + '\', this.value)"></div>' +
+        '<div class="settings-field"><label>Slot RIC</label>' +
+        '<input type="number" min="0" value="' + (sq.slotsRIC || 0) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', this.value, null, null)"></div>' +
+        '<div class="settings-field"><label>Slot PLUS</label>' +
+        '<input type="number" min="0" value="' + (sq.slotsPLUS || 0) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', null, this.value, null)"></div>' +
+        '<div class="settings-field"><label>Recompra</label>' +
+        '<input type="number" min="0" value="' + (sq.recompra !== undefined ? sq.recompra : 1) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', null, null, this.value)"></div>' +
+      '</div>' +
     '</div>';
   }).join('');
   openModal('modal-admin-config');
