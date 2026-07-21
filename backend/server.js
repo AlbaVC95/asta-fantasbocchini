@@ -164,7 +164,7 @@ function chiudiAsta(astaId) {
     const prevBid = chiamata.proprietarioPrecedenteHaPuntato;
     if (!prevBid && sqPrec && giocatore.tipo === 'RIC') {
       const hasPLUS = (sqPrec.slotsPLUS - sqPrec.slotsPLUSUsati) > 0;
-      const hasRecompra = !sqPrec.recompraUsata;
+      const hasRecompra = (sqPrec.recompra - sqPrec.recompraUsati) > 0;
       if (hasPLUS || hasRecompra) {
         asta.popupAttivo = { tipo: 'post-asta-ric', giocatore, prezzoFinale: offertaAttuale, squadraVincitrice: squadraOfferente, proprietarioPrecedente: giocatore.squadraOriginale, opzioni: { plusvalenza: hasPLUS, recompra: hasRecompra } };
         asta.chiamataAttuale = null;
@@ -226,7 +226,7 @@ function _annullaItem(asta, index) {
         const sqPrec = getSquadra(asta, item.plusvalenzaA);
         if (sqPrec) sqPrec.crediti -= (item.guadagno || 0);
       }
-      if (item.tipo === 'recompra') sq.recompraUsata = false;
+      if (item.tipo === 'recompra') sq.recompraUsati = Math.max(0, (sq.recompraUsati || 0) - 1);
     }
     const g = asta.poolGiocatori.find(p => p.id === item.giocatore.id || p.nome === item.giocatore.nome);
     if (g) { g.estratto = false; g.assegnato = false; g.scartato = false; }
@@ -297,7 +297,7 @@ app.post('/api/asta', (req, res) => {
         slotsRICUsati: 0,
         slotsPLUS: sq.slotPlusvalenze || 0,     // CORRETTO: slotPlusvalenze
         slotsPLUSUsati: 0,
-        recompra: 1, recompraUsata: false,
+        recompra: (sq.recompra !== undefined ? sq.recompra : 1), recompraUsati: 0,
         svincoliUsati: sq.svincoliUsati || 0,
         giocatoriRICTotali, giocatoriPLUSTotali,
         rosa: [], utenti: []
@@ -379,7 +379,7 @@ io.on('connection', (socket) => {
       squadra = {
         nome: nomeSquadra, crediti: asta.crediti,
         slotsRIC: 0, slotsRICUsati: 0, slotsPLUS: 0, slotsPLUSUsati: 0,
-        recompra: 1, recompraUsata: false, svincoliUsati: 0,
+        recompra: 1, recompraUsati: 0, svincoliUsati: 0,
         giocatoriRICTotali: 0, giocatoriPLUSTotali: 0, rosa: [], utenti: []
       };
       asta.squadre.push(squadra);
@@ -555,7 +555,7 @@ io.on('connection', (socket) => {
       io.to(astaId).emit('giocatore-assegnato', { giocatore, prezzo: prezzoFinale, squadra: squadraVincitrice, tipo: 'plusvalenza', guadagno, plusvalenzaA: popup.proprietarioPrecedente });
     } else if (scelta === 'recompra' && sqPrec) {
       const prezzoRecompra = prezzoFinale + 1;
-      assegnaGiocatoreASquadra(asta, giocatore, sqPrec, prezzoRecompra); sqPrec.recompraUsata = true;
+      assegnaGiocatoreASquadra(asta, giocatore, sqPrec, prezzoRecompra); sqPrec.recompraUsati = (sqPrec.recompraUsati || 0) + 1;
       asta.storico.push({ giocatore, prezzo: prezzoRecompra, squadra: popup.proprietarioPrecedente, tipo: 'recompra', timestamp: new Date().toISOString() });
       io.to(astaId).emit('giocatore-assegnato', { giocatore, prezzo: prezzoRecompra, squadra: popup.proprietarioPrecedente, tipo: 'recompra' });
     } else {
@@ -634,13 +634,14 @@ io.on('connection', (socket) => {
     broadcastStato(astaId);
   });
 
-  socket.on('admin-update-slot', ({ astaId, squadraNome, slotsRIC, slotsPLUS }) => {
+  socket.on('admin-update-slot', ({ astaId, squadraNome, slotsRIC, slotsPLUS, recompra }) => {
     const asta = aste.get(astaId);
     if (!asta || !isAdmin(asta, socket.id)) return;
     const sq = getSquadra(asta, squadraNome);
     if (!sq) return socket.emit('errore', { msg: 'Squadra non trovata' });
     if (slotsRIC !== undefined) sq.slotsRIC = Math.max(0, parseInt(slotsRIC) || 0);
     if (slotsPLUS !== undefined) sq.slotsPLUS = Math.max(0, parseInt(slotsPLUS) || 0);
+    if (recompra !== undefined) sq.recompra = Math.max(0, parseInt(recompra) || 0);
     broadcastStato(astaId);
   });
 
