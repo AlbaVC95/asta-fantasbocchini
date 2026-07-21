@@ -8,7 +8,7 @@ const socket = io({
 
 const S = {
   astaId: null, miaSquadra: null, isAdmin: false, asta: null,
-  filtroRuolo: 'tutti', svincoloSel: new Set(), popupAttivoCli: null,
+  filtroRuolo: 'tutti', filtroStorico: 'tutti', svincoloSel: new Set(), popupAttivoCli: null,
   attesaConferma: false, timerTotal: 30
 };
 
@@ -142,6 +142,73 @@ window.downloadBackupExcel = function() {
 };
 
 window.downloadBackupEmergenza = function() { downloadBackupJSON(true); };
+
+// ══ EXPORT FANTALEGHE (CSV) ══════════════
+window.downloadFantaleghe = function() {
+  const asta = S.asta;
+  if (!asta) { toast('Nessun dato disponibile', 'error'); return; }
+  const rows = [];
+  let omessi = 0;
+  (asta.storico || []).forEach(s => {
+    if (s.tipo === 'scartato' || s.tipo === 'tradeoff') return;
+    if (!s.giocatore || !s.squadra) return;
+    const id = s.giocatore.idFantaleghe;
+    if (id === null || id === undefined || id === '') { omessi++; return; }
+    rows.push(s.squadra + ',' + id + ',' + s.prezzo);
+  });
+  if (!rows.length) {
+    toast('Nessuna assegnazione con IdFantaleghe trovata' + (omessi ? ' (' + omessi + ' omessi)' : ''), 'error');
+    return;
+  }
+  const lines = ['$,$,$'].concat(rows).concat(['$,$,$']);
+  const csv = lines.join(String.fromCharCode(13,10));
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const ts   = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  a.href = url; a.download = 'fantaleghe-' + asta.id + '-' + ts + '.csv';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  if (omessi > 0) toast('⚠️ ' + omessi + ' giocatori omessi (IdFantaleghe mancante)', 'error');
+  else toast('Fantaleghe CSV scaricato', 'success');
+  const bm = document.getElementById('backup-menu');
+  if (bm) bm.classList.add('hidden');
+};
+
+// ══ EXPORT RECAP (Conferme/Plusvalenze/Recompra/Svincoli) ══════════════
+window.downloadRecap = function() {
+  const asta = S.asta;
+  if (!asta) { toast('Nessun dato disponibile', 'error'); return; }
+  const squadre = {};
+  const ensure = (nome) => {
+    if (!squadre[nome]) squadre[nome] = { conferme: [], plusvalenze: [], recompre: [], svincoli: [] };
+    return squadre[nome];
+  };
+  (asta.squadre || []).forEach(sq => ensure(sq.nome));
+  (asta.storico || []).forEach(s => {
+    if (s.tipo === 'riconferma' && s.squadra && s.giocatore) {
+      ensure(s.squadra).conferme.push({ giocatore: s.giocatore.nome, prezzo: s.prezzo });
+    } else if (s.tipo === 'plusvalenza' && s.plusvalenzaA && s.giocatore) {
+      ensure(s.plusvalenzaA).plusvalenze.push({ giocatore: s.giocatore.nome, guadagno: s.guadagno || 0 });
+    } else if (s.tipo === 'recompra' && s.squadra && s.giocatore) {
+      ensure(s.squadra).recompre.push({ giocatore: s.giocatore.nome, prezzo: s.prezzo });
+    } else if (s.tipo === 'con_svincolo' && s.squadra && s.svincolati) {
+      const dest = ensure(s.squadra);
+      s.svincolati.forEach(g => dest.svincoli.push({ giocatore: g.nome }));
+    }
+  });
+  const data = { astaId: asta.id, tipoAsta: asta.tipoAsta, squadre };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const ts   = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  a.href = url; a.download = 'recap-' + asta.id + '-' + ts + '.json';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  toast('Recap scaricato', 'success');
+  const bm = document.getElementById('backup-menu');
+  if (bm) bm.classList.add('hidden');
+};
 
 window.apriMenuBackup = function() {
   const bm = document.getElementById('backup-menu');
@@ -433,6 +500,7 @@ function handleExcelFile(file) {
       const colFantaSquadra = findCol('FantaSquadra');
       const colCosto = findCol('Costo');
       const colRP = findCol('R/P', 'RP');
+      const colId = findCol('#', 'Id', 'ID');
 
       const obbligatorie = [
         ['Giocatore', colGiocatore], ['Ruolo', colRuolo],
@@ -459,7 +527,8 @@ function handleExcelFile(file) {
           qam: colQam && row[colQam] !== '' ? row[colQam] : null,
           tipo: (row[colRP] || 'NN').toString().toUpperCase(),
           costo: row[colCosto] || 1,
-          squadraOriginale: fantaSquadra
+          squadraOriginale: fantaSquadra,
+          idFantaleghe: colId && row[colId] !== '' ? row[colId] : null
         };
         if (!giocatoriPerSquadra[fantaSquadra]) giocatoriPerSquadra[fantaSquadra] = [];
         giocatoriPerSquadra[fantaSquadra].push(g);
@@ -715,6 +784,15 @@ function setupTabs() {
     });
   }
 
+  document.querySelectorAll('.storico-filtro-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.storico-filtro-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      S.filtroStorico = btn.dataset.storicoFiltro;
+      if (S.asta) renderStorico(S.asta.storico);
+    });
+  });
+
 }
 
 // ════ SOCKET EVENTS ═══════════════════════════
@@ -839,7 +917,14 @@ socket.on('giocatore-scartato', ({ giocatore }) => {
 socket.on('assegnazione-annullata', (item) => toast('Annullato: ' + (item.giocatore ? item.giocatore.nome : '?'), 'info'));
 socket.on('scartati-reintrodotti', ({ count }) => toast(count + ' giocatori reintrodotti', 'success'));
 socket.on('tradeoff-ok', () => { closeModal(); toast('Trade-off eseguito!', 'success'); });
-socket.on('asta-terminata', () => { cancSessione(); showScreen('screen-fine-asta'); renderFineAsta(); toast('Asta terminata!', 'success'); });
+socket.on('asta-terminata', () => {
+  cancSessione(); showScreen('screen-fine-asta'); renderFineAsta();
+  toast('Asta terminata!', 'success');
+  if (S.isAdmin) {
+    try { downloadFantaleghe(); } catch(e) { toast('⚠️ Export Fantaleghe fallito, usa il bottone manuale', 'error'); }
+    try { downloadRecap(); } catch(e) { toast('⚠️ Export Recap fallito, usa il bottone manuale', 'error'); }
+  }
+});
 socket.on('errore', ({ msg }) => {
   toast(msg, 'error');
   // If asta not found (stale session), clear localStorage session
@@ -1046,12 +1131,42 @@ const TRADEOFF_LABELS = {
   'ric-to-plus': 'RIC\u2192PLUS', 'plus-to-ric': 'PLUS\u2192RIC',
   'ric-to-crediti': 'RIC\u219212cr', 'plus-to-crediti': 'PLUS\u21926cr'
 };
+function aggiornaVisibilitaFiltriStorico() {
+  const asta = S.asta;
+  const box = document.getElementById('storico-filtri');
+  const btnIniziale = document.getElementById('btn-recap-iniziale');
+  const btnRip1 = document.getElementById('btn-recap-riparazione1');
+  const btnRip2 = document.getElementById('btn-recap-riparazione2');
+  if (!asta || !box) return;
+  const showIniziale = asta.tipoAsta === 'iniziale';
+  const showRip1 = asta.tipoAsta === 'riparazione' && String(asta.sottoTipoRiparazione) === '1';
+  const showRip2 = asta.tipoAsta === 'riparazione' && String(asta.sottoTipoRiparazione) === '2';
+  if (btnIniziale) btnIniziale.classList.toggle('hidden', !showIniziale);
+  if (btnRip1) btnRip1.classList.toggle('hidden', !showRip1);
+  if (btnRip2) btnRip2.classList.toggle('hidden', !showRip2);
+  box.classList.toggle('hidden', !(showIniziale || showRip1 || showRip2));
+}
+
 function renderStorico(storico) {
+  aggiornaVisibilitaFiltriStorico();
   const list = document.getElementById('storico-list');
-  if (!storico || !storico.length) { list.innerHTML = '<li class="text-muted" style="padding:8px">Nessun acquisto</li>'; return; }
-  list.innerHTML = [...storico].reverse().slice(0, 50).map(s => {
+  let items = storico || [];
+  const filtro = S.filtroStorico || 'tutti';
+  if (filtro === 'recap-iniziale') {
+    items = items.filter(s => s.tipo === 'riconferma' || s.tipo === 'plusvalenza' || s.tipo === 'recompra');
+  } else if (filtro === 'recap-riparazione') {
+    items = items.filter(s => s.tipo === 'con_svincolo');
+  }
+  if (!items.length) { list.innerHTML = '<li class="text-muted" style="padding:8px">Nessun acquisto</li>'; return; }
+  list.innerHTML = [...items].reverse().slice(0, 50).map(s => {
     if (s.tipo === 'tradeoff') return '<li><span class="storico-nome">' + s.squadra + '</span><span class="storico-tipo tipo-tag-tradeoff">trade-off: ' + (TRADEOFF_LABELS[s.tradeoffTipo] || s.tradeoffTipo) + '</span></li>';
     if (s.tipo === 'scartato') return '<li><span class="storico-nome text-muted">' + s.giocatore.nome + '</span><span class="storico-tipo tipo-tag-scartato">scartato</span></li>';
+    if (s.tipo === 'con_svincolo' && filtro === 'recap-riparazione') {
+      const nomi = (s.svincolati || []).map(g => g.nome).join(', ') || '—';
+      return '<li><span class="storico-nome">' + s.giocatore.nome + '</span>' +
+        '<span class="storico-sq">' + s.squadra + '</span>' +
+        '<span class="storico-tipo tipo-tag-con_svincolo">svincolati: ' + nomi + '</span></li>';
+    }
     return '<li><span class="storico-nome">' + s.giocatore.nome + '</span>' +
       '<span class="storico-sq">' + s.squadra + '</span>' +
       '<span class="storico-prezzo">' + s.prezzo + 'cr</span>' +
