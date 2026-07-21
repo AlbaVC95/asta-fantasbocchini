@@ -450,7 +450,7 @@ function handleExcelFile(file) {
         const fantaSquadra = row[colFantaSquadra] || 'Senza squadra';
         const g = {
           nome,
-          squadraSerieA: colSquadra && row[colSquadra] !== '' ? row[colSquadra] : null,
+          squadra: colSquadra && row[colSquadra] !== '' ? row[colSquadra] : null,
           ruolo: row[colRuolo],
           pgv: colPgv && row[colPgv] !== '' ? row[colPgv] : null,
           mv: colMv && row[colMv] !== '' ? row[colMv] : null,
