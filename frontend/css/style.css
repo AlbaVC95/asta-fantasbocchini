@@ -756,17 +756,17 @@ body.layout-partecipante .asta-row-puja{display:none!important}
 
 /* ══════ RIGA 2 compatta orizzontale (puja per ADMIN) ══════ */
 
-body.layout-admin .asta-row-puja{align-items:stretch;padding:5px 10px;gap:8px;height:clamp(130px,18vh,175px);min-height:clamp(130px,18vh,175px);max-height:clamp(130px,18vh,175px);overflow:hidden}
+body.layout-admin .asta-row-puja{align-items:stretch;padding:5px 10px;gap:8px;min-height:clamp(130px,18vh,175px);height:auto;overflow:visible}
 
-body.layout-admin .asta-row-puja .card-timer-group{flex-direction:row;align-items:stretch;gap:10px;flex:1;min-width:0;min-height:0;overflow:hidden;height:100%}
+body.layout-admin .asta-row-puja .card-timer-group{flex-direction:row;align-items:stretch;gap:10px;flex:1;min-width:0;min-height:0;overflow:visible;height:auto}
 
-body.layout-admin .asta-row-puja .chiamata-card{border-radius:10px;padding:6px 14px;text-align:left;box-shadow:none;min-height:0;overflow:hidden;height:100%;flex:1 1 0%;min-width:0}
+body.layout-admin .asta-row-puja .chiamata-card{border-radius:10px;padding:6px 14px;text-align:left;box-shadow:none;min-height:0;overflow:visible;height:auto;flex:1 1 0%;min-width:0}
 
-body.layout-admin .asta-row-puja .cc-attesa-badge{display:block;font-size:.7rem}
+body.layout-admin .asta-row-puja .cc-attesa-badge{display:block;font-size:.62rem;padding:3px 8px;margin-top:3px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
 
 body.layout-admin .asta-row-puja .chiamata-card .chiamata-stato{padding:0;font-size:.82rem;white-space:nowrap}
 
-body.layout-admin .asta-row-puja .chiamata-card{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:nowrap;overflow:hidden;height:100%}
+body.layout-admin .asta-row-puja .chiamata-card{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:nowrap;overflow:visible;height:auto}
 
 body.layout-admin .asta-row-puja .cc-header{margin-bottom:0;align-items:center;gap:8px;flex:1 1 auto;min-width:0;overflow:hidden}
 
