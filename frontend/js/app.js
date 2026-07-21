@@ -1504,9 +1504,11 @@ window.apriModalAdminConfig = function() {
       '<div class="form-group" style="margin-bottom:0"><label>' + sq.nome + '</label>' +
       '<input type="number" min="0" value="' + sq.crediti + '" onblur="confermaAdminCrediti(\'' + nomeEsc + '\', this.value)"></div>' +
       '<div class="form-group" style="margin-bottom:0"><label>Slot RIC</label>' +
-      '<input type="number" min="0" value="' + (sq.slotsRIC || 0) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', this.value, null)"></div>' +
+      '<input type="number" min="0" value="' + (sq.slotsRIC || 0) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', this.value, null, null)"></div>' +
       '<div class="form-group" style="margin-bottom:0"><label>Slot PLUS</label>' +
-      '<input type="number" min="0" value="' + (sq.slotsPLUS || 0) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', null, this.value)"></div>' +
+      '<input type="number" min="0" value="' + (sq.slotsPLUS || 0) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', null, this.value, null)"></div>' +
+      '<div class="form-group" style="margin-bottom:0"><label>Recompra</label>' +
+      '<input type="number" min="0" value="' + (sq.recompra !== undefined ? sq.recompra : 1) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', null, null, this.value)"></div>' +
     '</div>';
   }).join('');
   openModal('modal-admin-config');
@@ -1528,10 +1530,11 @@ window.confermaAdminCrediti = function(squadraNome, crediti) {
   toast('Crediti di ' + squadraNome + ' aggiornati', 'success');
 };
 
-window.confermaAdminSlot = function(squadraNome, slotsRIC, slotsPLUS) {
+window.confermaAdminSlot = function(squadraNome, slotsRIC, slotsPLUS, recompra) {
   const payload = { astaId: S.astaId, squadraNome };
   if (slotsRIC !== null) payload.slotsRIC = parseInt(slotsRIC);
   if (slotsPLUS !== null) payload.slotsPLUS = parseInt(slotsPLUS);
+  if (recompra !== null) payload.recompra = parseInt(recompra);
   socket.emit('admin-update-slot', payload);
   toast('Slot di ' + squadraNome + ' aggiornati', 'success');
 };
