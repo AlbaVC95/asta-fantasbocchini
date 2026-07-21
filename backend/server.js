@@ -308,7 +308,11 @@ app.post('/api/asta', (req, res) => {
           asta.poolGiocatori.push({
             id: uuidv4(), nome: g.nome, ruolo: g.ruolo || '', tipo,
             costoOriginale: g.costo || 1, valore: g.valore || 0, squadraOriginale: sq.nome,
-            estratto: false, assegnato: false, scartato: false
+            estratto: false, assegnato: false, scartato: false,
+            // campi extra: non mostrati ancora da nessuna parte, servono per una funzione futura
+            squadraSerieA: g.squadraSerieA || null,
+            pgv: g.pgv ?? null, mv: g.mv ?? null, fm: g.fm ?? null,
+            fvmp600: g.fvmp600 ?? null, qam: g.qam ?? null
           });
         });
       }
@@ -627,6 +631,16 @@ io.on('connection', (socket) => {
     const sq = getSquadra(asta, squadraNome);
     if (!sq) return socket.emit('errore', { msg: 'Squadra non trovata' });
     sq.crediti = Math.max(0, parseInt(crediti) || 0);
+    broadcastStato(astaId);
+  });
+
+  socket.on('admin-update-slot', ({ astaId, squadraNome, slotsRIC, slotsPLUS }) => {
+    const asta = aste.get(astaId);
+    if (!asta || !isAdmin(asta, socket.id)) return;
+    const sq = getSquadra(asta, squadraNome);
+    if (!sq) return socket.emit('errore', { msg: 'Squadra non trovata' });
+    if (slotsRIC !== undefined) sq.slotsRIC = Math.max(0, parseInt(slotsRIC) || 0);
+    if (slotsPLUS !== undefined) sq.slotsPLUS = Math.max(0, parseInt(slotsPLUS) || 0);
     broadcastStato(astaId);
   });
 
