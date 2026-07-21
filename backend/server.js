@@ -312,7 +312,8 @@ app.post('/api/asta', (req, res) => {
             // campi extra: club reale (mostrato in Puja/confirma) + statistiche non mostrate ancora da nessuna parte, servono per una funzione futura
             squadra: g.squadra || null,
             pgv: g.pgv ?? null, mv: g.mv ?? null, fm: g.fm ?? null,
-            fvmp600: g.fvmp600 ?? null, qam: g.qam ?? null
+            fvmp600: g.fvmp600 ?? null, qam: g.qam ?? null,
+            idFantaleghe: g.idFantaleghe ?? null
           });
         });
       }
