@@ -941,7 +941,7 @@ body.layout-admin .asta-row-puja{
 }
 body.layout-admin .asta-row-puja .chiamata-card{
   background:none;border:none;box-shadow:none;border-radius:0;
-  flex:0 1 auto;border-right:1px solid var(--border-light);
+  flex:0 1 auto;
 }
 .asta-row-puja .chiamata-card::before{display:none}
 body.layout-admin .asta-row-puja .timer-ring-container{
@@ -951,7 +951,7 @@ body.layout-admin .asta-row-puja .timer-ring{width:72px;height:72px}
 body.layout-admin .asta-row-puja .timer-number{font-size:1.3rem}
 body.layout-admin .asta-row-puja .timer-label-text{font-size:.6rem}
 body.layout-admin .asta-row-puja .rilancio-box{
-  background:none;border:none;box-shadow:none;border-left:1px solid var(--border-light);
+  background:none;border:none;box-shadow:none;
 }
 body.layout-admin .asta-row-puja .inp-rilancio{width:85px!important}
 
