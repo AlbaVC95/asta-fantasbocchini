@@ -818,10 +818,12 @@ socket.on('giocatore-assegnato', ({ giocatore, prezzo, squadra, tipo, guadagno, 
     tipo === 'recompra' ? (squadra + ' recompra ' + prezzo + 'cr') :
     tipo === 'con_svincolo' ? (squadra + ' ' + prezzo + 'cr (svincolo)') :
     (squadra + ' ' + prezzo + 'cr');
-  toast(giocatore.nome + ' → ' + msg, 'success');
+  const dettaglio = [giocatore.ruolo, giocatore.squadra].filter(Boolean).join(' · ');
+  const nomeConDettaglio = dettaglio ? giocatore.nome + ' (' + dettaglio + ')' : giocatore.nome;
+  toast(nomeConDettaglio + ' → ' + msg, 'success');
   const card = document.getElementById('chiamata-card');
   card.className = 'chiamata-card assegnata';
-  card.innerHTML = '<p class="cc-esito">✅ ' + giocatore.nome + '</p><p class="chiamata-stato">' + msg + '</p>';
+  card.innerHTML = '<p class="cc-esito">✅ ' + nomeConDettaglio + '</p><p class="chiamata-stato">' + msg + '</p>';
 });
 
 socket.on('giocatore-scartato', ({ giocatore }) => {
