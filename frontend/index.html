@@ -343,8 +343,9 @@
         </div>
         <div id="tab-rose" class="tab-content tab-rose-content">
           <div class="rose-search-row hidden" id="rose-search-row">
-            <input type="text" id="rose-cerca" class="rose-inp" placeholder="🔍 Cerca giocatore...">
-            <button class="rose-cerca-btn" onclick="aggiornaFiltroRose()">Cerca</button>
+            <input type="text" id="rose-cerca" class="rose-inp" placeholder="🔍 Cerca giocatore..." autocomplete="off">
+            <button class="rose-cerca-btn" onclick="selezionaPrimoRisultatoRose()">Cerca</button>
+            <div id="rose-search-dropdown" class="rose-search-dropdown hidden"></div>
           </div>
           <div id="rose-panel" class="rose-container"></div>
         </div>
