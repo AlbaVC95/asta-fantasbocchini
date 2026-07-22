@@ -10,17 +10,65 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
 <div id="app">
 
+  <!-- ══════════ SCREEN LOGIN ══════════ -->
+  <section id="screen-login" class="screen active">
+    <header class="home-header">
+      <div class="home-logo">🎯</div>
+      <h1 class="home-title">Asta FantaSbocchini</h1>
+      <p class="home-subtitle">Accedi per continuare</p>
+    </header>
+
+    <div class="card">
+      <h2 class="card-title">Accedi</h2>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="tuo@email.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••">
+      </div>
+      <button id="btn-login" class="btn btn-primary btn-lg">Accedi</button>
+      <p id="login-error" class="hint-text" style="display:none;color:var(--danger,#ff4d4d)"></p>
+    </div>
+
+    <div class="card mt-16">
+      <h2 class="card-title">Non hai un account?</h2>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="signup-email" placeholder="tuo@email.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="signup-password" placeholder="Minimo 6 caratteri">
+      </div>
+      <button id="btn-signup" class="btn btn-secondary btn-lg">Registrati</button>
+      <p id="signup-error" class="hint-text" style="display:none;color:var(--danger,#ff4d4d)"></p>
+      <p id="signup-success" class="hint-text" style="display:none;color:var(--success,#2ecc71)"></p>
+    </div>
+  </section>
+
   <!-- ══════════ SCREEN HOME ══════════ -->
-  <section id="screen-home" class="screen active">
+  <section id="screen-home" class="screen">
     <header class="home-header">
       <div class="home-logo">🎯</div>
       <h1 class="home-title">Asta FantaSbocchini</h1>
       <p class="home-subtitle">Tool per la tua lega di fantacalcio</p>
+      <button id="btn-logout" class="btn-logout-link" style="display:none">🚪 Esci</button>
     </header>
+
+    <div id="card-listino-admin" class="card" style="display:none">
+      <h2 class="card-title">📋 Listino ufficiale (Admin)</h2>
+      <p class="hint-text">Carica il listino completo dei giocatori. Sostituisce il listino attuale per tutti gli utenti.</p>
+      <button type="button" id="btn-choice-listino" class="btn btn-secondary btn-lg">📤 Carica listino ufficiale</button>
+      <input type="file" id="inp-listino-excel" accept=".xlsx,.xls" style="display:none">
+      <p id="listino-upload-status" class="hint-text" style="display:none"></p>
+    </div>
 
     
     <div class="card">
