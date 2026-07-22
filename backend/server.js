@@ -4,8 +4,27 @@ const { Server } = require('socket.io');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const fs   = require('fs');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
+
+// ══ SUPABASE (service role — solo backend) ══════════════
+const supabaseAdmin = (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
+  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+  : null;
+
+async function getRuoloUtente(req) {
+  if (!supabaseAdmin) return { error: 'Supabase non configurato sul server', status: 500 };
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token) return { error: 'Token mancante', status: 401 };
+  const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token);
+  if (userErr || !userData || !userData.user) return { error: 'Token non valido', status: 401 };
+  const { data: profile, error: profErr } = await supabaseAdmin
+    .from('profiles').select('role').eq('id', userData.user.id).single();
+  if (profErr || !profile) return { error: 'Profilo utente non trovato', status: 403 };
+  return { role: profile.role, userId: userData.user.id };
+}
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
@@ -323,6 +342,57 @@ app.post('/api/asta', (req, res) => {
 
   aste.set(id, asta);
   res.json({ success: true, astaId: id, link: `/?id=${id}` });
+});
+
+// ══ LISTINO UFFICIALE (solo Admin) ══════════════════════
+app.post('/api/listino/upload', async (req, res) => {
+  if (!supabaseAdmin) return res.status(500).json({ error: 'Supabase non configurato sul server' });
+  const auth = await getRuoloUtente(req);
+  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  if (auth.role !== 'admin') return res.status(403).json({ error: 'Solo un Admin può caricare il listino ufficiale' });
+
+  const listino = req.body && req.body.listino;
+  if (!Array.isArray(listino) || !listino.length) {
+    return res.status(400).json({ error: 'Listino vuoto o non valido' });
+  }
+
+  try {
+    const nuoveRighe = listino
+      .filter(r => r && r.id != null && r.nome)
+      .map(r => ({
+        id: Number(r.id),
+        nome: String(r.nome),
+        ruolo: r.ruolo || null,
+        squadra_reale: r.squadra_reale || null,
+        quotazione: r.quotazione != null ? Number(r.quotazione) : null,
+        fmvp600: r.fmvp600 != null ? Number(r.fmvp600) : null
+      }));
+
+    const nuoviIds = new Set(nuoveRighe.map(r => r.id));
+
+    const { data: esistenti, error: selErr } = await supabaseAdmin.from('listino_giocatori').select('id');
+    if (selErr) throw selErr;
+
+    const idsAEliminare = (esistenti || []).filter(e => !nuoviIds.has(e.id)).map(e => e.id);
+
+    if (idsAEliminare.length) {
+      const { error: delErr } = await supabaseAdmin.from('listino_giocatori').delete().in('id', idsAEliminare);
+      if (delErr) throw delErr;
+      // Grazie a "on delete cascade" su strategia_giocatori.giocatore_id,
+      // questo rimuove automaticamente le configurazioni di questi giocatori da TUTTE le strategie.
+    }
+
+    const { error: upsertErr } = await supabaseAdmin.from('listino_giocatori').upsert(nuoveRighe, { onConflict: 'id' });
+    if (upsertErr) throw upsertErr;
+    // I giocatori già esistenti mantengono intatte le loro righe in strategia_giocatori (non toccata qui).
+    // I giocatori nuovi non hanno ancora riga in strategia_giocatori: il frontend li tratta come
+    // fascia "Non assegnati", senza prezzo/percentuale/preferito (Fase 2).
+
+    res.json({ ok: true, totalGiocatori: nuoveRighe.length, eliminati: idsAEliminare.length });
+  } catch (err) {
+    console.error('Errore upload listino:', err.message);
+    res.status(500).json({ error: 'Errore nel salvataggio del listino: ' + err.message });
+  }
 });
 
 app.get('/api/asta/:id', (req, res) => {
