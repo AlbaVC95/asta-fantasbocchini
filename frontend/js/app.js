@@ -1059,13 +1059,14 @@ function renderBudgetBar(squadre) {
     ].filter(Boolean).join(' ');
     const dot  = sq.online ? '🟢' : '⚪';
     const gioc = sq.giocatori ? sq.giocatori.length : ((sq.rosa || []).length);
+    const barCls = pct <= 15 ? 'crit' : (pct <= 40 ? 'warn' : 'ok');
     return '<div class="' + cls + '">' +
       '<div class="sq-top">' +
         '<span class="sq-dot-online">' + dot + '</span>' +
         '<span class="sq-nome">' + sq.nome + '</span>' +
         '<span class="sq-crediti">💰 ' + sq.crediti + '</span>' +
       '</div>' +
-      '<div class="budget-progress"><div class="budget-progress-fill" style="width:' + pct + '%"></div></div>' +
+      '<div class="budget-progress"><div class="budget-progress-fill ' + barCls + '" style="width:' + pct + '%"></div></div>' +
       '<div class="sq-bottom">🏆 ' + gioc + ' giocatori</div>' +
     '</div>';
   }).join('');
