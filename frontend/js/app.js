@@ -780,6 +780,7 @@ function setupTabs() {
     btnRoseSearchToggle.addEventListener('click', () => {
       const row = document.getElementById('rose-search-row');
       row.classList.toggle('hidden');
+      btnRoseSearchToggle.classList.toggle('open');
       if (!row.classList.contains('hidden')) document.getElementById('rose-cerca').focus();
     });
   }
