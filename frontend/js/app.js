@@ -1115,7 +1115,7 @@ function renderChiamata(chiamata) {
     : '';
   card.innerHTML =
     '<div class="cc-header">' +
-      '<div class="cc-avatar" style="background:' + _avatarColor(g.nome) + '"><span class="cc-avatar-initial">' + _avatarInitials(g.nome) + '</span></div>' +
+      '<div class="cc-avatar" style="background:' + _avatarColor(g.nome) + '"><svg viewBox="0 0 64 64" fill="none" class="cc-avatar-svg"><circle cx="32" cy="19" r="11" fill="#fff" fill-opacity=".92"/><path d="M32 30c-13 0-20 8-20 17v9c0 2 1.5 3.5 3.5 3.5h33c2 0 3.5-1.5 3.5-3.5v-9c0-9-7-17-20-17z" fill="#fff" fill-opacity=".92"/><path d="M25 34l-4 8 4 6M39 34l4 8-4 6" stroke="#fff" stroke-opacity=".55" stroke-width="2.5" stroke-linecap="round"/><circle cx="46" cy="48" r="5.5" fill="#fff" fill-opacity=".55"/><path d="M46 44.2l2.3 1.7-.9 2.7h-2.8l-.9-2.7z" fill="#000" fill-opacity=".18"/></svg></div>' +
       '<div class="cc-info">' +
         '<div class="cc-nome-row">' + ruoloBadge + '<p class="cc-nome">' + g.nome + '</p></div>' +
         '<div class="cc-meta">' + clubTxt + tipoBadge + origTxt + '</div>' +
