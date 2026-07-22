@@ -1115,7 +1115,7 @@ function renderChiamata(chiamata) {
     : '';
   card.innerHTML =
     '<div class="cc-header">' +
-      '<div class="cc-avatar" style="background:' + _avatarColor(g.nome) + '"><svg viewBox="0 0 64 64" fill="none" class="cc-avatar-svg"><circle cx="32" cy="19" r="11" fill="#fff" fill-opacity=".92"/><path d="M32 30c-13 0-20 8-20 17v9c0 2 1.5 3.5 3.5 3.5h33c2 0 3.5-1.5 3.5-3.5v-9c0-9-7-17-20-17z" fill="#fff" fill-opacity=".92"/><path d="M25 34l-4 8 4 6M39 34l4 8-4 6" stroke="#fff" stroke-opacity=".55" stroke-width="2.5" stroke-linecap="round"/><circle cx="46" cy="48" r="5.5" fill="#fff" fill-opacity=".55"/><path d="M46 44.2l2.3 1.7-.9 2.7h-2.8l-.9-2.7z" fill="#000" fill-opacity=".18"/></svg></div>' +
+      '<div class="cc-avatar"><svg viewBox="0 0 100 100" class="cc-avatar-svg"><path d="M29,44 Q26,35 30,28 Q33,21 39,19 Q41,15 47,16 Q50,13 53,16 Q59,15 61,19 Q67,21 70,28 Q74,35 71,44 Q74,48 70,52 Q71,57 68,60 L68,62 C68,70 60,76 50,76 C40,76 32,70 32,62 L32,60 Q29,57 30,52 Q26,48 29,44 Z" fill="#20142f"/><path d="M12,100 L12,88 C12,74 24,63 39,61 L39,66 C39,71 44,75 50,75 C56,75 61,71 61,66 L61,61 C76,63 88,74 88,88 L88,100 Z" fill="#20142f"/></svg></div>' +
       '<div class="cc-info">' +
         '<div class="cc-nome-row">' + ruoloBadge + '<p class="cc-nome">' + g.nome + '</p></div>' +
         '<div class="cc-meta">' + clubTxt + tipoBadge + origTxt + '</div>' +
