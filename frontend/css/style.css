@@ -203,7 +203,7 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .chiamata-card .chiamata-stato{color:var(--text-muted);font-size:1rem;padding:20px 0}
 
 .cc-header{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px;text-align:left}
-.cc-avatar{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:56px;height:56px;border-radius:50%;background:linear-gradient(160deg,var(--bg-elevated),var(--bg-card));border:2px solid var(--primary);box-shadow:0 0 18px var(--primary-glow),inset 0 0 12px rgba(0,0,0,.3);overflow:hidden}.cc-avatar-icon{font-size:1.7rem;opacity:.55;filter:grayscale(1) brightness(1.6)}.cc-avatar-initial{font-size:1.4rem;font-weight:800;color:#fff;font-family:var(--font-display);text-shadow:0 1px 4px rgba(0,0,0,.35);letter-spacing:-.02em}.cc-avatar-svg{width:68%;height:68%}.cc-nome-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cc-avatar{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:84px;height:84px;border-radius:50%;background:#eceef2;border:3px solid var(--primary);box-shadow:0 0 18px var(--primary-glow);overflow:hidden}.cc-avatar-icon{font-size:1.7rem;opacity:.55;filter:grayscale(1) brightness(1.6)}.cc-avatar-initial{font-size:1.4rem;font-weight:800;color:#fff;font-family:var(--font-display);text-shadow:0 1px 4px rgba(0,0,0,.35);letter-spacing:-.02em}.cc-avatar-svg{width:78%;height:78%}.cc-nome-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 
 .cc-info{flex:1}.cc-meta{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap}
 
@@ -761,7 +761,7 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .puja-panel-slot .chiamata-card .chiamata-stato{padding:0;font-size:.88rem}
 
 .puja-panel-slot .cc-header{margin-bottom:0;align-items:center;gap:8px;flex:1 1 auto;min-width:0;overflow:hidden}
-.puja-panel-slot .cc-avatar{width:38px;height:38px}.puja-panel-slot .cc-avatar-icon{font-size:1.15rem}.puja-panel-slot .cc-avatar-initial{font-size:1rem}.puja-panel-slot .cc-avatar-svg{width:70%;height:70%}
+.puja-panel-slot .cc-avatar{width:56px;height:56px}.puja-panel-slot .cc-avatar-icon{font-size:1.15rem}.puja-panel-slot .cc-avatar-initial{font-size:1rem}.puja-panel-slot .cc-avatar-svg{width:78%;height:78%}
 
 .puja-panel-slot .cc-nome{font-size:1.1rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
@@ -822,7 +822,7 @@ body.layout-admin .asta-row-puja .chiamata-card .chiamata-stato{padding:0;font-s
 body.layout-admin .asta-row-puja .chiamata-card{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:nowrap;overflow:visible;height:auto}
 
 body.layout-admin .asta-row-puja .cc-header{margin-bottom:0;align-items:center;gap:8px;flex:1 1 auto;min-width:0;overflow:hidden}
-body.layout-admin .asta-row-puja .cc-avatar{width:38px;height:38px}body.layout-admin .asta-row-puja .cc-avatar-icon{font-size:1.15rem}body.layout-admin .asta-row-puja .cc-avatar-initial{font-size:1rem}body.layout-admin .asta-row-puja .cc-avatar-svg{width:70%;height:70%}
+body.layout-admin .asta-row-puja .cc-avatar{width:56px;height:56px}body.layout-admin .asta-row-puja .cc-avatar-icon{font-size:1.15rem}body.layout-admin .asta-row-puja .cc-avatar-initial{font-size:1rem}body.layout-admin .asta-row-puja .cc-avatar-svg{width:78%;height:78%}
 
 body.layout-admin .asta-row-puja .cc-info{min-width:0;overflow:hidden}
 
@@ -1044,7 +1044,7 @@ body.layout-admin .asta-row-puja .timer-ring-container{flex:1 1 60px!important;m
   body.layout-admin .asta-row-puja .cc-nome{font-size:.82rem!important}
   body.layout-admin .asta-row-puja .cc-header{gap:5px!important}
   body.layout-admin .asta-row-puja .badge-ruolo{min-width:18px!important;height:16px!important;font-size:.55rem!important;padding:0 4px!important}
-  body.layout-admin .asta-row-puja .cc-avatar{width:26px!important;height:26px!important}
+  body.layout-admin .asta-row-puja .cc-avatar{width:38px!important;height:38px!important}
   body.layout-admin .asta-row-puja .cc-avatar-icon{font-size:.85rem!important}body.layout-admin .asta-row-puja .cc-avatar-initial{font-size:.72rem!important}body.layout-admin .asta-row-puja .cc-avatar-svg{width:72%!important;height:72%!important}
   body.layout-admin .asta-row-puja .cc-meta,body.layout-admin .asta-row-puja .cc-offerente{font-size:.62rem!important}
   body.layout-admin .asta-row-puja .cc-offerta{font-size:1.9rem!important}
@@ -1065,7 +1065,7 @@ body.layout-admin .asta-row-puja .timer-ring-container{flex:1 1 60px!important;m
   body.layout-admin .asta-row-puja .cc-nome{font-size:.68rem!important}
   body.layout-admin .asta-row-puja .cc-header{gap:3px!important}
   body.layout-admin .asta-row-puja .badge-ruolo{min-width:14px!important;height:13px!important;font-size:.48rem!important;padding:0 3px!important}
-  body.layout-admin .asta-row-puja .cc-avatar{width:20px!important;height:20px!important}
+  body.layout-admin .asta-row-puja .cc-avatar{width:30px!important;height:30px!important}
   body.layout-admin .asta-row-puja .cc-avatar-icon{font-size:.65rem!important}body.layout-admin .asta-row-puja .cc-avatar-initial{font-size:.55rem!important}body.layout-admin .asta-row-puja .cc-avatar-svg{width:72%!important;height:72%!important}
   body.layout-admin .asta-row-puja .cc-meta,body.layout-admin .asta-row-puja .cc-offerente{font-size:.52rem!important}
   body.layout-admin .asta-row-puja .cc-offerta{font-size:1.5rem!important}
