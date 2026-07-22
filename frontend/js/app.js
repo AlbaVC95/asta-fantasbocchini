@@ -9,8 +9,14 @@ const socket = io({
 const S = {
   astaId: null, miaSquadra: null, isAdmin: false, asta: null,
   filtroRuolo: 'tutti', filtroStorico: 'tutti', svincoloSel: new Set(), popupAttivoCli: null,
-  attesaConferma: false, timerTotal: 30
+  attesaConferma: false, timerTotal: 30,
+  userRole: null, userId: null
 };
+
+// ══ SUPABASE (utenti + listino ufficiale) ════════════════
+const SUPABASE_URL = 'https://boupigtvlowxajvwkuwr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvdXBpZ3R2bG93eGFqdndrdXdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NTA3MDYsImV4cCI6MjEwMDMyNjcwNn0.3GkbaKaJu7_6mZYkavDLAx7cW8qgraSyVKizMPYbXAA';
+const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ══ SOUND SYSTEM ════════════════════════
 let _audioCtx = null;
@@ -265,10 +271,12 @@ socket.on('reconnect', () => {
   }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
   if (id) {
+    // Link di invito diretto: comportamento invariato, nessun gate di login
+    showScreen('screen-home');
     document.getElementById('inp-join-id').value = id;
     setTimeout(() => fetchAstaSquadrePerJoin(id), 300);
     const creaCard = document.getElementById('form-crea-asta').closest('.card');
@@ -277,6 +285,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (header) header.style.display = 'none';
     const linkIdGroup = document.getElementById('inp-join-id').closest('.form-group');
     if (linkIdGroup) linkIdGroup.style.display = 'none';
+  } else {
+    await checkSessioneUtente();
   }
   // Restore session hint (pre-fill join field if no ID in URL)
   const sess = getSessione();
@@ -285,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
     history.replaceState({}, '', '/?id=' + sess.astaId);
     setTimeout(() => fetchAstaSquadrePerJoin(sess.astaId), 400);
   }
-  setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs();
+  setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs(); setupLogin();
   // Warn before leaving page if in active asta
   window.addEventListener('beforeunload', (e) => {
     if (S.astaId && S.asta && S.asta.stato === 'in_corso') {
@@ -293,6 +303,141 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+// ══ AUTENTICAZIONE UTENTI (Supabase) ═══════════════════
+async function checkSessioneUtente() {
+  const { data } = await supa.auth.getSession();
+  if (data && data.session && data.session.user) {
+    await applicaUtenteLoggato(data.session.user);
+  } else {
+    showScreen('screen-login');
+  }
+}
+
+async function applicaUtenteLoggato(user) {
+  S.userId = user.id;
+  const { data: profile } = await supa.from('profiles').select('role').eq('id', user.id).single();
+  S.userRole = (profile && profile.role) || 'utente';
+  const btnLogout = document.getElementById('btn-logout');
+  if (btnLogout) btnLogout.style.display = 'inline-block';
+  const adminCard = document.getElementById('card-listino-admin');
+  if (adminCard) adminCard.style.display = (S.userRole === 'admin') ? 'block' : 'none';
+  showScreen('screen-home');
+}
+
+function setupLogin() {
+  const btnLogin = document.getElementById('btn-login');
+  const btnSignup = document.getElementById('btn-signup');
+  const btnLogout = document.getElementById('btn-logout');
+
+  if (btnLogin) btnLogin.addEventListener('click', async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errEl = document.getElementById('login-error');
+    errEl.style.display = 'none';
+    if (!email || !password) { errEl.textContent = 'Compila tutti i campi'; errEl.style.display = 'block'; return; }
+    const { data, error } = await supa.auth.signInWithPassword({ email, password });
+    if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+    await applicaUtenteLoggato(data.user);
+  });
+
+  if (btnSignup) btnSignup.addEventListener('click', async () => {
+    const email = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+    const errEl = document.getElementById('signup-error');
+    const okEl = document.getElementById('signup-success');
+    errEl.style.display = 'none'; okEl.style.display = 'none';
+    if (!email || !password) { errEl.textContent = 'Compila tutti i campi'; errEl.style.display = 'block'; return; }
+    const { data, error } = await supa.auth.signUp({ email, password });
+    if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+    if (data.session) {
+      await applicaUtenteLoggato(data.user);
+    } else {
+      okEl.textContent = 'Registrazione completata. Controlla la tua email per confermare, poi accedi.';
+      okEl.style.display = 'block';
+    }
+  });
+
+  if (btnLogout) btnLogout.addEventListener('click', async () => {
+    await supa.auth.signOut();
+    S.userRole = null; S.userId = null;
+    btnLogout.style.display = 'none';
+    const adminCard = document.getElementById('card-listino-admin');
+    if (adminCard) adminCard.style.display = 'none';
+    showScreen('screen-login');
+  });
+
+  const btnChoiceListino = document.getElementById('btn-choice-listino');
+  const inpListino = document.getElementById('inp-listino-excel');
+  if (btnChoiceListino && inpListino) {
+    btnChoiceListino.addEventListener('click', () => inpListino.click());
+    inpListino.addEventListener('change', (e) => handleListinoExcelFile(e.target.files[0]));
+  }
+}
+
+function handleListinoExcelFile(file) {
+  if (!file) return;
+  const statusEl = document.getElementById('listino-upload-status');
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+      if (!rows.length) return toast('Il file Excel è vuoto', 'error');
+
+      const norm = s => (s || '').toString().trim().toLowerCase();
+      const headers = Object.keys(rows[0]);
+      const findCol = (...names) => headers.find(h => names.some(n => norm(h) === norm(n)));
+
+      const colId = findCol('#', 'Id', 'ID');
+      const colNome = findCol('Giocatore', 'Nome');
+      const colRuolo = findCol('Ruolo');
+      const colSquadra = findCol('Squadra');
+      const colQuot = findCol('QAM', 'Quotazione', 'Quotazione Attuale');
+      const colFvmp600 = findCol('FVMp600');
+
+      if (!colId || !colNome || !colRuolo) {
+        toast('Colonne obbligatorie mancanti nel listino (#, Giocatore, Ruolo)', 'error');
+        return;
+      }
+
+      const listino = rows.filter(r => r[colId] !== '' && r[colNome]).map(r => ({
+        id: Number(r[colId]),
+        nome: r[colNome],
+        ruolo: r[colRuolo],
+        squadra_reale: colSquadra ? (r[colSquadra] || null) : null,
+        quotazione: colQuot && r[colQuot] !== '' ? Number(r[colQuot]) : null,
+        fmvp600: colFvmp600 && r[colFvmp600] !== '' ? Number(r[colFvmp600]) : null
+      }));
+
+      if (!listino.length) return toast('Nessun giocatore valido trovato nel listino', 'error');
+
+      statusEl.style.display = 'block';
+      statusEl.textContent = 'Caricamento in corso...';
+
+      const { data: sessData } = await supa.auth.getSession();
+      const token = sessData && sessData.session ? sessData.session.access_token : null;
+
+      const res = await fetch('/api/listino/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ listino })
+      });
+      const out = await res.json();
+      if (!res.ok) {
+        statusEl.textContent = '❌ ' + (out.error || 'Errore nel caricamento');
+        toast(out.error || 'Errore nel caricamento del listino', 'error');
+        return;
+      }
+      statusEl.textContent = '✅ Listino aggiornato: ' + out.totalGiocatori + ' giocatori (' + out.eliminati + ' rimossi)';
+      toast('Listino ufficiale aggiornato', 'success');
+    } catch (err) {
+      toast('Errore nella lettura del file: ' + err.message, 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
