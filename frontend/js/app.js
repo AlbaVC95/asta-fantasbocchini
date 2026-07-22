@@ -1080,6 +1080,23 @@ function _getRuoloBadgeHTML(ruolo) {
   }).join('');
 }
 
+function _avatarInitials(nome) {
+  if (!nome) return '?';
+  const parts = nome.trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return nome.trim().substring(0, 2).toUpperCase();
+}
+
+function _avatarColor(nome) {
+  const str = nome || '?';
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) % 360;
+  }
+  const hue = Math.abs(hash);
+  return 'hsl(' + hue + ',48%,38%)';
+}
+
 function renderChiamata(chiamata) {
   const card = document.getElementById('chiamata-card');
   card.className = 'chiamata-card attiva card-enter';
@@ -1098,7 +1115,7 @@ function renderChiamata(chiamata) {
     : '';
   card.innerHTML =
     '<div class="cc-header">' +
-      '<div class="cc-avatar"><span class="cc-avatar-icon">👤</span></div>' +
+      '<div class="cc-avatar" style="background:' + _avatarColor(g.nome) + '"><span class="cc-avatar-initial">' + _avatarInitials(g.nome) + '</span></div>' +
       '<div class="cc-info">' +
         '<div class="cc-nome-row">' + ruoloBadge + '<p class="cc-nome">' + g.nome + '</p></div>' +
         '<div class="cc-meta">' + clubTxt + tipoBadge + origTxt + '</div>' +
