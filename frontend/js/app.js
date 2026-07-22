@@ -1097,11 +1097,66 @@ function _avatarColor(nome) {
   return 'hsl(' + hue + ',48%,38%)';
 }
 
+let _chiamataAvatarVersion = 0;
+const _playerPhotoCache = {};
+
+function _loadPlayerPhoto(nome, version) {
+  if (Object.prototype.hasOwnProperty.call(_playerPhotoCache, nome)) {
+    _applyPlayerPhoto(_playerPhotoCache[nome], version);
+    return;
+  }
+  const searchUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
+    encodeURIComponent(nome + ' footballer') + '&format=json&srlimit=1&origin=*';
+  fetch(searchUrl)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      const results = data.query && data.query.search;
+      if (!results || !results.length) {
+        _playerPhotoCache[nome] = null;
+        _applyPlayerPhoto(null, version);
+        return;
+      }
+      const title = results[0].title;
+      return fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title))
+        .then(function(r2) { return r2.json(); })
+        .then(function(summary) {
+          const desc = (summary.description || '').toLowerCase();
+          const url = summary.thumbnail && summary.thumbnail.source;
+          const isFootballer = desc.indexOf('footballer') > -1 || desc.indexOf('soccer') > -1 || desc.indexOf('calciatore') > -1;
+          const finalUrl = (url && isFootballer) ? url : null;
+          _playerPhotoCache[nome] = finalUrl;
+          _applyPlayerPhoto(finalUrl, version);
+        });
+    })
+    .catch(function() {
+      _playerPhotoCache[nome] = null;
+      _applyPlayerPhoto(null, version);
+    });
+}
+
+function _applyPlayerPhoto(url, version) {
+  if (!url) return;
+  if (version !== _chiamataAvatarVersion) return;
+  const avatarEl = document.querySelector('#chiamata-card .cc-avatar');
+  if (!avatarEl) return;
+  const img = new Image();
+  img.onload = function() {
+    if (version !== _chiamataAvatarVersion) return;
+    avatarEl.innerHTML = '';
+    img.className = 'cc-avatar-img';
+    avatarEl.appendChild(img);
+  };
+  img.onerror = function() {};
+  img.src = url;
+}
+
 function renderChiamata(chiamata) {
   const card = document.getElementById('chiamata-card');
   card.className = 'chiamata-card attiva card-enter';
   const g = chiamata.giocatore;
   const ruoloBadge = _getRuoloBadgeHTML(g.ruolo);
+  _chiamataAvatarVersion++;
+  const _myAvatarVersion = _chiamataAvatarVersion;
   const tipoBadge = g.tipo && g.tipo !== 'NN' ? '<span class="cc-tipo-badge tipo-' + g.tipo + '">' + g.tipo + '</span>' : '';
   const origTxt = g.squadraOriginale && g.tipo !== 'NN' ? '<small class="text-muted">ex: ' + g.squadraOriginale + '</small>' : '';
   const clubTxt = g.squadra ? '<span class="cc-club">' + g.squadra + '</span>' : '';
@@ -1130,6 +1185,7 @@ function renderChiamata(chiamata) {
       attesaBadge +
     '</div>';
   aggiornaQuickBids();
+  _loadPlayerPhoto(g.nome, _myAvatarVersion);
 }
 
 function canBid() {
