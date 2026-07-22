@@ -1098,9 +1098,9 @@ function renderChiamata(chiamata) {
     : '';
   card.innerHTML =
     '<div class="cc-header">' +
-      '<div class="cc-avatar">' + ruoloBadge + '</div>' +
+      '<div class="cc-avatar"><span class="cc-avatar-icon">👤</span></div>' +
       '<div class="cc-info">' +
-        '<p class="cc-nome">' + g.nome + '</p>' +
+        '<div class="cc-nome-row">' + ruoloBadge + '<p class="cc-nome">' + g.nome + '</p></div>' +
         '<div class="cc-meta">' + clubTxt + tipoBadge + origTxt + '</div>' +
       '</div>' +
     '</div>' +
