@@ -1098,15 +1098,17 @@ function renderChiamata(chiamata) {
     : '';
   card.innerHTML =
     '<div class="cc-header">' +
-      ruoloBadge +
+      '<div class="cc-avatar">' + ruoloBadge + '</div>' +
       '<div class="cc-info">' +
         '<p class="cc-nome">' + g.nome + '</p>' +
         '<div class="cc-meta">' + clubTxt + tipoBadge + origTxt + '</div>' +
       '</div>' +
     '</div>' +
     '<div class="cc-body">' +
-      '<p class="cc-offerta" id="cc-prezzo">' + offertaDisplay + '</p>' +
-      '<p class="cc-offerta-label">' + offertaLabel + '</p>' +
+      '<div class="cc-offerta-box">' +
+        '<p class="cc-offerta" id="cc-prezzo">' + offertaDisplay + '</p>' +
+        '<p class="cc-offerta-label">' + offertaLabel + '</p>' +
+      '</div>' +
       '<p class="cc-offerente">' + offerenteTxt + '</p>' +
       attesaBadge +
     '</div>';
