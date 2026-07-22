@@ -771,9 +771,19 @@ function setupTabs() {
       document.getElementById(btn.dataset.tab).classList.add('active');
     });
   });
-  // Live search on Enter
+  // Live dropdown suggestions while typing + Enter selects first match
   const rCerca = document.getElementById('rose-cerca');
-  if (rCerca) rCerca.addEventListener('keydown', e => { if (e.key === 'Enter') aggiornaFiltroRose(); });
+  if (rCerca) {
+    rCerca.addEventListener('input', () => _renderRoseDropdown(rCerca.value));
+    rCerca.addEventListener('keydown', e => { if (e.key === 'Enter') selezionaPrimoRisultatoRose(); });
+    rCerca.addEventListener('focus', () => { if (rCerca.value) _renderRoseDropdown(rCerca.value); });
+    document.addEventListener('click', e => {
+      const dd = document.getElementById('rose-search-dropdown');
+      if (dd && !dd.classList.contains('hidden') && !dd.contains(e.target) && e.target !== rCerca) {
+        dd.classList.add('hidden'); dd.innerHTML = '';
+      }
+    });
+  }
 
   const btnRoseSearchToggle = document.getElementById('btn-rose-search-toggle');
   if (btnRoseSearchToggle) {
@@ -1195,13 +1205,11 @@ function renderRose(squadre) {
   const chiamata = S.asta && S.asta.chiamataAttuale;
   const squadraAttiva = chiamata && chiamata.squadraOfferente;
   const filtroRuolo = '';
-  const cercaTesto = ((document.getElementById('rose-cerca') || {}).value || '').toLowerCase().trim();
 
   document.getElementById('rose-panel').innerHTML = squadre.map(sq => {
     const isAttiva = sq.nome === squadraAttiva;
     let giocatori = sq.rosa || [];
     if (filtroRuolo) giocatori = giocatori.filter(g => (g.ruolo||'') === filtroRuolo);
-    if (cercaTesto) giocatori = giocatori.filter(g => g.nome.toLowerCase().includes(cercaTesto));
     const portieri = giocatori.filter(g => _isPortiere(g.ruolo));
     const movimento = giocatori.filter(g => !_isPortiere(g.ruolo));
     const ORDINE_RUOLI = ['Dd','Dc','Ds','D','B','M','E','C','T','W','A','Pc'];
@@ -1232,11 +1240,16 @@ function renderRose(squadre) {
 
 function _isPortiere(ruolo) { return ruolo === 'Por' || ruolo === 'P'; }
 
+function _escAttr(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 function _renderRoseSez(titolo, giocatori, tipo, sqNome) {
+  sqNome = sqNome || '';
   const secId = 'rsec-' + tipo + '-' + sqNome.replace(/\W/g,'');
   const collapsed = window._roseCollapsed && window._roseCollapsed[secId];
   return '<div class="rose-section ' + tipo + '">' +
-    '<div class="rose-sec-hdr' + (collapsed ? ' collapsed' : '') + '" onclick="_toggleRoseSec(this,\'' + secId + '\')">' +
+    '<div class="rose-sec-hdr' + (collapsed ? ' collapsed' : '') + '" data-secid="' + secId + '" onclick="_toggleRoseSec(this,\'' + secId + '\')">' +
       '<span>' + titolo + ' <small>(' + giocatori.length + ')</small></span>' +
       '<span class="rose-arrow">' + (collapsed ? '▸' : '▾') + '</span>' +
     '</div>' +
@@ -1248,7 +1261,7 @@ function _renderRoseSez(titolo, giocatori, tipo, sqNome) {
               x = x.trim();
               return '<span class="rose-badge ruolo-rose-' + x.toLowerCase() + '">' + x + '</span>';
             }).join('');
-            return '<div class="rose-player">' +
+            return '<div class="rose-player" data-rose-nome="' + _escAttr(g.nome) + '" data-rose-squadra="' + _escAttr(sqNome) + '">' +
               ruoloBadgeHTML +
               '<span class="rose-nome">' + g.nome + '</span>' +
               '<span class="rose-prezzo">🪙' + g.prezzo + '</span>' +
@@ -1267,6 +1280,77 @@ window._toggleRoseSec = function(hdrEl, secId) {
   if (body) body.classList.toggle('collapsed', !!window._roseCollapsed[secId]);
   const arrow = hdrEl.querySelector('.rose-arrow');
   if (arrow) arrow.textContent = window._roseCollapsed[secId] ? '▸' : '▾';
+};
+
+function _getAllRosaFlat() {
+  const squadre = (S.asta && S.asta.squadre) || [];
+  const out = [];
+  squadre.forEach(sq => (sq.rosa || []).forEach(g => out.push({ nome: g.nome, ruolo: g.ruolo, squadra: sq.nome })));
+  return out;
+}
+
+window._renderRoseDropdown = function(query) {
+  const dd = document.getElementById('rose-search-dropdown');
+  if (!dd) return;
+  const q = (query || '').toLowerCase().trim();
+  if (!q) { dd.classList.add('hidden'); dd.innerHTML = ''; return; }
+  const matches = _getAllRosaFlat().filter(p => p.nome.toLowerCase().includes(q)).slice(0, 10);
+  if (!matches.length) {
+    dd.innerHTML = '<div class="rose-search-empty">Nessun giocatore trovato</div>';
+    dd.classList.remove('hidden');
+    return;
+  }
+  dd.innerHTML = matches.map(p =>
+    '<div class="rose-search-item" data-item-nome="' + _escAttr(p.nome) + '" data-item-squadra="' + _escAttr(p.squadra) + '">' +
+      '<span>' + _escAttr(p.nome) + '</span>' +
+      '<span class="rose-search-item-sq">' + _escAttr(p.squadra) + '</span>' +
+    '</div>'
+  ).join('');
+  dd.classList.remove('hidden');
+};
+
+document.addEventListener('click', function(e) {
+  const item = e.target.closest && e.target.closest('.rose-search-item');
+  if (item && item.dataset.itemNome !== undefined) {
+    selezionaGiocatoreRose(item.dataset.itemNome, item.dataset.itemSquadra);
+  }
+});
+
+window.selezionaGiocatoreRose = function(nome, squadra) {
+  const dd = document.getElementById('rose-search-dropdown');
+  if (dd) { dd.classList.add('hidden'); dd.innerHTML = ''; }
+  const row = document.getElementById('rose-search-row');
+  if (row) row.classList.add('hidden');
+  const toggle = document.getElementById('btn-rose-search-toggle');
+  if (toggle) toggle.classList.remove('open');
+  const input = document.getElementById('rose-cerca');
+  if (input) input.value = '';
+
+  let target = null;
+  document.querySelectorAll('.rose-player').forEach(el => {
+    if (el.dataset.roseNome === nome && el.dataset.roseSquadra === squadra) target = el;
+  });
+  if (!target) { toast('Giocatore non trovato nella rosa', 'error'); return; }
+
+  const secBody = target.closest('.rose-sec-body');
+  if (secBody && secBody.classList.contains('collapsed')) {
+    const hdr = secBody.previousElementSibling;
+    if (hdr && hdr.classList.contains('rose-sec-hdr')) _toggleRoseSec(hdr, hdr.dataset.secid || '');
+  }
+  target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+  target.classList.remove('highlight-flash');
+  void target.offsetWidth;
+  target.classList.add('highlight-flash');
+  setTimeout(() => target.classList.remove('highlight-flash'), 1800);
+};
+
+window.selezionaPrimoRisultatoRose = function() {
+  const input = document.getElementById('rose-cerca');
+  const val = ((input && input.value) || '').toLowerCase().trim();
+  if (!val) return;
+  const match = _getAllRosaFlat().find(p => p.nome.toLowerCase().includes(val));
+  if (match) selezionaGiocatoreRose(match.nome, match.squadra);
+  else toast('Nessun giocatore trovato', 'error');
 };
 
 window.aggiornaFiltroRose = function() {
