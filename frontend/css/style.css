@@ -767,9 +767,9 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 
 .puja-panel-slot .cc-body{margin-bottom:0;display:flex;align-items:center;gap:8px;flex:0 0 auto;white-space:nowrap}
 
-.puja-panel-slot .cc-offerta{font-size:1.9rem}
+.puja-panel-slot .cc-offerta{font-size:2.6rem;color:var(--gold);text-shadow:0 0 20px var(--gold-glow)}
 
-.puja-panel-slot .cc-offerta-label{font-size:.66rem;margin-top:0}
+.puja-panel-slot .cc-offerta-label{font-size:.78rem;margin-top:0;font-weight:700}
 
 .puja-panel-slot .cc-offerente{font-size:.78rem}
 
@@ -827,9 +827,9 @@ body.layout-admin .asta-row-puja .cc-nome{font-size:1.05rem;line-height:1.15;whi
 
 body.layout-admin .asta-row-puja .cc-meta{margin-top:0;flex-wrap:nowrap;overflow:hidden}
 
-body.layout-admin .asta-row-puja .cc-offerta{font-size:1.4rem}
+body.layout-admin .asta-row-puja .cc-offerta{font-size:2.6rem;color:var(--gold);text-shadow:0 0 20px var(--gold-glow),0 0 40px rgba(255,184,0,.2)}
 
-body.layout-admin .asta-row-puja .cc-offerta-label{display:block;font-size:.56rem}
+body.layout-admin .asta-row-puja .cc-offerta-label{display:block;font-size:.72rem;font-weight:700}
 
 body.layout-admin .asta-row-puja .cc-body{margin-bottom:0;display:flex;align-items:center;gap:8px;flex:0 0 auto;white-space:nowrap}
 
@@ -1042,6 +1042,8 @@ body.layout-admin .asta-row-puja .timer-ring-container{flex:1 1 60px!important;m
   body.layout-admin .asta-row-puja .cc-header{gap:5px!important}
   body.layout-admin .asta-row-puja .badge-ruolo{min-width:18px!important;height:16px!important;font-size:.55rem!important;padding:0 4px!important}
   body.layout-admin .asta-row-puja .cc-meta,body.layout-admin .asta-row-puja .cc-offerente{font-size:.62rem!important}
+  body.layout-admin .asta-row-puja .cc-offerta{font-size:1.9rem!important}
+  body.layout-admin .asta-row-puja .cc-offerta-label{font-size:.62rem!important}
   body.layout-admin .asta-row-puja .timer-ring-container{flex:1 1 56px!important;min-width:56px}
   body.layout-admin .asta-row-puja .timer-ring{width:56px!important;height:56px!important}
   body.layout-admin .asta-row-puja .timer-number{font-size:1.05rem!important}
@@ -1059,6 +1061,8 @@ body.layout-admin .asta-row-puja .timer-ring-container{flex:1 1 60px!important;m
   body.layout-admin .asta-row-puja .cc-header{gap:3px!important}
   body.layout-admin .asta-row-puja .badge-ruolo{min-width:14px!important;height:13px!important;font-size:.48rem!important;padding:0 3px!important}
   body.layout-admin .asta-row-puja .cc-meta,body.layout-admin .asta-row-puja .cc-offerente{font-size:.52rem!important}
+  body.layout-admin .asta-row-puja .cc-offerta{font-size:1.5rem!important}
+  body.layout-admin .asta-row-puja .cc-offerta-label{font-size:.5rem!important}
   body.layout-admin .asta-row-puja .timer-ring-container{flex:0 0 46px!important;min-width:46px!important}
   body.layout-admin .asta-row-puja .timer-ring{width:46px!important;height:46px!important}
   body.layout-admin .asta-row-puja .timer-number{font-size:.85rem!important}
@@ -1076,6 +1080,8 @@ body.layout-admin .asta-row-puja .timer-ring-container{flex:1 1 60px!important;m
   .puja-panel-slot .timer-ring{width:70px!important;height:70px!important}
   .puja-panel-slot .timer-number{font-size:1.3rem!important}
   .puja-panel-slot .timer-label-text{font-size:.6rem!important}
+  .puja-panel-slot .cc-offerta{font-size:2rem!important}
+  .puja-panel-slot .cc-offerta-label{font-size:.7rem!important}
   .puja-panel-slot .rilancio-box{flex:1 1 100%!important;padding-left:0!important;padding-top:8px!important;border-top:1px solid var(--border-light);position:static!important;bottom:auto!important;left:auto!important;right:auto!important;z-index:auto!important;border-radius:12px!important}
 }
 
@@ -1084,6 +1090,8 @@ body.layout-admin .asta-row-puja .timer-ring-container{flex:1 1 60px!important;m
   .puja-panel-slot .chiamata-card{flex:0 1 110px!important;max-width:110px!important}
   .puja-panel-slot .cc-nome{font-size:.85rem!important}
   .puja-panel-slot .cc-meta,.puja-panel-slot .cc-offerente{font-size:.62rem!important}
+  .puja-panel-slot .cc-offerta{font-size:1.6rem!important}
+  .puja-panel-slot .cc-offerta-label{font-size:.6rem!important}
   .puja-panel-slot .timer-ring{width:54px!important;height:54px!important}
   .puja-panel-slot .timer-number{font-size:1rem!important}
   .puja-panel-slot .timer-label-text{font-size:.5rem!important}
