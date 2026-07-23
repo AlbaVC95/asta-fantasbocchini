@@ -54,6 +54,47 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
 
 .screen{display:none;min-height:100vh}.screen.active{display:block;height:100vh;overflow-y:auto}
 
+/* Sfondo tematico calcio per le schermate Strategie (lista, form nuova, editor): campo da gioco
+   molto scurito, solo un tocco decorativo che non deve disturbare la lettura del contenuto. */
+#screen-strategie-lista.active,
+#screen-strategia-form.active,
+#screen-strategia-editor.active{
+  position:relative;
+  background:
+    linear-gradient(rgba(8,4,20,.86), rgba(8,4,20,.9)),
+    repeating-linear-gradient(125deg, rgba(0,150,75,.16) 0px 70px, rgba(0,100,50,.10) 70px 140px),
+    var(--bg-deep);
+  background-attachment:fixed;
+}
+/* Cerchio di centrocampo e linea mediana, molto tenui, fissi al centro dello schermo */
+#screen-strategie-lista.active::before,
+#screen-strategia-form.active::before,
+#screen-strategia-editor.active::before{
+  content:'';
+  position:fixed;
+  top:50%; left:50%;
+  width:640px; height:640px;
+  transform:translate(-50%,-50%);
+  z-index:0;
+  pointer-events:none;
+  border:2px solid rgba(255,255,255,.05);
+  border-radius:50%;
+}
+#screen-strategie-lista.active::after,
+#screen-strategia-form.active::after,
+#screen-strategia-editor.active::after{
+  content:'';
+  position:fixed;
+  top:50%; left:0; right:0;
+  height:0;
+  border-top:2px solid rgba(255,255,255,.045);
+  z-index:0;
+  pointer-events:none;
+}
+#screen-strategie-lista.active > *,
+#screen-strategia-form.active > *,
+#screen-strategia-editor.active > *{position:relative;z-index:1}
+
 .home-header{text-align:center;padding:48px 20px 32px}
 
 .home-logo{font-size:3rem;margin-bottom:8px;filter:drop-shadow(0 0 20px rgba(139,92,246,.4))}
