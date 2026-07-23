@@ -1290,6 +1290,24 @@ function _teamMatches(sourceTeam, squadraAssegnata) {
   return false;
 }
 
+// Fallback finale: se nessuna foto reale del giocatore e' stata trovata, mostra un'illustrazione
+// generica con la maglia della squadra assegnata (immagini in /img/teams/), invece dell'avatar con iniziali.
+const _teamFallbackSlugs = ['atalanta','bologna','cagliari','como','fiorentina','frosinone','genoa','inter','juventus','lazio','lecce','milan','monza','napoli','parma','roma','sassuolo','torino','udinese','venezia'];
+function _teamFallbackImage(squadra) {
+  if (!squadra) return null;
+  const bw = _teamWords(squadra);
+  if (!bw.length) return null;
+  for (let i = 0; i < _teamFallbackSlugs.length; i++) {
+    const slug = _teamFallbackSlugs[i];
+    for (let j = 0; j < bw.length; j++) {
+      const w = bw[j];
+      if (w.length < 4) continue;
+      if (slug === w || slug.indexOf(w) === 0 || w.indexOf(slug) === 0) return 'img/teams/' + slug + '.png';
+    }
+  }
+  return null;
+}
+
 function _trySportsDB(nome, squadra) {
   const url = 'https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=' + encodeURIComponent(nome);
   return fetch(url).then(function(r) { return r.json(); }).then(function(data) {
@@ -1369,6 +1387,7 @@ function _loadPlayerPhoto(nome, squadra, version) {
   _trySportsDB(nome, squadra)
     .then(function(img) { return img || _tryWikidata(nome, squadra); })
     .then(function(img) { return img || _tryWikipedia(nome); })
+    .then(function(img) { return img || _teamFallbackImage(squadra); })
     .then(function(finalUrl) {
       _playerPhotoCache[cacheKey] = finalUrl || null;
       _applyPlayerPhoto(finalUrl || null, version);
