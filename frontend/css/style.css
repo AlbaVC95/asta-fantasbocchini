@@ -1169,3 +1169,32 @@ body.layout-admin .asta-row-puja .rilancio-box{
   body.layout-partecipante .asta-row-panels>#puja-panel-slot{flex:1 1 280px!important}
   body.layout-partecipante .asta-row-panels>#mio-panel{flex:1 1 200px!important}
 }
+
+/* ══ FASE 2 — STRATEGIE ══════════════════════════════════ */
+
+.btn-logout-link{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text-secondary);font-size:.85rem;font-weight:600;cursor:pointer;padding:6px 10px}
+.btn-logout-link:hover{color:var(--text-primary)}
+.home-header{position:relative}
+
+.strategia-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:var(--bg-main);border-radius:10px;margin-bottom:8px}
+.strategia-row-nome{font-weight:700;font-size:.92rem;color:var(--text-primary)}
+.strategia-row-meta{font-size:.75rem;color:var(--text-muted);margin-top:2px}
+
+.fascia-section{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:14px}
+.fascia-header{display:flex;align-items:center;gap:8px;padding:0 0 10px 10px;flex-wrap:wrap}
+.fascia-nome-input{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);border-radius:7px;padding:5px 8px;font-size:.85rem;font-weight:600;width:140px}
+.fascia-colore-input{width:32px;height:32px;border:none;border-radius:7px;padding:0;background:none;cursor:pointer}
+.fascia-up-btn,.fascia-down-btn,.fascia-del-btn{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-secondary);border-radius:7px;padding:4px 9px;cursor:pointer;font-size:.8rem}
+.fascia-del-btn{color:var(--danger)}
+.fascia-count{margin-left:auto;font-size:.75rem;color:var(--text-muted);background:var(--bg-elevated);border-radius:8px;padding:3px 9px}
+.fascia-nome-fissa{font-weight:700;font-size:.9rem;color:var(--text-secondary)}
+
+.fascia-players{display:flex;flex-direction:column;gap:6px}
+.editor-player-row{display:flex;align-items:center;gap:8px;padding:7px 8px;background:var(--bg-main);border-radius:8px;flex-wrap:wrap;font-size:.78rem}
+.editor-player-nome{font-weight:600;color:var(--text-primary);min-width:110px}
+.editor-player-squadra{color:var(--text-muted);min-width:60px}
+.editor-player-quot,.editor-player-fvm{color:var(--text-secondary);min-width:32px;text-align:right}
+.editor-preferito-btn{background:none;border:none;font-size:1rem;cursor:pointer;color:var(--text-muted);padding:0 2px}
+.editor-preferito-btn.active{color:var(--gold)}
+.editor-fascia-select{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);border-radius:6px;padding:3px 6px;font-size:.72rem;max-width:120px}
+.giocatore-prezzo,.giocatore-percentuale{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);border-radius:6px;padding:3px 6px;font-size:.75rem;width:56px}
