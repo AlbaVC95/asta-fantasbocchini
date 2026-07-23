@@ -2601,8 +2601,8 @@ async function selezionaStrategiaAsta(strategiaId) {
 
   S.strategiaAsta = { id: strategia.id, nome: strategia.nome, crediti_totali: strategia.crediti_totali, fasceInfo, fasceOrdine, configByListinoId };
 
-  const label = document.getElementById('liberi-strategia-attiva');
-  if (label) { label.textContent = '📊 ' + strategia.nome; label.classList.remove('hidden'); }
+  const btnApplica = document.getElementById('btn-applica-strategia');
+  if (btnApplica) { btnApplica.textContent = '📊 ' + strategia.nome + ' ▾'; btnApplica.classList.add('liberi-strategia-attiva-btn'); }
 
   closeModal();
   toast('Strategia "' + strategia.nome + '" applicata', 'success');
@@ -2614,8 +2614,8 @@ async function selezionaStrategiaAsta(strategiaId) {
 
 function rimuoviStrategiaAsta() {
   S.strategiaAsta = null;
-  const label = document.getElementById('liberi-strategia-attiva');
-  if (label) { label.textContent = ''; label.classList.add('hidden'); }
+  const btnApplica = document.getElementById('btn-applica-strategia');
+  if (btnApplica) { btnApplica.textContent = '📊 Applica strategia'; btnApplica.classList.remove('liberi-strategia-attiva-btn'); }
   closeModal();
   toast('Strategia rimossa', 'info');
   if (S.asta) {
@@ -2636,13 +2636,15 @@ function setupStrategiaAsta() {
     apriModalStrategia(strategie);
   });
 
-  if (toggleNascondi) toggleNascondi.addEventListener('change', () => {
-    S.liberiNascondiEstratti = toggleNascondi.checked;
+  if (toggleNascondi) toggleNascondi.addEventListener('click', () => {
+    S.liberiNascondiEstratti = !S.liberiNascondiEstratti;
+    toggleNascondi.classList.toggle('active', S.liberiNascondiEstratti);
     if (S.asta) renderGiocatoriLiberi(S.asta.poolGiocatori);
   });
 
-  if (toggleSoloPreferiti) toggleSoloPreferiti.addEventListener('change', () => {
-    S.liberiSoloPreferiti = toggleSoloPreferiti.checked;
+  if (toggleSoloPreferiti) toggleSoloPreferiti.addEventListener('click', () => {
+    S.liberiSoloPreferiti = !S.liberiSoloPreferiti;
+    toggleSoloPreferiti.classList.toggle('active', S.liberiSoloPreferiti);
     if (S.asta) renderGiocatoriLiberi(S.asta.poolGiocatori);
   });
 }
