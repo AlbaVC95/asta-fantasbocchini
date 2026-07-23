@@ -1198,3 +1198,22 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .editor-preferito-btn.active{color:var(--gold)}
 .editor-fascia-select{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);border-radius:6px;padding:3px 6px;font-size:.72rem;max-width:120px}
 .giocatore-prezzo,.giocatore-percentuale{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);border-radius:6px;padding:3px 6px;font-size:.75rem;width:56px}
+
+/* == FASE 3 == STRATEGIE NELL'ASTA == */
+
+.liberi-strategia-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;padding:8px 0}
+.liberi-strategia-attiva{font-size:.75rem;font-weight:700;color:var(--primary-bright);background:var(--primary-subtle);border-radius:8px;padding:4px 10px}
+.liberi-toggle{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--text-secondary);cursor:pointer}
+.liberi-toggle input{cursor:pointer}
+
+.l-strategia-badge{font-size:.65rem;font-weight:700;border:1px solid;border-radius:6px;padding:1px 6px;flex-shrink:0}
+
+.cc-strategia-info{margin-top:8px;font-size:.8rem;color:var(--text-secondary);border-left:3px solid var(--border);padding-left:8px}
+.cc-strategia-vuota{color:var(--text-muted);border-left-color:var(--border)}
+
+.strategia-modal-lista{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;margin-top:10px}
+.strategia-modal-item{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:var(--bg-main);border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;text-align:left;width:100%}
+.strategia-modal-item:hover{border-color:var(--primary)}
+.strategia-modal-item-nome{font-weight:700;font-size:.88rem;color:var(--text-primary)}
+.strategia-modal-item-meta{font-size:.72rem;color:var(--text-muted)}
+.strategia-modal-item-rimuovi .strategia-modal-item-nome{color:var(--danger)}
