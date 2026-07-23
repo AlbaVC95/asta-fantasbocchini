@@ -1201,9 +1201,12 @@ body.layout-admin .asta-row-puja .rilancio-box{
 
 /* == FASE 3 == STRATEGIE NELL'ASTA == */
 
-.liberi-strategia-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;padding:8px 0}
-.liberi-strategia-attiva{font-size:.75rem;font-weight:700;color:var(--primary-bright);background:var(--primary-subtle);border-radius:8px;padding:4px 10px}
-.liberi-toggle{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--text-secondary);cursor:pointer}
+.liberi-strategia-bar{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:6px;padding:4px 0}
+.liberi-strategia-btn{white-space:nowrap;padding:4px 8px;font-size:.7rem;flex-shrink:0}
+.liberi-strategia-attiva-btn{background:var(--primary-subtle);border-color:var(--primary);color:var(--primary-bright)}
+.liberi-icon-toggle{flex-shrink:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:var(--bg-elevated);border:1px solid var(--border);border-radius:7px;font-size:.85rem;cursor:pointer;padding:0;opacity:.55;transition:all .15s}
+.liberi-icon-toggle.active{opacity:1;background:var(--primary-subtle);border-color:var(--primary)}
+.liberi-cerca-input{flex:0 0 auto;width:120px;max-width:120px;padding:4px 8px;font-size:.72rem}
 .liberi-toggle input{cursor:pointer}
 
 .l-strategia-badge{font-size:.65rem;font-weight:700;border:1px solid;border-radius:6px;padding:1px 6px;flex-shrink:0}
