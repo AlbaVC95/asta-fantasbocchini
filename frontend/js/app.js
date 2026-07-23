@@ -1250,116 +1250,38 @@ function _avatarColor(nome) {
 let _chiamataAvatarVersion = 0;
 const _playerPhotoCache = {};
 
-const _TEAM_AVATAR_MAP = {
-  'ATALANTA': 'atalanta', 'BOLOGNA': 'bologna', 'CAGLIARI': 'cagliari', 'COMO': 'como',
-  'FIORENTINA': 'fiorentina', 'FROSINONE': 'frosinone', 'GENOA': 'genoa', 'INTER': 'inter',
-  'JUVENTUS': 'juventus', 'LAZIO': 'lazio', 'LECCE': 'lecce', 'MILAN': 'milan',
-  'MONZA': 'monza', 'NAPOLI': 'napoli', 'PARMA': 'parma', 'ROMA': 'roma',
-  'SASSUOLO': 'sassuolo', 'TORINO': 'torino', 'UDINESE': 'udinese', 'VENEZIA': 'venezia'
-};
-
-function _teamAvatarUrl(squadra) {
-  if (!squadra) return null;
-  const key = squadra.trim().toUpperCase();
-  const file = _TEAM_AVATAR_MAP[key];
-  return file ? ('img/teams/' + file + '.png') : null;
-}
-
-const _TEAM_NAME_ALIASES = {
-  'ATALANTA': ['ATALANTA'], 'BOLOGNA': ['BOLOGNA'], 'CAGLIARI': ['CAGLIARI'], 'COMO': ['COMO'],
-  'FIORENTINA': ['FIORENTINA'], 'FROSINONE': ['FROSINONE'], 'GENOA': ['GENOA'],
-  'INTER': ['INTER', 'INTER MILAN', 'INTERNAZIONALE'],
-  'JUVENTUS': ['JUVENTUS', 'JUVE'],
-  'LAZIO': ['LAZIO', 'SS LAZIO'], 'LECCE': ['LECCE'],
-  'MILAN': ['MILAN', 'AC MILAN'],
-  'MONZA': ['MONZA'],
-  'NAPOLI': ['NAPOLI', 'SSC NAPOLI'],
-  'PARMA': ['PARMA'],
-  'ROMA': ['ROMA', 'AS ROMA'],
-  'SASSUOLO': ['SASSUOLO'], 'TORINO': ['TORINO'], 'UDINESE': ['UDINESE'], 'VENEZIA': ['VENEZIA']
-};
-
-// Verifica che il club riportato dalla fonte esterna (strTeam di TheSportsDB) corrisponda
-// alla squadra assegnata al giocatore nell'asta corrente. Se non corrisponde (es. foto
-// mostra la maglia della nazionale o di un club precedente/successivo), la foto va scartata
-// e si ricade sull'avatar illustrato del club, che è sempre corretto al 100%.
-function _teamMatches(squadra, sourceTeam) {
-  if (!squadra || !sourceTeam) return false;
-  const key = squadra.trim().toUpperCase();
-  const aliases = _TEAM_NAME_ALIASES[key] || [key];
-  const teamNorm = sourceTeam.trim().toUpperCase();
-  return aliases.some(function(a) { return teamNorm === a || teamNorm.indexOf(a) > -1; });
-}
-
-// Verifica "debole" per testo libero (usata su bio Wikipedia, che non ha un campo squadra strutturato):
-// accetta la foto solo se il nome del club (o un suo alias) compare esplicitamente nel testo.
-function _teamMatchesText(squadra, text) {
-  if (!squadra || !text) return false;
-  const key = squadra.trim().toUpperCase();
-  const aliases = _TEAM_NAME_ALIASES[key] || [key];
-  const upperText = text.toUpperCase();
-  return aliases.some(function(a) { return upperText.indexOf(a) > -1; });
-}
-
-function _loadPlayerPhoto(nome, squadra, version) {
-  const cacheKey = nome + '|' + (squadra || '');
-  if (Object.prototype.hasOwnProperty.call(_playerPhotoCache, cacheKey)) {
-    _applyPlayerPhoto(_playerPhotoCache[cacheKey], version);
+function _loadPlayerPhoto(nome, version) {
+  if (Object.prototype.hasOwnProperty.call(_playerPhotoCache, nome)) {
+    _applyPlayerPhoto(_playerPhotoCache[nome], version);
     return;
   }
-  _tryTheSportsDB(nome, squadra)
-    .then(function(url) {
-      if (url) return url;
-      return _tryWikipedia(nome, squadra);
-    })
-    .then(function(finalUrl) {
-      const result = finalUrl || _teamAvatarUrl(squadra);
-      _playerPhotoCache[cacheKey] = result || null;
-      _applyPlayerPhoto(result || null, version);
-    })
-    .catch(function() {
-      const result = _teamAvatarUrl(squadra);
-      _playerPhotoCache[cacheKey] = result || null;
-      _applyPlayerPhoto(result || null, version);
-    });
-}
-
-function _tryTheSportsDB(nome, squadra) {
-  const url = 'https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=' + encodeURIComponent(nome);
-  return fetch(url)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      const players = data && data.player;
-      if (!players || !players.length) return null;
-      const match = players.find(function(p) { return p.strSport === 'Soccer'; }) || players[0];
-      if (match.strSport !== 'Soccer') return null;
-      if (!_teamMatches(squadra, match.strTeam)) return null;
-      return match.strCutout || match.strThumb || null;
-    })
-    .catch(function() { return null; });
-}
-
-function _tryWikipedia(nome, squadra) {
   const searchUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
     encodeURIComponent(nome + ' footballer') + '&format=json&srlimit=1&origin=*';
-  return fetch(searchUrl)
+  fetch(searchUrl)
     .then(function(r) { return r.json(); })
     .then(function(data) {
       const results = data.query && data.query.search;
-      if (!results || !results.length) return null;
+      if (!results || !results.length) {
+        _playerPhotoCache[nome] = null;
+        _applyPlayerPhoto(null, version);
+        return;
+      }
       const title = results[0].title;
       return fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title))
         .then(function(r2) { return r2.json(); })
         .then(function(summary) {
           const desc = (summary.description || '').toLowerCase();
-          const photoUrl = summary.thumbnail && summary.thumbnail.source;
+          const url = summary.thumbnail && summary.thumbnail.source;
           const isFootballer = desc.indexOf('footballer') > -1 || desc.indexOf('soccer') > -1 || desc.indexOf('calciatore') > -1;
-          if (!photoUrl || !isFootballer) return null;
-          if (!_teamMatchesText(squadra, summary.extract)) return null;
-          return photoUrl;
+          const finalUrl = (url && isFootballer) ? url : null;
+          _playerPhotoCache[nome] = finalUrl;
+          _applyPlayerPhoto(finalUrl, version);
         });
     })
-    .catch(function() { return null; });
+    .catch(function() {
+      _playerPhotoCache[nome] = null;
+      _applyPlayerPhoto(null, version);
+    });
 }
 
 function _applyPlayerPhoto(url, version) {
@@ -1428,7 +1350,7 @@ function renderChiamata(chiamata) {
       _getChiamataStrategiaInfoHTML(g) +
     '</div>';
   aggiornaQuickBids();
-  _loadPlayerPhoto(g.nome, g.squadra, _myAvatarVersion);
+  _loadPlayerPhoto(g.nome, _myAvatarVersion);
 }
 
 function canBid() {
@@ -2399,8 +2321,10 @@ function renderEditorFasce() {
 
   const renderRigaGiocatore = (g) => {
     const cfg = S.configGiocatori.get(g.id) || { fascia_id: null, prezzo: null, percentuale: null, preferito: false };
+    const avatarSlug = (g.squadra_reale || '').toLowerCase().trim();
     return (
       '<div class="editor-player-row" data-giocatore="' + g.id + '">' +
+        (avatarSlug ? '<img class="editor-player-avatar" src="https://fantasbocchini.infinityfreeapp.com/avatars/' + avatarSlug + '.png" onerror="this.style.display=\'none\'" alt="">' : '') +
         _getRuoloBadgeHTML(g.ruolo) +
         '<span class="editor-player-nome">' + escapeHTML(g.nome) + '</span>' +
         '<span class="editor-player-squadra">' + escapeHTML(g.squadra_reale || '') + '</span>' +
