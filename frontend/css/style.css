@@ -637,6 +637,11 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .asta-row-panels{flex-wrap:wrap;max-height:none!important}
 
 .asta-row-panels>#admin-panel,.asta-row-panels>#mio-panel,.panel-budget{max-height:none!important;flex:1 1 200px}
+/* ══ Rebalance panel admin RIGA 1 (v2): budget mas estrecho, admin-panel mucho mas ancho hasta linea objetivo ══ */
+body.layout-admin .asta-row-panels>.panel-budget{flex:0.65!important}
+body.layout-admin .asta-row-panels>#admin-panel{flex:2.15!important}
+body.layout-admin .asta-row-panels>#mio-panel{flex:1.2!important}
+
 
 .asta-row-puja .rilancio-box{flex:0 0 auto;width:100%}
 
@@ -1207,8 +1212,9 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .liberi-strategia-attiva-btn{background:var(--primary-subtle);border-color:var(--primary);color:var(--primary-bright)}
 .liberi-icon-toggle{flex-shrink:0;width:30px;height:30px;line-height:1;display:flex;align-items:center;justify-content:center;background:var(--bg-elevated);border:1px solid var(--border);border-radius:7px;font-size:1rem;cursor:pointer;padding:0;overflow:visible;opacity:.55;transition:all .15s}
 .liberi-icon-toggle.active{opacity:1;background:var(--primary-subtle);border-color:var(--primary)}
-.liberi-cerca-input{flex:0 0 auto;width:150px;max-width:150px;padding:5px 10px;font-size:.75rem;margin:0;background:var(--gold-subtle);border:1.5px solid var(--gold);color:var(--text-primary)}
-.liberi-cerca-input::placeholder{color:var(--gold-bright)}
+.liberi-cerca-input{flex:0 0 auto;width:230px;max-width:230px;padding:6px 12px;font-size:.8rem;margin:0;background:rgba(192,38,211,.12);border:1.5px solid var(--fire);color:var(--text-primary);box-shadow:0 0 14px var(--fire-glow);transition:box-shadow .2s,border-color .2s}
+.liberi-cerca-input:focus{border-color:var(--fire-bright);box-shadow:0 0 20px var(--fire-glow)}
+.liberi-cerca-input::placeholder{color:var(--fire-bright);font-weight:600}
 .liberi-filtri-row{display:flex;align-items:center;gap:6px;overflow-x:auto;overflow-y:visible;flex-wrap:nowrap;flex-shrink:0;margin-bottom:6px}
 .filtro-ruolo-liberi{flex-wrap:nowrap;flex-shrink:0;margin-bottom:0}
 .liberi-toggle input{cursor:pointer}
