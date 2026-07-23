@@ -495,7 +495,7 @@
         </div>
         <div id="tab-liberi" class="tab-content">
           <div class="rose-search-row">
-            <input type="text" id="liberi-cerca" class="rose-inp" placeholder="🔍 Cerca giocatore...">
+            <input type="text" id="liberi-cerca" class="rose-inp liberi-cerca-input" placeholder="🔍 Cerca...">
           </div>
           <div class="filtro-ruolo">
             <button class="filtro-btn active" data-ruolo="tutti">Tutti</button>
@@ -514,10 +514,9 @@
             <button class="filtro-btn" data-ruolo="Pc">Pc</button>
           </div>
           <div id="liberi-strategia-bar" class="liberi-strategia-bar">
-            <button type="button" id="btn-applica-strategia" class="btn btn-secondary btn-small">📊 Applica strategia</button>
-            <span id="liberi-strategia-attiva" class="liberi-strategia-attiva hidden"></span>
-            <label class="liberi-toggle"><input type="checkbox" id="toggle-nascondi-estratti"> Nascondi estratti</label>
-            <label class="liberi-toggle"><input type="checkbox" id="toggle-solo-preferiti"> Solo preferiti</label>
+            <button type="button" id="btn-applica-strategia" class="btn btn-secondary btn-small liberi-strategia-btn">📊 Applica strategia</button>
+            <button type="button" id="toggle-nascondi-estratti" class="liberi-icon-toggle" title="Nascondi estratti">🙈</button>
+            <button type="button" id="toggle-solo-preferiti" class="liberi-icon-toggle" title="Solo preferiti">⭐</button>
           </div>
           <ul id="liberi-list" class="liberi-list"></ul>
         </div>
