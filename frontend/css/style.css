@@ -1201,7 +1201,7 @@ body.layout-admin .asta-row-puja .rilancio-box{
 
 /* == FASE 3 == STRATEGIE NELL'ASTA == */
 
-.liberi-strategia-bar{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow-x:auto;overflow-y:visible;flex-shrink:0;margin-bottom:6px;padding:4px 0}
+.liberi-strategia-bar{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;flex-shrink:0;margin-left:10px;padding:0}
 .liberi-strategia-btn{white-space:nowrap;padding:4px 8px;font-size:.7rem;flex-shrink:0}
 .liberi-strategia-attiva-btn{background:var(--primary-subtle);border-color:var(--primary);color:var(--primary-bright)}
 .liberi-icon-toggle{flex-shrink:0;width:30px;height:30px;line-height:1;display:flex;align-items:center;justify-content:center;background:var(--bg-elevated);border:1px solid var(--border);border-radius:7px;font-size:1rem;cursor:pointer;padding:0;overflow:visible;opacity:.55;transition:all .15s}
