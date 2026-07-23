@@ -10,7 +10,9 @@ const S = {
   astaId: null, miaSquadra: null, isAdmin: false, asta: null,
   filtroRuolo: 'tutti', filtroStorico: 'tutti', svincoloSel: new Set(), popupAttivoCli: null,
   attesaConferma: false, timerTotal: 30,
-  userRole: null, userId: null
+  userRole: null, userId: null,
+  strategiaAttuale: null, fasceAttuali: [], configGiocatori: new Map(),
+  listinoCache: null, editorFiltroRuolo: 'tutti', editorCercaText: ''
 };
 
 // ══ SUPABASE (utenti + listino ufficiale) ════════════════
@@ -295,7 +297,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     history.replaceState({}, '', '/?id=' + sess.astaId);
     setTimeout(() => fetchAstaSquadrePerJoin(sess.astaId), 400);
   }
-  setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs(); setupLogin();
+  setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs(); setupLogin(); setupMenu(); setupStrategie(); setupEditor();
   // Warn before leaving page if in active asta
   window.addEventListener('beforeunload', (e) => {
     if (S.astaId && S.asta && S.asta.stato === 'in_corso') {
@@ -322,7 +324,7 @@ async function applicaUtenteLoggato(user) {
   if (btnLogout) btnLogout.style.display = 'inline-block';
   const adminCard = document.getElementById('card-listino-admin');
   if (adminCard) adminCard.style.display = (S.userRole === 'admin') ? 'block' : 'none';
-  showScreen('screen-home');
+  showScreen('screen-menu-principale');
 }
 
 function setupLogin() {
@@ -895,9 +897,9 @@ window.annullaSpecifica = function(index) {
 };
 
 function setupFilters() {
-  document.querySelectorAll('.filtro-btn').forEach(btn => {
+  document.querySelectorAll('#tab-liberi .filtro-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#tab-liberi .filtro-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       S.filtroRuolo = btn.dataset.ruolo;
       if (S.asta) renderGiocatoriLiberi(S.asta.poolGiocatori);
@@ -2070,4 +2072,424 @@ function toast(msg, tipo) {
   el.textContent = msg;
   container.appendChild(el);
   setTimeout(() => { try { container.removeChild(el); } catch(e){} }, 3200);
+}
+
+// ══════════════════════════════════════════════════════════
+// FASE 2 — STRATEGIE DI ASTA
+// ══════════════════════════════════════════════════════════
+
+const FASCIA_COLORI_DEFAULT = ['#8b5cf6', '#22c55e', '#f59e0b', '#ef4444', '#0ea5e9'];
+
+function setupMenu() {
+  const btnStrategie = document.getElementById('btn-menu-strategie');
+  const btnAsta = document.getElementById('btn-menu-asta');
+  const btnLogoutMenu = document.getElementById('btn-logout-menu');
+  if (btnStrategie) btnStrategie.addEventListener('click', () => { showScreen('screen-strategie-lista'); caricaStrategie(); });
+  if (btnAsta) btnAsta.addEventListener('click', () => showScreen('screen-home'));
+  if (btnLogoutMenu) btnLogoutMenu.addEventListener('click', async () => {
+    await supa.auth.signOut();
+    S.userRole = null; S.userId = null;
+    showScreen('screen-login');
+  });
+}
+
+function setupStrategie() {
+  const btnBackListaMenu = document.getElementById('btn-back-lista-menu');
+  const btnNuovaStrategia = document.getElementById('btn-nuova-strategia');
+  const btnBackFormLista = document.getElementById('btn-back-form-lista');
+  const btnCreaStrategia = document.getElementById('btn-crea-strategia');
+
+  if (btnBackListaMenu) btnBackListaMenu.addEventListener('click', () => showScreen('screen-menu-principale'));
+
+  if (btnNuovaStrategia) btnNuovaStrategia.addEventListener('click', () => {
+    document.getElementById('strategia-form-nome').value = '';
+    document.getElementById('strategia-form-crediti').value = '';
+    document.getElementById('strategia-form-tipo').value = 'iniziale';
+    document.getElementById('strategia-form-error').style.display = 'none';
+    showScreen('screen-strategia-form');
+  });
+
+  if (btnBackFormLista) btnBackFormLista.addEventListener('click', () => showScreen('screen-strategie-lista'));
+
+  if (btnCreaStrategia) btnCreaStrategia.addEventListener('click', async () => {
+    const nome = document.getElementById('strategia-form-nome').value.trim();
+    const crediti = parseInt(document.getElementById('strategia-form-crediti').value, 10);
+    const tipo = document.getElementById('strategia-form-tipo').value;
+    const errEl = document.getElementById('strategia-form-error');
+    errEl.style.display = 'none';
+    if (!nome) { errEl.textContent = 'Inserisci un nome per la strategia'; errEl.style.display = 'block'; return; }
+    if (!crediti || crediti <= 0) { errEl.textContent = 'Inserisci un numero di crediti valido'; errEl.style.display = 'block'; return; }
+
+    const { data: strategia, error } = await supa.from('strategie').insert({
+      user_id: S.userId, nome, crediti_totali: crediti, tipo_asta: tipo
+    }).select().single();
+    if (error) { errEl.textContent = 'Errore: ' + error.message; errEl.style.display = 'block'; return; }
+
+    const fasceDefault = ['Fascia 1', 'Fascia 2', 'Fascia 3', 'Fascia 4', 'Fascia 5'].map((n, i) => ({
+      strategia_id: strategia.id, nome: n, colore: FASCIA_COLORI_DEFAULT[i], ordine: i
+    }));
+    await supa.from('fasce').insert(fasceDefault);
+
+    await apriEditorStrategia(strategia.id);
+  });
+}
+
+async function caricaStrategie() {
+  const container = document.getElementById('lista-strategie');
+  container.innerHTML = '<p class="hint-text">Caricamento...</p>';
+  const { data, error } = await supa.from('strategie').select('*').order('created_at', { ascending: false });
+  if (error) { container.innerHTML = '<p class="hint-text">Errore nel caricamento delle strategie</p>'; return; }
+  if (!data || !data.length) { container.innerHTML = '<p class="hint-text">Nessuna strategia creata. Premi "+ Nuova strategia" per iniziare.</p>'; return; }
+
+  const tipoLabel = { iniziale: 'Asta iniziale', riparazione1: 'Riparazione 1', riparazione2: 'Riparazione 2' };
+  container.innerHTML = data.map(s => (
+    '<div class="strategia-row" data-id="' + s.id + '">' +
+      '<div class="strategia-row-info">' +
+        '<div class="strategia-row-nome">' + escapeHTML(s.nome) + '</div>' +
+        '<div class="strategia-row-meta">' + (tipoLabel[s.tipo_asta] || s.tipo_asta) + ' · ' + s.crediti_totali + ' crediti</div>' +
+      '</div>' +
+      '<button type="button" class="btn btn-secondary btn-small strategia-apri-btn" data-id="' + s.id + '">Apri</button>' +
+    '</div>'
+  )).join('');
+
+  container.querySelectorAll('.strategia-apri-btn').forEach(btn => {
+    btn.addEventListener('click', () => apriEditorStrategia(btn.dataset.id));
+  });
+}
+
+function escapeHTML(str) {
+  const d = document.createElement('div');
+  d.textContent = str == null ? '' : String(str);
+  return d.innerHTML;
+}
+
+// ══ EDITOR STRATEGIA ══════════════════════════════════════
+
+async function caricaListinoCache() {
+  if (S.listinoCache) return S.listinoCache;
+  const { data, error } = await supa.from('listino_giocatori').select('*').order('nome');
+  S.listinoCache = (!error && data) ? data : [];
+  return S.listinoCache;
+}
+
+async function apriEditorStrategia(strategiaId) {
+  const { data: strategia, error } = await supa.from('strategie').select('*').eq('id', strategiaId).single();
+  if (error || !strategia) { toast('Errore nel caricamento della strategia', 'error'); return; }
+  S.strategiaAttuale = strategia;
+
+  const { data: fasce } = await supa.from('fasce').select('*').eq('strategia_id', strategiaId).order('ordine');
+  S.fasceAttuali = (fasce || []).map(f => ({ id: f.id, nome: f.nome, colore: f.colore, ordine: f.ordine }));
+
+  const { data: sg } = await supa.from('strategia_giocatori').select('*').eq('strategia_id', strategiaId);
+  S.configGiocatori = new Map();
+  (sg || []).forEach(row => {
+    S.configGiocatori.set(row.giocatore_id, {
+      fascia_id: row.fascia_id, prezzo: row.prezzo, percentuale: row.percentuale, preferito: row.preferito
+    });
+  });
+
+  await caricaListinoCache();
+
+  S.editorFiltroRuolo = 'tutti';
+  S.editorCercaText = '';
+  document.getElementById('editor-cerca').value = '';
+  document.querySelectorAll('#editor-filtro-ruolo .filtro-btn').forEach(b => b.classList.remove('active'));
+  const tuttiBtn = document.querySelector('#editor-filtro-ruolo .filtro-btn[data-ruolo="tutti"]');
+  if (tuttiBtn) tuttiBtn.classList.add('active');
+
+  const tipoLabel = { iniziale: 'Asta iniziale', riparazione1: 'Riparazione 1', riparazione2: 'Riparazione 2' };
+  document.getElementById('editor-strategia-nome').textContent = strategia.nome;
+  document.getElementById('editor-strategia-info').textContent =
+    (tipoLabel[strategia.tipo_asta] || strategia.tipo_asta) + ' · ' + strategia.crediti_totali + ' crediti';
+
+  renderEditorFasce();
+  showScreen('screen-strategia-editor');
+}
+
+function sincronizzaPrezzoPercentuale(giocatoreId, campo, valore) {
+  const crediti = S.strategiaAttuale ? S.strategiaAttuale.crediti_totali : 0;
+  let cfg = S.configGiocatori.get(giocatoreId);
+  if (!cfg) { cfg = { fascia_id: null, prezzo: null, percentuale: null, preferito: false }; S.configGiocatori.set(giocatoreId, cfg); }
+
+  if (campo === 'prezzo') {
+    const prezzo = valore === '' ? null : Math.max(0, Math.round(Number(valore)));
+    cfg.prezzo = prezzo;
+    cfg.percentuale = (prezzo != null && crediti > 0) ? Math.round((prezzo / crediti) * 1000) / 10 : null;
+  } else {
+    const pct = valore === '' ? null : Math.max(0, Number(valore));
+    cfg.percentuale = pct;
+    cfg.prezzo = (pct != null && crediti > 0) ? Math.round((pct / 100) * crediti) : null;
+  }
+
+  const pInput = document.querySelector('.giocatore-prezzo[data-giocatore="' + giocatoreId + '"]');
+  const qInput = document.querySelector('.giocatore-percentuale[data-giocatore="' + giocatoreId + '"]');
+  if (pInput && campo !== 'prezzo') pInput.value = cfg.prezzo != null ? cfg.prezzo : '';
+  if (qInput && campo !== 'percentuale') qInput.value = cfg.percentuale != null ? cfg.percentuale : '';
+}
+
+function renderEditorFasce() {
+  const container = document.getElementById('editor-fasce-container');
+  const listino = S.listinoCache || [];
+  const cerca = (S.editorCercaText || '').trim().toLowerCase();
+  const ruoloFiltro = S.editorFiltroRuolo || 'tutti';
+
+  const passaFiltro = (g) => {
+    if (cerca && !g.nome.toLowerCase().includes(cerca)) return false;
+    if (ruoloFiltro !== 'tutti') {
+      const ruoli = (g.ruolo || '').split('/').map(r => r.trim());
+      if (!ruoli.includes(ruoloFiltro)) return false;
+    }
+    return true;
+  };
+
+  const fasceOrdinate = S.fasceAttuali.slice().sort((a, b) => a.ordine - b.ordine);
+  const gruppi = fasceOrdinate.map(f => ({ fascia: f, giocatori: [] }));
+  const nonAssegnati = { fascia: null, giocatori: [] };
+  const fasceIds = new Set(fasceOrdinate.map(f => f.id));
+
+  listino.forEach(g => {
+    if (!passaFiltro(g)) return;
+    const cfg = S.configGiocatori.get(g.id);
+    const fasciaId = cfg ? cfg.fascia_id : null;
+    if (fasciaId && fasceIds.has(fasciaId)) {
+      gruppi.find(gr => gr.fascia.id === fasciaId).giocatori.push(g);
+    } else {
+      nonAssegnati.giocatori.push(g);
+    }
+  });
+
+  const cmpPrezzo = (a, b) => {
+    const pa = (S.configGiocatori.get(a.id) || {}).prezzo;
+    const pb = (S.configGiocatori.get(b.id) || {}).prezzo;
+    if (pa == null && pb == null) return 0;
+    if (pa == null) return 1;
+    if (pb == null) return -1;
+    return pb - pa;
+  };
+  gruppi.forEach(gr => gr.giocatori.sort(cmpPrezzo));
+  nonAssegnati.giocatori.sort(cmpPrezzo);
+
+  const opzioniFascia = fasceOrdinate.map(f => '<option value="' + f.id + '">' + escapeHTML(f.nome) + '</option>').join('')
+    + '<option value="">Non assegnati</option>';
+
+  const renderRigaGiocatore = (g) => {
+    const cfg = S.configGiocatori.get(g.id) || { fascia_id: null, prezzo: null, percentuale: null, preferito: false };
+    return (
+      '<div class="editor-player-row" data-giocatore="' + g.id + '">' +
+        _getRuoloBadgeHTML(g.ruolo) +
+        '<span class="editor-player-nome">' + escapeHTML(g.nome) + '</span>' +
+        '<span class="editor-player-squadra">' + escapeHTML(g.squadra_reale || '') + '</span>' +
+        '<span class="editor-player-quot">' + (g.quotazione != null ? g.quotazione : '-') + '</span>' +
+        '<span class="editor-player-fvm">' + (g.fmvp600 != null ? g.fmvp600 : '-') + '</span>' +
+        '<button type="button" class="editor-preferito-btn ' + (cfg.preferito ? 'active' : '') + '" data-giocatore="' + g.id + '">' + (cfg.preferito ? '★' : '☆') + '</button>' +
+        '<select class="editor-fascia-select" data-giocatore="' + g.id + '">' + opzioniFascia.replace(
+          'value="' + (cfg.fascia_id || '') + '"', 'value="' + (cfg.fascia_id || '') + '" selected'
+        ) + '</select>' +
+        '<input type="number" class="giocatore-prezzo" data-giocatore="' + g.id + '" placeholder="Prezzo" min="0" value="' + (cfg.prezzo != null ? cfg.prezzo : '') + '">' +
+        '<input type="number" class="giocatore-percentuale" data-giocatore="' + g.id + '" placeholder="%" min="0" step="0.1" value="' + (cfg.percentuale != null ? cfg.percentuale : '') + '">' +
+      '</div>'
+    );
+  };
+
+  const renderGruppo = (fascia, giocatori) => {
+    const colore = fascia ? fascia.colore : '#666';
+    const nome = fascia ? fascia.nome : 'Non assegnati';
+    const idAttr = fascia ? fascia.id : 'non-assegnati';
+    const azioniFascia = fascia ? (
+      '<input type="text" class="fascia-nome-input" data-fascia="' + fascia.id + '" value="' + escapeHTML(fascia.nome) + '">' +
+      '<input type="color" class="fascia-colore-input" data-fascia="' + fascia.id + '" value="' + fascia.colore + '">' +
+      '<button type="button" class="fascia-up-btn" data-fascia="' + fascia.id + '" title="Sposta su">↑</button>' +
+      '<button type="button" class="fascia-down-btn" data-fascia="' + fascia.id + '" title="Sposta giù">↓</button>' +
+      '<button type="button" class="fascia-del-btn" data-fascia="' + fascia.id + '" title="Elimina fascia">🗑️</button>'
+    ) : '<span class="fascia-nome-fissa">' + nome + '</span>';
+
+    return (
+      '<div class="fascia-section" data-fascia-section="' + idAttr + '">' +
+        '<div class="fascia-header" style="border-left:4px solid ' + colore + '">' + azioniFascia +
+          '<span class="fascia-count">' + giocatori.length + '</span>' +
+        '</div>' +
+        '<div class="fascia-players">' + (giocatori.length ? giocatori.map(renderRigaGiocatore).join('') : '<p class="hint-text">Nessun giocatore</p>') + '</div>' +
+      '</div>'
+    );
+  };
+
+  container.innerHTML = gruppi.map(gr => renderGruppo(gr.fascia, gr.giocatori)).join('')
+    + renderGruppo(null, nonAssegnati.giocatori);
+
+  wireEditorEventiRiga(container);
+}
+
+function wireEditorEventiRiga(container) {
+  container.querySelectorAll('.editor-preferito-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const gid = Number(btn.dataset.giocatore);
+      let cfg = S.configGiocatori.get(gid);
+      if (!cfg) { cfg = { fascia_id: null, prezzo: null, percentuale: null, preferito: false }; S.configGiocatori.set(gid, cfg); }
+      cfg.preferito = !cfg.preferito;
+      btn.classList.toggle('active', cfg.preferito);
+      btn.textContent = cfg.preferito ? '★' : '☆';
+    });
+  });
+
+  container.querySelectorAll('.editor-fascia-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const gid = Number(sel.dataset.giocatore);
+      let cfg = S.configGiocatori.get(gid);
+      if (!cfg) { cfg = { fascia_id: null, prezzo: null, percentuale: null, preferito: false }; S.configGiocatori.set(gid, cfg); }
+      cfg.fascia_id = sel.value || null;
+      renderEditorFasce();
+    });
+  });
+
+  container.querySelectorAll('.giocatore-prezzo').forEach(inp => {
+    inp.addEventListener('input', () => sincronizzaPrezzoPercentuale(Number(inp.dataset.giocatore), 'prezzo', inp.value));
+  });
+  container.querySelectorAll('.giocatore-percentuale').forEach(inp => {
+    inp.addEventListener('input', () => sincronizzaPrezzoPercentuale(Number(inp.dataset.giocatore), 'percentuale', inp.value));
+  });
+
+  container.querySelectorAll('.fascia-nome-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const f = S.fasceAttuali.find(x => String(x.id) === inp.dataset.fascia);
+      if (f) f.nome = inp.value;
+    });
+  });
+  container.querySelectorAll('.fascia-colore-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const f = S.fasceAttuali.find(x => String(x.id) === inp.dataset.fascia);
+      if (f) { f.colore = inp.value; renderEditorFasce(); }
+    });
+  });
+  container.querySelectorAll('.fascia-up-btn').forEach(btn => {
+    btn.addEventListener('click', () => spostaFascia(btn.dataset.fascia, -1));
+  });
+  container.querySelectorAll('.fascia-down-btn').forEach(btn => {
+    btn.addEventListener('click', () => spostaFascia(btn.dataset.fascia, 1));
+  });
+  container.querySelectorAll('.fascia-del-btn').forEach(btn => {
+    btn.addEventListener('click', () => eliminaFasciaLocale(btn.dataset.fascia));
+  });
+}
+
+function spostaFascia(fasciaId, direzione) {
+  const ordinate = S.fasceAttuali.slice().sort((a, b) => a.ordine - b.ordine);
+  const idx = ordinate.findIndex(f => String(f.id) === String(fasciaId));
+  const altro = idx + direzione;
+  if (idx < 0 || altro < 0 || altro >= ordinate.length) return;
+  const tmp = ordinate[idx].ordine;
+  ordinate[idx].ordine = ordinate[altro].ordine;
+  ordinate[altro].ordine = tmp;
+  renderEditorFasce();
+}
+
+function eliminaFasciaLocale(fasciaId) {
+  if (!confirm('Eliminare questa fascia? I giocatori assegnati passeranno a "Non assegnati".')) return;
+  S.fasceAttuali = S.fasceAttuali.filter(f => String(f.id) !== String(fasciaId));
+  S.configGiocatori.forEach(cfg => { if (String(cfg.fascia_id) === String(fasciaId)) cfg.fascia_id = null; });
+  renderEditorFasce();
+}
+
+function setupEditor() {
+  const btnBack = document.getElementById('btn-back-editor-lista');
+  const btnAggiungiFascia = document.getElementById('btn-aggiungi-fascia');
+  const btnSalva = document.getElementById('btn-salva-strategia');
+  const btnElimina = document.getElementById('btn-elimina-strategia');
+  const cercaInput = document.getElementById('editor-cerca');
+
+  if (btnBack) btnBack.addEventListener('click', () => showScreen('screen-strategie-lista'));
+
+  if (btnAggiungiFascia) btnAggiungiFascia.addEventListener('click', () => {
+    const maxOrdine = S.fasceAttuali.reduce((m, f) => Math.max(m, f.ordine), -1);
+    S.fasceAttuali.push({
+      id: 'new-' + Date.now(),
+      nome: 'Fascia ' + (S.fasceAttuali.length + 1),
+      colore: FASCIA_COLORI_DEFAULT[S.fasceAttuali.length % FASCIA_COLORI_DEFAULT.length],
+      ordine: maxOrdine + 1
+    });
+    renderEditorFasce();
+  });
+
+  if (cercaInput) cercaInput.addEventListener('input', () => {
+    S.editorCercaText = cercaInput.value;
+    renderEditorFasce();
+  });
+
+  document.querySelectorAll('#editor-filtro-ruolo .filtro-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#editor-filtro-ruolo .filtro-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      S.editorFiltroRuolo = btn.dataset.ruolo;
+      renderEditorFasce();
+    });
+  });
+
+  if (btnSalva) btnSalva.addEventListener('click', salvaStrategia);
+  if (btnElimina) btnElimina.addEventListener('click', eliminaStrategia);
+}
+
+async function salvaStrategia() {
+  const statusEl = document.getElementById('editor-save-status');
+  const strategia = S.strategiaAttuale;
+  if (!strategia) return;
+  statusEl.style.display = 'block';
+  statusEl.textContent = 'Salvataggio in corso...';
+
+  try {
+    await supa.from('strategie').update({
+      nome: strategia.nome, crediti_totali: strategia.crediti_totali, tipo_asta: strategia.tipo_asta
+    }).eq('id', strategia.id);
+
+    const { data: fasceEsistenti } = await supa.from('fasce').select('id').eq('strategia_id', strategia.id);
+    const idEsistenti = new Set((fasceEsistenti || []).map(f => f.id));
+    const idAttuali = new Set(S.fasceAttuali.filter(f => typeof f.id === 'string' && !f.id.startsWith('new-')).map(f => f.id));
+    const idDaEliminare = [...idEsistenti].filter(id => !idAttuali.has(id));
+    if (idDaEliminare.length) await supa.from('fasce').delete().in('id', idDaEliminare);
+
+    for (const f of S.fasceAttuali) {
+      if (typeof f.id === 'string' && f.id.startsWith('new-')) {
+        const { data: nuova, error } = await supa.from('fasce').insert({
+          strategia_id: strategia.id, nome: f.nome, colore: f.colore, ordine: f.ordine
+        }).select().single();
+        if (error) throw error;
+        const vecchioId = f.id;
+        f.id = nuova.id;
+        S.configGiocatori.forEach(cfg => { if (cfg.fascia_id === vecchioId) cfg.fascia_id = nuova.id; });
+      } else {
+        await supa.from('fasce').update({ nome: f.nome, colore: f.colore, ordine: f.ordine }).eq('id', f.id);
+      }
+    }
+
+    await supa.from('strategia_giocatori').delete().eq('strategia_id', strategia.id);
+    const righe = [];
+    S.configGiocatori.forEach((cfg, giocatoreId) => {
+      const haValore = cfg.fascia_id || cfg.prezzo != null || cfg.percentuale != null || cfg.preferito;
+      if (haValore) {
+        righe.push({
+          strategia_id: strategia.id, giocatore_id: giocatoreId,
+          fascia_id: cfg.fascia_id || null, prezzo: cfg.prezzo, percentuale: cfg.percentuale,
+          preferito: !!cfg.preferito
+        });
+      }
+    });
+    if (righe.length) await supa.from('strategia_giocatori').insert(righe);
+
+    statusEl.textContent = '✅ Strategia salvata';
+    toast('Strategia salvata correttamente', 'success');
+    renderEditorFasce();
+  } catch (err) {
+    statusEl.textContent = '❌ Errore nel salvataggio: ' + (err.message || err);
+    toast('Errore nel salvataggio della strategia', 'error');
+  }
+  setTimeout(() => { statusEl.style.display = 'none'; }, 3500);
+}
+
+async function eliminaStrategia() {
+  const strategia = S.strategiaAttuale;
+  if (!strategia) return;
+  if (!confirm('Eliminare definitivamente la strategia "' + strategia.nome + '"?')) return;
+  const { error } = await supa.from('strategie').delete().eq('id', strategia.id);
+  if (error) { toast('Errore nella cancellazione', 'error'); return; }
+  toast('Strategia eliminata', 'success');
+  showScreen('screen-strategie-lista');
+  caricaStrategie();
 }
