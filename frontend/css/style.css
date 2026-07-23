@@ -1206,7 +1206,9 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .liberi-strategia-attiva-btn{background:var(--primary-subtle);border-color:var(--primary);color:var(--primary-bright)}
 .liberi-icon-toggle{flex-shrink:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:var(--bg-elevated);border:1px solid var(--border);border-radius:7px;font-size:.85rem;cursor:pointer;padding:0;opacity:.55;transition:all .15s}
 .liberi-icon-toggle.active{opacity:1;background:var(--primary-subtle);border-color:var(--primary)}
-.liberi-cerca-input{flex:0 0 auto;width:120px;max-width:120px;padding:4px 8px;font-size:.72rem}
+.liberi-cerca-input{flex:0 0 auto;width:90px;max-width:90px;padding:4px 6px;font-size:.7rem;margin:0}
+.liberi-filtri-row{display:flex;align-items:center;gap:6px;overflow-x:auto;flex-wrap:nowrap;margin-bottom:6px}
+.filtro-ruolo-liberi{flex-wrap:nowrap;flex-shrink:0;margin-bottom:0}
 .liberi-toggle input{cursor:pointer}
 
 .l-strategia-badge{font-size:.65rem;font-weight:700;border:1px solid;border-radius:6px;padding:1px 6px;flex-shrink:0}
