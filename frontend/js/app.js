@@ -1520,16 +1520,26 @@ function canBid() {
 function updateTimer(secondi, fase) {
   const total = S.timerTotal || secondi || 10;
   const CIRC = 339.292;
-  const offset = CIRC * (1 - Math.max(0, secondi) / total);
+  const frac = Math.max(0, Math.min(1, secondi / total));
+  const offset = CIRC * (1 - frac);
   const progress = document.getElementById('timer-progress');
   const numEl    = document.getElementById('timer-display');
   const labelEl  = document.getElementById('timer-label');
   const container = document.getElementById('timer-wrap');
+  const ballEl   = document.getElementById('timer-ball');
   const gs = document.getElementById('timer-grad-start');
   const ge = document.getElementById('timer-grad-end');
   if (progress) progress.style.strokeDashoffset = offset;
   if (numEl)    numEl.textContent  = secondi;
   if (labelEl)  labelEl.textContent = fase === 'prima' ? 'prima offerta' : 'rilancio';
+  if (ballEl) {
+    // Il pallone segue la punta dell'arco del cronometro lungo l'anello (coordinate SVG: centro 60,60 raggio 54)
+    const angleRad = (360 * frac) * Math.PI / 180;
+    const bx = 60 + 54 * Math.sin(angleRad);
+    const by = 60 - 54 * Math.cos(angleRad);
+    ballEl.style.left = (bx / 120 * 100) + '%';
+    ballEl.style.top  = (by / 120 * 100) + '%';
+  }
   if (secondi <= 5) {
     container && container.classList.add('urgent');
     if (gs) gs.setAttribute('stop-color', '#ff1744');
