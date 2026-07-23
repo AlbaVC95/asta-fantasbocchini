@@ -1255,33 +1255,54 @@ function _loadPlayerPhoto(nome, version) {
     _applyPlayerPhoto(_playerPhotoCache[nome], version);
     return;
   }
-  const searchUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
-    encodeURIComponent(nome + ' footballer') + '&format=json&srlimit=1&origin=*';
-  fetch(searchUrl)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      const results = data.query && data.query.search;
-      if (!results || !results.length) {
-        _playerPhotoCache[nome] = null;
-        _applyPlayerPhoto(null, version);
-        return;
-      }
-      const title = results[0].title;
-      return fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title))
-        .then(function(r2) { return r2.json(); })
-        .then(function(summary) {
-          const desc = (summary.description || '').toLowerCase();
-          const url = summary.thumbnail && summary.thumbnail.source;
-          const isFootballer = desc.indexOf('footballer') > -1 || desc.indexOf('soccer') > -1 || desc.indexOf('calciatore') > -1;
-          const finalUrl = (url && isFootballer) ? url : null;
-          _playerPhotoCache[nome] = finalUrl;
-          _applyPlayerPhoto(finalUrl, version);
-        });
+  _tryTheSportsDB(nome)
+    .then(function(url) {
+      if (url) return url;
+      return _tryWikipedia(nome);
+    })
+    .then(function(finalUrl) {
+      _playerPhotoCache[nome] = finalUrl || null;
+      _applyPlayerPhoto(finalUrl || null, version);
     })
     .catch(function() {
       _playerPhotoCache[nome] = null;
       _applyPlayerPhoto(null, version);
     });
+}
+
+function _tryTheSportsDB(nome) {
+  const url = 'https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=' + encodeURIComponent(nome);
+  return fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      const players = data && data.player;
+      if (!players || !players.length) return null;
+      const match = players.find(function(p) { return p.strSport === 'Soccer'; }) || players[0];
+      if (match.strSport !== 'Soccer') return null;
+      return match.strCutout || match.strThumb || null;
+    })
+    .catch(function() { return null; });
+}
+
+function _tryWikipedia(nome) {
+  const searchUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
+    encodeURIComponent(nome + ' footballer') + '&format=json&srlimit=1&origin=*';
+  return fetch(searchUrl)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      const results = data.query && data.query.search;
+      if (!results || !results.length) return null;
+      const title = results[0].title;
+      return fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title))
+        .then(function(r2) { return r2.json(); })
+        .then(function(summary) {
+          const desc = (summary.description || '').toLowerCase();
+          const photoUrl = summary.thumbnail && summary.thumbnail.source;
+          const isFootballer = desc.indexOf('footballer') > -1 || desc.indexOf('soccer') > -1 || desc.indexOf('calciatore') > -1;
+          return (photoUrl && isFootballer) ? photoUrl : null;
+        });
+    })
+    .catch(function() { return null; });
 }
 
 function _applyPlayerPhoto(url, version) {
