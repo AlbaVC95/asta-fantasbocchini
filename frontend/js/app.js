@@ -12,7 +12,8 @@ const S = {
   attesaConferma: false, timerTotal: 30,
   userRole: null, userId: null,
   strategiaAttuale: null, fasceAttuali: [], configGiocatori: new Map(),
-  listinoCache: null, editorFiltroRuolo: 'tutti', editorCercaText: ''
+  listinoCache: null, editorFiltroRuolo: 'tutti', editorCercaText: '',
+  strategiaAsta: null, liberiNascondiEstratti: false, liberiSoloPreferiti: false, _promptStrategiaAstaId: null
 };
 
 // ══ SUPABASE (utenti + listino ufficiale) ════════════════
@@ -297,7 +298,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     history.replaceState({}, '', '/?id=' + sess.astaId);
     setTimeout(() => fetchAstaSquadrePerJoin(sess.astaId), 400);
   }
-  setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs(); setupLogin(); setupMenu(); setupStrategie(); setupEditor();
+  setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs(); setupLogin(); setupMenu(); setupStrategie(); setupEditor(); setupStrategiaAsta();
   // Warn before leaving page if in active asta
   window.addEventListener('beforeunload', (e) => {
     if (S.astaId && S.asta && S.asta.stato === 'in_corso') {
@@ -995,6 +996,7 @@ socket.on('stato-asta', (asta) => {
     }
   } else if (asta.stato === 'in_corso') {
     showScreen('screen-asta');
+    mostraPromptStrategiaSeNecessario();
   } else if (asta.stato === 'completata') {
     showScreen('screen-fine-asta');
     renderFineAsta();
@@ -1018,6 +1020,7 @@ socket.on('stato-asta', (asta) => {
 
 socket.on('asta-iniziata', () => {
   showScreen('screen-asta');
+  mostraPromptStrategiaSeNecessario();
   toast('Asta iniziata!', 'success');
   if (S.asta) renderAdminPanel(S.asta);
 });
@@ -1297,6 +1300,20 @@ function _applyPlayerPhoto(url, version) {
   img.src = url;
 }
 
+function _getChiamataStrategiaInfoHTML(g) {
+  const strat = S.strategiaAsta;
+  if (!strat) return '';
+  const cfg = strat.configByListinoId.get(g.idFantaleghe);
+  if (!cfg || !cfg.fascia_id || !strat.fasceInfo.has(cfg.fascia_id)) {
+    return '<p class="cc-strategia-info cc-strategia-vuota">📊 Nessuna fascia assegnata</p>';
+  }
+  const f = strat.fasceInfo.get(cfg.fascia_id);
+  const prezzoTxt = cfg.prezzo != null ? (cfg.prezzo + ' cr') : '—';
+  const pctTxt = cfg.percentuale != null ? (' (' + cfg.percentuale + '%)') : '';
+  const preferitoTxt = cfg.preferito ? ' ⭐ Preferito' : '';
+  return '<p class="cc-strategia-info" style="border-color:' + f.colore + '">📊 <strong style="color:' + f.colore + '">' + f.nome + '</strong> · ' + prezzoTxt + pctTxt + preferitoTxt + '</p>';
+}
+
 function renderChiamata(chiamata) {
   const card = document.getElementById('chiamata-card');
   card.className = 'chiamata-card attiva card-enter';
@@ -1330,6 +1347,7 @@ function renderChiamata(chiamata) {
       '</div>' +
       '<p class="cc-offerente">' + offerenteTxt + '</p>' +
       attesaBadge +
+      _getChiamataStrategiaInfoHTML(g) +
     '</div>';
   aggiornaQuickBids();
   _loadPlayerPhoto(g.nome, _myAvatarVersion);
@@ -1594,11 +1612,28 @@ function renderGiocatoriLiberi(pool) {
     if (cb !== ca) return cb - ca;
     return a.nome.localeCompare(b.nome);
   };
-  let tutti = [...disp.sort(byValore), ...scar.sort(byValore)];
+  const strat = S.strategiaAsta;
+  const byFasciaStrategia = (a, b) => {
+    const ca = strat.configByListinoId.get(a.idFantaleghe);
+    const cb = strat.configByListinoId.get(b.idFantaleghe);
+    const oa = (ca && ca.fascia_id && strat.fasceOrdine.has(ca.fascia_id)) ? strat.fasceOrdine.get(ca.fascia_id) : 9999;
+    const ob = (cb && cb.fascia_id && strat.fasceOrdine.has(cb.fascia_id)) ? strat.fasceOrdine.get(cb.fascia_id) : 9999;
+    if (oa !== ob) return oa - ob;
+    const pa = (ca && ca.prezzo != null) ? ca.prezzo : -1;
+    const pb = (cb && cb.prezzo != null) ? cb.prezzo : -1;
+    if (pb !== pa) return pb - pa;
+    return byValore(a, b);
+  };
+  const comparatore = strat ? byFasciaStrategia : byValore;
+  let tutti = [...disp.sort(comparatore), ...(S.liberiNascondiEstratti ? [] : scar.sort(comparatore))];
   if (cercaTesto) tutti = tutti.filter(g => g.nome.toLowerCase().includes(cercaTesto));
   if (S.filtroRuolo !== 'tutti') tutti = tutti.filter(g => {
     const ruoli = (g.ruolo || '').split(/[\/,]/).map(function(x){ return x.trim().toLowerCase(); });
     return ruoli.includes(S.filtroRuolo.toLowerCase());
+  });
+  if (strat && S.liberiSoloPreferiti) tutti = tutti.filter(g => {
+    const cfg = strat.configByListinoId.get(g.idFantaleghe);
+    return cfg && cfg.preferito;
   });
   list.innerHTML = tutti.map(g => {
     const sc = g.scartato ? ' scartato' : '';
@@ -1611,11 +1646,23 @@ function renderGiocatoriLiberi(pool) {
     const valoreHTML = haValore
       ? '<div class="l-valore-wrap"><span class="l-valore">' + g.valore + '</span><span class="l-valore-label">Valore</span></div>'
       : '';
+    const stratHTML = _getLiberiStrategiaBadgeHTML(g);
     return '<li class="' + sc + '"' + click + '>' + _getRuoloBadgeHTML(g.ruolo) +
-      '<span class="l-nome">' + g.nome + '</span>' + tb + club + orig + valoreHTML +
+      '<span class="l-nome">' + g.nome + '</span>' + tb + club + orig + valoreHTML + stratHTML +
       (g.scartato ? '<span class="l-scartato-tag">Scartato</span>' : '') +
       '<span class="l-costo">' + g.costoOriginale + 'cr' + (g.scartato ? ' \u2717' : '') + '</span></li>';
   }).join('') || '<li class="text-muted" style="padding:8px">Nessun giocatore</li>';
+}
+
+function _getLiberiStrategiaBadgeHTML(g) {
+  const strat = S.strategiaAsta;
+  if (!strat) return '';
+  const cfg = strat.configByListinoId.get(g.idFantaleghe);
+  if (!cfg || !cfg.fascia_id || !strat.fasceInfo.has(cfg.fascia_id)) return '';
+  const f = strat.fasceInfo.get(cfg.fascia_id);
+  const preferitoStar = cfg.preferito ? ' ⭐' : '';
+  const prezzoTxt = cfg.prezzo != null ? (' \u00b7 ' + cfg.prezzo + 'cr') : '';
+  return '<span class="l-strategia-badge" style="border-color:' + f.colore + ';color:' + f.colore + '">' + f.nome + prezzoTxt + preferitoStar + '</span>';
 }
 
 window.chiamaLibero = function(id) {
@@ -2492,4 +2539,110 @@ async function eliminaStrategia() {
   toast('Strategia eliminata', 'success');
   showScreen('screen-strategie-lista');
   caricaStrategie();
+}
+
+// ══════════════════════════════════════════════════════════
+// FASE 3 — INTEGRAZIONE STRATEGIE NEL FLUSSO DELL'ASTA
+// ══════════════════════════════════════════════════════════
+
+async function caricaStrategieCompatibili(tipoAsta) {
+  const { data, error } = await supa.from('strategie').select('*').eq('tipo_asta', tipoAsta).order('created_at', { ascending: false });
+  return (!error && data) ? data : [];
+}
+
+async function mostraPromptStrategiaSeNecessario() {
+  if (!S.asta || !S.astaId || !S.userId) return;
+  if (S._promptStrategiaAstaId === S.astaId) return;
+  S._promptStrategiaAstaId = S.astaId;
+  const strategie = await caricaStrategieCompatibili(S.asta.tipoAsta);
+  if (!strategie.length) return;
+  apriModalStrategia(strategie);
+}
+
+function apriModalStrategia(strategie) {
+  const lista = document.getElementById('strategia-modal-lista');
+  const tipoLabel = { iniziale: 'Asta iniziale', riparazione1: 'Riparazione 1', riparazione2: 'Riparazione 2' };
+  let html = strategie.map(s => (
+    '<button type="button" class="strategia-modal-item" data-id="' + s.id + '">' +
+      '<span class="strategia-modal-item-nome">' + escapeHTML(s.nome) + '</span>' +
+      '<span class="strategia-modal-item-meta">' + (tipoLabel[s.tipo_asta] || s.tipo_asta) + ' · ' + s.crediti_totali + ' crediti</span>' +
+    '</button>'
+  )).join('');
+  if (S.strategiaAsta) {
+    html = '<button type="button" class="strategia-modal-item strategia-modal-item-rimuovi" data-id="">❌ Nessuna (rimuovi strategia attiva)</button>' + html;
+  }
+  lista.innerHTML = html;
+  lista.querySelectorAll('.strategia-modal-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.id) selezionaStrategiaAsta(btn.dataset.id);
+      else rimuoviStrategiaAsta();
+    });
+  });
+  openModal('modal-strategia');
+}
+
+async function selezionaStrategiaAsta(strategiaId) {
+  const { data: strategia, error } = await supa.from('strategie').select('*').eq('id', strategiaId).single();
+  if (error || !strategia) { toast('Errore nel caricamento della strategia', 'error'); return; }
+
+  const { data: fasce } = await supa.from('fasce').select('*').eq('strategia_id', strategiaId).order('ordine');
+  const { data: sg } = await supa.from('strategia_giocatori').select('*').eq('strategia_id', strategiaId);
+
+  const fasceInfo = new Map();
+  const fasceOrdine = new Map();
+  (fasce || []).forEach(f => { fasceInfo.set(f.id, { nome: f.nome, colore: f.colore, ordine: f.ordine }); fasceOrdine.set(f.id, f.ordine); });
+
+  const configByListinoId = new Map();
+  (sg || []).forEach(row => {
+    configByListinoId.set(row.giocatore_id, {
+      fascia_id: row.fascia_id, prezzo: row.prezzo, percentuale: row.percentuale, preferito: row.preferito
+    });
+  });
+
+  S.strategiaAsta = { id: strategia.id, nome: strategia.nome, crediti_totali: strategia.crediti_totali, fasceInfo, fasceOrdine, configByListinoId };
+
+  const label = document.getElementById('liberi-strategia-attiva');
+  if (label) { label.textContent = '📊 ' + strategia.nome; label.classList.remove('hidden'); }
+
+  closeModal();
+  toast('Strategia "' + strategia.nome + '" applicata', 'success');
+  if (S.asta) {
+    renderGiocatoriLiberi(S.asta.poolGiocatori);
+    if (S.asta.chiamataAttuale) renderChiamata(S.asta.chiamataAttuale);
+  }
+}
+
+function rimuoviStrategiaAsta() {
+  S.strategiaAsta = null;
+  const label = document.getElementById('liberi-strategia-attiva');
+  if (label) { label.textContent = ''; label.classList.add('hidden'); }
+  closeModal();
+  toast('Strategia rimossa', 'info');
+  if (S.asta) {
+    renderGiocatoriLiberi(S.asta.poolGiocatori);
+    if (S.asta.chiamataAttuale) renderChiamata(S.asta.chiamataAttuale);
+  }
+}
+
+function setupStrategiaAsta() {
+  const btnApplica = document.getElementById('btn-applica-strategia');
+  const toggleNascondi = document.getElementById('toggle-nascondi-estratti');
+  const toggleSoloPreferiti = document.getElementById('toggle-solo-preferiti');
+
+  if (btnApplica) btnApplica.addEventListener('click', async () => {
+    if (!S.asta) return;
+    const strategie = await caricaStrategieCompatibili(S.asta.tipoAsta);
+    if (!strategie.length && !S.strategiaAsta) { toast('Non hai strategie compatibili con questo tipo di asta', 'info'); return; }
+    apriModalStrategia(strategie);
+  });
+
+  if (toggleNascondi) toggleNascondi.addEventListener('change', () => {
+    S.liberiNascondiEstratti = toggleNascondi.checked;
+    if (S.asta) renderGiocatoriLiberi(S.asta.poolGiocatori);
+  });
+
+  if (toggleSoloPreferiti) toggleSoloPreferiti.addEventListener('change', () => {
+    S.liberiSoloPreferiti = toggleSoloPreferiti.checked;
+    if (S.asta) renderGiocatoriLiberi(S.asta.poolGiocatori);
+  });
 }
