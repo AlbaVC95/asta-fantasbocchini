@@ -1255,52 +1255,33 @@ function _loadPlayerPhoto(nome, version) {
     _applyPlayerPhoto(_playerPhotoCache[nome], version);
     return;
   }
-  // Cascata: 1) TheSportsDB (database sportivo dedicato, alta probabilita di trovare foto reali di calciatori)
-  //          2) Wikipedia (fallback per chi non e' su TheSportsDB)
-  // Nessun controllo di corrispondenza squadra/maglia: mostriamo la prima foto reale trovata, qualunque sia.
-  _tryTheSportsDBPhoto(nome)
-    .then(function(url) {
-      if (url) return url;
-      return _tryWikipediaPhoto(nome);
-    })
-    .catch(function() {
-      return _tryWikipediaPhoto(nome).catch(function() { return null; });
-    })
-    .then(function(finalUrl) {
-      _playerPhotoCache[nome] = finalUrl || null;
-      _applyPlayerPhoto(finalUrl || null, version);
-    });
-}
-
-function _tryTheSportsDBPhoto(nome) {
-  const url = 'https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=' + encodeURIComponent(nome);
-  return fetch(url)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      const players = data && data.player;
-      if (!players || !players.length) return null;
-      const soccer = players.find(function(p) { return p.strSport === 'Soccer'; }) || players[0];
-      return soccer.strCutout || soccer.strThumb || null;
-    })
-    .catch(function() { return null; });
-}
-
-function _tryWikipediaPhoto(nome) {
   const searchUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
     encodeURIComponent(nome + ' footballer') + '&format=json&srlimit=1&origin=*';
-  return fetch(searchUrl)
+  fetch(searchUrl)
     .then(function(r) { return r.json(); })
     .then(function(data) {
       const results = data.query && data.query.search;
-      if (!results || !results.length) return null;
+      if (!results || !results.length) {
+        _playerPhotoCache[nome] = null;
+        _applyPlayerPhoto(null, version);
+        return;
+      }
       const title = results[0].title;
       return fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title))
         .then(function(r2) { return r2.json(); })
         .then(function(summary) {
-          return (summary.thumbnail && summary.thumbnail.source) || null;
+          const desc = (summary.description || '').toLowerCase();
+          const url = summary.thumbnail && summary.thumbnail.source;
+          const isFootballer = desc.indexOf('footballer') > -1 || desc.indexOf('soccer') > -1 || desc.indexOf('calciatore') > -1;
+          const finalUrl = (url && isFootballer) ? url : null;
+          _playerPhotoCache[nome] = finalUrl;
+          _applyPlayerPhoto(finalUrl, version);
         });
     })
-    .catch(function() { return null; });
+    .catch(function() {
+      _playerPhotoCache[nome] = null;
+      _applyPlayerPhoto(null, version);
+    });
 }
 
 function _applyPlayerPhoto(url, version) {
@@ -2347,8 +2328,8 @@ function renderEditorFasce() {
         _getRuoloBadgeHTML(g.ruolo) +
         '<span class="editor-player-nome">' + escapeHTML(g.nome) + '</span>' +
         '<span class="editor-player-squadra">' + escapeHTML(g.squadra_reale || '') + '</span>' +
-        '<span class="editor-player-quot">' + (g.quotazione != null ? g.quotazione : '-') + '</span>' +
-        '<span class="editor-player-fvm">' + (g.fmvp600 != null ? g.fmvp600 : '-') + '</span>' +
+        '<span class="editor-player-quot">Q: ' + (g.quotazione != null ? g.quotazione : '-') + '</span>' +
+        '<span class="editor-player-fvm">FVM: ' + (g.fmvp600 != null ? g.fmvp600 : '-') + '</span>' +
         '<button type="button" class="editor-preferito-btn ' + (cfg.preferito ? 'active' : '') + '" data-giocatore="' + g.id + '">' + (cfg.preferito ? '★' : '☆') + '</button>' +
         '<select class="editor-fascia-select" data-giocatore="' + g.id + '">' + opzioniFascia.replace(
           'value="' + (cfg.fascia_id || '') + '"', 'value="' + (cfg.fascia_id || '') + '" selected'
