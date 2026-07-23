@@ -513,6 +513,12 @@
             <button class="filtro-btn" data-ruolo="A">A</button>
             <button class="filtro-btn" data-ruolo="Pc">Pc</button>
           </div>
+          <div id="liberi-strategia-bar" class="liberi-strategia-bar">
+            <button type="button" id="btn-applica-strategia" class="btn btn-secondary btn-small">📊 Applica strategia</button>
+            <span id="liberi-strategia-attiva" class="liberi-strategia-attiva hidden"></span>
+            <label class="liberi-toggle"><input type="checkbox" id="toggle-nascondi-estratti"> Nascondi estratti</label>
+            <label class="liberi-toggle"><input type="checkbox" id="toggle-solo-preferiti"> Solo preferiti</label>
+          </div>
           <ul id="liberi-list" class="liberi-list"></ul>
         </div>
       </div><!-- /.tabs-panel -->
@@ -550,6 +556,18 @@
     <div class="modal-actions">
       <button class="btn btn-success" onclick="rispostaRicConferma('si')">✅ Sì, confermo</button>
       <button class="btn btn-danger" onclick="rispostaRicConferma('no')">❌ No, passa all'asta</button>
+    </div>
+  </div>
+
+  <!-- Modal: Strategia — prompt/selezione -->
+  <div id="modal-strategia" class="modal hidden">
+    <h2 class="modal-title">📊 Vuoi usare una strategia?</h2>
+    <div class="modal-body">
+      <p class="text-muted">Seleziona una delle tue strategie compatibili con questa asta, oppure continua senza.</p>
+      <div id="strategia-modal-lista" class="strategia-modal-lista"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">No, grazie</button>
     </div>
   </div>
 
