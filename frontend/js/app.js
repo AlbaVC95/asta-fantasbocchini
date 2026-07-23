@@ -1267,22 +1267,86 @@ function _avatarColor(nome) {
 let _chiamataAvatarVersion = 0;
 const _playerPhotoCache = {};
 
-function _loadPlayerPhoto(nome, version) {
-  if (Object.prototype.hasOwnProperty.call(_playerPhotoCache, nome)) {
-    _applyPlayerPhoto(_playerPhotoCache[nome], version);
-    return;
+function _teamWords(s) {
+  return (s || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(function(w) {
+      return w && ['fc','ac','ssc','us','as','calcio','club','ssd','asd','cfc'].indexOf(w) === -1;
+    });
+}
+function _teamMatches(sourceTeam, squadraAssegnata) {
+  if (!sourceTeam) return true; // nessuna squadra indicata dalla fonte: non contraddice, si accetta (foto probabilmente senza maglia di club)
+  const aw = _teamWords(sourceTeam), bw = _teamWords(squadraAssegnata);
+  if (!aw.length || !bw.length) return true;
+  for (let i = 0; i < aw.length; i++) {
+    for (let j = 0; j < bw.length; j++) {
+      const x = aw[i], y = bw[j];
+      if (x.length < 4 || y.length < 4) continue;
+      if (x === y || x.indexOf(y) === 0 || y.indexOf(x) === 0) return true;
+    }
   }
+  return false;
+}
+
+function _trySportsDB(nome, squadra) {
+  const url = 'https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=' + encodeURIComponent(nome);
+  return fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+    const players = data && data.player;
+    if (!players || !players.length) return null;
+    for (let i = 0; i < players.length; i++) {
+      const p = players[i];
+      if (p.strSport && p.strSport !== 'Soccer') continue;
+      if (_teamMatches(p.strTeam, squadra)) {
+        const img = p.strCutout || p.strThumb || p.strRender;
+        if (img) return img;
+      }
+    }
+    return null;
+  }).catch(function() { return null; });
+}
+
+function _tryWikidata(nome, squadra) {
+  const searchUrl = 'https://www.wikidata.org/w/api.php?action=wbsearchentities&search=' +
+    encodeURIComponent(nome) + '&language=en&format=json&type=item&limit=5&origin=*';
+  return fetch(searchUrl).then(function(r) { return r.json(); }).then(function(data) {
+    const ids = (data.search || []).map(function(x) { return x.id; });
+    if (!ids.length) return null;
+    const values = ids.map(function(id) { return 'wd:' + id; }).join(' ');
+    const sparql = 'SELECT ?item ?image ?teamLabel ?occLabel WHERE { VALUES ?item { ' + values + ' } ' +
+      'OPTIONAL { ?item wdt:P18 ?image. } ' +
+      'OPTIONAL { ?item wdt:P54 ?team. ?team rdfs:label ?teamLabel. FILTER(LANG(?teamLabel)="en") } ' +
+      'OPTIONAL { ?item wdt:P106 ?occ. ?occ rdfs:label ?occLabel. FILTER(LANG(?occLabel)="en") } }';
+    const url = 'https://query.wikidata.org/sparql?query=' + encodeURIComponent(sparql) + '&format=json';
+    return fetch(url, { headers: { 'Accept': 'application/sparql-results+json' } })
+      .then(function(r2) { return r2.json(); })
+      .then(function(data2) {
+        const bindings = (data2.results && data2.results.bindings) || [];
+        let fallbackNoTeamImg = null;
+        for (let i = 0; i < bindings.length; i++) {
+          const b = bindings[i];
+          const occ = ((b.occLabel && b.occLabel.value) || '').toLowerCase();
+          if (occ.indexOf('football') === -1 && occ.indexOf('soccer') === -1) continue;
+          const team = b.teamLabel && b.teamLabel.value;
+          const image = b.image && b.image.value;
+          if (!image) continue;
+          if (_teamMatches(team, squadra)) return image;
+          if (!team && !fallbackNoTeamImg) fallbackNoTeamImg = image;
+        }
+        return fallbackNoTeamImg;
+      });
+  }).catch(function() { return null; });
+}
+
+function _tryWikipedia(nome) {
   const searchUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
     encodeURIComponent(nome + ' footballer') + '&format=json&srlimit=1&origin=*';
-  fetch(searchUrl)
+  return fetch(searchUrl)
     .then(function(r) { return r.json(); })
     .then(function(data) {
       const results = data.query && data.query.search;
-      if (!results || !results.length) {
-        _playerPhotoCache[nome] = null;
-        _applyPlayerPhoto(null, version);
-        return;
-      }
+      if (!results || !results.length) return null;
       const title = results[0].title;
       return fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title))
         .then(function(r2) { return r2.json(); })
@@ -1290,13 +1354,27 @@ function _loadPlayerPhoto(nome, version) {
           const desc = (summary.description || '').toLowerCase();
           const url = summary.thumbnail && summary.thumbnail.source;
           const isFootballer = desc.indexOf('footballer') > -1 || desc.indexOf('soccer') > -1 || desc.indexOf('calciatore') > -1;
-          const finalUrl = (url && isFootballer) ? url : null;
-          _playerPhotoCache[nome] = finalUrl;
-          _applyPlayerPhoto(finalUrl, version);
+          return (url && isFootballer) ? url : null;
         });
     })
+    .catch(function() { return null; });
+}
+
+function _loadPlayerPhoto(nome, squadra, version) {
+  const cacheKey = nome + '|' + (squadra || '');
+  if (Object.prototype.hasOwnProperty.call(_playerPhotoCache, cacheKey)) {
+    _applyPlayerPhoto(_playerPhotoCache[cacheKey], version);
+    return;
+  }
+  _trySportsDB(nome, squadra)
+    .then(function(img) { return img || _tryWikidata(nome, squadra); })
+    .then(function(img) { return img || _tryWikipedia(nome); })
+    .then(function(finalUrl) {
+      _playerPhotoCache[cacheKey] = finalUrl || null;
+      _applyPlayerPhoto(finalUrl || null, version);
+    })
     .catch(function() {
-      _playerPhotoCache[nome] = null;
+      _playerPhotoCache[cacheKey] = null;
       _applyPlayerPhoto(null, version);
     });
 }
@@ -1367,7 +1445,7 @@ function renderChiamata(chiamata) {
       _getChiamataStrategiaInfoHTML(g) +
     '</div>';
   aggiornaQuickBids();
-  _loadPlayerPhoto(g.nome, _myAvatarVersion);
+  _loadPlayerPhoto(g.nome, g.squadra, _myAvatarVersion);
 }
 
 function canBid() {
