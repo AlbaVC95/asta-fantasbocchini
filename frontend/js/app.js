@@ -274,20 +274,31 @@ socket.on('reconnect', () => {
   }
 });
 
+function entraConLinkInvito(id) {
+  showScreen('screen-home');
+  document.getElementById('inp-join-id').value = id;
+  setTimeout(() => fetchAstaSquadrePerJoin(id), 300);
+  const creaCard = document.getElementById('form-crea-asta').closest('.card');
+  if (creaCard) creaCard.style.display = 'none';
+  const header = document.querySelector('#screen-home .home-header');
+  if (header) header.style.display = 'none';
+  const linkIdGroup = document.getElementById('inp-join-id').closest('.form-group');
+  if (linkIdGroup) linkIdGroup.style.display = 'none';
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
   if (id) {
-    // Link di invito diretto: comportamento invariato, nessun gate di login
-    showScreen('screen-home');
-    document.getElementById('inp-join-id').value = id;
-    setTimeout(() => fetchAstaSquadrePerJoin(id), 300);
-    const creaCard = document.getElementById('form-crea-asta').closest('.card');
-    if (creaCard) creaCard.style.display = 'none';
-    const header = document.querySelector('#screen-home .home-header');
-    if (header) header.style.display = 'none';
-    const linkIdGroup = document.getElementById('inp-join-id').closest('.form-group');
-    if (linkIdGroup) linkIdGroup.style.display = 'none';
+    // Link di invito: login obbligatorio per poter usare le proprie strategie
+    const { data } = await supa.auth.getSession();
+    if (data && data.session && data.session.user) {
+      await applicaUtenteLoggato(data.session.user);
+      entraConLinkInvito(id);
+    } else {
+      S._invitoAstaId = id;
+      showScreen('screen-login');
+    }
   } else {
     await checkSessioneUtente();
   }
@@ -325,7 +336,13 @@ async function applicaUtenteLoggato(user) {
   if (btnLogout) btnLogout.style.display = 'inline-block';
   const adminCard = document.getElementById('card-listino-admin');
   if (adminCard) adminCard.style.display = (S.userRole === 'admin') ? 'block' : 'none';
-  showScreen('screen-menu-principale');
+  if (S._invitoAstaId) {
+    const invitoId = S._invitoAstaId;
+    S._invitoAstaId = null;
+    entraConLinkInvito(invitoId);
+  } else {
+    showScreen('screen-menu-principale');
+  }
 }
 
 function setupLogin() {
