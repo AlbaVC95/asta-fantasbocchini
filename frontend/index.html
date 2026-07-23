@@ -422,9 +422,10 @@
           <p class="chiamata-stato">⏳ In attesa di estrazione...</p>
         </div>
 
-        <!-- Timer Ring SVG (stile pallone/cronometro da campo) -->
+        <!-- Timer Ring SVG: campo da calcio in miniatura con cronometro sportivo -->
         <div id="timer-wrap" class="timer-ring-container hidden">
           <div class="timer-pitch-bg"></div>
+          <div class="timer-corner-flag">🚩</div>
           <svg class="timer-ring" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="timer-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -434,6 +435,8 @@
             </defs>
             <!-- ghiera esterna a tacche, stile cronometro sportivo -->
             <circle cx="60" cy="60" r="58" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1.6" stroke-dasharray="1.2 5.4"/>
+            <!-- linea di cerchio di centrocampo, tratteggiata come le righe di gesso di un campo -->
+            <circle cx="60" cy="60" r="45" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1" stroke-dasharray="3 3"/>
             <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="7"/>
             <circle cx="60" cy="60" r="54" fill="none"
                     stroke="url(#timer-gradient)"
@@ -444,6 +447,8 @@
                     transform="rotate(-90 60 60)"
                     class="timer-progress"
                     id="timer-progress"/>
+            <!-- dischetto del rigore al centro, dietro al numero -->
+            <circle cx="60" cy="60" r="2" fill="rgba(255,255,255,0.18)"/>
           </svg>
           <div class="timer-ball" id="timer-ball">
             <svg viewBox="0 0 24 24" class="timer-ball-svg"><circle cx="12" cy="12" r="11" fill="#f4f4f4" stroke="#1a1a1a" stroke-width="1.1"/><polygon points="12,7 15.3,9.4 14.1,13.2 9.9,13.2 8.7,9.4" fill="#1a1a1a"/><path d="M12,7 L12,3.2 M15.3,9.4 L18.7,7.4 M14.1,13.2 L16.6,16.6 M9.9,13.2 L7.4,16.6 M8.7,9.4 L5.3,7.4" stroke="#1a1a1a" stroke-width="1" fill="none"/></svg>
