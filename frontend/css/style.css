@@ -1163,6 +1163,22 @@ body.layout-admin .asta-row-puja .rilancio-box{
   flex:1.4 1 0%!important;max-width:420px!important;min-width:220px!important;
 }
 
+/* ══ Rebalance panel admin RIGA 1: budget squadre más estrecho, panel admin más ancho ══ */
+body.layout-admin .asta-row-panels>.panel-budget{
+  flex:0.7!important;
+}
+body.layout-admin .asta-row-panels>#admin-panel{
+  flex:2.3!important;
+}
+body.layout-admin .panel-budget .sidebar-squadra{
+  padding:5px 8px;margin-bottom:3px;
+}
+body.layout-admin .panel-budget .sq-top{margin-bottom:2px}
+body.layout-admin .panel-budget .sq-nome{font-size:.7rem}
+body.layout-admin .panel-budget .sq-crediti{font-size:.95rem}
+body.layout-admin .panel-budget .sq-bottom{margin-top:2px;font-size:.58rem}
+body.layout-admin .panel-budget .budget-progress{height:4px;margin-top:1px}
+
 /* ══ Rebalance panel participante: card más ancha (evita texto cortado tras avatar grande) ══ */
 .puja-panel-slot .chiamata-card{
   flex:1.4 1 0%!important;max-width:340px!important;min-width:200px!important;
