@@ -54,6 +54,102 @@
   </section>
 
   <!-- ══════════ SCREEN HOME ══════════ -->
+  <section id="screen-menu-principale" class="screen">
+    <header class="home-header">
+      <div class="home-logo">🎯</div>
+      <h1 class="home-title">Asta FantaSbocchini</h1>
+      <p class="home-subtitle">Cosa vuoi fare?</p>
+      <button id="btn-logout-menu" class="btn-logout-link">🚪 Esci</button>
+    </header>
+    <div class="card">
+      <button type="button" id="btn-menu-strategie" class="btn btn-primary btn-lg" style="width:100%">📊 Strategie</button>
+    </div>
+    <div class="card mt-16">
+      <button type="button" id="btn-menu-asta" class="btn btn-secondary btn-lg" style="width:100%">🎯 Crea un'asta / Partecipa a un'asta</button>
+    </div>
+  </section>
+
+  <!-- ══════════ SCREEN STRATEGIE — LISTA ══════════ -->
+  <section id="screen-strategie-lista" class="screen">
+    <header class="home-header">
+      <button id="btn-back-lista-menu" class="btn-logout-link">← Menu</button>
+      <h1 class="home-title">📊 Le tue strategie</h1>
+    </header>
+    <div class="card">
+      <button type="button" id="btn-nuova-strategia" class="btn btn-primary btn-lg" style="width:100%">+ Nuova strategia</button>
+    </div>
+    <div id="lista-strategie" class="card mt-16"></div>
+  </section>
+
+  <!-- ══════════ SCREEN STRATEGIA — NUOVA (form) ══════════ -->
+  <section id="screen-strategia-form" class="screen">
+    <header class="home-header">
+      <button id="btn-back-form-lista" class="btn-logout-link">← Strategie</button>
+      <h1 class="home-title">Nuova strategia</h1>
+    </header>
+    <div class="card">
+      <div class="form-group">
+        <label>Nome strategia</label>
+        <input type="text" id="strategia-form-nome" placeholder="Es: Asta iniziale 2026">
+      </div>
+      <div class="form-group">
+        <label>Crediti disponibili</label>
+        <input type="number" id="strategia-form-crediti" placeholder="Es: 500" min="1">
+      </div>
+      <div class="form-group">
+        <label>Tipo di asta</label>
+        <select id="strategia-form-tipo">
+          <option value="iniziale">Asta iniziale</option>
+          <option value="riparazione1">Asta di riparazione 1</option>
+          <option value="riparazione2">Asta di riparazione 2</option>
+        </select>
+      </div>
+      <button type="button" id="btn-crea-strategia" class="btn btn-primary btn-lg" style="width:100%">Crea strategia</button>
+      <p id="strategia-form-error" class="hint-text" style="display:none;color:var(--danger,#ff4d4d)"></p>
+    </div>
+  </section>
+
+  <!-- ══════════ SCREEN STRATEGIA — EDITOR ══════════ -->
+  <section id="screen-strategia-editor" class="screen">
+    <header class="home-header">
+      <button id="btn-back-editor-lista" class="btn-logout-link">← Strategie</button>
+      <h1 id="editor-strategia-nome" class="home-title">Strategia</h1>
+      <p id="editor-strategia-info" class="home-subtitle"></p>
+    </header>
+
+    <div class="card">
+      <div class="rose-search-row" style="position:static;margin:0 0 8px 0;max-width:none">
+        <input type="text" id="editor-cerca" class="rose-inp" placeholder="🔍 Cerca giocatore...">
+      </div>
+      <div id="editor-filtro-ruolo" class="filtro-ruolo">
+        <button class="filtro-btn active" data-ruolo="tutti">Tutti</button>
+        <button class="filtro-btn" data-ruolo="Por">Por</button>
+        <button class="filtro-btn" data-ruolo="Dd">Dd</button>
+        <button class="filtro-btn" data-ruolo="Ds">Ds</button>
+        <button class="filtro-btn" data-ruolo="Dc">Dc</button>
+        <button class="filtro-btn" data-ruolo="D">D</button>
+        <button class="filtro-btn" data-ruolo="B">B</button>
+        <button class="filtro-btn" data-ruolo="M">M</button>
+        <button class="filtro-btn" data-ruolo="E">E</button>
+        <button class="filtro-btn" data-ruolo="C">C</button>
+        <button class="filtro-btn" data-ruolo="T">T</button>
+        <button class="filtro-btn" data-ruolo="W">W</button>
+        <button class="filtro-btn" data-ruolo="A">A</button>
+        <button class="filtro-btn" data-ruolo="Pc">Pc</button>
+      </div>
+      <button type="button" id="btn-aggiungi-fascia" class="btn btn-secondary" style="margin-top:8px">+ Aggiungi fascia</button>
+    </div>
+
+    <div id="editor-fasce-container"></div>
+
+    <div class="card mt-16" style="position:sticky;bottom:8px;z-index:10">
+      <button type="button" id="btn-salva-strategia" class="btn btn-primary btn-lg" style="width:100%">💾 Salva strategia</button>
+      <button type="button" id="btn-elimina-strategia" class="btn btn-secondary" style="width:100%;margin-top:8px;color:var(--danger,#ff4d4d)">🗑️ Elimina strategia</button>
+      <p id="editor-save-status" class="hint-text" style="display:none"></p>
+    </div>
+  </section>
+
+  <!-- ══════════ SCREEN HOME ══════════ -->
   <section id="screen-home" class="screen">
     <header class="home-header">
       <div class="home-logo">🎯</div>
