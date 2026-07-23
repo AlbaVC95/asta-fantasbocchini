@@ -1250,7 +1250,22 @@ function _avatarColor(nome) {
 let _chiamataAvatarVersion = 0;
 const _playerPhotoCache = {};
 
-function _loadPlayerPhoto(nome, version) {
+const _TEAM_AVATAR_MAP = {
+  'ATALANTA': 'atalanta', 'BOLOGNA': 'bologna', 'CAGLIARI': 'cagliari', 'COMO': 'como',
+  'FIORENTINA': 'fiorentina', 'FROSINONE': 'frosinone', 'GENOA': 'genoa', 'INTER': 'inter',
+  'JUVENTUS': 'juventus', 'LAZIO': 'lazio', 'LECCE': 'lecce', 'MILAN': 'milan',
+  'MONZA': 'monza', 'NAPOLI': 'napoli', 'PARMA': 'parma', 'ROMA': 'roma',
+  'SASSUOLO': 'sassuolo', 'TORINO': 'torino', 'UDINESE': 'udinese', 'VENEZIA': 'venezia'
+};
+
+function _teamAvatarUrl(squadra) {
+  if (!squadra) return null;
+  const key = squadra.trim().toUpperCase();
+  const file = _TEAM_AVATAR_MAP[key];
+  return file ? ('img/teams/' + file + '.png') : null;
+}
+
+function _loadPlayerPhoto(nome, squadra, version) {
   if (Object.prototype.hasOwnProperty.call(_playerPhotoCache, nome)) {
     _applyPlayerPhoto(_playerPhotoCache[nome], version);
     return;
@@ -1261,12 +1276,14 @@ function _loadPlayerPhoto(nome, version) {
       return _tryWikipedia(nome);
     })
     .then(function(finalUrl) {
-      _playerPhotoCache[nome] = finalUrl || null;
-      _applyPlayerPhoto(finalUrl || null, version);
+      const result = finalUrl || _teamAvatarUrl(squadra);
+      _playerPhotoCache[nome] = result || null;
+      _applyPlayerPhoto(result || null, version);
     })
     .catch(function() {
-      _playerPhotoCache[nome] = null;
-      _applyPlayerPhoto(null, version);
+      const result = _teamAvatarUrl(squadra);
+      _playerPhotoCache[nome] = result || null;
+      _applyPlayerPhoto(result || null, version);
     });
 }
 
@@ -1371,7 +1388,7 @@ function renderChiamata(chiamata) {
       _getChiamataStrategiaInfoHTML(g) +
     '</div>';
   aggiornaQuickBids();
-  _loadPlayerPhoto(g.nome, _myAvatarVersion);
+  _loadPlayerPhoto(g.nome, g.squadra, _myAvatarVersion);
 }
 
 function canBid() {
