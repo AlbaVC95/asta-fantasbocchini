@@ -819,7 +819,7 @@ html,body{height:auto!important;min-height:100vh;overflow:auto!important}
 
 .puja-panel-slot .cc-nome{font-size:1.1rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.puja-panel-slot .cc-meta{margin-top:0;font-size:.82rem;flex-wrap:nowrap;overflow:hidden}
+.puja-panel-slot .cc-meta{margin-top:0;font-size:.82rem;flex-wrap:wrap;overflow:visible}
 
 .puja-panel-slot .cc-body{margin-bottom:0;display:flex;align-items:center;gap:8px;flex:0 0 auto;white-space:nowrap}
 
@@ -882,7 +882,7 @@ body.layout-admin .asta-row-puja .cc-info{min-width:0;overflow:hidden}
 
 body.layout-admin .asta-row-puja .cc-nome{font-size:1.05rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-body.layout-admin .asta-row-puja .cc-meta{margin-top:0;flex-wrap:nowrap;overflow:hidden}
+body.layout-admin .asta-row-puja .cc-meta{margin-top:0;flex-wrap:wrap;overflow:visible}
 
 body.layout-admin .asta-row-puja .cc-offerta{font-size:2.6rem;color:var(--gold);text-shadow:0 0 20px var(--gold-glow),0 0 40px rgba(255,184,0,.2)}
 
