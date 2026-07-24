@@ -1312,6 +1312,8 @@ function _commonsFileTitle(imageUrl) {
     return 'File:' + filename.replace(/_/g, ' ');
   } catch(e) { return null; }
 }
+var _nationalTeamCountries = ['afghanistan','albania','algeria','andorra','angola','argentina','armenia','australia','austria','azerbaijan','bahamas','bahrain','bangladesh','barbados','belarus','belgium','belize','benin','bhutan','bolivia','bosnia and herzegovina','botswana','brazil','brunei','bulgaria','burkina faso','burundi','cambodia','cameroon','canada','cape verde','central african republic','chad','chile','china','colombia','comoros','congo','costa rica','croatia','cuba','cyprus','czech republic','denmark','djibouti','dominica','dominican republic','democratic republic of the congo','ecuador','egypt','el salvador','equatorial guinea','eritrea','estonia','eswatini','ethiopia','fiji','finland','france','gabon','gambia','georgia','germany','ghana','greece','grenada','guatemala','guinea','guinea-bissau','guyana','haiti','honduras','hungary','iceland','india','indonesia','iran','iraq','ireland','israel','italy','ivory coast','jamaica','japan','jordan','kazakhstan','kenya','kiribati','kosovo','kuwait','kyrgyzstan','laos','latvia','lebanon','lesotho','liberia','libya','liechtenstein','lithuania','luxembourg','madagascar','malawi','malaysia','maldives','mali','malta','mauritania','mauritius','mexico','moldova','monaco','mongolia','montenegro','morocco','mozambique','myanmar','namibia','nepal','netherlands','new zealand','nicaragua','niger','nigeria','north korea','north macedonia','norway','oman','pakistan','palestine','panama','papua new guinea','paraguay','peru','philippines','poland','portugal','qatar','romania','russia','rwanda','saint kitts and nevis','saint lucia','samoa','san marino','saudi arabia','senegal','serbia','seychelles','sierra leone','singapore','slovakia','slovenia','solomon islands','somalia','south africa','south korea','south sudan','spain','sri lanka','sudan','suriname','sweden','switzerland','syria','taiwan','tajikistan','tanzania','thailand','togo','tonga','trinidad and tobago','tunisia','turkey','turkmenistan','tuvalu','uganda','ukraine','united arab emirates','united kingdom','england','scotland','wales','northern ireland','united states','uruguay','uzbekistan','vanuatu','venezuela','vietnam','yemen','zambia','zimbabwe'];
+function _isCountryName(s) { return _nationalTeamCountries.indexOf(s) > -1; }
 function _checkCommonsNotInternational(imageUrl) {
   var title = _commonsFileTitle(imageUrl);
   if (!title) return Promise.resolve(true); // non riusciamo a verificare: accettiamo
@@ -1334,7 +1336,8 @@ function _checkCommonsNotInternational(imageUrl) {
       // es. "Iceland national football team", "WikiPortraits at 2026 International Soccer Matches"
       if (c.indexOf('national football team') > -1 || c.indexOf('national soccer team') > -1) return false;
       if (c.indexOf('international') > -1 && (c.indexOf('soccer') > -1 || c.indexOf('football') > -1)) return false;
-      if (/\bv\b/.test(c) && /\d{4}/.test(c)) return false; // pattern 'TeamA v TeamB, <anno>' tipico di incontri di nazionali/rappresentative
+      var _mvs = c.match(/^(.+?)\s+v(?:s\.?)?\s+(.+?)(?:,\s*\d.*)?$/);
+      if (_mvs && _isCountryName(_mvs[1].trim()) && _isCountryName(_mvs[2].trim())) return false; // categoria tipo "PaeseA vs PaeseB, <data>" = foto di nazionali
     }
     return true; // foto ok (contesto di club o neutro)
   }).catch(function() { return true; }); // in caso di errore: accettiamo (evita blocchi inutili)
