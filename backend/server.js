@@ -395,6 +395,71 @@ app.post('/api/listino/upload', async (req, res) => {
   }
 });
 
+// ══ GOALKEEPER PLANNER — calendario personalizzato (caricato dall'Admin) ══
+// Il calendario reale della Serie A puo' essere caricato una volta disponibile,
+// sostituendo il calendario placeholder generato via round-robin. Salvato lato
+// server cosi' che TUTTI gli utenti dell'app vedano subito lo stesso calendario.
+const GK_CALENDARIO_FILE = path.join(BACKUP_DIR, 'gk_planner_calendario_custom.json');
+
+app.get('/api/gk-planner/calendario', (req, res) => {
+  try {
+    if (fs.existsSync(GK_CALENDARIO_FILE)) {
+      const data = JSON.parse(fs.readFileSync(GK_CALENDARIO_FILE, 'utf-8'));
+      return res.json(data);
+    }
+  } catch (e) { /* fallback sotto */ }
+  res.status(404).json({ custom: false });
+});
+
+app.post('/api/gk-planner/calendario', async (req, res) => {
+  if (!supabaseAdmin) return res.status(500).json({ error: 'Supabase non configurato sul server' });
+  const auth = await getRuoloUtente(req);
+  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  if (auth.role !== 'admin') return res.status(403).json({ error: 'Solo un Admin può caricare il calendario' });
+
+  const partite = req.body && req.body.partite;
+  if (!Array.isArray(partite) || !partite.length) {
+    return res.status(400).json({ error: 'Calendario vuoto o non valido' });
+  }
+
+  const righeValide = partite.filter(p =>
+    p && Number.isInteger(p.giornata) && p.giornata >= 1 && p.giornata <= 60 &&
+    typeof p.casa === 'string' && p.casa.trim() && typeof p.ospite === 'string' && p.ospite.trim() &&
+    p.casa.trim() !== p.ospite.trim()
+  );
+  if (righeValide.length < partite.length * 0.9) {
+    return res.status(400).json({ error: 'Troppe righe non valide nel file (controlla le colonne Giornata / Casa / Ospite)' });
+  }
+
+  try {
+    const payload = {
+      custom: true,
+      stagione: (req.body.stagione || 'personalizzata'),
+      caricatoIl: new Date().toISOString(),
+      giornate_totali: Math.max.apply(null, righeValide.map(p => p.giornata)),
+      partite: righeValide.map(p => ({ giornata: p.giornata, casa: p.casa.trim(), ospite: p.ospite.trim() }))
+    };
+    fs.writeFileSync(GK_CALENDARIO_FILE, JSON.stringify(payload));
+    res.json({ ok: true, totalPartite: payload.partite.length, giornateTotali: payload.giornate_totali });
+  } catch (err) {
+    console.error('Errore salvataggio calendario GK Planner:', err.message);
+    res.status(500).json({ error: 'Errore nel salvataggio del calendario: ' + err.message });
+  }
+});
+
+app.delete('/api/gk-planner/calendario', async (req, res) => {
+  if (!supabaseAdmin) return res.status(500).json({ error: 'Supabase non configurato sul server' });
+  const auth = await getRuoloUtente(req);
+  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  if (auth.role !== 'admin') return res.status(403).json({ error: 'Solo un Admin può ripristinare il calendario' });
+  try {
+    if (fs.existsSync(GK_CALENDARIO_FILE)) fs.unlinkSync(GK_CALENDARIO_FILE);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Errore nel ripristino del calendario: ' + err.message });
+  }
+});
+
 // ══ API-FOOTBALL PROXY (foto giocatori) — limite 100 richieste/giorno ══
 // La API key resta solo sul backend (mai esposta al frontend).
 const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY || null;
