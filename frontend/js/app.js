@@ -1334,6 +1334,7 @@ function _checkCommonsNotInternational(imageUrl) {
       // es. "Iceland national football team", "WikiPortraits at 2026 International Soccer Matches"
       if (c.indexOf('national football team') > -1 || c.indexOf('national soccer team') > -1) return false;
       if (c.indexOf('international') > -1 && (c.indexOf('soccer') > -1 || c.indexOf('football') > -1)) return false;
+      if (/\bv\b/.test(c) && /\d{4}/.test(c)) return false; // pattern 'TeamA v TeamB, <anno>' tipico di incontri di nazionali/rappresentative
     }
     return true; // foto ok (contesto di club o neutro)
   }).catch(function() { return true; }); // in caso di errore: accettiamo (evita blocchi inutili)
