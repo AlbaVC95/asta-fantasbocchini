@@ -31,9 +31,21 @@
   }
 
   function loadFixtures() {
-    return fetch('data/gk_planner_calendario.json').then(function (r) { return r.json(); }).then(function (d) {
+    // Priorita': calendario personalizzato caricato da un Admin (salvato lato server, condiviso
+    // da tutti gli utenti). Se non presente, si usa il calendario placeholder incluso nell'app.
+    return fetch('/api/gk-planner/calendario').then(function (r) {
+      if (!r.ok) throw new Error('no-custom');
+      return r.json();
+    }).then(function (d) {
       GKUI.fixtures = d.partite;
+      GKUI.calendarioInfo = { custom: true, stagione: d.stagione, caricatoIl: d.caricatoIl };
       return d.partite;
+    }).catch(function () {
+      return fetch('data/gk_planner_calendario.json').then(function (r) { return r.json(); }).then(function (d) {
+        GKUI.fixtures = d.partite;
+        GKUI.calendarioInfo = { custom: false };
+        return d.partite;
+      });
     });
   }
 
@@ -262,6 +274,7 @@
 
   // ── IMPOSTAZIONI ──
   function renderConfig() {
+    updateGkImportStatusText();
     const cfg = GKUI.config;
     const weightLabels = {
       coverage: 'Copertura calendario', difficoltaMedia: 'Difficoltà media',
@@ -325,6 +338,125 @@
     if (typeof toast === 'function') toast('Impostazioni ripristinate ai valori di default', 'success');
   }
 
+  // ── IMPORTAZIONE CALENDARIO (Admin) ──
+  // Permette all'Admin di caricare il calendario reale della Serie A (Excel o JSON)
+  // non appena disponibile, sostituendo il calendario placeholder. Salvato lato server,
+  // quindi visibile immediatamente a tutti gli utenti dell'app (non solo a chi lo carica).
+  let _gkPendingCalendario = null;
+
+  function updateGkImportStatusText() {
+    const el = document.getElementById('gk-import-status-text');
+    if (!el) return;
+    if (GKUI.calendarioInfo && GKUI.calendarioInfo.custom) {
+      const data = GKUI.calendarioInfo.caricatoIl ? new Date(GKUI.calendarioInfo.caricatoIl).toLocaleString('it-IT') : '';
+      el.textContent = '✅ In uso: calendario reale caricato' + (data ? ' il ' + data : '') + '. Puoi sostituirlo caricando un nuovo file.';
+    } else {
+      el.textContent = 'Attualmente in uso: calendario generato automaticamente (placeholder). Carica il calendario reale (Excel o JSON) non appena disponibile — verrà usato da tutti gli utenti dell\'app.';
+    }
+  }
+
+  function normalizeParsedPartite(rows) {
+    // Rows possono venire da Excel (oggetti con colonne libere) o da JSON ({partite:[...]}).
+    const norm = function (s) { return (s || '').toString().trim().toLowerCase(); };
+    if (!rows.length) return [];
+    const headers = Object.keys(rows[0]);
+    const findCol = function () {
+      const names = Array.prototype.slice.call(arguments);
+      return headers.find(function (h) { return names.some(function (n) { return norm(h) === norm(n); }); });
+    };
+    const colGiornata = findCol('Giornata', 'Giorn', 'GG', 'Round');
+    const colCasa = findCol('Casa', 'Home', 'Squadra Casa');
+    const colOspite = findCol('Ospite', 'Away', 'Squadra Ospite', 'Trasferta');
+    if (!colGiornata || !colCasa || !colOspite) return null; // colonne mancanti
+    return rows.map(function (r) {
+      return { giornata: parseInt(r[colGiornata], 10), casa: String(r[colCasa] || '').trim(), ospite: String(r[colOspite] || '').trim() };
+    }).filter(function (p) { return p.giornata && p.casa && p.ospite; });
+  }
+
+  function handleGkCalendarioFile(file) {
+    if (!file) return;
+    const statusEl = document.getElementById('gk-import-filename');
+    const btnCarica = document.getElementById('btn-gk-carica-calendario');
+    statusEl.textContent = file.name;
+    btnCarica.disabled = true;
+    _gkPendingCalendario = null;
+
+    const isJson = /\.json$/i.test(file.name);
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        let partite;
+        if (isJson) {
+          const parsed = JSON.parse(e.target.result);
+          partite = Array.isArray(parsed) ? parsed : parsed.partite;
+          if (!Array.isArray(partite)) throw new Error('Il file JSON deve contenere un array "partite"');
+        } else {
+          const wb = XLSX.read(e.target.result, { type: 'array' });
+          const sheet = wb.Sheets[wb.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+          partite = normalizeParsedPartite(rows);
+          if (partite === null) throw new Error('Colonne mancanti: servono Giornata, Casa, Ospite');
+        }
+        if (!partite || !partite.length) throw new Error('Nessuna partita valida trovata nel file');
+        _gkPendingCalendario = partite;
+        btnCarica.disabled = false;
+        if (typeof toast === 'function') toast(partite.length + ' partite lette dal file, premi "Carica calendario" per confermare', 'success');
+      } catch (err) {
+        if (typeof toast === 'function') toast('Errore nella lettura del file: ' + err.message, 'error');
+      }
+    };
+    if (isJson) reader.readAsText(file); else reader.readAsArrayBuffer(file);
+  }
+
+  async function confermaCaricaCalendario() {
+    if (!_gkPendingCalendario || !_gkPendingCalendario.length) return;
+    try {
+      const { data: sessData } = await supa.auth.getSession();
+      const token = sessData && sessData.session ? sessData.session.access_token : null;
+      const res = await fetch('/api/gk-planner/calendario', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ partite: _gkPendingCalendario })
+      });
+      const out = await res.json();
+      if (!res.ok) {
+        if (typeof toast === 'function') toast(out.error || 'Errore nel caricamento del calendario', 'error');
+        return;
+      }
+      if (typeof toast === 'function') toast('Calendario aggiornato: ' + out.totalPartite + ' partite su ' + out.giornateTotali + ' giornate', 'success');
+      document.getElementById('gk-import-filename').textContent = '';
+      document.getElementById('btn-gk-carica-calendario').disabled = true;
+      _gkPendingCalendario = null;
+      await loadFixtures();
+      recompute();
+      updateGkImportStatusText();
+    } catch (err) {
+      if (typeof toast === 'function') toast('Errore di rete durante il caricamento: ' + err.message, 'error');
+    }
+  }
+
+  async function ripristinaCalendarioPlaceholder() {
+    try {
+      const { data: sessData } = await supa.auth.getSession();
+      const token = sessData && sessData.session ? sessData.session.access_token : null;
+      const res = await fetch('/api/gk-planner/calendario', {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const out = await res.json();
+      if (!res.ok) {
+        if (typeof toast === 'function') toast(out.error || 'Errore nel ripristino', 'error');
+        return;
+      }
+      if (typeof toast === 'function') toast('Ripristinato il calendario placeholder', 'success');
+      await loadFixtures();
+      recompute();
+      updateGkImportStatusText();
+    } catch (err) {
+      if (typeof toast === 'function') toast('Errore di rete: ' + err.message, 'error');
+    }
+  }
+
   // ── Inizializzazione ──
   function initGKPlanner() {
     const btnMenu = document.getElementById('btn-menu-gk-planner');
@@ -362,6 +494,13 @@
     if (btnApply) btnApply.addEventListener('click', applyConfigFromForm);
     const btnReset = document.getElementById('btn-gk-reset-config');
     if (btnReset) btnReset.addEventListener('click', resetConfig);
+
+    const inpCalFile = document.getElementById('inp-gk-calendario-file');
+    if (inpCalFile) inpCalFile.addEventListener('change', function () { handleGkCalendarioFile(inpCalFile.files[0]); });
+    const btnCarica = document.getElementById('btn-gk-carica-calendario');
+    if (btnCarica) btnCarica.addEventListener('click', confermaCaricaCalendario);
+    const btnRipristina = document.getElementById('btn-gk-ripristina-calendario');
+    if (btnRipristina) btnRipristina.addEventListener('click', ripristinaCalendarioPlaceholder);
   }
 
   if (document.readyState === 'loading') {
