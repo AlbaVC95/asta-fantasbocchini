@@ -1345,6 +1345,69 @@ function _checkCommonsNotInternational(imageUrl) {
 
 // Fallback finale: se nessuna foto reale del giocatore e' stata trovata, mostra un'illustrazione
 // generica con la maglia della squadra assegnata (immagini in /img/teams/), invece dell'avatar con iniziali.
+
+const _teamPhotoFolders = {
+  atalanta: 'Atalanta', bologna: 'Bologna', cagliari: 'Cagliari', como: 'Como', fiorentina: 'Fiorentina',
+  frosinone: 'Frosinone', genoa: 'Genoa', inter: 'Inter', juventus: 'Juventus', lazio: 'Lazio',
+  lecce: 'Lecce', milan: 'Milan', monza: 'Monza', napoli: 'Napoli', parma: 'Parma',
+  roma: 'Roma', sassuolo: 'Sassuolo', torino: 'Torino', udinese: 'Udinese', venezia: 'Venezia'
+};
+let _playerPhotoIndex = null; // { "Atalanta": ["Nome_Cognome.jpg", ...], ... } caricato da data/player_photos_index.json
+let _playerPhotoIndexPromise = null;
+function _loadPlayerPhotoIndex() {
+  if (_playerPhotoIndexPromise) return _playerPhotoIndexPromise;
+  _playerPhotoIndexPromise = fetch('data/player_photos_index.json')
+    .then(function(r) { return r.json(); })
+    .then(function(json) { _playerPhotoIndex = json; return json; })
+    .catch(function() { _playerPhotoIndex = {}; return {}; });
+  return _playerPhotoIndexPromise;
+}
+// Normalizza un nome per il confronto: minuscolo, senza accenti, solo lettere/numeri.
+function _normalizePhotoName(s) {
+  return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+// Cerca una foto locale (caricata manualmente) del giocatore, confrontando il nome
+// con i file disponibili nella cartella della sua squadra. Fonte prioritaria: e' garantita
+// al 100%, senza limiti di quota e senza rischio di maglia sbagliata.
+function _tryLocalPhoto(nome, squadra) {
+  return _loadPlayerPhotoIndex().then(function(idx) {
+    if (!idx || !squadra) return null;
+    const bw = _teamWords(squadra);
+    let folder = null;
+    for (let i = 0; i < bw.length; i++) {
+      const w = bw[i];
+      if (w.length < 4) continue;
+      for (const slug in _teamPhotoFolders) {
+        if (slug === w || slug.indexOf(w) === 0 || w.indexOf(slug) === 0) { folder = _teamPhotoFolders[slug]; break; }
+      }
+      if (folder) break;
+    }
+    if (!folder || !idx[folder]) return null;
+    const targetNorm = _normalizePhotoName(nome);
+    if (!targetNorm) return null;
+    const files = idx[folder];
+    // Confronto esatto sul nome normalizzato (senza estensione), poi fallback a "contiene".
+    let best = null;
+    for (let i = 0; i < files.length; i++) {
+      const fname = files[i];
+      const base = fname.replace(/\.[a-zA-Z]+$/, '');
+      const fnorm = _normalizePhotoName(base.replace(/_/g, ' '));
+      if (fnorm === targetNorm) { best = fname; break; }
+    }
+    if (!best) {
+      for (let i = 0; i < files.length; i++) {
+        const fname = files[i];
+        const base = fname.replace(/\.[a-zA-Z]+$/, '');
+        const fnorm = _normalizePhotoName(base.replace(/_/g, ' '));
+        if (fnorm.indexOf(targetNorm) > -1 || targetNorm.indexOf(fnorm) > -1) { best = fname; break; }
+      }
+    }
+    if (!best) return null;
+    return 'img/players/' + folder + '/' + best;
+  }).catch(function() { return null; });
+}
+
 const _teamFallbackSlugs = ['atalanta','bologna','cagliari','como','fiorentina','frosinone','genoa','inter','juventus','lazio','lecce','milan','monza','napoli','parma','roma','sassuolo','torino','udinese','venezia'];
 function _teamFallbackImage(squadra) {
   if (!squadra) return null;
@@ -1505,7 +1568,8 @@ function _loadPlayerPhoto(nome, squadra, version) {
     _applyPlayerPhoto(_playerPhotoCache[cacheKey], version);
     return;
   }
-  _withTimeout(_trySportsDB(nome, squadra), 4000, null)
+  _withTimeout(_tryLocalPhoto(nome, squadra), 4000, null)
+    .then(function(img) { return img || _withTimeout(_trySportsDB(nome, squadra), 4000, null); })
     .then(function(img) { return img || _withTimeout(_tryWikidata(nome, squadra), 4000, null); })
     .then(function(img) { return img || _withTimeout(_tryWikipedia(nome, squadra), 4000, null); })
     .then(function(img) { return img || _withTimeout(_tryApiFootball(nome, squadra), 4000, null); })
