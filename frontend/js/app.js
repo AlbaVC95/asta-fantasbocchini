@@ -1474,6 +1474,17 @@ function _tryWikipedia(nome, squadra) {
 // Applica un timeout a una promise: se la fonte esterna (SportsDB/Wikidata/Wikipedia)
 // e' lenta o irraggiungibile (rete lenta, firewall, blocco del browser), dopo "ms"
 // si passa comunque al fallback invece di restare bloccati per sempre senza mostrare nulla.
+// Ultima fonte prima del fallback allo scudo: API-Football (proxy sul backend,
+// che gestisce la chiave segreta e il limite di 100 richieste/giorno del piano free).
+// Ritorna una foto tipo tessera/profilo del giocatore (non foto di partita), quindi
+// non serve applicare il filtro anti-nazionale usato per le foto di Wikimedia Commons.
+function _tryApiFootball(nome, squadra) {
+  return fetch('/api/player-photo?name=' + encodeURIComponent(nome))
+    .then(function(r) { return r.json(); })
+    .then(function(data) { return (data && data.photo) || null; })
+    .catch(function() { return null; });
+}
+
 function _withTimeout(promise, ms, fallbackValue) {
   return new Promise(function(resolve) {
     let done = false;
@@ -1497,6 +1508,7 @@ function _loadPlayerPhoto(nome, squadra, version) {
   _withTimeout(_trySportsDB(nome, squadra), 4000, null)
     .then(function(img) { return img || _withTimeout(_tryWikidata(nome, squadra), 4000, null); })
     .then(function(img) { return img || _withTimeout(_tryWikipedia(nome, squadra), 4000, null); })
+    .then(function(img) { return img || _withTimeout(_tryApiFootball(nome, squadra), 4000, null); })
     .then(function(img) { return img || _teamFallbackImage(squadra); })
     .then(function(finalUrl) {
       _playerPhotoCache[cacheKey] = finalUrl || null;
