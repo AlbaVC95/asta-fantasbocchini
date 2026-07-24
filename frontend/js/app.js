@@ -1299,6 +1299,41 @@ function _isWomenText(s) {
   return false;
 }
 
+// Controlla le categorie Wikimedia Commons di un'immagine: restituisce true se la foto
+// e' chiaramente scattata durante una gara internazionale (Mondiale, Euro, Olimpiadi, ecc.)
+// In quel caso il giocatore indossa la maglia della nazionale, non del club — foto scartata.
+function _commonsFileTitle(imageUrl) {
+  try {
+    var u = new URL(imageUrl);
+    var parts = decodeURIComponent(u.pathname).split('/');
+    var filename = parts[parts.length - 1];
+    // rimuove prefix di dimensione tipo "330px-" generato dai thumbnail
+    filename = filename.replace(/^\d+px-/, '');
+    return 'File:' + filename.replace(/_/g, ' ');
+  } catch(e) { return null; }
+}
+function _checkCommonsNotInternational(imageUrl) {
+  var title = _commonsFileTitle(imageUrl);
+  if (!title) return Promise.resolve(true); // non riusciamo a verificare: accettiamo
+  var url = 'https://commons.wikimedia.org/w/api.php?action=query&titles=' +
+    encodeURIComponent(title) + '&prop=categories&cllimit=50&format=json&origin=*';
+  return fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+    var pages = data.query && data.query.pages;
+    if (!pages) return true;
+    var page = pages[Object.keys(pages)[0]];
+    var cats = (page.categories || []).map(function(c) { return c.title.replace(/^Category:/, '').toLowerCase(); });
+    var intlKw = ['fifa world cup', 'uefa european championship', 'uefa euro', 'copa america', 'copa américa',
+      'africa cup of nations', 'afcon', 'olympic football', 'confederations cup', 'nations league',
+      'conmebol', 'concacaf gold cup', 'afc asian cup', 'wcq', 'world cup qualifier'];
+    for (var i = 0; i < cats.length; i++) {
+      for (var j = 0; j < intlKw.length; j++) {
+        if (cats[i].indexOf(intlKw[j]) > -1) return false; // foto internazionale — scarta
+      }
+    }
+    return true; // foto ok (contesto di club o neutro)
+  }).catch(function() { return true; }); // in caso di errore: accettiamo (evita blocchi inutili)
+}
+
 // Fallback finale: se nessuna foto reale del giocatore e' stata trovata, mostra un'illustrazione
 // generica con la maglia della squadra assegnata (immagini in /img/teams/), invece dell'avatar con iniziali.
 const _teamFallbackSlugs = ['atalanta','bologna','cagliari','como','fiorentina','frosinone','genoa','inter','juventus','lazio','lecce','milan','monza','napoli','parma','roma','sassuolo','torino','udinese','venezia'];
@@ -1364,7 +1399,11 @@ function _tryWikidata(nome, squadra) {
           const image = b.image && b.image.value;
           if (!image) continue;
           if (_isWomenText(team)) continue;
-          if (_teamMatches(team, squadra)) return image;
+          if (_teamMatches(team, squadra)) {
+            // Verifica che la foto non sia scattata in un contesto di nazionale (es. Mondiale):
+            // in quel caso il club coincide nella carriera ma la maglia mostrata non e' quella del club.
+            return _checkCommonsNotInternational(image).then(function(ok) { return ok ? image : null; });
+          }
         }
         return null; // rimosso il fallback "nessuna squadra indicata": troppo rischioso, causava foto di persone omonime sbagliate
       });
@@ -1411,7 +1450,9 @@ function _tryWikipedia(nome, squadra) {
                 for (let i = 0; i < bindings.length; i++) {
                   const team = bindings[i].teamLabel && bindings[i].teamLabel.value;
                   if (_isWomenText(team)) return null;
-                  if (_teamMatches(team, squadra)) return url;
+                  if (_teamMatches(team, squadra)) {
+                    return _checkCommonsNotInternational(url).then(function(ok) { return ok ? url : null; });
+                  }
                 }
                 return null;
               });
