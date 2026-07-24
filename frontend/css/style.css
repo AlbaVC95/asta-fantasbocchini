@@ -189,11 +189,11 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 
 .asta-row-panels{display:flex;gap:10px;padding:0 12px;flex-shrink:0;align-items:stretch}
 
-.asta-row-panels>#admin-panel{flex:1.6;max-height:clamp(160px,26vh,230px);overflow-y:auto}
+.asta-row-panels>#admin-panel{flex:1.9;max-height:clamp(160px,26vh,230px);overflow-y:auto}
 
 .asta-row-panels>#mio-panel{flex:1;max-height:clamp(160px,26vh,230px);overflow-y:auto}
 
-.panel-budget{background:var(--bg-abyss);border:1px solid var(--border);border-radius:14px;padding:8px 10px;flex:1;min-width:0;overflow-y:auto;max-height:clamp(180px,30vh,260px)}
+.panel-budget{background:var(--bg-abyss);border:1px solid var(--border);border-radius:14px;padding:8px 10px;flex:0.75;min-width:0;overflow-y:auto;max-height:clamp(180px,30vh,260px)}
 
 .panel-budget-hdr{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:0 0 3px;border-bottom:1px solid var(--border);margin-bottom:3px}
 
