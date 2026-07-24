@@ -811,3 +811,132 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .strategia-modal-item-nome{font-weight:700;font-size:.88rem;color:var(--text-primary)}
 .strategia-modal-item-meta{font-size:.72rem;color:var(--text-muted)}
 .strategia-modal-item-rimuovi .strategia-modal-item-nome{color:var(--danger)}
+
+/* ══════════════════════════════════════════════════════════
+   GOALKEEPER PLANNER — modulo Planner (primo di una serie)
+   Riutilizza le variabili di design del progetto (colori, font,
+   card, badge) per garantire una perfetta integrazione visiva.
+   ══════════════════════════════════════════════════════════ */
+.gk-pro-badge{display:inline-block;background:linear-gradient(135deg,var(--gold),var(--gold-deep));color:#000;font-size:.6rem;font-weight:800;letter-spacing:.05em;padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:middle}
+.gk-planner-screen{padding:16px;max-width:980px;margin:0 auto}
+.gk-header{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.gk-header-title h1{font-family:var(--font-display);font-size:1.35rem;font-weight:800;margin:0}
+.gk-header-sub{font-size:.78rem;color:var(--text-muted);margin-top:2px}
+.gk-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:14px;border-bottom:1px solid var(--border)}
+.gk-tab{flex-shrink:0;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-secondary);border-radius:10px 10px 0 0;padding:8px 14px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.gk-tab:hover{color:var(--text-primary);border-color:var(--primary)}
+.gk-tab.active{background:var(--primary-subtle);border-color:var(--primary);color:var(--primary-bright)}
+.gk-view{display:none;animation:card-enter .25s ease-out}
+.gk-view.active{display:block}
+.gk-view-intro{font-size:.82rem;color:var(--text-secondary);margin-bottom:14px}
+
+/* ── Ranking ── */
+.gk-ranking-list{display:flex;flex-direction:column;gap:10px}
+.gk-rank-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s}
+.gk-rank-card:hover{border-color:var(--primary);transform:translateY(-1px)}
+.gk-rank-pos{font-family:var(--font-mono);font-size:1.1rem;font-weight:800;color:var(--text-muted);min-width:28px;text-align:center}
+.gk-rank-pos.top1{color:var(--gold-bright)}.gk-rank-pos.top2{color:#d0d0d0}.gk-rank-pos.top3{color:#e0a05a}
+.gk-rank-teams{flex:1;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.gk-rank-team-badge{display:flex;align-items:center;gap:6px;font-size:.85rem;font-weight:600;color:var(--text-primary)}
+.gk-rank-team-badge img{width:22px;height:22px;object-fit:contain}
+.gk-rank-plus{color:var(--text-muted);font-size:.8rem}
+.gk-rank-score{text-align:right;min-width:90px}
+.gk-rank-score-num{font-family:var(--font-mono);font-size:1.25rem;font-weight:800}
+.gk-rank-score-lvl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:1px 8px;border-radius:20px;display:inline-block;margin-top:2px}
+.gk-lvl-Ottimo{background:rgba(0,224,160,.18);color:var(--success)}
+.gk-lvl-Buono{background:rgba(139,92,246,.18);color:var(--primary-bright)}
+.gk-lvl-Discreto{background:rgba(255,179,0,.18);color:var(--gold-bright)}
+.gk-lvl-Rischioso{background:rgba(255,56,96,.18);color:var(--danger)}
+.gk-rank-conf{font-size:.65rem;color:var(--text-muted);margin-top:2px}
+
+/* ── Selettori coppia ── */
+.gk-pair-picker,.gk-round-picker{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.gk-select{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);border-radius:8px;padding:8px 10px;font-size:.85rem;flex:1;min-width:130px}
+.gk-pair-plus{color:var(--text-muted);font-weight:700}
+.gk-compare-picker{display:flex;align-items:center;gap:14px}
+.gk-compare-col{flex:1;display:flex;flex-direction:column;gap:6px}
+.gk-compare-label{font-size:.75rem;color:var(--text-muted);font-weight:700;text-transform:uppercase}
+.gk-compare-vs{font-family:var(--font-display);font-weight:800;color:var(--gold-bright);font-size:1.1rem}
+
+/* ── Riepilogo coppia (score + breakdown) ── */
+.gk-summary-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px}
+.gk-summary-top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.gk-summary-score{text-align:center}
+.gk-summary-score-num{font-family:var(--font-mono);font-size:2.2rem;font-weight:800;line-height:1}
+.gk-summary-score-label{font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
+.gk-summary-explain{font-size:.85rem;color:var(--text-secondary);margin-top:14px;line-height:1.6;border-left:3px solid var(--primary);padding-left:12px}
+.gk-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:16px}
+.gk-breakdown-item{background:var(--bg-elevated);border-radius:10px;padding:10px 12px}
+.gk-breakdown-label{font-size:.7rem;color:var(--text-muted);margin-bottom:6px}
+.gk-breakdown-bar{height:6px;border-radius:4px;background:var(--bg-main);overflow:hidden}
+.gk-breakdown-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--primary),var(--primary-bright));transition:width .5s ease}
+.gk-breakdown-val{font-family:var(--font-mono);font-size:.78rem;font-weight:700;margin-top:4px}
+.gk-stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-top:14px}
+.gk-stat-box{text-align:center;background:var(--bg-elevated);border-radius:10px;padding:10px}
+.gk-stat-num{font-family:var(--font-mono);font-size:1.3rem;font-weight:800;color:var(--text-primary)}
+.gk-stat-lbl{font-size:.65rem;color:var(--text-muted);margin-top:2px}
+
+/* ── Heatmap 38 giornate ── */
+.gk-heatmap-wrap{overflow-x:auto;margin-top:18px;padding-bottom:8px}
+.gk-heatmap{display:grid;grid-auto-flow:column;gap:3px;min-width:max-content}
+.gk-heatmap-row-label{font-size:.7rem;font-weight:700;color:var(--text-secondary);display:flex;align-items:center;padding-right:8px;white-space:nowrap;position:sticky;left:0;background:var(--bg-card);z-index:1}
+.gk-heat-cell{width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#04120a;cursor:default;transition:transform .1s}
+.gk-heat-cell:hover{transform:scale(1.18);z-index:2}
+.gk-heat-facile{background:linear-gradient(135deg,#4ee39a,#00c37a);color:#00250f}
+.gk-heat-media{background:linear-gradient(135deg,#ffd166,#ffab00);color:#3a2200}
+.gk-heat-difficile{background:linear-gradient(135deg,#ff6b6b,#e8283e);color:#3a0008}
+.gk-heat-cell.gk-heat-reco{box-shadow:0 0 0 2px var(--text-primary) inset}
+.gk-heat-header-cell{width:26px;text-align:center;font-size:.6rem;color:var(--text-muted);font-family:var(--font-mono)}
+.gk-heat-legend{display:flex;gap:14px;margin-top:10px;font-size:.7rem;color:var(--text-muted);flex-wrap:wrap}
+.gk-heat-legend span{display:inline-flex;align-items:center;gap:5px}
+.gk-heat-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+/* ── Lista giornate dettagliata ── */
+.gk-giornate-list{display:flex;flex-direction:column;gap:6px;margin-top:16px}
+.gk-giornata-row{display:flex;align-items:center;gap:10px;background:var(--bg-elevated);border-radius:8px;padding:8px 12px;font-size:.78rem}
+.gk-giornata-row.critica{border-left:3px solid var(--danger)}
+.gk-giornata-num{font-family:var(--font-mono);font-weight:700;color:var(--text-muted);min-width:24px}
+.gk-giornata-match{flex:1;color:var(--text-secondary)}
+.gk-giornata-reco{font-weight:700;padding:2px 8px;border-radius:20px;font-size:.68rem}
+.gk-giornata-reco.reco-A{background:rgba(0,224,160,.18);color:var(--success)}
+.gk-giornata-reco.reco-B{background:rgba(139,92,246,.18);color:var(--primary-bright)}
+.gk-giornata-reco.reco-ballottaggio{background:rgba(255,179,0,.18);color:var(--gold-bright)}
+
+/* ── Confronto ── */
+.gk-compare-result{margin-top:18px}
+.gk-compare-bars{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.gk-compare-bar-row{display:flex;align-items:center;gap:10px;font-size:.78rem}
+.gk-compare-bar-label{min-width:130px;color:var(--text-muted)}
+.gk-compare-bar-track{flex:1;display:flex;align-items:center;gap:4px}
+.gk-compare-bar-fill{height:10px;border-radius:5px}
+.gk-compare-bar-fill.side-a{background:linear-gradient(90deg,var(--success),#00c37a)}
+.gk-compare-bar-fill.side-b{background:linear-gradient(90deg,var(--primary),var(--primary-bright))}
+
+/* ── Vista giornata ── */
+.gk-round-label{font-family:var(--font-mono);font-weight:800;font-size:1.1rem;min-width:110px;text-align:center}
+.gk-round-slider{flex:1;min-width:120px}
+.gk-round-teams{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.gk-round-team-row{display:flex;align-items:center;gap:10px;background:var(--bg-elevated);border-radius:8px;padding:8px 12px}
+.gk-round-team-pos{font-family:var(--font-mono);font-weight:700;color:var(--text-muted);min-width:22px}
+.gk-round-team-name{flex:1;font-weight:600;font-size:.85rem}
+.gk-round-team-opp{font-size:.72rem;color:var(--text-muted)}
+.gk-round-diff-badge{font-family:var(--font-mono);font-weight:700;font-size:.75rem;padding:3px 10px;border-radius:20px;min-width:44px;text-align:center}
+
+/* ── Impostazioni ── */
+.gk-config-section{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
+.gk-config-section h3{font-size:.9rem;margin-bottom:12px;color:var(--text-primary)}
+.gk-config-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:.8rem}
+.gk-config-row label{flex:0 0 150px;color:var(--text-secondary)}
+.gk-config-row input[type=range]{flex:1}
+.gk-config-row .gk-config-val{font-family:var(--font-mono);min-width:36px;text-align:right;color:var(--text-primary);font-weight:700}
+.gk-strength-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.gk-strength-item{display:flex;flex-direction:column;gap:4px;background:var(--bg-elevated);border-radius:8px;padding:8px 10px}
+.gk-strength-item label{font-size:.72rem;color:var(--text-secondary);display:flex;justify-content:space-between}
+.gk-config-actions{display:flex;gap:10px;flex-wrap:wrap}
+.gk-config-actions .btn{flex:1;min-width:160px}
+
+@media (max-width:600px){
+  .gk-heat-cell,.gk-heat-header-cell{width:22px;height:22px}
+  .gk-compare-picker{flex-direction:column}
+  .gk-compare-vs{align-self:center}
+}
