@@ -211,6 +211,20 @@
 
     <!-- ── VISTA: IMPOSTAZIONI ── -->
     <div class="gk-view" id="gk-view-config">
+      <div class="gk-config-section" id="gk-config-import-section">
+        <h3>📅 Calendario Serie A</h3>
+        <p class="gk-import-hint" id="gk-import-status-text">Attualmente in uso: calendario generato automaticamente (placeholder). Carica il calendario reale (Excel o JSON) non appena disponibile — verrà usato da tutti gli utenti dell'app.</p>
+        <div class="gk-import-row">
+          <label for="inp-gk-calendario-file" class="btn btn-secondary btn-sm">📂 Scegli file (.xlsx o .json)</label>
+          <input type="file" id="inp-gk-calendario-file" accept=".xlsx,.xls,.json" style="display:none">
+          <span id="gk-import-filename" class="gk-import-filename"></span>
+        </div>
+        <p class="gk-import-format-hint">Formato Excel richiesto: colonne <strong>Giornata</strong>, <strong>Casa</strong>, <strong>Ospite</strong> (una riga per partita). Formato JSON: <code>{"partite":[{"giornata":1,"casa":"Inter","ospite":"Milan"}, ...]}</code>.</p>
+        <div class="gk-import-actions">
+          <button type="button" id="btn-gk-carica-calendario" class="btn btn-primary btn-sm" disabled>Carica calendario</button>
+          <button type="button" id="btn-gk-ripristina-calendario" class="btn btn-secondary btn-sm">Torna al calendario placeholder</button>
+        </div>
+      </div>
       <div class="gk-config-section">
         <h3>Pesi dell'algoritmo</h3>
         <div id="gk-config-weights"></div>
