@@ -940,3 +940,13 @@ body.layout-admin .asta-row-puja .rilancio-box{
   .gk-compare-picker{flex-direction:column}
   .gk-compare-vs{align-self:center}
 }
+
+.gk-import-hint{font-size:.78rem;color:var(--text-secondary);margin-bottom:12px;line-height:1.5}
+.gk-import-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.gk-import-filename{font-size:.78rem;color:var(--text-muted);font-family:var(--font-mono)}
+.gk-import-format-hint{font-size:.68rem;color:var(--text-muted);margin-bottom:10px;line-height:1.5}
+.gk-import-format-hint code{background:var(--bg-elevated);padding:1px 5px;border-radius:4px;font-family:var(--font-mono)}
+.gk-import-actions{display:flex;gap:8px;flex-wrap:wrap}
+.gk-import-status{font-size:.75rem;margin-top:8px;font-weight:600}
+.gk-import-status.ok{color:var(--success)}
+.gk-import-status.err{color:var(--danger)}
