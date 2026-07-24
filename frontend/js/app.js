@@ -1326,9 +1326,14 @@ function _checkCommonsNotInternational(imageUrl) {
       'africa cup of nations', 'afcon', 'olympic football', 'confederations cup', 'nations league',
       'conmebol', 'concacaf gold cup', 'afc asian cup', 'wcq', 'world cup qualifier'];
     for (var i = 0; i < cats.length; i++) {
+      var c = cats[i];
       for (var j = 0; j < intlKw.length; j++) {
-        if (cats[i].indexOf(intlKw[j]) > -1) return false; // foto internazionale — scarta
+        if (c.indexOf(intlKw[j]) > -1) return false; // foto scattata durante un torneo internazionale specifico — scarta
       }
+      // Segnali generici di contesto nazionale/internazionale (non legati a un torneo specifico):
+      // es. "Iceland national football team", "WikiPortraits at 2026 International Soccer Matches"
+      if (c.indexOf('national football team') > -1 || c.indexOf('national soccer team') > -1) return false;
+      if (c.indexOf('international') > -1 && (c.indexOf('soccer') > -1 || c.indexOf('football') > -1)) return false;
     }
     return true; // foto ok (contesto di club o neutro)
   }).catch(function() { return true; }); // in caso di errore: accettiamo (evita blocchi inutili)
