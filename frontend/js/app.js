@@ -1467,23 +1467,41 @@ function _tryWikipedia(nome, squadra) {
     .catch(function() { return null; });
 }
 
+// Applica un timeout a una promise: se la fonte esterna (SportsDB/Wikidata/Wikipedia)
+// e' lenta o irraggiungibile (rete lenta, firewall, blocco del browser), dopo "ms"
+// si passa comunque al fallback invece di restare bloccati per sempre senza mostrare nulla.
+function _withTimeout(promise, ms, fallbackValue) {
+  return new Promise(function(resolve) {
+    let done = false;
+    const timer = setTimeout(function() {
+      if (!done) { done = true; resolve(fallbackValue); }
+    }, ms);
+    Promise.resolve(promise).then(function(v) {
+      if (!done) { done = true; clearTimeout(timer); resolve(v); }
+    }).catch(function() {
+      if (!done) { done = true; clearTimeout(timer); resolve(fallbackValue); }
+    });
+  });
+}
+
 function _loadPlayerPhoto(nome, squadra, version) {
   const cacheKey = nome + '|' + (squadra || '');
   if (Object.prototype.hasOwnProperty.call(_playerPhotoCache, cacheKey)) {
     _applyPlayerPhoto(_playerPhotoCache[cacheKey], version);
     return;
   }
-  _trySportsDB(nome, squadra)
-    .then(function(img) { return img || _tryWikidata(nome, squadra); })
-    .then(function(img) { return img || _tryWikipedia(nome, squadra); })
+  _withTimeout(_trySportsDB(nome, squadra), 4000, null)
+    .then(function(img) { return img || _withTimeout(_tryWikidata(nome, squadra), 4000, null); })
+    .then(function(img) { return img || _withTimeout(_tryWikipedia(nome, squadra), 4000, null); })
     .then(function(img) { return img || _teamFallbackImage(squadra); })
     .then(function(finalUrl) {
       _playerPhotoCache[cacheKey] = finalUrl || null;
       _applyPlayerPhoto(finalUrl || null, version);
     })
     .catch(function() {
-      _playerPhotoCache[cacheKey] = null;
-      _applyPlayerPhoto(null, version);
+      const fb = _teamFallbackImage(squadra);
+      _playerPhotoCache[cacheKey] = fb || null;
+      _applyPlayerPhoto(fb || null, version);
     });
 }
 
