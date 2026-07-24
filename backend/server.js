@@ -395,6 +395,58 @@ app.post('/api/listino/upload', async (req, res) => {
   }
 });
 
+// ══ API-FOOTBALL PROXY (foto giocatori) — limite 100 richieste/giorno ══
+// La API key resta solo sul backend (mai esposta al frontend).
+const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY || null;
+const API_FOOTBALL_DAILY_LIMIT = 100;
+const API_FOOTBALL_USAGE_FILE = path.join(BACKUP_DIR, 'api_football_usage.json');
+
+function _todayUTC() {
+  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
+function _loadApiFootballUsage() {
+  try {
+    if (fs.existsSync(API_FOOTBALL_USAGE_FILE)) {
+      const raw = JSON.parse(fs.readFileSync(API_FOOTBALL_USAGE_FILE, 'utf-8'));
+      if (raw && raw.date === _todayUTC()) return raw;
+    }
+  } catch (e) { /* ignore, riparte da zero */ }
+  return { date: _todayUTC(), count: 0 };
+}
+
+function _saveApiFootballUsage(usage) {
+  try { fs.writeFileSync(API_FOOTBALL_USAGE_FILE, JSON.stringify(usage)); } catch (e) { /* non-fatal */ }
+}
+
+let _apiFootballUsage = _loadApiFootballUsage();
+
+app.get('/api/player-photo', async (req, res) => {
+  if (!API_FOOTBALL_KEY) return res.json({ photo: null, reason: 'not-configured' });
+  const nome = (req.query.name || '').toString().trim();
+  if (!nome) return res.json({ photo: null, reason: 'missing-name' });
+
+  if (_apiFootballUsage.date !== _todayUTC()) _apiFootballUsage = { date: _todayUTC(), count: 0 };
+  if (_apiFootballUsage.count >= API_FOOTBALL_DAILY_LIMIT) {
+    return res.json({ photo: null, reason: 'daily-limit-reached' });
+  }
+
+  try {
+    _apiFootballUsage.count++;
+    _saveApiFootballUsage(_apiFootballUsage);
+    const url = 'https://v3.football.api-sports.io/players/profiles?search=' + encodeURIComponent(nome);
+    const r = await fetch(url, { headers: { 'x-apisports-key': API_FOOTBALL_KEY } });
+    const data = await r.json();
+    const list = (data && data.response) || [];
+    if (!list.length) return res.json({ photo: null, reason: 'not-found' });
+    const found = list[0].player;
+    if (!found || !found.photo) return res.json({ photo: null, reason: 'no-photo' });
+    return res.json({ photo: found.photo });
+  } catch (e) {
+    return res.json({ photo: null, reason: 'error' });
+  }
+});
+
 app.get('/api/asta/:id', (req, res) => {
   const asta = aste.get(req.params.id);
   if (!asta) return res.status(404).json({ error: 'Asta non trovata' });
