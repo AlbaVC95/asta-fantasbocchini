@@ -33,6 +33,7 @@
       </div>
       <button id="btn-login" class="btn btn-primary btn-lg">Accedi</button>
       <p id="login-error" class="hint-text" style="display:none;color:var(--danger,#ff4d4d)"></p>
+      <p style="text-align:center;margin-top:10px"><a href="#" id="btn-forgot-password" class="hint-text" style="text-decoration:underline;cursor:pointer">Hai dimenticato la password?</a></p>
     </div>
     <div class="card mt-16">
       <h2 class="card-title">Non hai un account?</h2>
@@ -666,6 +667,38 @@
 </div><!-- /#app -->
 <!-- ══════════ MODALS ══════════ -->
 <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModalOnOverlay(event)">
+  <!-- Modal: Recupero password (richiesta email) -->
+  <div id="modal-recupero-password" class="modal hidden">
+    <h2 class="modal-title">🔑 Recupera password</h2>
+    <div class="modal-body">
+      <p class="hint-text">Inserisci la tua email: ti invieremo un link per impostare una nuova password.</p>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="recupero-email" placeholder="tuo@email.com">
+      </div>
+      <button id="btn-invia-recupero" class="btn btn-primary btn-lg" style="width:100%">Invia link di recupero</button>
+      <p id="recupero-error" class="hint-text" style="display:none;color:var(--danger,#ff4d4d)"></p>
+      <p id="recupero-success" class="hint-text" style="display:none;color:var(--success,#2ecc71)"></p>
+    </div>
+  </div>
+  <!-- Modal: Imposta nuova password (dopo click sul link email) -->
+  <div id="modal-nuova-password" class="modal hidden">
+    <h2 class="modal-title">🔑 Imposta nuova password</h2>
+    <div class="modal-body">
+      <p class="hint-text">Scegli una nuova password per il tuo account.</p>
+      <div class="form-group">
+        <label>Nuova password</label>
+        <input type="password" id="nuova-password" placeholder="Minimo 6 caratteri">
+      </div>
+      <div class="form-group">
+        <label>Conferma password</label>
+        <input type="password" id="nuova-password-conferma" placeholder="Ripeti la password">
+      </div>
+      <button id="btn-salva-nuova-password" class="btn btn-primary btn-lg" style="width:100%">Salva nuova password</button>
+      <p id="nuova-password-error" class="hint-text" style="display:none;color:var(--danger,#ff4d4d)"></p>
+      <p id="nuova-password-success" class="hint-text" style="display:none;color:var(--success,#2ecc71)"></p>
+    </div>
+  </div>
   <!-- Modal: GK Planner - Come funziona -->
   <div id="modal-gk-help" class="modal hidden gk-help-modal">
     <h2 class="modal-title">❓ Come funziona il Goalkeeper Planner</h2>
