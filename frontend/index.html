@@ -576,6 +576,7 @@
           <button class="tab-btn active" data-tab="tab-storico"><span class="tab-icon">📋</span><span class="tab-label">Storico</span></button>
           <button class="tab-btn" data-tab="tab-rose"><span class="tab-icon">👥</span><span class="tab-label">Rose <span id="btn-rose-search-toggle" class="rose-chevron" title="Cerca giocatore">⌄</span></span></button>
           <button class="tab-btn" data-tab="tab-liberi"><span class="tab-icon">📦</span><span class="tab-label">Liberi</span></button>
+          <button type="button" class="tab-btn" data-tab="tab-portieri"><span class="tab-icon">🥅</span><span class="tab-label">Portieri</span></button>
           <div id="quick-pill" class="quick-pill">
             <button id="pill-chiama" class="pill-btn" title="Chiama manuale">🔨</button>
             <button id="pill-assegna" class="pill-btn" title="Assegna manuale">✅</button>
@@ -624,6 +625,25 @@
             </div>
           </div>
           <ul id="liberi-list" class="liberi-list"></ul>
+        </div>
+        <div id="tab-portieri" class="tab-content">
+          <div class="gk-view-intro">
+            <p>Le migliori coppie di portieri per le 38 giornate di Serie A. Analisi calcolata sul calendario ufficiale.</p>
+          </div>
+          <div class="gk-pair-picker gk-pair-picker-fancy">
+            <div class="gk-team-card gk-team-card-a">
+              <div class="gk-team-card-badge" id="gki-teamcard-a-badge"></div>
+              <select id="gki-teamA" class="gk-select-fancy"></select>
+            </div>
+            <span class="gk-pair-plus">+</span>
+            <div class="gk-team-card gk-team-card-b">
+              <div class="gk-team-card-badge" id="gki-teamcard-b-badge"></div>
+              <select id="gki-teamB" class="gk-select-fancy"></select>
+            </div>
+            <button type="button" id="btn-gki-analizza" class="btn btn-primary btn-sm">Analizza</button>
+          </div>
+          <div id="gki-detail-content"></div>
+          <div class="gk-ranking-list" id="gki-ranking-list"></div>
         </div>
       </div><!-- /.tabs-panel -->
     </div><!-- /.asta-row-tabs -->
