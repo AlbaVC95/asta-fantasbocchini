@@ -841,6 +841,8 @@ function setupAsta() {
       toast('JSON esportato!', 'success');
     } catch(e) { toast('Errore export', 'error'); }
   });
+  const btnFineAstaHome = document.getElementById('btn-fine-asta-home');
+  if (btnFineAstaHome) btnFineAstaHome.addEventListener('click', () => showScreen('screen-menu-principale'));
 }
 
 
