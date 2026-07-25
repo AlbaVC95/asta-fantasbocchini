@@ -1,38 +1,42 @@
 // ══════════════════════════════════════════════════════════════════
-// GOALKEEPER PLANNER — motore di analisi (logica pura, senza DOM)
+// GRIGLIA PORTIERI/ATTACCANTI — motore di analisi (logica pura, senza DOM)
 // Modulo indipendente e riusabile: analizza le 38 giornate di Serie A
-// per trovare le migliori coppie di portieri (titolare + "scudo").
-// Algoritmo proprietario di FantaSbocchini — nessun codice o formula
-// di terze parti è stato copiato; solo il concetto ("griglia portieri
-// a coppie con calendario e heatmap") è preso come riferimento di UX.
+// per trovare le migliori combinazioni (2 o 3 giocatori) di portieri
+// o attaccanti. Algoritmo proprietario di FantaSbocchini.
 //
 // Punto di ingresso globale: window.GKPlanner
 // ══════════════════════════════════════════════════════════════════
 (function (global) {
   'use strict';
 
-  // ── Configurazione di default (tutto è modificabile dall'utente) ──
-  const DEFAULT_TEAM_STRENGTH = {
-    Inter: 92, Napoli: 90, Juventus: 87, Milan: 85, Atalanta: 82, Roma: 78,
-    Lazio: 76, Fiorentina: 74, Bologna: 72, Torino: 62, Udinese: 58, Genoa: 56,
-    Cagliari: 54, Sassuolo: 52, Lecce: 50, Monza: 44, Parma: 48, Como: 46,
-    Venezia: 42, Frosinone: 40
+  // ── Statistiche di default per squadra: Attacco e Difesa separati ──
+  const DEFAULT_TEAM_STATS = {
+    Inter:     { attacco: 92, difesa: 88 }, Napoli:    { attacco: 88, difesa: 86 },
+    Juventus:  { attacco: 82, difesa: 87 }, Milan:     { attacco: 84, difesa: 80 },
+    Atalanta:  { attacco: 83, difesa: 76 }, Roma:      { attacco: 76, difesa: 78 },
+    Lazio:     { attacco: 74, difesa: 74 }, Fiorentina:{ attacco: 73, difesa: 72 },
+    Bologna:   { attacco: 70, difesa: 73 }, Torino:    { attacco: 58, difesa: 64 },
+    Udinese:   { attacco: 56, difesa: 58 }, Genoa:     { attacco: 52, difesa: 58 },
+    Cagliari:  { attacco: 50, difesa: 55 }, Sassuolo:  { attacco: 55, difesa: 48 },
+    Lecce:     { attacco: 46, difesa: 52 }, Monza:     { attacco: 44, difesa: 44 },
+    Parma:     { attacco: 48, difesa: 46 }, Como:      { attacco: 44, difesa: 47 },
+    Venezia:   { attacco: 40, difesa: 42 }, Frosinone: { attacco: 42, difesa: 38 }
   };
 
   const DEFAULT_WEIGHTS = {
-    coverage: 35,       // % di giornate con almeno un portiere in una partita favorevole
+    coverage: 35,       // % di giornate con almeno un titolare in una partita favorevole
     difficoltaMedia: 25,// media della difficoltà minima per giornata (invertita: più bassa = meglio)
-    alternanza: 15,     // quanto si alternano bene casa/fuori tra i due portieri
-    giornateCritiche: 15,// penalità per giornate in cui ENTRAMBI hanno partite difficili
-    fuoriCasaDoppio: 10  // penalità per giornate in cui ENTRAMBI giocano in trasferta
+    alternanza: 15,     // quanto si alternano bene casa/fuori i giocatori del gruppo
+    giornateCritiche: 15,// penalità per giornate in cui TUTTI hanno partite difficili
+    fuoriCasaDoppio: 10  // penalità per giornate in cui TUTTI giocano in trasferta
   };
 
   const DEFAULT_CONFIG = {
-    teamStrength: Object.assign({}, DEFAULT_TEAM_STRENGTH),
+    teamStats: JSON.parse(JSON.stringify(DEFAULT_TEAM_STATS)),
     weights: Object.assign({}, DEFAULT_WEIGHTS),
     homeAdvantage: 8,   // bonus (riduzione difficoltà) per chi gioca in casa
     awayPenalty: 6,     // penalità (aumento difficoltà) per chi gioca in trasferta
-    ownStrengthFactor: 0.3, // quanto la forza della propria squadra riduce la difficoltà
+    ownStrengthFactor: 0.3, // quanto la propria statistica riduce la difficoltà
     sogliaFacile: 35,   // difficoltà <= questa soglia => partita "facile/favorevole"
     sogliaDifficile: 60 // difficoltà > questa soglia => partita "difficile/rischiosa"
   };
@@ -40,10 +44,24 @@
   function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
   function round1(v) { return Math.round(v * 10) / 10; }
 
+  // ── Normalizza la configurazione utente, con retrocompatibilità per il
+  //    vecchio formato "teamStrength" (valore unico per squadra) ──
   function mergeConfig(userConfig) {
     const cfg = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
     if (!userConfig) return cfg;
-    if (userConfig.teamStrength) Object.assign(cfg.teamStrength, userConfig.teamStrength);
+    if (userConfig.teamStrength && !userConfig.teamStats) {
+      const migrated = {};
+      Object.keys(userConfig.teamStrength).forEach(function (t) {
+        migrated[t] = { attacco: userConfig.teamStrength[t], difesa: userConfig.teamStrength[t] };
+      });
+      userConfig = Object.assign({}, userConfig, { teamStats: migrated });
+    }
+    if (userConfig.teamStats) {
+      Object.keys(userConfig.teamStats).forEach(function (t) {
+        if (!cfg.teamStats[t]) cfg.teamStats[t] = { attacco: 55, difesa: 55 };
+        Object.assign(cfg.teamStats[t], userConfig.teamStats[t]);
+      });
+    }
     if (userConfig.weights) Object.assign(cfg.weights, userConfig.weights);
     ['homeAdvantage', 'awayPenalty', 'ownStrengthFactor', 'sogliaFacile', 'sogliaDifficile'].forEach(function (k) {
       if (typeof userConfig[k] === 'number') cfg[k] = userConfig[k];
@@ -51,13 +69,22 @@
     return cfg;
   }
 
-  // ── Difficoltà di una singola partita per il portiere di "team" ──
+  function getStat(team, stat, cfg) {
+    const s = cfg.teamStats[team];
+    if (!s) return 55;
+    return (stat === 'attacco') ? s.attacco : s.difesa;
+  }
+
+  // ── Difficoltà di una singola partita per il giocatore di "team", nel modo scelto ──
+  // mode 'portieri'    -> difficolta = f(Attacco_avversario, Difesa_propria)
+  // mode 'attaccanti'  -> difficolta = f(Difesa_avversario, Attacco_proprio)
   // 0 = partita facilissima, 100 = partita durissima.
-  function difficoltaPartita(team, opponent, isHome, cfg) {
-    const oppStrength = (cfg.teamStrength[opponent] != null) ? cfg.teamStrength[opponent] : 55;
-    const ownStrength = (cfg.teamStrength[team] != null) ? cfg.teamStrength[team] : 55;
+  function difficoltaPartita(team, opponent, isHome, cfg, mode) {
+    const m = mode === 'attaccanti' ? 'attaccanti' : 'portieri';
+    const oppStat = (m === 'attaccanti') ? getStat(opponent, 'difesa', cfg) : getStat(opponent, 'attacco', cfg);
+    const ownStat = (m === 'attaccanti') ? getStat(team, 'attacco', cfg) : getStat(team, 'difesa', cfg);
     const homeAdj = isHome ? -cfg.homeAdvantage : cfg.awayPenalty;
-    const raw = (oppStrength * 0.7) - (ownStrength * cfg.ownStrengthFactor) + homeAdj + 15;
+    const raw = (oppStat * 0.7) - (ownStat * cfg.ownStrengthFactor) + homeAdj + 15;
     return clamp(round1(raw), 0, 100);
   }
 
@@ -68,14 +95,14 @@
   }
 
   // ── Calendario di una squadra: 38 righe {giornata, opponent, isHome, difficolta, livello} ──
-  function calendarioSquadra(team, fixtures, cfg) {
+  function calendarioSquadra(team, fixtures, cfg, mode) {
     const out = [];
     fixtures.forEach(function (f) {
       let opponent = null, isHome = null;
       if (f.casa === team) { opponent = f.ospite; isHome = true; }
       else if (f.ospite === team) { opponent = f.casa; isHome = false; }
       if (opponent === null) return;
-      const diff = difficoltaPartita(team, opponent, isHome, cfg);
+      const diff = difficoltaPartita(team, opponent, isHome, cfg, mode);
       out.push({
         giornata: f.giornata, opponent: opponent, isHome: isHome,
         difficolta: diff, livello: livelloDifficolta(diff, cfg)
@@ -85,66 +112,70 @@
     return out;
   }
 
-  // ── Analisi completa di una coppia di squadre (portiere A + portiere B) ──
-  function analizzaCoppia(teamA, teamB, fixtures, config) {
+  // ── Analisi completa di un gruppo di 2 o 3 squadre ──
+  function analizzaGruppo(teams, fixtures, config, mode) {
     const cfg = mergeConfig(config);
-    const calA = calendarioSquadra(teamA, fixtures, cfg);
-    const calB = calendarioSquadra(teamB, fixtures, cfg);
-    const totale = Math.max(calA.length, calB.length) || 38;
+    const m = mode === 'attaccanti' ? 'attaccanti' : 'portieri';
+    const calendari = teams.map(function (t) { return calendarioSquadra(t, fixtures, cfg, m); });
+    const totale = Math.max.apply(null, calendari.map(function (c) { return c.length; })) || 38;
 
     const righe = [];
-    let coperte = 0, critiche = 0, entrambiFuori = 0, favorevoliA = 0, favorevoliB = 0;
-    let sommaMinDifficolta = 0;
-    let sbilanciamentoCasa = 0;
+    let coperte = 0, critiche = 0, tuttiFuori = 0;
+    let sommaMinDifficolta = 0, sbilanciamentoCasa = 0;
     let facili = 0, medie = 0, difficili = 0, inCasaReco = 0, fuoriCasaReco = 0;
+    const recoConteggio = teams.map(function () { return 0; });
 
     for (let i = 0; i < totale; i++) {
-      const ga = calA[i], gb = calB[i];
-      if (!ga || !gb) continue;
-      const minDiff = Math.min(ga.difficolta, gb.difficolta);
+      const partite = calendari.map(function (c) { return c[i]; });
+      if (partite.some(function (p) { return !p; })) continue;
+
+      const difficolte = partite.map(function (p) { return p.difficolta; });
+      const minDiff = Math.min.apply(null, difficolte);
       sommaMinDifficolta += minDiff;
-      const favorevole = minDiff <= cfg.sogliaFacile;
-      if (favorevole) coperte++;
-      const entrambiDifficili = (ga.livello === 'difficile' && gb.livello === 'difficile');
-      if (entrambiDifficili) critiche++;
-      if (!ga.isHome && !gb.isHome) entrambiFuori++;
+      if (minDiff <= cfg.sogliaFacile) coperte++;
 
-      // Portiere raccomandato: chi ha la partita più facile quella giornata.
-      // Se la differenza è minima (<=6 punti) è un vero e proprio ballottaggio.
-      const delta = Math.abs(ga.difficolta - gb.difficolta);
-      let raccomandato;
-      if (delta <= 6) raccomandato = 'ballottaggio';
-      else raccomandato = (ga.difficolta < gb.difficolta) ? 'A' : 'B';
-      if (raccomandato === 'A') favorevoliA++;
-      if (raccomandato === 'B') favorevoliB++;
+      const tutteDifficili = partite.every(function (p) { return p.livello === 'difficile'; });
+      if (tutteDifficili) critiche++;
 
-      // Statistiche sul portiere effettivamente consigliato quella giornata
-      // (in caso di ballottaggio si considera quello con la partita più semplice)
-      const scelta = (raccomandato === 'B') ? gb : ga;
+      const tutteFuori = partite.every(function (p) { return !p.isHome; });
+      if (tutteFuori) tuttiFuori++;
+
+      // Trova il migliore (indice) e verifica ballottaggio (differenza minima <=6 col secondo migliore)
+      let bestIdx = 0;
+      for (let k = 1; k < difficolte.length; k++) if (difficolte[k] < difficolte[bestIdx]) bestIdx = k;
+      const ordinati = difficolte.slice().sort(function (a, b) { return a - b; });
+      const delta = (ordinati.length > 1) ? (ordinati[1] - ordinati[0]) : 99;
+      const raccomandato = (delta <= 6) ? 'ballottaggio' : bestIdx;
+
+      if (typeof raccomandato === 'number') recoConteggio[raccomandato]++;
+
+      const scelta = (typeof raccomandato === 'number') ? partite[raccomandato] : partite[bestIdx];
       if (scelta.livello === 'facile') facili++;
       else if (scelta.livello === 'difficile') difficili++;
       else medie++;
-      if (scelta.isHome) inCasaReco++;
-      else fuoriCasaReco++;
+      if (scelta.isHome) inCasaReco++; else fuoriCasaReco++;
 
-      if (ga.isHome !== gb.isHome) sbilanciamentoCasa++; // buona alternanza casa/fuori
+      // Alternanza: buona se non tutti i giocatori del gruppo giocano nella stessa condizione (tutti in casa o tutti fuori)
+      const tuttiCasa = partite.every(function (p) { return p.isHome; });
+      if (!tuttiCasa && !tutteFuori) sbilanciamentoCasa++;
 
       righe.push({
-        giornata: ga.giornata,
-        A: { opponent: ga.opponent, isHome: ga.isHome, difficolta: ga.difficolta, livello: ga.livello },
-        B: { opponent: gb.opponent, isHome: gb.isHome, difficolta: gb.difficolta, livello: gb.livello },
-        raccomandato: raccomandato,
-        criticaDoppia: entrambiDifficili,
-        entrambiFuori: !ga.isHome && !gb.isHome
+        giornata: partite[0].giornata,
+        squadre: teams.map(function (t, idx) {
+          return { team: t, opponent: partite[idx].opponent, isHome: partite[idx].isHome, difficolta: partite[idx].difficolta, livello: partite[idx].livello };
+        }),
+        raccomandato: raccomandato, // indice numerico oppure 'ballottaggio'
+        criticaDoppia: tutteDifficili,
+        tuttiFuoriCasa: tutteFuori
       });
     }
 
     const n = righe.length || 1;
     const coveragePct = (coperte / n) * 100;
-    const difficoltaMediaScore = 100 - clamp((sommaMinDifficolta / n), 0, 100); // più bassa la difficoltà media, più alto il punteggio
+    const difficoltaMediaScore = 100 - clamp((sommaMinDifficolta / n), 0, 100);
     const alternanzaPct = (sbilanciamentoCasa / n) * 100;
-    const critichePenalty = 100 - clamp((critiche / n) * 100 * 3, 0, 100); // penalizza forte le coincidenze critiche
-    const fuoriCasaPenalty = 100 - clamp((entrambiFuori / n) * 100 * 2, 0, 100);
+    const critichePenalty = 100 - clamp((critiche / n) * 100 * 3, 0, 100);
+    const fuoriCasaPenalty = 100 - clamp((tuttiFuori / n) * 100 * 2, 0, 100);
 
     const breakdown = {
       coverage: round1(coveragePct),
@@ -171,11 +202,9 @@
     else if (score >= 55) livello = 'Discreto';
     else livello = 'Rischioso';
 
-    // Confidenza: basata sulla dispersione della difficoltà minima per giornata
-    // (calendario più "leggibile" e stabile => confidenza più alta)
     let varSum = 0;
     righe.forEach(function (r) {
-      const minD = Math.min(r.A.difficolta, r.B.difficolta);
+      const minD = Math.min.apply(null, r.squadre.map(function (s) { return s.difficolta; }));
       varSum += Math.pow(minD - (sommaMinDifficolta / n), 2);
     });
     const stdDev = Math.sqrt(varSum / n);
@@ -185,44 +214,66 @@
     else if (confidenzaScore >= 55) confidenza = 'Media';
     else confidenza = 'Bassa';
 
-    const spiegazione = 'Questa coppia garantisce una partita favorevole in ' + coperte + ' delle ' + n +
-      ' giornate' + (critiche > 0 ? ', con ' + critiche + ' giornata' + (critiche > 1 ? 'e' : '') + ' critica' + (critiche > 1 ? 'he' : '') + ' in cui entrambi affrontano un avversario forte' : ', senza alcuna giornata in cui entrambi rischiano contemporaneamente') +
-      (entrambiFuori > 0 ? ', e coincide con entrambi in trasferta in ' + entrambiFuori + ' occasion' + (entrambiFuori > 1 ? 'i' : 'e') + '.' : ', e non capita mai che entrambi giochino in trasferta nella stessa giornata.');
+    const nomiGruppo = teams.join(' + ');
+    const spiegazione = 'Questo gruppo (' + nomiGruppo + ') garantisce una partita favorevole in ' + coperte + ' delle ' + n +
+      ' giornate' + (critiche > 0 ? ', con ' + critiche + ' giornata' + (critiche > 1 ? 'e' : '') + ' critica' + (critiche > 1 ? 'he' : '') + ' in cui tutti affrontano un avversario forte' : ', senza alcuna giornata in cui tutti rischiano contemporaneamente') +
+      (tuttiFuori > 0 ? ', e coincide con tutti in trasferta in ' + tuttiFuori + ' occasion' + (tuttiFuori > 1 ? 'i' : 'e') + '.' : ', e non capita mai che tutti giochino in trasferta nella stessa giornata.');
 
     return {
-      teamA: teamA, teamB: teamB, score: score, livello: livello, confidenza: confidenza,
+      teams: teams, score: score, livello: livello, confidenza: confidenza,
       confidenzaScore: round1(confidenzaScore),
       breakdown: breakdown, weights: w,
-      copertura: coperte, giornateTotali: n, giornateCritiche: critiche, entrambiFuoriCasa: entrambiFuori,
-      favorevoliA: favorevoliA, favorevoliB: favorevoliB,
+      copertura: coperte, giornateTotali: n, giornateCritiche: critiche, tuttiFuoriCasa: tuttiFuori,
+      recoConteggio: recoConteggio,
       facili: facili, medie: medie, difficili: difficili,
       inCasaReco: inCasaReco, fuoriCasaReco: fuoriCasaReco,
       spiegazione: spiegazione,
-      calendario: righe
+      calendario: righe,
+      mode: m
     };
   }
 
-  // ── Ranking di tutte le coppie possibili (o di un sottoinsieme di squadre) ──
-  function rankingCoppie(fixtures, config, teamsSubset) {
-    const cfg = mergeConfig(config);
-    const teams = teamsSubset && teamsSubset.length ? teamsSubset : Object.keys(cfg.teamStrength);
+  // ── Retrocompatibilità: analisi di una coppia (wrapper di analizzaGruppo) ──
+  function analizzaCoppia(teamA, teamB, fixtures, config, mode) {
+    return analizzaGruppo([teamA, teamB], fixtures, config, mode);
+  }
+
+  function combinazioni(arr, k) {
     const risultati = [];
-    for (let i = 0; i < teams.length; i++) {
-      for (let j = i + 1; j < teams.length; j++) {
-        const analisi = analizzaCoppia(teams[i], teams[j], fixtures, cfg);
-        risultati.push(analisi);
+    function ricorsivo(start, combo) {
+      if (combo.length === k) { risultati.push(combo.slice()); return; }
+      for (let i = start; i < arr.length; i++) {
+        combo.push(arr[i]);
+        ricorsivo(i + 1, combo);
+        combo.pop();
       }
     }
+    ricorsivo(0, []);
+    return risultati;
+  }
+
+  // ── Ranking di tutti i gruppi possibili di dimensione groupSize (2 o 3) ──
+  function rankingGruppi(fixtures, config, groupSize, mode, teamsSubset) {
+    const cfg = mergeConfig(config);
+    const teams = teamsSubset && teamsSubset.length ? teamsSubset : Object.keys(cfg.teamStats);
+    const size = (groupSize === 3) ? 3 : 2;
+    const gruppi = combinazioni(teams, size);
+    const risultati = gruppi.map(function (g) { return analizzaGruppo(g, fixtures, cfg, mode); });
     risultati.sort(function (a, b) { return b.score - a.score; });
     return risultati;
   }
 
-  // ── Confronto diretto fra due coppie già analizzate ──
-  function confrontaCoppie(analisiA, analisiB) {
+  // ── Retrocompatibilità: ranking di coppie ──
+  function rankingCoppie(fixtures, config, teamsSubset, mode) {
+    return rankingGruppi(fixtures, config, 2, mode, teamsSubset);
+  }
+
+  // ── Confronto diretto fra due gruppi già analizzati (dimensioni anche diverse) ──
+  function confrontaGruppi(analisiA, analisiB) {
     const diffScore = round1(analisiA.score - analisiB.score);
     const diffCopertura = analisiA.copertura - analisiB.copertura;
     const diffCritiche = analisiA.giornateCritiche - analisiB.giornateCritiche;
-    const diffFuoriCasa = analisiA.entrambiFuoriCasa - analisiB.entrambiFuoriCasa;
+    const diffFuoriCasa = analisiA.tuttiFuoriCasa - analisiB.tuttiFuoriCasa;
     const vincitore = analisiA.score === analisiB.score ? null : (analisiA.score > analisiB.score ? 'A' : 'B');
     return {
       vincitore: vincitore, diffScore: diffScore, diffCopertura: diffCopertura,
@@ -230,20 +281,7 @@
     };
   }
 
-  // ── Vista per giornata: le 20 squadre ordinate dalla partita più facile alla più difficile ──
-  function vistaGiornata(giornata, fixtures, config) {
-    const cfg = mergeConfig(config);
-    const teams = Object.keys(cfg.teamStrength);
-    const righe = [];
-    fixtures.filter(function (f) { return f.giornata === giornata; }).forEach(function (f) {
-      const diffCasa = difficoltaPartita(f.casa, f.ospite, true, cfg);
-      const diffOspite = difficoltaPartita(f.ospite, f.casa, false, cfg);
-      righe.push({ team: f.casa, opponent: f.ospite, isHome: true, difficolta: diffCasa, livello: livelloDifficolta(diffCasa, cfg) });
-      righe.push({ team: f.ospite, opponent: f.casa, isHome: false, difficolta: diffOspite, livello: livelloDifficolta(diffOspite, cfg) });
-    });
-    righe.sort(function (a, b) { return a.difficolta - b.difficolta; });
-    return righe;
-  }
+  function confrontaCoppie(analisiA, analisiB) { return confrontaGruppi(analisiA, analisiB); }
 
   global.GKPlanner = {
     DEFAULT_CONFIG: DEFAULT_CONFIG,
@@ -251,9 +289,11 @@
     difficoltaPartita: difficoltaPartita,
     livelloDifficolta: livelloDifficolta,
     calendarioSquadra: calendarioSquadra,
+    analizzaGruppo: analizzaGruppo,
     analizzaCoppia: analizzaCoppia,
+    rankingGruppi: rankingGruppi,
     rankingCoppie: rankingCoppie,
-    confrontaCoppie: confrontaCoppie,
-    vistaGiornata: vistaGiornata
+    confrontaGruppi: confrontaGruppi,
+    confrontaCoppie: confrontaCoppie
   };
 })(typeof window !== 'undefined' ? window : global);
