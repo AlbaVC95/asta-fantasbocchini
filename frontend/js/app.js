@@ -1425,11 +1425,33 @@ function _normalizePhotoName(s) {
   return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
+// Mapping esplicito nome-Excel(+squadra) -> file immagine, generato a mano dal
+// listino ufficiale. Ha priorita' assoluta sul matching fuzzy sottostante perche'
+// e' stato verificato uno per uno (423 giocatori). Caricato da
+// data/player_name_overrides.json, chiave = normalizza(nome)+'|'+normalizza(squadra).
+let _playerNameOverrides = null;
+let _playerNameOverridesPromise = null;
+function _loadPlayerNameOverrides() {
+  if (_playerNameOverridesPromise) return _playerNameOverridesPromise;
+  _playerNameOverridesPromise = fetch('data/player_name_overrides.json')
+    .then(function(r) { return r.json(); })
+    .then(function(json) { _playerNameOverrides = json; return json; })
+    .catch(function() { _playerNameOverrides = {}; return {}; });
+  return _playerNameOverridesPromise;
+}
 // Cerca una foto locale (caricata manualmente) del giocatore, confrontando il nome
 // con i file disponibili nella cartella della sua squadra. Fonte prioritaria: e' garantita
 // al 100%, senza limiti di quota e senza rischio di maglia sbagliata.
 function _tryLocalPhoto(nome, squadra) {
-  return _loadPlayerPhotoIndex().then(function(idx) {
+  return _loadPlayerNameOverrides().then(function(overrides) {
+    if (overrides && squadra) {
+      const key = _normalizePhotoName(nome) + '|' + _normalizePhotoName(squadra);
+      if (overrides[key]) return overrides[key];
+    }
+    return null;
+  }).then(function(hit) {
+    if (hit) return hit;
+    return _loadPlayerPhotoIndex().then(function(idx) {
     if (!idx || !squadra) return null;
     const bw = _teamWords(squadra);
     let folder = null;
@@ -1463,6 +1485,7 @@ function _tryLocalPhoto(nome, squadra) {
     }
     if (!best) return null;
     return 'img/players/' + folder + '/' + best;
+    });
   }).catch(function() { return null; });
 }
 
