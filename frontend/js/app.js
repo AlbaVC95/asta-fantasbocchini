@@ -1654,15 +1654,15 @@ function _loadPlayerPhoto(nome, squadra, version) {
     .then(function(img) { return img || _withTimeout(_tryWikidata(nome, squadra), 4000, null); })
     .then(function(img) { return img || _withTimeout(_tryWikipedia(nome, squadra), 4000, null); })
     .then(function(img) { return img || _withTimeout(_tryApiFootball(nome, squadra), 4000, null); })
-    .then(function(img) { return img || _teamFallbackImage(squadra); })
     .then(function(finalUrl) {
+      // Nessuna foto trovata: manteniamo sempre l'icona generica (mai il logo squadra),
+      // per coerenza visiva in tutti i casi (incluse squadre non piu' in Serie A: Verona, Pisa, Cremonese).
       _playerPhotoCache[cacheKey] = finalUrl || null;
       _applyPlayerPhoto(finalUrl || null, version);
     })
     .catch(function() {
-      const fb = _teamFallbackImage(squadra);
-      _playerPhotoCache[cacheKey] = fb || null;
-      _applyPlayerPhoto(fb || null, version);
+      _playerPhotoCache[cacheKey] = null;
+      _applyPlayerPhoto(null, version);
     });
 }
 
