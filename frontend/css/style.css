@@ -201,7 +201,7 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .timer-inner{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1}
 /* Numero in stile tabellone/scoreboard da stadio (font mono, glow tipo LED) */
 .timer-number{font-family:var(--font-mono);font-size:1.7rem;font-weight:700;color:var(--success);line-height:1;letter-spacing:-.02em;text-shadow:0 0 12px var(--success-glow),0 0 2px rgba(255,255,255,.4)}
-.timer-label-text{font-size:.6rem;font-weight:600;text-transform:uppercase;color:var(--text-muted);letter-spacing:.08em;margin-top:2px}
+.timer-label-text{font-size:.6rem;font-weight:600;text-transform:uppercase;color:var(--text-muted);letter-spacing:.08em;margin-top:2px;text-align:center;width:100%}
 .timer-label-text::before{content:'⏱ ';opacity:.7}
 .timer-ring-container.urgent{animation:timer-pulse .8s ease-in-out infinite}
 .timer-ring-container.urgent .timer-number{color:var(--fire-bright);text-shadow:0 0 20px var(--fire-glow)}
@@ -644,7 +644,7 @@ body.layout-admin .asta-row-puja .cc-avatar-img{border-radius:14px!important}
 .puja-panel-slot .cc-avatar-icon{font-size:1.6rem!important}
 .puja-panel-slot .cc-avatar-initial{font-size:1.4rem!important}
 .puja-panel-slot .cc-avatar-svg{width:88%!important;height:88%!important}
-.puja-panel-slot .cc-avatar-img{border-radius:12px!important}
+.puja-panel-slot .cc-avatar-img{border-radius:12px!important;object-fit:contain!important}
 @media (max-width:700px){
   body.layout-admin .asta-row-puja .chiamata-card{flex:0 1 120px!important;max-width:120px!important;min-width:80px!important;padding:4px 8px!important}
   body.layout-admin .asta-row-puja .cc-nome{font-size:.82rem!important}
@@ -918,18 +918,19 @@ body.layout-admin .asta-row-puja .rilancio-box{
 /* ── Heatmap 38 giornate ── */
 .gk-heatmap-wrap{overflow-x:auto;margin-top:18px;padding-bottom:8px}
 .gk-heatmap{display:grid;grid-auto-rows:auto;gap:3px;min-width:max-content}
-.gk-heatmap-row-label{font-size:.7rem;font-weight:700;color:var(--text-secondary);display:flex;align-items:center;gap:6px;padding-right:8px;white-space:nowrap;position:sticky;left:0;background:var(--bg-card);z-index:1;width:70px;height:32px}
+.gk-heatmap-row-label{font-size:.7rem;font-weight:700;color:var(--text-secondary);display:flex;align-items:center;gap:6px;padding-right:8px;white-space:nowrap;position:sticky;left:0;background:var(--bg-card);z-index:1;width:70px;height:38px}
 .gk-heatmap-row-label img{width:18px;height:18px;object-fit:contain}
 .gk-heat-corner{width:70px}
-.gk-heat-cell{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#04120a;cursor:default;transition:transform .1s;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
-.gk-heat-cell img{width:22px;height:22px;object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
+.gk-heat-cell{width:34px;height:38px;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:.52rem;font-weight:700;color:#04120a;cursor:default;transition:transform .1s;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.gk-heat-cell img{width:16px;height:16px;object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
+.gk-heat-cell span{font-size:.5rem;line-height:1;letter-spacing:.02em}
 .gk-heat-ballot{font-size:.75rem}
 .gk-heat-cell:hover{transform:scale(1.18);z-index:2}
 .gk-heat-facile{background:linear-gradient(135deg,#4ee39a,#00c37a);color:#00250f}
-.gk-heat-media{background:linear-gradient(135deg,#5a5470,#403a58);color:#e8e2f5}
+.gk-heat-media{background:linear-gradient(135deg,#ffd166,#ffab00);color:#3a2400}
 .gk-heat-difficile{background:linear-gradient(135deg,#ff6b6b,#e8283e);color:#3a0008}
 .gk-heat-cell.gk-heat-reco{box-shadow:0 0 0 2px var(--text-primary) inset}
-.gk-heat-header-cell{width:32px;text-align:center;font-size:.62rem;color:var(--text-muted);font-family:var(--font-mono);font-weight:700}
+.gk-heat-header-cell{width:34px;text-align:center;font-size:.62rem;color:var(--text-muted);font-family:var(--font-mono);font-weight:700}
 .gk-heat-legend{display:flex;gap:14px;margin-top:10px;font-size:.7rem;color:var(--text-muted);flex-wrap:wrap}
 .gk-heat-legend span{display:inline-flex;align-items:center;gap:5px}
 .gk-heat-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
@@ -968,9 +969,14 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .gk-strength-item label{font-size:.72rem;color:var(--text-secondary);display:flex;justify-content:space-between}
 .gk-config-actions{display:flex;gap:10px;flex-wrap:wrap}
 .gk-config-actions .btn{flex:1;min-width:160px}
+.gk-admin-only{display:none}
+body.layout-admin .gk-admin-only{display:block}
+body.layout-admin .gk-config-actions.gk-admin-only{display:flex}
 
 @media (max-width:600px){
-  .gk-heat-cell,.gk-heat-header-cell{width:22px;height:22px}
+  .gk-heat-cell,.gk-heat-header-cell{width:24px;height:28px}
+  .gk-heat-cell img{width:12px;height:12px}
+  .gk-heat-cell span{font-size:.42rem}
   .gk-compare-picker{flex-direction:column}
   .gk-compare-vs{align-self:center}
 }
