@@ -1,7 +1,5 @@
 // ══════════════════════════════════════════════════════════════════
-// GOALKEEPER PLANNER — livello UI (collegato a GKPlanner, il motore
-// puro senza DOM definito in gk-planner-engine.js). Segue lo stesso
-// stile del resto dell'app (funzioni + innerHTML, nessun framework).
+// GRIGLIA PORTIERI/ATTACCANTI — livello UI
 // ══════════════════════════════════════════════════════════════════
 (function () {
   'use strict';
@@ -9,47 +7,35 @@
   const GKUI = {
     fixtures: null,
     config: null,
-    ranking: null,
-    lastDetail: null,
-    currentRound: 1
+    calendarioInfo: null,
+    mode: 'portieri',
+    rankCache: {}
   };
 
   const STORAGE_KEY = 'gkPlannerConfig_v1';
+  const MODE_KEY = 'gkPlannerMode_v1';
 
-  function teamSlug(team) { return team.toLowerCase(); }
+  function teamSlug(t) { return t.toLowerCase(); }
+  function teamBadge(t) { return '<img src="img/teams/' + teamSlug(t) + '.png" alt="" onerror="this.style.display=\'none\'">'; }
+
   function renderScoreGauge(score, colorVar) {
-    const r = 52;
-    const circ = 2 * Math.PI * r;
-    const pct = Math.max(0, Math.min(100, score)) / 100;
+    const r = 52, circ = 2 * Math.PI * r, pct = Math.max(0, Math.min(100, score)) / 100;
     const offset = circ * (1 - pct);
-    return '<div class="gk-gauge">' +
-      '<svg viewBox="0 0 120 120" class="gk-gauge-svg">' +
-        '<circle cx="60" cy="60" r="' + r + '" class="gk-gauge-track"></circle>' +
-        '<circle cx="60" cy="60" r="' + r + '" class="gk-gauge-fill" style="stroke:' + colorVar + ';stroke-dasharray:' + circ.toFixed(1) + ';stroke-dashoffset:' + offset.toFixed(1) + '"></circle>' +
-      '</svg>' +
-      '<div class="gk-gauge-center">' +
-        '<div class="gk-gauge-num" style="color:' + colorVar + '">' + score + '</div>' +
-        '<div class="gk-gauge-max">/100</div>' +
-      '</div>' +
-    '</div>';
+    return '<div class="gk-gauge"><svg viewBox="0 0 120 120" class="gk-gauge-svg">' +
+      '<circle cx="60" cy="60" r="' + r + '" class="gk-gauge-track"></circle>' +
+      '<circle cx="60" cy="60" r="' + r + '" class="gk-gauge-fill" style="stroke:' + colorVar + ';stroke-dasharray:' + circ.toFixed(1) + ';stroke-dashoffset:' + offset.toFixed(1) + '"></circle>' +
+      '</svg><div class="gk-gauge-center"><div class="gk-gauge-num" style="color:' + colorVar + '">' + score + '</div><div class="gk-gauge-max">/100</div></div></div>';
   }
-
-  function teamBadge(team) { return '<img src="img/teams/' + teamSlug(team) + '.png" alt="" onerror="this.style.display=\'none\'">'; }
 
   function loadConfig() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return GKPlanner.mergeConfig(JSON.parse(saved));
-    } catch (e) {}
+    try { const s = localStorage.getItem(STORAGE_KEY); if (s) return GKPlanner.mergeConfig(JSON.parse(s)); } catch (e) {}
     return GKPlanner.mergeConfig(null);
   }
-  function saveConfig(cfg) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); } catch (e) {}
-  }
+  function saveConfig(cfg) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); } catch (e) {} }
+  function loadMode() { try { const s = localStorage.getItem(MODE_KEY); if (s === 'attaccanti' || s === 'portieri') return s; } catch (e) {} return 'portieri'; }
+  function saveMode(m) { try { localStorage.setItem(MODE_KEY, m); } catch (e) {} }
 
   function loadFixtures() {
-    // Priorita': calendario personalizzato caricato da un Admin (salvato lato server, condiviso
-    // da tutti gli utenti). Se non presente, si usa il calendario placeholder incluso nell'app.
     return fetch('/api/gk-planner/calendario').then(function (r) {
       if (!r.ok) throw new Error('no-custom');
       return r.json();
@@ -67,103 +53,168 @@
   }
 
   function ensureData() {
+    GKUI.mode = loadMode();
     if (GKUI.fixtures) return Promise.resolve();
-    return loadFixtures().then(function () {
-      GKUI.config = loadConfig();
+    return loadFixtures().then(function () { GKUI.config = loadConfig(); });
+  }
+
+  function recompute() { GKUI.rankCache = {}; }
+
+  function getRanking(groupSize) {
+    const key = GKUI.mode + '-' + groupSize;
+    if (!GKUI.rankCache[key]) {
+      GKUI.rankCache[key] = GKPlanner.rankingGruppi(GKUI.fixtures, GKUI.config, groupSize, GKUI.mode);
+    }
+    return GKUI.rankCache[key];
+  }
+
+  function applyModeToggleUI() {
+    document.querySelectorAll('.gk-mode-btn').forEach(function (btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-gk-mode') === GKUI.mode);
+    });
+    document.querySelectorAll('.gk-header-sub-dynamic').forEach(function (el) {
+      el.textContent = GKUI.mode === 'attaccanti'
+        ? 'Le migliori combinazioni di attaccanti per le 38 giornate di Serie A'
+        : 'Le migliori combinazioni di portieri per le 38 giornate di Serie A';
     });
   }
 
-  function recompute() {
-    GKUI.ranking = GKPlanner.rankingCoppie(GKUI.fixtures, GKUI.config);
+  function setMode(mode) {
+    GKUI.mode = (mode === 'attaccanti') ? 'attaccanti' : 'portieri';
+    saveMode(GKUI.mode);
+    recompute();
+    applyModeToggleUI();
+    refreshVisibleViews();
   }
 
-  // ── Navigazione tra le viste interne ──
+  function refreshVisibleViews() {
+    document.querySelectorAll('.gk-ranking-subtabs').forEach(function (nav) {
+      const listId = nav.getAttribute('data-rank-list');
+      const activeBtn = nav.querySelector('.gk-subtab.active') || nav.querySelector('.gk-subtab');
+      if (activeBtn && listId && document.getElementById(listId)) {
+        renderRanking(listId, parseInt(activeBtn.getAttribute('data-ranksub'), 10));
+      }
+    });
+  }
+
   function switchView(view) {
-    document.querySelectorAll('.gk-tab').forEach(function (t) { t.classList.toggle('active', t.getAttribute('data-gk-view') === view); });
-    document.querySelectorAll('.gk-view').forEach(function (v) { v.classList.toggle('active', v.id === 'gk-view-' + view); });
-    if (view === 'ranking') renderRanking();
-    if (view === 'round') renderRound();
+    document.querySelectorAll('#gk-tabs .gk-tab').forEach(function (t) { t.classList.toggle('active', t.getAttribute('data-gk-view') === view); });
+    document.querySelectorAll('#screen-gk-planner .gk-view').forEach(function (v) { v.classList.toggle('active', v.id === 'gk-view-' + view); });
+    if (view === 'ranking') renderRanking('gk-ranking-list', 2);
     if (view === 'config') renderConfig();
   }
 
   // ── RANKING ──
-  function renderRanking(containerId) {
-    if (!GKUI.ranking) recompute();
-    const list = document.getElementById(containerId || 'gk-ranking-list');
-    const top = GKUI.ranking.slice(0, 40);
+  function renderRanking(containerId, groupSize) {
+    const list = document.getElementById(containerId);
+    if (!list) return;
+    const size = (groupSize === 3) ? 3 : 2;
+    const ranking = getRanking(size).slice(0, 10);
     let html = '';
-    top.forEach(function (p, i) {
+    ranking.forEach(function (p, i) {
       const pos = i + 1;
       const posClass = pos === 1 ? 'top1' : (pos === 2 ? 'top2' : (pos === 3 ? 'top3' : ''));
-      html += '<div class="gk-rank-card" data-team-a="' + p.teamA + '" data-team-b="' + p.teamB + '">' +
+      const teamsHtml = p.teams.map(function (t) { return '<span class="gk-rank-team-badge">' + teamBadge(t) + t + '</span>'; }).join('<span class="gk-rank-plus">+</span>');
+      html += '<div class="gk-rank-card" data-teams="' + p.teams.join('|') + '">' +
         '<div class="gk-rank-pos ' + posClass + '">' + pos + '</div>' +
-        '<div class="gk-rank-teams">' +
-          '<span class="gk-rank-team-badge">' + teamBadge(p.teamA) + p.teamA + '</span>' +
-          '<span class="gk-rank-plus">+</span>' +
-          '<span class="gk-rank-team-badge">' + teamBadge(p.teamB) + p.teamB + '</span>' +
-        '</div>' +
-        '<div class="gk-rank-score">' +
-          '<div class="gk-rank-score-num">' + p.score + '</div>' +
-          '<div class="gk-rank-score-lvl gk-lvl-' + p.livello + '">' + p.livello + '</div>' +
-          '<div class="gk-rank-conf">Confidenza: ' + p.confidenza + '</div>' +
-        '</div>' +
-      '</div>';
+        '<div class="gk-rank-teams">' + teamsHtml + '</div>' +
+        '<div class="gk-rank-score"><div class="gk-rank-score-num">' + p.score + '</div>' +
+        '<div class="gk-rank-score-lvl gk-lvl-' + p.livello + '">' + p.livello + '</div>' +
+        '<div class="gk-rank-conf">Confidenza: ' + p.confidenza + '</div></div></div>';
     });
-    list.innerHTML = html;
-    const isInline = (containerId === 'gki-ranking-list');
+    list.innerHTML = html || '<p class="gk-view-intro">Nessun dato disponibile.</p>';
+    const isInline = containerId.indexOf('gki-') === 0;
+    const detailPrefix = isInline ? 'gki-detail' : 'gk-detail';
+    const detailContentId = isInline ? 'gki-detail-content' : 'gk-detail-content';
     list.querySelectorAll('.gk-rank-card').forEach(function (card) {
       card.addEventListener('click', function () {
-        const a = card.getAttribute('data-team-a'), b = card.getAttribute('data-team-b');
-        if (isInline) {
-          document.getElementById('gki-teamA').value = a;
-          document.getElementById('gki-teamB').value = b;
-          updateTeamCardBadge('gki-teamA', 'gki-teamcard-a-badge');
-          updateTeamCardBadge('gki-teamB', 'gki-teamcard-b-badge');
-          renderDetail(a, b, 'gki-detail-content');
-        } else {
-          document.getElementById('gk-detail-teamA').value = a;
-          document.getElementById('gk-detail-teamB').value = b;
+        const teams = card.getAttribute('data-teams').split('|');
+        setTeamsToPicker(detailPrefix, teams);
+        renderDetail(teams, detailContentId);
+        if (!isInline) {
+          // scroll to detail view in full-screen mode
           switchView('detail');
-          renderDetail(a, b);
+        } else {
+          // switch to analisi subtab in inline mode
+          var analisiBtn = document.querySelector('.gki-subtabs .gki-subtab[data-gki-view="analisi"]');
+          if (analisiBtn) analisiBtn.click();
         }
       });
     });
   }
 
-  // ── Popolamento select squadre ──
   function populateTeamSelects() {
-    const teams = Object.keys(GKUI.config.teamStrength).sort();
+    const teams = Object.keys(GKUI.config.teamStats).sort();
     const opts = teams.map(function (t) { return '<option value="' + t + '">' + t + '</option>'; }).join('');
-    ['gk-detail-teamA', 'gk-detail-teamB', 'gk-cmp-a-teamA', 'gk-cmp-a-teamB', 'gk-cmp-b-teamA', 'gk-cmp-b-teamB', 'gki-teamA', 'gki-teamB'].forEach(function (id) {
-      const el = document.getElementById(id);
-      if (el) el.innerHTML = opts;
-    });
-    document.getElementById('gk-detail-teamB').selectedIndex = 1;
-    document.getElementById('gk-cmp-a-teamB').selectedIndex = 1;
-    document.getElementById('gk-cmp-b-teamA').selectedIndex = 2;
-    document.getElementById('gk-cmp-b-teamB').selectedIndex = 3;
-    if (document.getElementById('gki-teamB')) document.getElementById('gki-teamB').selectedIndex = 1;
-    updateTeamCardBadge('gk-detail-teamA', 'gk-teamcard-a-badge');
-    updateTeamCardBadge('gk-detail-teamB', 'gk-teamcard-b-badge');
-    updateTeamCardBadge('gki-teamA', 'gki-teamcard-a-badge');
-    updateTeamCardBadge('gki-teamB', 'gki-teamcard-b-badge');
+    document.querySelectorAll('.gk-team-select').forEach(function (el) { el.innerHTML = opts; });
+    function setIdx(id, idx) { const el = document.getElementById(id); if (el) el.selectedIndex = idx % teams.length; }
+    setIdx('gk-detail-teamA', 0); setIdx('gk-detail-teamB', 1); setIdx('gk-detail-teamC', 2);
+    setIdx('gki-detail-teamA', 0); setIdx('gki-detail-teamB', 1); setIdx('gki-detail-teamC', 2);
+    setIdx('gk-cmp-a-teamA', 0); setIdx('gk-cmp-a-teamB', 1); setIdx('gk-cmp-a-teamC', 2);
+    setIdx('gk-cmp-b-teamA', 3); setIdx('gk-cmp-b-teamB', 4); setIdx('gk-cmp-b-teamC', 5);
+    setIdx('gki-cmp-a-teamA', 0); setIdx('gki-cmp-a-teamB', 1); setIdx('gki-cmp-a-teamC', 2);
+    setIdx('gki-cmp-b-teamA', 3); setIdx('gki-cmp-b-teamB', 4); setIdx('gki-cmp-b-teamC', 5);
+    document.querySelectorAll('.gk-team-select').forEach(function (el) { updateTeamCardBadgeFromSelect(el); });
   }
 
-  function updateTeamCardBadge(selectId, badgeId) {
-    const sel = document.getElementById(selectId);
+  function updateTeamCardBadgeFromSelect(selectEl) {
+    const badgeId = selectEl.getAttribute('data-badge');
+    if (!badgeId) return;
     const badge = document.getElementById(badgeId);
-    if (sel && badge) badge.innerHTML = teamBadge(sel.value);
+    if (badge) badge.innerHTML = teamBadge(selectEl.value);
   }
 
-  // ── ANALISI COPPIA ──
-  function renderDetail(teamA, teamB, containerId) {
+  function wireAdd3(addBtnId, removeBtnId, wrapId) {
+    const addBtn = document.getElementById(addBtnId);
+    const removeBtn = document.getElementById(removeBtnId);
+    const wrap = document.getElementById(wrapId);
+    if (!addBtn || !wrap) return;
+    addBtn.addEventListener('click', function () { wrap.classList.remove('hidden'); addBtn.classList.add('hidden'); });
+    if (removeBtn) removeBtn.addEventListener('click', function () { wrap.classList.add('hidden'); addBtn.classList.remove('hidden'); });
+  }
+
+  function readTeamsFromPicker(prefix) {
+    const a = document.getElementById(prefix + '-teamA');
+    const b = document.getElementById(prefix + '-teamB');
+    const cWrap = document.getElementById(prefix + '-teamC-wrap');
+    const c = document.getElementById(prefix + '-teamC');
+    if (!a || !b) return [];
+    const teams = [a.value, b.value];
+    if (cWrap && !cWrap.classList.contains('hidden') && c && c.value) teams.push(c.value);
+    return teams;
+  }
+
+  function setTeamsToPicker(prefix, teams) {
+    const a = document.getElementById(prefix + '-teamA');
+    const b = document.getElementById(prefix + '-teamB');
+    const c = document.getElementById(prefix + '-teamC');
+    const cWrap = document.getElementById(prefix + '-teamC-wrap');
+    const addBtn = document.getElementById('btn-' + prefix + '-add3');
+    if (a) a.value = teams[0];
+    if (b) b.value = teams[1];
+    if (teams.length > 2 && c) {
+      c.value = teams[2];
+      if (cWrap) cWrap.classList.remove('hidden');
+      if (addBtn) addBtn.classList.add('hidden');
+    } else {
+      if (cWrap) cWrap.classList.add('hidden');
+      if (addBtn) addBtn.classList.remove('hidden');
+    }
+    [a, b, c].forEach(function (el) { if (el) updateTeamCardBadgeFromSelect(el); });
+  }
+
+  // ── ANALISI GRUPPO (2 o 3 squadre) ──
+  function renderDetail(teams, containerId) {
     const targetId = containerId || 'gk-detail-content';
-    if (!teamA || !teamB || teamA === teamB) {
-      document.getElementById(targetId).innerHTML = '<p class="gk-view-intro">Scegli due squadre diverse e premi "Analizza".</p>';
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    const filled = teams.filter(function (t) { return t; });
+    const distinct = new Set(filled);
+    if (filled.length < 2 || distinct.size !== filled.length) {
+      el.innerHTML = '<p class="gk-view-intro">Scegli squadre diverse tra loro e premi "Analizza".</p>';
       return;
     }
-    const d = GKPlanner.analizzaCoppia(teamA, teamB, GKUI.fixtures, GKUI.config);
-    GKUI.lastDetail = d;
+    const d = GKPlanner.analizzaGruppo(filled, GKUI.fixtures, GKUI.config, GKUI.mode);
     const scoreColor = d.livello === 'Ottimo' ? 'var(--success)' : d.livello === 'Buono' ? 'var(--primary-bright)' : d.livello === 'Discreto' ? 'var(--gold-bright)' : 'var(--danger)';
 
     let html = '<div class="gk-summary-card gk-summary-fancy">' +
@@ -178,192 +229,142 @@
           '<div class="gk-mini-stat"><span class="gk-mini-stat-num">' + d.inCasaReco + '</span><span class="gk-mini-stat-lbl">in casa</span></div>' +
           '<div class="gk-mini-stat"><span class="gk-mini-stat-num">' + d.fuoriCasaReco + '</span><span class="gk-mini-stat-lbl">fuori casa</span></div>' +
         '</div>' +
-      '</div>' +
-    '</div>' +
-    '<div class="gk-summary-card">' +
-      '<p class="gk-summary-explain">💡 ' + d.spiegazione + '</p>' +
-      '<div class="gk-breakdown">' + renderBreakdownItems(d.breakdown) + '</div>' +
-      '<div class="gk-stats-row">' +
-        '<div class="gk-stat-box"><div class="gk-stat-num">' + d.copertura + '/' + d.giornateTotali + '</div><div class="gk-stat-lbl">Giornate coperte</div></div>' +
-        '<div class="gk-stat-box"><div class="gk-stat-num">' + d.giornateCritiche + '</div><div class="gk-stat-lbl">Giornate critiche</div></div>' +
-        '<div class="gk-stat-box"><div class="gk-stat-num">' + d.entrambiFuoriCasa + '</div><div class="gk-stat-lbl">Entrambi fuori casa</div></div>' +
-        '<div class="gk-stat-box"><div class="gk-stat-num">' + d.confidenza + '</div><div class="gk-stat-lbl">Confidenza (' + d.confidenzaScore + '%)</div></div>' +
-      '</div>' +
-    '</div>';
-
-    html += renderHeatmap(d, teamA, teamB);
-    html += renderGiornateList(d, teamA, teamB);
-
-    document.getElementById(targetId).innerHTML = html;
+      '</div></div>' +
+      '<div class="gk-summary-card">' +
+        '<p class="gk-summary-explain">&#128161; ' + d.spiegazione + '</p>' +
+        '<div class="gk-breakdown">' + renderBreakdownItems(d.breakdown) + '</div>' +
+        '<div class="gk-stats-row">' +
+          '<div class="gk-stat-box"><div class="gk-stat-num">' + d.copertura + '/' + d.giornateTotali + '</div><div class="gk-stat-lbl">Giornate coperte</div></div>' +
+          '<div class="gk-stat-box"><div class="gk-stat-num">' + d.giornateCritiche + '</div><div class="gk-stat-lbl">Giornate critiche</div></div>' +
+          '<div class="gk-stat-box"><div class="gk-stat-num">' + d.tuttiFuoriCasa + '</div><div class="gk-stat-lbl">Tutti fuori casa</div></div>' +
+          '<div class="gk-stat-box"><div class="gk-stat-num">' + d.confidenza + '</div><div class="gk-stat-lbl">Confidenza (' + d.confidenzaScore + '%)</div></div>' +
+        '</div>' +
+      '</div>';
+    html += renderHeatmap(d);
+    el.innerHTML = html;
   }
 
   function renderBreakdownItems(breakdown) {
-    const labels = {
-      coverage: 'Copertura calendario', difficoltaMedia: 'Dificoltà media (inv.)',
-      alternanza: 'Alternanza casa/fuori', giornateCritiche: 'Giornate critiche (inv.)',
-      fuoriCasaDoppio: 'Doppia trasferta (inv.)'
-    };
+    const labels = { coverage: 'Copertura calendario', difficoltaMedia: 'Difficolta media (inv.)', alternanza: 'Alternanza casa/fuori', giornateCritiche: 'Giornate critiche (inv.)', fuoriCasaDoppio: 'Doppia trasferta (inv.)' };
     let html = '';
     Object.keys(breakdown).forEach(function (k) {
       const v = breakdown[k];
-      html += '<div class="gk-breakdown-item">' +
-        '<div class="gk-breakdown-label">' + (labels[k] || k) + '</div>' +
+      html += '<div class="gk-breakdown-item"><div class="gk-breakdown-label">' + (labels[k] || k) + '</div>' +
         '<div class="gk-breakdown-bar"><div class="gk-breakdown-bar-fill" style="width:' + v + '%"></div></div>' +
-        '<div class="gk-breakdown-val">' + v + '%</div>' +
-      '</div>';
+        '<div class="gk-breakdown-val">' + v + '%</div></div>';
     });
     return html;
   }
 
-  function renderHeatmap(d, teamA, teamB) {
-    let header = '<div class="gk-heat-header-cell"></div>';
-    let rowA = '<div class="gk-heatmap-row-label">' + teamBadge(teamA) + '<span>' + teamA.substring(0, 3).toUpperCase() + '</span></div>';
-    let rowB = '<div class="gk-heatmap-row-label">' + teamBadge(teamB) + '<span>' + teamB.substring(0, 3).toUpperCase() + '</span></div>';
-    let rowReco = '<div class="gk-heatmap-row-label"><span>⭐ Consiglio</span></div>';
+  // ── Heatmap corretta: grid-template-columns esplicito per allineamento perfetto ──
+  function renderHeatmap(d) {
+    const teams = d.teams;
+    const nG = d.calendario.length;
+    const gridStyle = 'grid-template-columns:70px repeat(' + nG + ',32px)';
+    let header = '<div class="gk-heat-header-cell gk-heat-corner"></div>';
+    const rowsArr = teams.map(function (t) {
+      return '<div class="gk-heatmap-row-label">' + teamBadge(t) + '<span>' + t.substring(0, 3).toUpperCase() + '</span></div>';
+    });
+    let rowReco = '<div class="gk-heatmap-row-label"><span>&#11088; Consiglio</span></div>';
+
     d.calendario.forEach(function (r) {
       header += '<div class="gk-heat-header-cell">G' + r.giornata + '</div>';
-      const titleA = r.A.opponent + ' (' + (r.A.isHome ? 'C' : 'F') + ')';
-      const titleB = r.B.opponent + ' (' + (r.B.isHome ? 'C' : 'F') + ')';
-      rowA += '<div class="gk-heat-cell gk-heat-' + r.A.livello + (r.raccomandato === 'A' ? ' gk-heat-reco' : '') + '" title="' + titleA + '">' + teamBadge(r.A.opponent) + '</div>';
-      rowB += '<div class="gk-heat-cell gk-heat-' + r.B.livello + (r.raccomandato === 'B' ? ' gk-heat-reco' : '') + '" title="' + titleB + '">' + teamBadge(r.B.opponent) + '</div>';
-      const recoOpponent = r.raccomandato === 'A' ? r.A.opponent : (r.raccomandato === 'B' ? r.B.opponent : null);
-      const recoLabel = r.raccomandato === 'A' ? teamA.substring(0, 3) : (r.raccomandato === 'B' ? teamB.substring(0, 3) : '⚖');
-      const recoLivello = r.raccomandato === 'A' ? r.A.livello : (r.raccomandato === 'B' ? r.B.livello : 'media');
-      rowReco += '<div class="gk-heat-cell gk-heat-' + recoLivello + '" title="Consigliato: ' + recoLabel + '">' + (recoOpponent ? teamBadge(recoOpponent) : '<span class="gk-heat-ballot">⚖</span>') + '</div>';
+      r.squadre.forEach(function (sq, idx) {
+        const isReco = (r.raccomandato === idx);
+        rowsArr[idx] += '<div class="gk-heat-cell gk-heat-' + sq.livello + (isReco ? ' gk-heat-reco' : '') + '" title="' + sq.opponent + ' (' + (sq.isHome ? 'C' : 'F') + ')">' + teamBadge(sq.opponent) + '</div>';
+      });
+      if (typeof r.raccomandato === 'number') {
+        const sq = r.squadre[r.raccomandato];
+        rowReco += '<div class="gk-heat-cell gk-heat-' + sq.livello + '" title="Consigliato: ' + teams[r.raccomandato] + '">' + teamBadge(sq.opponent) + '</div>';
+      } else {
+        rowReco += '<div class="gk-heat-cell gk-heat-media" title="Ballottaggio"><span class="gk-heat-ballot">&#9878;</span></div>';
+      }
     });
+
     return '<div class="gk-heatmap-wrap">' +
-      '<div class="gk-heatmap">' + header + rowA + rowB + rowReco + '</div>' +
+      '<div class="gk-heatmap" style="' + gridStyle + '">' + header + rowsArr.join('') + rowReco + '</div>' +
       '<div class="gk-heat-legend">' +
         '<span><i style="background:linear-gradient(135deg,#4ee39a,#00c37a)"></i> Facile</span>' +
         '<span><i style="background:linear-gradient(135deg,#ffd166,#ffab00)"></i> Media</span>' +
         '<span><i style="background:linear-gradient(135deg,#ff6b6b,#e8283e)"></i> Difficile</span>' +
-        '<span>Il riquadro con il bordo interno bianco è il portiere titolare consigliato</span>' +
-      '</div>' +
-    '</div>';
+        '<span>Bordo bianco = titolare consigliato quella giornata</span>' +
+      '</div></div>';
   }
 
-  function renderGiornateList(d, teamA, teamB) {
-    let html = '<div class="gk-giornate-list">';
-    d.calendario.forEach(function (r) {
-      const recoText = r.raccomandato === 'A' ? teamA : (r.raccomandato === 'B' ? teamB : 'Ballottaggio');
-      const recoClass = r.raccomandato === 'A' ? 'reco-A' : (r.raccomandato === 'B' ? 'reco-B' : 'reco-ballottaggio');
-      html += '<div class="gk-giornata-row' + (r.criticaDoppia ? ' critica' : '') + '">' +
-        '<span class="gk-giornata-num">G' + r.giornata + '</span>' +
-        '<span class="gk-giornata-match">' + teamA + ' vs ' + r.A.opponent + (r.A.isHome ? ' (C)' : ' (F)') +
-          ' · ' + teamB + ' vs ' + r.B.opponent + (r.B.isHome ? ' (C)' : ' (F)') + '</span>' +
-        '<span class="gk-giornata-reco ' + recoClass + '">' + recoText + '</span>' +
-      '</div>';
-    });
-    return html + '</div>';
-  }
-
-  // ── CONFRONTO ──
-  function renderCompare() {
-    const a1 = document.getElementById('gk-cmp-a-teamA').value, a2 = document.getElementById('gk-cmp-a-teamB').value;
-    const b1 = document.getElementById('gk-cmp-b-teamA').value, b2 = document.getElementById('gk-cmp-b-teamB').value;
-    if (a1 === a2 || b1 === b2) {
-      document.getElementById('gk-compare-content').innerHTML = '<p class="gk-view-intro">Ogni coppia deve avere due squadre diverse.</p>';
+  // ── CONFRONTO (qualsiasi combinazione di dimensioni) ──
+  function renderCompare(prefixA, prefixB, containerId) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const teamsA = readTeamsFromPicker(prefixA).filter(function (t) { return t; });
+    const teamsB = readTeamsFromPicker(prefixB).filter(function (t) { return t; });
+    const distinctA = new Set(teamsA), distinctB = new Set(teamsB);
+    if (teamsA.length < 2 || teamsB.length < 2 || distinctA.size !== teamsA.length || distinctB.size !== teamsB.length) {
+      el.innerHTML = '<p class="gk-view-intro">Ogni gruppo deve avere almeno 2 squadre diverse tra loro.</p>';
       return;
     }
-    const dA = GKPlanner.analizzaCoppia(a1, a2, GKUI.fixtures, GKUI.config);
-    const dB = GKPlanner.analizzaCoppia(b1, b2, GKUI.fixtures, GKUI.config);
-    const cmp = GKPlanner.confrontaCoppie(dA, dB);
-    const winnerLabel = cmp.vincitore === 'A' ? (a1 + ' + ' + a2) : (cmp.vincitore === 'B' ? (b1 + ' + ' + b2) : 'Parità');
-
-    function bar(labelText, valA, valB, maxVal) {
-      const wA = Math.round((valA / maxVal) * 100), wB = Math.round((valB / maxVal) * 100);
-      return '<div class="gk-compare-bar-row">' +
-        '<span class="gk-compare-bar-label">' + labelText + '</span>' +
+    const dA = GKPlanner.analizzaGruppo(teamsA, GKUI.fixtures, GKUI.config, GKUI.mode);
+    const dB = GKPlanner.analizzaGruppo(teamsB, GKUI.fixtures, GKUI.config, GKUI.mode);
+    const cmp = GKPlanner.confrontaGruppi(dA, dB);
+    const winnerLabel = cmp.vincitore === 'A' ? teamsA.join('+') : (cmp.vincitore === 'B' ? teamsB.join('+') : 'Parita');
+    function bar(lbl, vA, vB, maxV) {
+      const wA = Math.round((vA / maxV) * 100), wB = Math.round((vB / maxV) * 100);
+      return '<div class="gk-compare-bar-row"><span class="gk-compare-bar-label">' + lbl + '</span>' +
         '<div class="gk-compare-bar-track"><div class="gk-compare-bar-fill side-a" style="width:' + wA + '%"></div>' +
-        '<div class="gk-compare-bar-fill side-b" style="width:' + wB + '%"></div></div>' +
-      '</div>';
+        '<div class="gk-compare-bar-fill side-b" style="width:' + wB + '%"></div></div></div>';
     }
-
-    let html = '<div class="gk-compare-result">' +
-      '<div class="gk-summary-card">' +
-        '<p style="text-align:center;font-weight:700;color:var(--gold-bright)">🏆 Vince: ' + winnerLabel + '</p>' +
-        '<div class="gk-compare-bars">' +
-          bar('Punteggio', dA.score, dB.score, 100) +
-          bar('Giornate coperte', dA.copertura, dB.copertura, 38) +
-          bar('Giornate critiche (inv.)', 38 - dA.giornateCritiche, 38 - dB.giornateCritiche, 38) +
-          bar('Doppia trasferta (inv.)', 38 - dA.entrambiFuoriCasa, 38 - dB.entrambiFuoriCasa, 38) +
-        '</div>' +
-      '</div>' +
-    '</div>';
-    document.getElementById('gk-compare-content').innerHTML = html;
-  }
-
-  // ── VISTA GIORNATA ──
-  function renderRound() {
-    document.getElementById('gk-round-label').textContent = 'Giornata ' + GKUI.currentRound;
-    document.getElementById('gk-round-slider').value = GKUI.currentRound;
-    const rows = GKPlanner.vistaGiornata(GKUI.currentRound, GKUI.fixtures, GKUI.config);
-    let html = '<div class="gk-round-teams">';
-    rows.forEach(function (r, i) {
-      const badgeBg = r.livello === 'facile' ? 'rgba(0,224,160,.18)' : (r.livello === 'difficile' ? 'rgba(255,56,96,.18)' : 'rgba(255,179,0,.18)');
-      const badgeColor = r.livello === 'facile' ? 'var(--success)' : (r.livello === 'difficile' ? 'var(--danger)' : 'var(--gold-bright)');
-      html += '<div class="gk-round-team-row">' +
-        '<span class="gk-round-team-pos">' + (i + 1) + '</span>' +
-        teamBadge(r.team) +
-        '<span class="gk-round-team-name">' + r.team + '</span>' +
-        '<span class="gk-round-team-opp">vs ' + r.opponent + (r.isHome ? ' (Casa)' : ' (Fuori)') + '</span>' +
-        '<span class="gk-round-diff-badge" style="background:' + badgeBg + ';color:' + badgeColor + '">' + r.difficolta + '</span>' +
-      '</div>';
-    });
-    html += '</div>';
-    document.getElementById('gk-round-content').innerHTML = html;
+    el.innerHTML = '<div class="gk-compare-result"><div class="gk-summary-card">' +
+      '<p style="text-align:center;font-weight:700;color:var(--gold-bright)">&#127942; Vince: ' + winnerLabel + '</p>' +
+      '<div class="gk-compare-bars">' +
+        bar('Punteggio', dA.score, dB.score, 100) +
+        bar('Giornate coperte', dA.copertura, dB.copertura, dA.giornateTotali) +
+        bar('Giornate critiche (inv.)', dA.giornateTotali - dA.giornateCritiche, dB.giornateTotali - dB.giornateCritiche, dA.giornateTotali) +
+        bar('Doppia trasferta (inv.)', dA.giornateTotali - dA.tuttiFuoriCasa, dB.giornateTotali - dB.tuttiFuoriCasa, dA.giornateTotali) +
+      '</div></div></div>';
   }
 
   // ── IMPOSTAZIONI ──
   function renderConfig() {
     updateGkImportStatusText();
     const cfg = GKUI.config;
-    const weightLabels = {
-      coverage: 'Copertura calendario', difficoltaMedia: 'Difficoltà media',
-      alternanza: 'Alternanza casa/fuori', giornateCritiche: 'Giornate critiche',
-      fuoriCasaDoppio: 'Doppia trasferta'
-    };
+    const weightLabels = { coverage: 'Copertura calendario', difficoltaMedia: 'Difficolta media', alternanza: 'Alternanza casa/fuori', giornateCritiche: 'Giornate critiche', fuoriCasaDoppio: 'Doppia trasferta' };
     let wHtml = '';
     Object.keys(cfg.weights).forEach(function (k) {
-      wHtml += '<div class="gk-config-row">' +
-        '<label>' + weightLabels[k] + '</label>' +
-        '<input type="range" min="0" max="50" value="' + cfg.weights[k] + '" data-weight="' + k + '">' +
-        '<span class="gk-config-val">' + cfg.weights[k] + '</span>' +
-      '</div>';
+      wHtml += '<div class="gk-config-row"><label>' + weightLabels[k] + '</label><input type="range" min="0" max="50" value="' + cfg.weights[k] + '" data-weight="' + k + '"><span class="gk-config-val">' + cfg.weights[k] + '</span></div>';
     });
     document.getElementById('gk-config-weights').innerHTML = wHtml;
-
     document.getElementById('gk-config-home').innerHTML =
       '<div class="gk-config-row"><label>Bonus casa</label><input type="range" min="0" max="20" value="' + cfg.homeAdvantage + '" id="gk-cfg-home"><span class="gk-config-val">' + cfg.homeAdvantage + '</span></div>' +
-      '<div class="gk-config-row"><label>Penalità fuori casa</label><input type="range" min="0" max="20" value="' + cfg.awayPenalty + '" id="gk-cfg-away"><span class="gk-config-val">' + cfg.awayPenalty + '</span></div>';
-
+      '<div class="gk-config-row"><label>Penalita fuori casa</label><input type="range" min="0" max="20" value="' + cfg.awayPenalty + '" id="gk-cfg-away"><span class="gk-config-val">' + cfg.awayPenalty + '</span></div>';
     let sHtml = '';
-    Object.keys(cfg.teamStrength).sort().forEach(function (t) {
-      sHtml += '<div class="gk-strength-item"><label>' + t + ' <span class="gk-config-val">' + cfg.teamStrength[t] + '</span></label>' +
-        '<input type="range" min="30" max="99" value="' + cfg.teamStrength[t] + '" data-team="' + t + '"></div>';
+    Object.keys(cfg.teamStats).sort().forEach(function (t) {
+      const s = cfg.teamStats[t];
+      sHtml += '<div class="gk-strength-item gk-strength-item-dual">' +
+        '<label class="gk-strength-team-label">' + teamBadge(t) + ' ' + t + '</label>' +
+        '<div class="gk-strength-dual-row"><span class="gk-strength-dual-tag">&#9876;&#65039; Attacco</span>' +
+          '<input type="range" min="30" max="99" value="' + s.attacco + '" data-team="' + t + '" data-stat="attacco">' +
+          '<span class="gk-config-val">' + s.attacco + '</span></div>' +
+        '<div class="gk-strength-dual-row"><span class="gk-strength-dual-tag">&#128737;&#65039; Difesa</span>' +
+          '<input type="range" min="30" max="99" value="' + s.difesa + '" data-team="' + t + '" data-stat="difesa">' +
+          '<span class="gk-config-val">' + s.difesa + '</span></div></div>';
     });
     document.getElementById('gk-config-strength').innerHTML = sHtml;
-
-    document.querySelectorAll('#gk-config-weights input[type=range]').forEach(function (inp) {
-      inp.addEventListener('input', function () { inp.nextElementSibling.textContent = inp.value; });
-    });
-    document.querySelectorAll('#gk-config-home input[type=range]').forEach(function (inp) {
+    document.querySelectorAll('#gk-config-weights input[type=range],#gk-config-home input[type=range]').forEach(function (inp) {
       inp.addEventListener('input', function () { inp.nextElementSibling.textContent = inp.value; });
     });
     document.querySelectorAll('#gk-config-strength input[type=range]').forEach(function (inp) {
-      inp.addEventListener('input', function () { inp.previousElementSibling ? null : null; inp.parentElement.querySelector('.gk-config-val').textContent = inp.value; });
+      inp.addEventListener('input', function () { inp.parentElement.querySelector('.gk-config-val').textContent = inp.value; });
     });
   }
 
   function applyConfigFromForm() {
     const cfg = JSON.parse(JSON.stringify(GKUI.config));
-    document.querySelectorAll('#gk-config-weights input[type=range]').forEach(function (inp) {
-      cfg.weights[inp.getAttribute('data-weight')] = parseInt(inp.value, 10);
-    });
+    document.querySelectorAll('#gk-config-weights input[type=range]').forEach(function (inp) { cfg.weights[inp.getAttribute('data-weight')] = parseInt(inp.value, 10); });
     cfg.homeAdvantage = parseInt(document.getElementById('gk-cfg-home').value, 10);
     cfg.awayPenalty = parseInt(document.getElementById('gk-cfg-away').value, 10);
     document.querySelectorAll('#gk-config-strength input[type=range]').forEach(function (inp) {
-      cfg.teamStrength[inp.getAttribute('data-team')] = parseInt(inp.value, 10);
+      const team = inp.getAttribute('data-team'), stat = inp.getAttribute('data-stat');
+      if (!cfg.teamStats[team]) cfg.teamStats[team] = { attacco: 55, difesa: 55 };
+      cfg.teamStats[team][stat] = parseInt(inp.value, 10);
     });
     GKUI.config = GKPlanner.mergeConfig(cfg);
     saveConfig(GKUI.config);
@@ -380,10 +381,7 @@
     if (typeof toast === 'function') toast('Impostazioni ripristinate ai valori di default', 'success');
   }
 
-  // ── IMPORTAZIONE CALENDARIO (Admin) ──
-  // Permette all'Admin di caricare il calendario reale della Serie A (Excel o JSON)
-  // non appena disponibile, sostituendo il calendario placeholder. Salvato lato server,
-  // quindi visibile immediatamente a tutti gli utenti dell'app (non solo a chi lo carica).
+  // ── Import calendario (solo Admin) ──
   let _gkPendingCalendario = null;
 
   function updateGkImportStatusText() {
@@ -391,14 +389,13 @@
     if (!el) return;
     if (GKUI.calendarioInfo && GKUI.calendarioInfo.custom) {
       const data = GKUI.calendarioInfo.caricatoIl ? new Date(GKUI.calendarioInfo.caricatoIl).toLocaleString('it-IT') : '';
-      el.textContent = '✅ In uso: calendario reale caricato' + (data ? ' il ' + data : '') + '. Puoi sostituirlo caricando un nuovo file.';
+      el.textContent = 'In uso: calendario reale caricato' + (data ? ' il ' + data : '') + '. Puoi sostituirlo caricando un nuovo file.';
     } else {
-      el.textContent = 'Attualmente in uso: calendario generato automaticamente (placeholder). Carica il calendario reale (Excel o JSON) non appena disponibile — verrà usato da tutti gli utenti dell\'app.';
+      el.textContent = "Attualmente in uso: calendario generato automaticamente (placeholder). Carica il calendario reale (Excel o JSON) non appena disponibile.";
     }
   }
 
   function normalizeParsedPartite(rows) {
-    // Rows possono venire da Excel (oggetti con colonne libere) o da JSON ({partite:[...]}).
     const norm = function (s) { return (s || '').toString().trim().toLowerCase(); };
     if (!rows.length) return [];
     const headers = Object.keys(rows[0]);
@@ -409,7 +406,7 @@
     const colGiornata = findCol('Giornata', 'Giorn', 'GG', 'Round');
     const colCasa = findCol('Casa', 'Home', 'Squadra Casa');
     const colOspite = findCol('Ospite', 'Away', 'Squadra Ospite', 'Trasferta');
-    if (!colGiornata || !colCasa || !colOspite) return null; // colonne mancanti
+    if (!colGiornata || !colCasa || !colOspite) return null;
     return rows.map(function (r) {
       return { giornata: parseInt(r[colGiornata], 10), casa: String(r[colCasa] || '').trim(), ospite: String(r[colOspite] || '').trim() };
     }).filter(function (p) { return p.giornata && p.casa && p.ospite; });
@@ -422,7 +419,6 @@
     statusEl.textContent = file.name;
     btnCarica.disabled = true;
     _gkPendingCalendario = null;
-
     const isJson = /\.json$/i.test(file.name);
     const reader = new FileReader();
     reader.onload = function (e) {
@@ -442,9 +438,9 @@
         if (!partite || !partite.length) throw new Error('Nessuna partita valida trovata nel file');
         _gkPendingCalendario = partite;
         btnCarica.disabled = false;
-        if (typeof toast === 'function') toast(partite.length + ' partite lette dal file, premi "Carica calendario" per confermare', 'success');
+        if (typeof toast === 'function') toast(partite.length + ' partite lette. Premi "Carica calendario" per confermare.', 'success');
       } catch (err) {
-        if (typeof toast === 'function') toast('Errore nella lettura del file: ' + err.message, 'error');
+        if (typeof toast === 'function') toast('Errore: ' + err.message, 'error');
       }
     };
     if (isJson) reader.readAsText(file); else reader.readAsArrayBuffer(file);
@@ -461,42 +457,25 @@
         body: JSON.stringify({ partite: _gkPendingCalendario })
       });
       const out = await res.json();
-      if (!res.ok) {
-        if (typeof toast === 'function') toast(out.error || 'Errore nel caricamento del calendario', 'error');
-        return;
-      }
+      if (!res.ok) { if (typeof toast === 'function') toast(out.error || 'Errore nel caricamento', 'error'); return; }
       if (typeof toast === 'function') toast('Calendario aggiornato: ' + out.totalPartite + ' partite su ' + out.giornateTotali + ' giornate', 'success');
       document.getElementById('gk-import-filename').textContent = '';
       document.getElementById('btn-gk-carica-calendario').disabled = true;
       _gkPendingCalendario = null;
-      await loadFixtures();
-      recompute();
-      updateGkImportStatusText();
-    } catch (err) {
-      if (typeof toast === 'function') toast('Errore di rete durante il caricamento: ' + err.message, 'error');
-    }
+      await loadFixtures(); recompute(); updateGkImportStatusText();
+    } catch (err) { if (typeof toast === 'function') toast('Errore di rete: ' + err.message, 'error'); }
   }
 
   async function ripristinaCalendarioPlaceholder() {
     try {
       const { data: sessData } = await supa.auth.getSession();
       const token = sessData && sessData.session ? sessData.session.access_token : null;
-      const res = await fetch('/api/gk-planner/calendario', {
-        method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
+      const res = await fetch('/api/gk-planner/calendario', { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
       const out = await res.json();
-      if (!res.ok) {
-        if (typeof toast === 'function') toast(out.error || 'Errore nel ripristino', 'error');
-        return;
-      }
+      if (!res.ok) { if (typeof toast === 'function') toast(out.error || 'Errore nel ripristino', 'error'); return; }
       if (typeof toast === 'function') toast('Ripristinato il calendario placeholder', 'success');
-      await loadFixtures();
-      recompute();
-      updateGkImportStatusText();
-    } catch (err) {
-      if (typeof toast === 'function') toast('Errore di rete: ' + err.message, 'error');
-    }
+      await loadFixtures(); recompute(); updateGkImportStatusText();
+    } catch (err) { if (typeof toast === 'function') toast('Errore di rete: ' + err.message, 'error'); }
   }
 
   // ── Inizializzazione ──
@@ -504,61 +483,54 @@
     const btnMenu = document.getElementById('btn-menu-gk-planner');
     const btnBack = document.getElementById('btn-back-gk');
     if (btnMenu) btnMenu.addEventListener('click', function () {
-      ensureData().then(function () {
-        populateTeamSelects();
-        recompute();
-        showScreen('screen-gk-planner');
-        switchView('ranking');
-      });
+      ensureData().then(function () { populateTeamSelects(); recompute(); applyModeToggleUI(); showScreen('screen-gk-planner'); switchView('ranking'); });
     });
     if (btnBack) btnBack.addEventListener('click', function () { showScreen('screen-menu-principale'); });
 
     const btnHelp = document.getElementById('btn-gk-help');
     if (btnHelp) btnHelp.addEventListener('click', function () { openModal('modal-gk-help'); });
 
-    document.querySelectorAll('.gk-tab').forEach(function (tab) {
+    document.querySelectorAll('#gk-tabs .gk-tab').forEach(function (tab) {
       tab.addEventListener('click', function () { switchView(tab.getAttribute('data-gk-view')); });
     });
 
-    const btnAnalizza = document.getElementById('btn-gk-analizza');
-    if (btnAnalizza) btnAnalizza.addEventListener('click', function () {
-      renderDetail(document.getElementById('gk-detail-teamA').value, document.getElementById('gk-detail-teamB').value);
+    // Toggle globale Portieri/Attaccanti
+    document.querySelectorAll('.gk-mode-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () { setMode(btn.getAttribute('data-gk-mode')); });
     });
 
-    const selDetailA = document.getElementById('gk-detail-teamA');
-    if (selDetailA) selDetailA.addEventListener('change', function () { updateTeamCardBadge('gk-detail-teamA', 'gk-teamcard-a-badge'); });
-    const selDetailB = document.getElementById('gk-detail-teamB');
-    if (selDetailB) selDetailB.addEventListener('change', function () { updateTeamCardBadge('gk-detail-teamB', 'gk-teamcard-b-badge'); });
-
-    // ── Tab "🥅 Portieri" inline nella schermata Asta ──
-    const btnPortieriTab = document.querySelector('.tab-btn[data-tab="tab-portieri"]');
-    if (btnPortieriTab) btnPortieriTab.addEventListener('click', function () {
-      ensureData().then(function () {
-        populateTeamSelects();
-        recompute();
-        renderRanking('gki-ranking-list');
+    // Sub-tab Ranking: Coppie / Terzetti
+    document.querySelectorAll('.gk-ranking-subtabs').forEach(function (nav) {
+      const listId = nav.getAttribute('data-rank-list');
+      nav.querySelectorAll('.gk-subtab').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          nav.querySelectorAll('.gk-subtab').forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          renderRanking(listId, parseInt(btn.getAttribute('data-ranksub'), 10));
+        });
       });
     });
 
-    const btnGkiAnalizza = document.getElementById('btn-gki-analizza');
-    if (btnGkiAnalizza) btnGkiAnalizza.addEventListener('click', function () {
-      renderDetail(document.getElementById('gki-teamA').value, document.getElementById('gki-teamB').value, 'gki-detail-content');
+    // Cambio badge su ogni select
+    document.addEventListener('change', function (e) {
+      if (e.target && e.target.classList && e.target.classList.contains('gk-team-select')) {
+        updateTeamCardBadgeFromSelect(e.target);
+      }
     });
 
-    const selGkiA = document.getElementById('gki-teamA');
-    if (selGkiA) selGkiA.addEventListener('change', function () { updateTeamCardBadge('gki-teamA', 'gki-teamcard-a-badge'); });
-    const selGkiB = document.getElementById('gki-teamB');
-    if (selGkiB) selGkiB.addEventListener('change', function () { updateTeamCardBadge('gki-teamB', 'gki-teamcard-b-badge'); });
+    // Slot opzionale 3a squadra
+    wireAdd3('btn-gk-detail-add3',  'btn-gk-detail-remove3',  'gk-detail-teamC-wrap');
+    wireAdd3('btn-gki-detail-add3', 'btn-gki-detail-remove3', 'gki-detail-teamC-wrap');
+    wireAdd3('btn-gk-cmp-a-add3',   'btn-gk-cmp-a-remove3',   'gk-cmp-a-teamC-wrap');
+    wireAdd3('btn-gk-cmp-b-add3',   'btn-gk-cmp-b-remove3',   'gk-cmp-b-teamC-wrap');
+    wireAdd3('btn-gki-cmp-a-add3',  'btn-gki-cmp-a-remove3',  'gki-cmp-a-teamC-wrap');
+    wireAdd3('btn-gki-cmp-b-add3',  'btn-gki-cmp-b-remove3',  'gki-cmp-b-teamC-wrap');
+
+    const btnAnalizza = document.getElementById('btn-gk-analizza');
+    if (btnAnalizza) btnAnalizza.addEventListener('click', function () { renderDetail(readTeamsFromPicker('gk-detail'), 'gk-detail-content'); });
 
     const btnConfronta = document.getElementById('btn-gk-confronta');
-    if (btnConfronta) btnConfronta.addEventListener('click', renderCompare);
-
-    const sliderRound = document.getElementById('gk-round-slider');
-    if (sliderRound) sliderRound.addEventListener('input', function () { GKUI.currentRound = parseInt(sliderRound.value, 10); renderRound(); });
-    const btnPrev = document.getElementById('btn-gk-round-prev');
-    if (btnPrev) btnPrev.addEventListener('click', function () { GKUI.currentRound = Math.max(1, GKUI.currentRound - 1); renderRound(); });
-    const btnNext = document.getElementById('btn-gk-round-next');
-    if (btnNext) btnNext.addEventListener('click', function () { GKUI.currentRound = Math.min(38, GKUI.currentRound + 1); renderRound(); });
+    if (btnConfronta) btnConfronta.addEventListener('click', function () { renderCompare('gk-cmp-a', 'gk-cmp-b', 'gk-compare-content'); });
 
     const btnApply = document.getElementById('btn-gk-apply-config');
     if (btnApply) btnApply.addEventListener('click', applyConfigFromForm);
@@ -571,6 +543,28 @@
     if (btnCarica) btnCarica.addEventListener('click', confermaCaricaCalendario);
     const btnRipristina = document.getElementById('btn-gk-ripristina-calendario');
     if (btnRipristina) btnRipristina.addEventListener('click', ripristinaCalendarioPlaceholder);
+
+    // ── Tab inline "Portieri/Attaccanti" nella schermata Asta ──
+    const btnPortieriTab = document.querySelector('.tab-btn[data-tab="tab-portieri"]');
+    if (btnPortieriTab) btnPortieriTab.addEventListener('click', function () {
+      ensureData().then(function () { populateTeamSelects(); recompute(); applyModeToggleUI(); renderRanking('gki-ranking-list', 2); });
+    });
+
+    const btnGkiAnalizza = document.getElementById('btn-gki-analizza');
+    if (btnGkiAnalizza) btnGkiAnalizza.addEventListener('click', function () { renderDetail(readTeamsFromPicker('gki-detail'), 'gki-detail-content'); });
+
+    const btnGkiConfronta = document.getElementById('btn-gki-confronta');
+    if (btnGkiConfronta) btnGkiConfronta.addEventListener('click', function () { renderCompare('gki-cmp-a', 'gki-cmp-b', 'gki-compare-content'); });
+
+    // Sub-tab interne della tab Asta (Ranking/Analisi/Confronto)
+    document.querySelectorAll('.gki-subtabs .gki-subtab').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const target = btn.getAttribute('data-gki-view');
+        document.querySelectorAll('.gki-subtabs .gki-subtab').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('#tab-portieri .gki-view').forEach(function (v) { v.classList.toggle('active', v.id === 'gki-view-' + target); });
+      });
+    });
   }
 
   if (document.readyState === 'loading') {
