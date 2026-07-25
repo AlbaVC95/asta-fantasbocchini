@@ -387,6 +387,62 @@ function setupLogin() {
     showScreen('screen-login');
   });
 
+  const btnForgotPassword = document.getElementById('btn-forgot-password');
+  if (btnForgotPassword) btnForgotPassword.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('recupero-email').value = document.getElementById('login-email').value.trim();
+    document.getElementById('recupero-error').style.display = 'none';
+    document.getElementById('recupero-success').style.display = 'none';
+    openModal('modal-recupero-password');
+  });
+
+  const btnInviaRecupero = document.getElementById('btn-invia-recupero');
+  if (btnInviaRecupero) btnInviaRecupero.addEventListener('click', async () => {
+    const email = document.getElementById('recupero-email').value.trim();
+    const errEl = document.getElementById('recupero-error');
+    const okEl = document.getElementById('recupero-success');
+    errEl.style.display = 'none'; okEl.style.display = 'none';
+    if (!email) { errEl.textContent = 'Inserisci la tua email'; errEl.style.display = 'block'; return; }
+    const { error } = await supa.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + window.location.pathname });
+    if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+    okEl.textContent = 'Email inviata! Controlla la tua casella di posta e clicca sul link per impostare una nuova password.';
+    okEl.style.display = 'block';
+  });
+
+  const btnSalvaNuovaPassword = document.getElementById('btn-salva-nuova-password');
+  if (btnSalvaNuovaPassword) btnSalvaNuovaPassword.addEventListener('click', async () => {
+    const pwd = document.getElementById('nuova-password').value;
+    const pwdConferma = document.getElementById('nuova-password-conferma').value;
+    const errEl = document.getElementById('nuova-password-error');
+    const okEl = document.getElementById('nuova-password-success');
+    errEl.style.display = 'none'; okEl.style.display = 'none';
+    if (!pwd || pwd.length < 6) { errEl.textContent = 'La password deve avere almeno 6 caratteri'; errEl.style.display = 'block'; return; }
+    if (pwd !== pwdConferma) { errEl.textContent = 'Le password non coincidono'; errEl.style.display = 'block'; return; }
+    const { error } = await supa.auth.updateUser({ password: pwd });
+    if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+    okEl.textContent = 'Password aggiornata! Reindirizzamento in corso...';
+    okEl.style.display = 'block';
+    setTimeout(async () => {
+      closeModal();
+      const { data } = await supa.auth.getSession();
+      if (data && data.session && data.session.user) {
+        await applicaUtenteLoggato(data.session.user);
+      } else {
+        showScreen('screen-login');
+      }
+    }, 1500);
+  });
+
+  supa.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      document.getElementById('nuova-password').value = '';
+      document.getElementById('nuova-password-conferma').value = '';
+      document.getElementById('nuova-password-error').style.display = 'none';
+      document.getElementById('nuova-password-success').style.display = 'none';
+      openModal('modal-nuova-password');
+    }
+  });
+
   const btnChoiceListino = document.getElementById('btn-choice-listino');
   const inpListino = document.getElementById('inp-listino-excel');
   if (btnChoiceListino && inpListino) {
