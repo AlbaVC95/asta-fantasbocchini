@@ -150,6 +150,7 @@
         <h1>🥅 Goalkeeper Planner</h1>
         <p class="gk-header-sub">Le migliori coppie di portieri per le 38 giornate di Serie A</p>
       </div>
+      <button type="button" id="btn-gk-help" class="btn btn-secondary btn-sm gk-help-btn">❓ Come funziona</button>
     </header>
 
     <nav class="gk-tabs" id="gk-tabs">
@@ -636,6 +637,32 @@
 </div><!-- /#app -->
 <!-- ══════════ MODALS ══════════ -->
 <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModalOnOverlay(event)">
+  <!-- Modal: GK Planner - Come funziona -->
+  <div id="modal-gk-help" class="modal hidden gk-help-modal">
+    <h2 class="modal-title">❓ Come funziona il Goalkeeper Planner</h2>
+    <div class="modal-body gk-help-body">
+      <p>Il <strong>Goalkeeper Planner</strong> analizza il calendario di Serie A per suggerirti le coppie di portieri (titolare + di scorta) che ti garantiscono più giornate favorevoli possibili durante tutta la stagione.</p>
+      <h3>📊 Come si calcola il punteggio</h3>
+      <p>Ogni coppia riceve un punteggio da 0 a 100, calcolato combinando 5 fattori pesati:</p>
+      <ul>
+        <li><strong>Copertura (35%)</strong> — quante giornate su 38 almeno uno dei due portieri affronta un avversario abbordabile.</li>
+        <li><strong>Difficoltà media (25%)</strong> — quanto è "leggero" in media il calendario del portiere migliore giornata per giornata.</li>
+        <li><strong>Alternanza casa/fuori (15%)</strong> — premia le coppie in cui uno gioca in casa mentre l'altro è in trasferta, per bilanciare il rischio.</li>
+        <li><strong>Giornate critiche (15%)</strong> — penalizza le giornate in cui ENTRAMBI i portieri affrontano un avversario forte contemporaneamente.</li>
+        <li><strong>Doppia trasferta (10%)</strong> — penalizza le giornate in cui entrambi giocano fuori casa nello stesso turno.</li>
+      </ul>
+      <h3>🎯 Livelli di difficoltà</h3>
+      <p>Ogni partita viene classificata come <span class="gk-help-tag gk-help-tag-facile">Facile</span>, <span class="gk-help-tag gk-help-tag-media">Media</span> o <span class="gk-help-tag gk-help-tag-difficile">Difficile</span> in base alla forza dell'avversario, corretta per il fattore campo (giocare in casa aiuta, giocare fuori penalizza leggermente).</p>
+      <h3>🗺️ Come leggere la heatmap</h3>
+      <p>Nella scheda "Analisi coppia" ogni riga rappresenta il calendario di un portiere: lo stemma della squadra avversaria compare in ogni casella, colorata di verde se la partita è facile, giallo/oro se è media e rosso se è difficile. La riga "Consiglio" indica quale portiere titolare conviene schierare in quella giornata.</p>
+      <h3>📥 Calendario reale</h3>
+      <p>Di base il Planner usa un calendario segnaposto. Un amministratore può caricare il calendario ufficiale reale (file .json/.csv) dalla scheda "⚙️ Impostazioni", così le analisi rifletteranno gli accoppiamenti veri di questa stagione.</p>
+      <p class="text-muted">L'algoritmo di calcolo è proprietario e i pesi dei fattori sono configurabili dalla scheda Impostazioni.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeModal()">Ho capito</button>
+    </div>
+  </div>
   <!-- Modal: RIC conferma -->
   <div id="modal-ric-conferma" class="modal hidden">
     <h2 class="modal-title">🔔 Riconferma giocatore</h2>
