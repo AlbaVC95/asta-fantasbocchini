@@ -17,6 +17,23 @@
   const STORAGE_KEY = 'gkPlannerConfig_v1';
 
   function teamSlug(team) { return team.toLowerCase(); }
+  function renderScoreGauge(score, colorVar) {
+    const r = 52;
+    const circ = 2 * Math.PI * r;
+    const pct = Math.max(0, Math.min(100, score)) / 100;
+    const offset = circ * (1 - pct);
+    return '<div class="gk-gauge">' +
+      '<svg viewBox="0 0 120 120" class="gk-gauge-svg">' +
+        '<circle cx="60" cy="60" r="' + r + '" class="gk-gauge-track"></circle>' +
+        '<circle cx="60" cy="60" r="' + r + '" class="gk-gauge-fill" style="stroke:' + colorVar + ';stroke-dasharray:' + circ.toFixed(1) + ';stroke-dashoffset:' + offset.toFixed(1) + '"></circle>' +
+      '</svg>' +
+      '<div class="gk-gauge-center">' +
+        '<div class="gk-gauge-num" style="color:' + colorVar + '">' + score + '</div>' +
+        '<div class="gk-gauge-max">/100</div>' +
+      '</div>' +
+    '</div>';
+  }
+
   function teamBadge(team) { return '<img src="img/teams/' + teamSlug(team) + '.png" alt="" onerror="this.style.display=\'none\'">'; }
 
   function loadConfig() {
@@ -135,9 +152,13 @@
           '<span class="gk-pair-plus">+</span>' +
           '<span class="gk-rank-team-badge" style="font-size:1rem">' + teamBadge(teamB) + teamB + '</span>' +
         '</div>' +
-        '<div class="gk-summary-score">' +
-          '<div class="gk-summary-score-num" style="color:' + scoreColor + '">' + d.score + '</div>' +
-          '<div class="gk-summary-score-label">Compatibilità · ' + d.livello + '</div>' +
+        renderScoreGauge(d.score, scoreColor) +
+        '<div class="gk-mini-stats">' +
+          '<div class="gk-mini-stat gk-mini-stat-facile"><span class="gk-mini-stat-num">' + d.facili + '</span><span class="gk-mini-stat-lbl">facili</span></div>' +
+          '<div class="gk-mini-stat gk-mini-stat-media"><span class="gk-mini-stat-num">' + d.medie + '</span><span class="gk-mini-stat-lbl">medie</span></div>' +
+          '<div class="gk-mini-stat gk-mini-stat-difficile"><span class="gk-mini-stat-num">' + d.difficili + '</span><span class="gk-mini-stat-lbl">difficili</span></div>' +
+          '<div class="gk-mini-stat"><span class="gk-mini-stat-num">' + d.inCasaReco + '</span><span class="gk-mini-stat-lbl">in casa</span></div>' +
+          '<div class="gk-mini-stat"><span class="gk-mini-stat-num">' + d.fuoriCasaReco + '</span><span class="gk-mini-stat-lbl">fuori casa</span></div>' +
         '</div>' +
       '</div>' +
       '<p class="gk-summary-explain">💡 ' + d.spiegazione + '</p>' +
@@ -176,18 +197,19 @@
 
   function renderHeatmap(d, teamA, teamB) {
     let header = '<div class="gk-heat-header-cell"></div>';
-    let rowA = '<div class="gk-heatmap-row-label">' + teamA.substring(0, 3).toUpperCase() + '</div>';
-    let rowB = '<div class="gk-heatmap-row-label">' + teamB.substring(0, 3).toUpperCase() + '</div>';
-    let rowReco = '<div class="gk-heatmap-row-label">Consiglio</div>';
+    let rowA = '<div class="gk-heatmap-row-label">' + teamBadge(teamA) + '<span>' + teamA.substring(0, 3).toUpperCase() + '</span></div>';
+    let rowB = '<div class="gk-heatmap-row-label">' + teamBadge(teamB) + '<span>' + teamB.substring(0, 3).toUpperCase() + '</span></div>';
+    let rowReco = '<div class="gk-heatmap-row-label"><span>⭐ Consiglio</span></div>';
     d.calendario.forEach(function (r) {
       header += '<div class="gk-heat-header-cell">G' + r.giornata + '</div>';
       const titleA = r.A.opponent + ' (' + (r.A.isHome ? 'C' : 'F') + ')';
       const titleB = r.B.opponent + ' (' + (r.B.isHome ? 'C' : 'F') + ')';
-      rowA += '<div class="gk-heat-cell gk-heat-' + r.A.livello + (r.raccomandato === 'A' ? ' gk-heat-reco' : '') + '" title="' + titleA + '">' + r.A.opponent.substring(0, 3) + '</div>';
-      rowB += '<div class="gk-heat-cell gk-heat-' + r.B.livello + (r.raccomandato === 'B' ? ' gk-heat-reco' : '') + '" title="' + titleB + '">' + r.B.opponent.substring(0, 3) + '</div>';
+      rowA += '<div class="gk-heat-cell gk-heat-' + r.A.livello + (r.raccomandato === 'A' ? ' gk-heat-reco' : '') + '" title="' + titleA + '">' + teamBadge(r.A.opponent) + '</div>';
+      rowB += '<div class="gk-heat-cell gk-heat-' + r.B.livello + (r.raccomandato === 'B' ? ' gk-heat-reco' : '') + '" title="' + titleB + '">' + teamBadge(r.B.opponent) + '</div>';
+      const recoOpponent = r.raccomandato === 'A' ? r.A.opponent : (r.raccomandato === 'B' ? r.B.opponent : null);
       const recoLabel = r.raccomandato === 'A' ? teamA.substring(0, 3) : (r.raccomandato === 'B' ? teamB.substring(0, 3) : '⚖');
       const recoLivello = r.raccomandato === 'A' ? r.A.livello : (r.raccomandato === 'B' ? r.B.livello : 'media');
-      rowReco += '<div class="gk-heat-cell gk-heat-' + recoLivello + '" title="Consigliato: ' + recoLabel + '">' + recoLabel + '</div>';
+      rowReco += '<div class="gk-heat-cell gk-heat-' + recoLivello + '" title="Consigliato: ' + recoLabel + '">' + (recoOpponent ? teamBadge(recoOpponent) : '<span class="gk-heat-ballot">⚖</span>') + '</div>';
     });
     return '<div class="gk-heatmap-wrap">' +
       '<div class="gk-heatmap">' + header + rowA + rowB + rowReco + '</div>' +
@@ -470,6 +492,9 @@
       });
     });
     if (btnBack) btnBack.addEventListener('click', function () { showScreen('screen-menu-principale'); });
+
+    const btnHelp = document.getElementById('btn-gk-help');
+    if (btnHelp) btnHelp.addEventListener('click', function () { openModal('modal-gk-help'); });
 
     document.querySelectorAll('.gk-tab').forEach(function (tab) {
       tab.addEventListener('click', function () { switchView(tab.getAttribute('data-gk-view')); });
