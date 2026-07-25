@@ -260,29 +260,22 @@
   function renderHeatmap(d) {
     const teams = d.teams;
     const nG = d.calendario.length;
-    const gridStyle = 'grid-template-columns:70px repeat(' + nG + ',32px)';
+    const gridStyle = 'grid-template-columns:70px repeat(' + nG + ',34px)';
     let header = '<div class="gk-heat-header-cell gk-heat-corner"></div>';
     const rowsArr = teams.map(function (t) {
       return '<div class="gk-heatmap-row-label">' + teamBadge(t) + '<span>' + t.substring(0, 3).toUpperCase() + '</span></div>';
     });
-    let rowReco = '<div class="gk-heatmap-row-label"><span>&#11088; Consiglio</span></div>';
 
     d.calendario.forEach(function (r) {
       header += '<div class="gk-heat-header-cell">G' + r.giornata + '</div>';
       r.squadre.forEach(function (sq, idx) {
         const isReco = (r.raccomandato === idx);
-        rowsArr[idx] += '<div class="gk-heat-cell gk-heat-' + sq.livello + (isReco ? ' gk-heat-reco' : '') + '" title="' + sq.opponent + ' (' + (sq.isHome ? 'C' : 'F') + ')">' + teamBadge(sq.opponent) + '</div>';
+        rowsArr[idx] += '<div class="gk-heat-cell gk-heat-' + sq.livello + (isReco ? ' gk-heat-reco' : '') + '" title="' + sq.opponent + ' (' + (sq.isHome ? 'C' : 'F') + ')">' + teamBadge(sq.opponent) + '<span>' + sq.opponent.substring(0, 3).toUpperCase() + '</span></div>';
       });
-      if (typeof r.raccomandato === 'number') {
-        const sq = r.squadre[r.raccomandato];
-        rowReco += '<div class="gk-heat-cell gk-heat-' + sq.livello + '" title="Consigliato: ' + teams[r.raccomandato] + '">' + teamBadge(sq.opponent) + '</div>';
-      } else {
-        rowReco += '<div class="gk-heat-cell gk-heat-media" title="Ballottaggio"><span class="gk-heat-ballot">&#9878;</span></div>';
-      }
     });
 
     return '<div class="gk-heatmap-wrap">' +
-      '<div class="gk-heatmap" style="' + gridStyle + '">' + header + rowsArr.join('') + rowReco + '</div>' +
+      '<div class="gk-heatmap" style="' + gridStyle + '">' + header + rowsArr.join('') + '</div>' +
       '<div class="gk-heat-legend">' +
         '<span><i style="background:linear-gradient(135deg,#4ee39a,#00c37a)"></i> Facile</span>' +
         '<span><i style="background:linear-gradient(135deg,#ffd166,#ffab00)"></i> Media</span>' +
