@@ -65,7 +65,7 @@
       <button type="button" id="btn-menu-asta" class="btn btn-secondary btn-lg" style="width:100%">🎯 Crea un'asta / Partecipa a un'asta</button>
     </div>
     <div class="card mt-16">
-      <button type="button" id="btn-menu-gk-planner" class="btn btn-primary btn-lg" style="width:100%">🥅 Goalkeeper Planner <span class="gk-pro-badge">PRO</span></button>
+      <button type="button" id="btn-menu-gk-planner" class="btn btn-primary btn-lg" style="width:100%">🥅⚽ Griglia Portieri/Attaccanti</button>
     </div>
   </section>
   <!-- ══════════ SCREEN STRATEGIE — LISTA ══════════ -->
@@ -143,45 +143,61 @@
     </div>
   </section>
   <!-- ══════════ SCREEN HOME ══════════ -->
-  <!-- ══════════ SCREEN GOALKEEPER PLANNER ══════════ -->
+  <!-- ══════════ SCREEN GRIGLIA PORTIERI/ATTACCANTI ══════════ -->
   <section id="screen-gk-planner" class="screen gk-planner-screen">
     <header class="gk-header">
-      <button type="button" id="btn-back-gk" class="btn btn-secondary btn-sm">← Menu</button>
+      <button type="button" id="btn-back-gk" class="btn btn-secondary btn-sm">&#8592; Menu</button>
       <div class="gk-header-title">
-        <h1>🥅 Goalkeeper Planner</h1>
-        <p class="gk-header-sub">Le migliori coppie di portieri per le 38 giornate di Serie A</p>
+        <h1>&#127945;&#9917; Griglia Portieri/Attaccanti</h1>
+        <p class="gk-header-sub gk-header-sub-dynamic">Le migliori combinazioni di portieri per le 38 giornate di Serie A</p>
       </div>
-      <button type="button" id="btn-gk-help" class="btn btn-secondary btn-sm gk-help-btn">❓ Come funziona</button>
+      <button type="button" id="btn-gk-help" class="btn btn-secondary btn-sm gk-help-btn">&#10067; Come funziona</button>
     </header>
 
+    <!-- Toggle Portieri / Attaccanti -->
+    <div class="gk-mode-toggle">
+      <button type="button" class="gk-mode-btn active" data-gk-mode="portieri">&#127945; Portieri</button>
+      <button type="button" class="gk-mode-btn" data-gk-mode="attaccanti">&#9917; Attaccanti</button>
+    </div>
+
     <nav class="gk-tabs" id="gk-tabs">
-      <button type="button" class="gk-tab active" data-gk-view="ranking">🏆 Ranking</button>
-      <button type="button" class="gk-tab" data-gk-view="detail">🔍 Analisi coppia</button>
-      <button type="button" class="gk-tab" data-gk-view="compare">⚖️ Confronto</button>
-      <button type="button" class="gk-tab" data-gk-view="round">📅 Giornata</button>
-      <button type="button" class="gk-tab" data-gk-view="config">⚙️ Impostazioni</button>
+      <button type="button" class="gk-tab active" data-gk-view="ranking">&#127942; Ranking</button>
+      <button type="button" class="gk-tab" data-gk-view="detail">&#128269; Analisi</button>
+      <button type="button" class="gk-tab" data-gk-view="compare">&#9878;&#65039; Confronto</button>
+      <button type="button" class="gk-tab" data-gk-view="config">&#9881;&#65039; Impostazioni</button>
     </nav>
 
     <!-- ── VISTA: RANKING ── -->
     <div class="gk-view active" id="gk-view-ranking">
-      <div class="gk-view-intro">
-        <p>Analisi automatica di tutte le coppie possibili tra i 20 portieri titolari, calcolata sulle 38 giornate del calendario.</p>
-      </div>
+      <div class="gk-view-intro"><p>Top 10 combinazioni calcolate automaticamente su tutte le 38 giornate.</p></div>
+      <nav class="gk-ranking-subtabs" data-rank-list="gk-ranking-list">
+        <button type="button" class="gk-subtab active" data-ranksub="2">&#128101; Coppie</button>
+        <button type="button" class="gk-subtab" data-ranksub="3">&#128099; Terzetti</button>
+      </nav>
       <div class="gk-ranking-list" id="gk-ranking-list"></div>
     </div>
 
-    <!-- ── VISTA: ANALISI COPPIA ── -->
+    <!-- ── VISTA: ANALISI ── -->
     <div class="gk-view" id="gk-view-detail">
       <div class="gk-pair-picker gk-pair-picker-fancy">
         <div class="gk-team-card gk-team-card-a">
           <div class="gk-team-card-badge" id="gk-teamcard-a-badge"></div>
-          <select id="gk-detail-teamA" class="gk-select-fancy"></select>
+          <select id="gk-detail-teamA" class="gk-select-fancy gk-team-select" data-badge="gk-teamcard-a-badge"></select>
         </div>
         <span class="gk-pair-plus">+</span>
         <div class="gk-team-card gk-team-card-b">
           <div class="gk-team-card-badge" id="gk-teamcard-b-badge"></div>
-          <select id="gk-detail-teamB" class="gk-select-fancy"></select>
+          <select id="gk-detail-teamB" class="gk-select-fancy gk-team-select" data-badge="gk-teamcard-b-badge"></select>
         </div>
+        <div id="gk-detail-teamC-wrap" class="hidden">
+          <span class="gk-pair-plus">+</span>
+          <div class="gk-team-card gk-team-card-c">
+            <div class="gk-team-card-badge" id="gk-teamcard-c-badge"></div>
+            <select id="gk-detail-teamC" class="gk-select-fancy gk-team-select" data-badge="gk-teamcard-c-badge"></select>
+          </div>
+          <button type="button" id="btn-gk-detail-remove3" class="btn btn-secondary btn-sm gk-remove3-btn">&#10005;</button>
+        </div>
+        <button type="button" id="btn-gk-detail-add3" class="btn btn-secondary btn-sm">+3&#176;</button>
         <button type="button" id="btn-gk-analizza" class="btn btn-primary btn-sm">Analizza</button>
       </div>
       <div id="gk-detail-content"></div>
@@ -191,43 +207,42 @@
     <div class="gk-view" id="gk-view-compare">
       <div class="gk-compare-picker">
         <div class="gk-compare-col">
-          <p class="gk-compare-label">Coppia A</p>
-          <select id="gk-cmp-a-teamA" class="gk-select"></select>
-          <select id="gk-cmp-a-teamB" class="gk-select"></select>
+          <p class="gk-compare-label">Gruppo A</p>
+          <select id="gk-cmp-a-teamA" class="gk-select gk-team-select"></select>
+          <select id="gk-cmp-a-teamB" class="gk-select gk-team-select"></select>
+          <div id="gk-cmp-a-teamC-wrap" class="hidden">
+            <select id="gk-cmp-a-teamC" class="gk-select gk-team-select"></select>
+            <button type="button" id="btn-gk-cmp-a-remove3" class="btn btn-secondary btn-sm gk-remove3-btn">&#10005;</button>
+          </div>
+          <button type="button" id="btn-gk-cmp-a-add3" class="btn btn-secondary btn-sm gk-add3-btn">+ 3&#176;</button>
         </div>
         <div class="gk-compare-vs">VS</div>
         <div class="gk-compare-col">
-          <p class="gk-compare-label">Coppia B</p>
-          <select id="gk-cmp-b-teamA" class="gk-select"></select>
-          <select id="gk-cmp-b-teamB" class="gk-select"></select>
+          <p class="gk-compare-label">Gruppo B</p>
+          <select id="gk-cmp-b-teamA" class="gk-select gk-team-select"></select>
+          <select id="gk-cmp-b-teamB" class="gk-select gk-team-select"></select>
+          <div id="gk-cmp-b-teamC-wrap" class="hidden">
+            <select id="gk-cmp-b-teamC" class="gk-select gk-team-select"></select>
+            <button type="button" id="btn-gk-cmp-b-remove3" class="btn btn-secondary btn-sm gk-remove3-btn">&#10005;</button>
+          </div>
+          <button type="button" id="btn-gk-cmp-b-add3" class="btn btn-secondary btn-sm gk-add3-btn">+ 3&#176;</button>
         </div>
       </div>
       <button type="button" id="btn-gk-confronta" class="btn btn-primary" style="width:100%;margin-top:12px">Confronta</button>
       <div id="gk-compare-content"></div>
     </div>
 
-    <!-- ── VISTA: GIORNATA ── -->
-    <div class="gk-view" id="gk-view-round">
-      <div class="gk-round-picker">
-        <button type="button" id="btn-gk-round-prev" class="btn btn-secondary btn-sm">◀</button>
-        <span id="gk-round-label" class="gk-round-label">Giornata 1</span>
-        <button type="button" id="btn-gk-round-next" class="btn btn-secondary btn-sm">▶</button>
-        <input type="range" id="gk-round-slider" min="1" max="38" value="1" step="1" class="gk-round-slider">
-      </div>
-      <div id="gk-round-content"></div>
-    </div>
-
     <!-- ── VISTA: IMPOSTAZIONI ── -->
     <div class="gk-view" id="gk-view-config">
       <div class="gk-config-section" id="gk-config-import-section">
-        <h3>📅 Calendario Serie A</h3>
-        <p class="gk-import-hint" id="gk-import-status-text">Attualmente in uso: calendario generato automaticamente (placeholder). Carica il calendario reale (Excel o JSON) non appena disponibile — verrà usato da tutti gli utenti dell'app.</p>
+        <h3>&#128197; Calendario Serie A</h3>
+        <p class="gk-import-hint" id="gk-import-status-text">Attualmente in uso: calendario generato automaticamente (placeholder).</p>
         <div class="gk-import-row">
-          <label for="inp-gk-calendario-file" class="btn btn-secondary btn-sm">📂 Scegli file (.xlsx o .json)</label>
+          <label for="inp-gk-calendario-file" class="btn btn-secondary btn-sm">&#128194; Scegli file (.xlsx o .json)</label>
           <input type="file" id="inp-gk-calendario-file" accept=".xlsx,.xls,.json" style="display:none">
           <span id="gk-import-filename" class="gk-import-filename"></span>
         </div>
-        <p class="gk-import-format-hint">Formato Excel richiesto: colonne <strong>Giornata</strong>, <strong>Casa</strong>, <strong>Ospite</strong> (una riga per partita). Formato JSON: <code>{"partite":[{"giornata":1,"casa":"Inter","ospite":"Milan"}, ...]}</code>.</p>
+        <p class="gk-import-format-hint">Formato Excel: colonne <strong>Giornata</strong>, <strong>Casa</strong>, <strong>Ospite</strong>. Formato JSON: <code>{"partite":[{"giornata":1,"casa":"Inter","ospite":"Milan"},...]}</code>.</p>
         <div class="gk-import-actions">
           <button type="button" id="btn-gk-carica-calendario" class="btn btn-primary btn-sm" disabled>Carica calendario</button>
           <button type="button" id="btn-gk-ripristina-calendario" class="btn btn-secondary btn-sm">Torna al calendario placeholder</button>
@@ -242,7 +257,7 @@
         <div id="gk-config-home"></div>
       </div>
       <div class="gk-config-section">
-        <h3>Forza delle squadre</h3>
+        <h3>Forza delle squadre (Attacco &amp; Difesa)</h3>
         <div id="gk-config-strength" class="gk-strength-grid"></div>
       </div>
       <div class="gk-config-actions">
@@ -577,7 +592,7 @@
           <button class="tab-btn active" data-tab="tab-storico"><span class="tab-icon">📋</span><span class="tab-label">Storico</span></button>
           <button class="tab-btn" data-tab="tab-rose"><span class="tab-icon">👥</span><span class="tab-label">Rose <span id="btn-rose-search-toggle" class="rose-chevron" title="Cerca giocatore">⌄</span></span></button>
           <button class="tab-btn" data-tab="tab-liberi"><span class="tab-icon">📦</span><span class="tab-label">Liberi</span></button>
-          <button type="button" class="tab-btn" data-tab="tab-portieri"><span class="tab-icon">🥅</span><span class="tab-label">Portieri</span></button>
+          <button type="button" class="tab-btn" data-tab="tab-portieri"><span class="tab-icon">🥅</span><span class="tab-label">Griglia P/A</span></button>
           <div id="quick-pill" class="quick-pill">
             <button id="pill-chiama" class="pill-btn" title="Chiama manuale">🔨</button>
             <button id="pill-assegna" class="pill-btn" title="Assegna manuale">✅</button>
@@ -628,23 +643,78 @@
           <ul id="liberi-list" class="liberi-list"></ul>
         </div>
         <div id="tab-portieri" class="tab-content">
-          <div class="gk-view-intro">
-            <p>Le migliori coppie di portieri per le 38 giornate di Serie A. Analisi calcolata sul calendario ufficiale.</p>
+          <!-- Toggle Portieri/Attaccanti inline (stato condiviso con schermata piena) -->
+          <div class="gk-mode-toggle gk-mode-toggle-compact">
+            <button type="button" class="gk-mode-btn active" data-gk-mode="portieri">&#127945; Portieri</button>
+            <button type="button" class="gk-mode-btn" data-gk-mode="attaccanti">&#9917; Attaccanti</button>
           </div>
-          <div class="gk-pair-picker gk-pair-picker-fancy">
-            <div class="gk-team-card gk-team-card-a">
-              <div class="gk-team-card-badge" id="gki-teamcard-a-badge"></div>
-              <select id="gki-teamA" class="gk-select-fancy"></select>
-            </div>
-            <span class="gk-pair-plus">+</span>
-            <div class="gk-team-card gk-team-card-b">
-              <div class="gk-team-card-badge" id="gki-teamcard-b-badge"></div>
-              <select id="gki-teamB" class="gk-select-fancy"></select>
-            </div>
-            <button type="button" id="btn-gki-analizza" class="btn btn-primary btn-sm">Analizza</button>
+          <!-- Sub-tab interne: Ranking / Analisi / Confronto -->
+          <nav class="gki-subtabs">
+            <button type="button" class="gki-subtab active" data-gki-view="ranking">&#127942; Ranking</button>
+            <button type="button" class="gki-subtab" data-gki-view="analisi">&#128269; Analisi</button>
+            <button type="button" class="gki-subtab" data-gki-view="confronto">&#9878;&#65039; Confronto</button>
+          </nav>
+          <!-- RANKING -->
+          <div id="gki-view-ranking" class="gki-view active">
+            <nav class="gk-ranking-subtabs" data-rank-list="gki-ranking-list">
+              <button type="button" class="gk-subtab active" data-ranksub="2">&#128101; Coppie</button>
+              <button type="button" class="gk-subtab" data-ranksub="3">&#128099; Terzetti</button>
+            </nav>
+            <div class="gk-ranking-list" id="gki-ranking-list"></div>
           </div>
-          <div id="gki-detail-content"></div>
-          <div class="gk-ranking-list" id="gki-ranking-list"></div>
+          <!-- ANALISI -->
+          <div id="gki-view-analisi" class="gki-view">
+            <div class="gk-pair-picker gk-pair-picker-fancy">
+              <div class="gk-team-card gk-team-card-a">
+                <div class="gk-team-card-badge" id="gki-teamcard-a-badge"></div>
+                <select id="gki-detail-teamA" class="gk-select-fancy gk-team-select" data-badge="gki-teamcard-a-badge"></select>
+              </div>
+              <span class="gk-pair-plus">+</span>
+              <div class="gk-team-card gk-team-card-b">
+                <div class="gk-team-card-badge" id="gki-teamcard-b-badge"></div>
+                <select id="gki-detail-teamB" class="gk-select-fancy gk-team-select" data-badge="gki-teamcard-b-badge"></select>
+              </div>
+              <div id="gki-detail-teamC-wrap" class="hidden">
+                <span class="gk-pair-plus">+</span>
+                <div class="gk-team-card gk-team-card-c">
+                  <div class="gk-team-card-badge" id="gki-teamcard-c-badge"></div>
+                  <select id="gki-detail-teamC" class="gk-select-fancy gk-team-select" data-badge="gki-teamcard-c-badge"></select>
+                </div>
+                <button type="button" id="btn-gki-detail-remove3" class="btn btn-secondary btn-sm gk-remove3-btn">&#10005;</button>
+              </div>
+              <button type="button" id="btn-gki-detail-add3" class="btn btn-secondary btn-sm">+3&#176;</button>
+              <button type="button" id="btn-gki-analizza" class="btn btn-primary btn-sm">Analizza</button>
+            </div>
+            <div id="gki-detail-content"></div>
+          </div>
+          <!-- CONFRONTO -->
+          <div id="gki-view-confronto" class="gki-view">
+            <div class="gk-compare-picker">
+              <div class="gk-compare-col">
+                <p class="gk-compare-label">Gruppo A</p>
+                <select id="gki-cmp-a-teamA" class="gk-select gk-team-select"></select>
+                <select id="gki-cmp-a-teamB" class="gk-select gk-team-select"></select>
+                <div id="gki-cmp-a-teamC-wrap" class="hidden">
+                  <select id="gki-cmp-a-teamC" class="gk-select gk-team-select"></select>
+                  <button type="button" id="btn-gki-cmp-a-remove3" class="btn btn-secondary btn-sm gk-remove3-btn">&#10005;</button>
+                </div>
+                <button type="button" id="btn-gki-cmp-a-add3" class="btn btn-secondary btn-sm gk-add3-btn">+ 3&#176;</button>
+              </div>
+              <div class="gk-compare-vs">VS</div>
+              <div class="gk-compare-col">
+                <p class="gk-compare-label">Gruppo B</p>
+                <select id="gki-cmp-b-teamA" class="gk-select gk-team-select"></select>
+                <select id="gki-cmp-b-teamB" class="gk-select gk-team-select"></select>
+                <div id="gki-cmp-b-teamC-wrap" class="hidden">
+                  <select id="gki-cmp-b-teamC" class="gk-select gk-team-select"></select>
+                  <button type="button" id="btn-gki-cmp-b-remove3" class="btn btn-secondary btn-sm gk-remove3-btn">&#10005;</button>
+                </div>
+                <button type="button" id="btn-gki-cmp-b-add3" class="btn btn-secondary btn-sm gk-add3-btn">+ 3&#176;</button>
+              </div>
+            </div>
+            <button type="button" id="btn-gki-confronta" class="btn btn-primary" style="width:100%;margin-top:12px">Confronta</button>
+            <div id="gki-compare-content"></div>
+          </div>
         </div>
       </div><!-- /.tabs-panel -->
     </div><!-- /.asta-row-tabs -->
@@ -701,7 +771,7 @@
   </div>
   <!-- Modal: GK Planner - Come funziona -->
   <div id="modal-gk-help" class="modal hidden gk-help-modal">
-    <h2 class="modal-title">❓ Come funziona il Goalkeeper Planner</h2>
+    <h2 class="modal-title">❓ Come funziona la Griglia Portieri/Attaccanti</h2>
     <div class="modal-body gk-help-body">
       <p>Il <strong>Goalkeeper Planner</strong> analizza il calendario di Serie A per suggerirti le coppie di portieri (titolare + di scorta) che ti garantiscono più giornate favorevoli possibili durante tutta la stagione.</p>
       <h3>📊 Come si calcola il punteggio</h3>
