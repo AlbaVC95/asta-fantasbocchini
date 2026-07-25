@@ -96,6 +96,7 @@
     let coperte = 0, critiche = 0, entrambiFuori = 0, favorevoliA = 0, favorevoliB = 0;
     let sommaMinDifficolta = 0;
     let sbilanciamentoCasa = 0;
+    let facili = 0, medie = 0, difficili = 0, inCasaReco = 0, fuoriCasaReco = 0;
 
     for (let i = 0; i < totale; i++) {
       const ga = calA[i], gb = calB[i];
@@ -116,6 +117,15 @@
       else raccomandato = (ga.difficolta < gb.difficolta) ? 'A' : 'B';
       if (raccomandato === 'A') favorevoliA++;
       if (raccomandato === 'B') favorevoliB++;
+
+      // Statistiche sul portiere effettivamente consigliato quella giornata
+      // (in caso di ballottaggio si considera quello con la partita più semplice)
+      const scelta = (raccomandato === 'B') ? gb : ga;
+      if (scelta.livello === 'facile') facili++;
+      else if (scelta.livello === 'difficile') difficili++;
+      else medie++;
+      if (scelta.isHome) inCasaReco++;
+      else fuoriCasaReco++;
 
       if (ga.isHome !== gb.isHome) sbilanciamentoCasa++; // buona alternanza casa/fuori
 
@@ -185,6 +195,8 @@
       breakdown: breakdown, weights: w,
       copertura: coperte, giornateTotali: n, giornateCritiche: critiche, entrambiFuoriCasa: entrambiFuori,
       favorevoliA: favorevoliA, favorevoliB: favorevoliB,
+      facili: facili, medie: medie, difficili: difficili,
+      inCasaReco: inCasaReco, fuoriCasaReco: fuoriCasaReco,
       spiegazione: spiegazione,
       calendario: righe
     };
