@@ -820,7 +820,9 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .gk-pro-badge{display:inline-block;background:linear-gradient(135deg,var(--gold),var(--gold-deep));color:#000;font-size:.6rem;font-weight:800;letter-spacing:.05em;padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:middle}
 .gk-planner-screen{padding:16px;max-width:980px;margin:0 auto}
 .gk-header{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.gk-header-title{flex:1}
 .gk-header-title h1{font-family:var(--font-display);font-size:1.35rem;font-weight:800;margin:0}
+.gk-help-btn{flex-shrink:0}
 .gk-header-sub{font-size:.78rem;color:var(--text-muted);margin-top:2px}
 .gk-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:14px;border-bottom:1px solid var(--border)}
 .gk-tab{flex-shrink:0;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-secondary);border-radius:10px 10px 0 0;padding:8px 14px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
@@ -876,11 +878,32 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .gk-stat-num{font-family:var(--font-mono);font-size:1.3rem;font-weight:800;color:var(--text-primary)}
 .gk-stat-lbl{font-size:.65rem;color:var(--text-muted);margin-top:2px}
 
+/* ── Gauge circolare punteggio (stile FantaLab) ── */
+.gk-gauge{position:relative;width:120px;height:120px;flex-shrink:0}
+.gk-gauge-svg{width:100%;height:100%;transform:rotate(-90deg)}
+.gk-gauge-track{fill:none;stroke:var(--bg-elevated);stroke-width:10}
+.gk-gauge-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .6s ease}
+.gk-gauge-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gk-gauge-num{font-family:var(--font-mono);font-size:1.9rem;font-weight:800;line-height:1}
+.gk-gauge-max{font-size:.65rem;color:var(--text-muted);letter-spacing:.04em}
+
+/* ── Mini stat pills (facili/medie/difficili/casa/fuori) ── */
+.gk-mini-stats{display:flex;gap:8px;flex-wrap:wrap;flex:1;justify-content:flex-end}
+.gk-mini-stat{background:var(--bg-elevated);border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;align-items:center;min-width:58px}
+.gk-mini-stat-num{font-family:var(--font-mono);font-weight:800;font-size:1.1rem;color:var(--text-primary)}
+.gk-mini-stat-lbl{font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em}
+.gk-mini-stat-facile .gk-mini-stat-num{color:var(--success)}
+.gk-mini-stat-media .gk-mini-stat-num{color:var(--gold-bright)}
+.gk-mini-stat-difficile .gk-mini-stat-num{color:var(--danger)}
+
 /* ── Heatmap 38 giornate ── */
 .gk-heatmap-wrap{overflow-x:auto;margin-top:18px;padding-bottom:8px}
 .gk-heatmap{display:grid;grid-auto-flow:column;gap:3px;min-width:max-content}
-.gk-heatmap-row-label{font-size:.7rem;font-weight:700;color:var(--text-secondary);display:flex;align-items:center;padding-right:8px;white-space:nowrap;position:sticky;left:0;background:var(--bg-card);z-index:1}
+.gk-heatmap-row-label{font-size:.7rem;font-weight:700;color:var(--text-secondary);display:flex;align-items:center;gap:6px;padding-right:8px;white-space:nowrap;position:sticky;left:0;background:var(--bg-card);z-index:1}
+.gk-heatmap-row-label img{width:18px;height:18px;object-fit:contain}
 .gk-heat-cell{width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#04120a;cursor:default;transition:transform .1s}
+.gk-heat-cell img{width:18px;height:18px;object-fit:contain}
+.gk-heat-ballot{font-size:.75rem}
 .gk-heat-cell:hover{transform:scale(1.18);z-index:2}
 .gk-heat-facile{background:linear-gradient(135deg,#4ee39a,#00c37a);color:#00250f}
 .gk-heat-media{background:linear-gradient(135deg,#ffd166,#ffab00);color:#3a2200}
@@ -950,3 +973,15 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .gk-import-status{font-size:.75rem;margin-top:8px;font-weight:600}
 .gk-import-status.ok{color:var(--success)}
 .gk-import-status.err{color:var(--danger)}
+
+
+/* ── Modal "Come funziona" del GK Planner ── */
+.gk-help-modal{max-width:560px}
+.gk-help-body{max-height:60vh;overflow-y:auto;font-size:.85rem;line-height:1.6;color:var(--text-secondary)}
+.gk-help-body h3{font-family:var(--font-display);font-size:.95rem;color:var(--text-primary);margin:16px 0 6px}
+.gk-help-body ul{margin:6px 0 6px 18px;padding:0}
+.gk-help-body li{margin-bottom:6px}
+.gk-help-tag{display:inline-block;padding:1px 8px;border-radius:20px;font-size:.72rem;font-weight:700}
+.gk-help-tag-facile{background:rgba(0,224,160,.18);color:var(--success)}
+.gk-help-tag-media{background:rgba(255,171,0,.18);color:var(--gold-bright)}
+.gk-help-tag-difficile{background:rgba(255,56,96,.18);color:var(--danger)}
