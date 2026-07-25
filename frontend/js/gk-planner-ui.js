@@ -133,6 +133,14 @@
     document.getElementById('gk-cmp-a-teamB').selectedIndex = 1;
     document.getElementById('gk-cmp-b-teamA').selectedIndex = 2;
     document.getElementById('gk-cmp-b-teamB').selectedIndex = 3;
+    updateTeamCardBadge('gk-detail-teamA', 'gk-teamcard-a-badge');
+    updateTeamCardBadge('gk-detail-teamB', 'gk-teamcard-b-badge');
+  }
+
+  function updateTeamCardBadge(selectId, badgeId) {
+    const sel = document.getElementById(selectId);
+    const badge = document.getElementById(badgeId);
+    if (sel && badge) badge.innerHTML = teamBadge(sel.value);
   }
 
   // ── ANALISI COPPIA ──
@@ -145,22 +153,21 @@
     GKUI.lastDetail = d;
     const scoreColor = d.livello === 'Ottimo' ? 'var(--success)' : d.livello === 'Buono' ? 'var(--primary-bright)' : d.livello === 'Discreto' ? 'var(--gold-bright)' : 'var(--danger)';
 
-    let html = '<div class="gk-summary-card">' +
-      '<div class="gk-summary-top">' +
-        '<div class="gk-rank-teams">' +
-          '<span class="gk-rank-team-badge" style="font-size:1rem">' + teamBadge(teamA) + teamA + '</span>' +
-          '<span class="gk-pair-plus">+</span>' +
-          '<span class="gk-rank-team-badge" style="font-size:1rem">' + teamBadge(teamB) + teamB + '</span>' +
-        '</div>' +
-        renderScoreGauge(d.score, scoreColor) +
-        '<div class="gk-mini-stats">' +
+    let html = '<div class="gk-summary-card gk-summary-fancy">' +
+      '<div class="gk-summary-fancy-gauge">' + renderScoreGauge(d.score, scoreColor) + '</div>' +
+      '<div class="gk-mini-stats-grid">' +
+        '<div class="gk-mini-row">' +
           '<div class="gk-mini-stat gk-mini-stat-facile"><span class="gk-mini-stat-num">' + d.facili + '</span><span class="gk-mini-stat-lbl">facili</span></div>' +
           '<div class="gk-mini-stat gk-mini-stat-media"><span class="gk-mini-stat-num">' + d.medie + '</span><span class="gk-mini-stat-lbl">medie</span></div>' +
           '<div class="gk-mini-stat gk-mini-stat-difficile"><span class="gk-mini-stat-num">' + d.difficili + '</span><span class="gk-mini-stat-lbl">difficili</span></div>' +
+        '</div>' +
+        '<div class="gk-mini-row">' +
           '<div class="gk-mini-stat"><span class="gk-mini-stat-num">' + d.inCasaReco + '</span><span class="gk-mini-stat-lbl">in casa</span></div>' +
           '<div class="gk-mini-stat"><span class="gk-mini-stat-num">' + d.fuoriCasaReco + '</span><span class="gk-mini-stat-lbl">fuori casa</span></div>' +
         '</div>' +
       '</div>' +
+    '</div>' +
+    '<div class="gk-summary-card">' +
       '<p class="gk-summary-explain">💡 ' + d.spiegazione + '</p>' +
       '<div class="gk-breakdown">' + renderBreakdownItems(d.breakdown) + '</div>' +
       '<div class="gk-stats-row">' +
@@ -504,6 +511,11 @@
     if (btnAnalizza) btnAnalizza.addEventListener('click', function () {
       renderDetail(document.getElementById('gk-detail-teamA').value, document.getElementById('gk-detail-teamB').value);
     });
+
+    const selDetailA = document.getElementById('gk-detail-teamA');
+    if (selDetailA) selDetailA.addEventListener('change', function () { updateTeamCardBadge('gk-detail-teamA', 'gk-teamcard-a-badge'); });
+    const selDetailB = document.getElementById('gk-detail-teamB');
+    if (selDetailB) selDetailB.addEventListener('change', function () { updateTeamCardBadge('gk-detail-teamB', 'gk-teamcard-b-badge'); });
 
     const btnConfronta = document.getElementById('btn-gk-confronta');
     if (btnConfronta) btnConfronta.addEventListener('click', renderCompare);
