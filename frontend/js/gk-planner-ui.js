@@ -87,9 +87,9 @@
   }
 
   // ── RANKING ──
-  function renderRanking() {
+  function renderRanking(containerId) {
     if (!GKUI.ranking) recompute();
-    const list = document.getElementById('gk-ranking-list');
+    const list = document.getElementById(containerId || 'gk-ranking-list');
     const top = GKUI.ranking.slice(0, 40);
     let html = '';
     top.forEach(function (p, i) {
@@ -110,13 +110,22 @@
       '</div>';
     });
     list.innerHTML = html;
+    const isInline = (containerId === 'gki-ranking-list');
     list.querySelectorAll('.gk-rank-card').forEach(function (card) {
       card.addEventListener('click', function () {
         const a = card.getAttribute('data-team-a'), b = card.getAttribute('data-team-b');
-        document.getElementById('gk-detail-teamA').value = a;
-        document.getElementById('gk-detail-teamB').value = b;
-        switchView('detail');
-        renderDetail(a, b);
+        if (isInline) {
+          document.getElementById('gki-teamA').value = a;
+          document.getElementById('gki-teamB').value = b;
+          updateTeamCardBadge('gki-teamA', 'gki-teamcard-a-badge');
+          updateTeamCardBadge('gki-teamB', 'gki-teamcard-b-badge');
+          renderDetail(a, b, 'gki-detail-content');
+        } else {
+          document.getElementById('gk-detail-teamA').value = a;
+          document.getElementById('gk-detail-teamB').value = b;
+          switchView('detail');
+          renderDetail(a, b);
+        }
       });
     });
   }
@@ -125,7 +134,7 @@
   function populateTeamSelects() {
     const teams = Object.keys(GKUI.config.teamStrength).sort();
     const opts = teams.map(function (t) { return '<option value="' + t + '">' + t + '</option>'; }).join('');
-    ['gk-detail-teamA', 'gk-detail-teamB', 'gk-cmp-a-teamA', 'gk-cmp-a-teamB', 'gk-cmp-b-teamA', 'gk-cmp-b-teamB'].forEach(function (id) {
+    ['gk-detail-teamA', 'gk-detail-teamB', 'gk-cmp-a-teamA', 'gk-cmp-a-teamB', 'gk-cmp-b-teamA', 'gk-cmp-b-teamB', 'gki-teamA', 'gki-teamB'].forEach(function (id) {
       const el = document.getElementById(id);
       if (el) el.innerHTML = opts;
     });
@@ -133,8 +142,11 @@
     document.getElementById('gk-cmp-a-teamB').selectedIndex = 1;
     document.getElementById('gk-cmp-b-teamA').selectedIndex = 2;
     document.getElementById('gk-cmp-b-teamB').selectedIndex = 3;
+    if (document.getElementById('gki-teamB')) document.getElementById('gki-teamB').selectedIndex = 1;
     updateTeamCardBadge('gk-detail-teamA', 'gk-teamcard-a-badge');
     updateTeamCardBadge('gk-detail-teamB', 'gk-teamcard-b-badge');
+    updateTeamCardBadge('gki-teamA', 'gki-teamcard-a-badge');
+    updateTeamCardBadge('gki-teamB', 'gki-teamcard-b-badge');
   }
 
   function updateTeamCardBadge(selectId, badgeId) {
@@ -144,9 +156,10 @@
   }
 
   // ── ANALISI COPPIA ──
-  function renderDetail(teamA, teamB) {
+  function renderDetail(teamA, teamB, containerId) {
+    const targetId = containerId || 'gk-detail-content';
     if (!teamA || !teamB || teamA === teamB) {
-      document.getElementById('gk-detail-content').innerHTML = '<p class="gk-view-intro">Scegli due squadre diverse e premi "Analizza".</p>';
+      document.getElementById(targetId).innerHTML = '<p class="gk-view-intro">Scegli due squadre diverse e premi "Analizza".</p>';
       return;
     }
     const d = GKPlanner.analizzaCoppia(teamA, teamB, GKUI.fixtures, GKUI.config);
@@ -181,7 +194,7 @@
     html += renderHeatmap(d, teamA, teamB);
     html += renderGiornateList(d, teamA, teamB);
 
-    document.getElementById('gk-detail-content').innerHTML = html;
+    document.getElementById(targetId).innerHTML = html;
   }
 
   function renderBreakdownItems(breakdown) {
@@ -516,6 +529,26 @@
     if (selDetailA) selDetailA.addEventListener('change', function () { updateTeamCardBadge('gk-detail-teamA', 'gk-teamcard-a-badge'); });
     const selDetailB = document.getElementById('gk-detail-teamB');
     if (selDetailB) selDetailB.addEventListener('change', function () { updateTeamCardBadge('gk-detail-teamB', 'gk-teamcard-b-badge'); });
+
+    // ── Tab "🥅 Portieri" inline nella schermata Asta ──
+    const btnPortieriTab = document.querySelector('.tab-btn[data-tab="tab-portieri"]');
+    if (btnPortieriTab) btnPortieriTab.addEventListener('click', function () {
+      ensureData().then(function () {
+        populateTeamSelects();
+        recompute();
+        renderRanking('gki-ranking-list');
+      });
+    });
+
+    const btnGkiAnalizza = document.getElementById('btn-gki-analizza');
+    if (btnGkiAnalizza) btnGkiAnalizza.addEventListener('click', function () {
+      renderDetail(document.getElementById('gki-teamA').value, document.getElementById('gki-teamB').value, 'gki-detail-content');
+    });
+
+    const selGkiA = document.getElementById('gki-teamA');
+    if (selGkiA) selGkiA.addEventListener('change', function () { updateTeamCardBadge('gki-teamA', 'gki-teamcard-a-badge'); });
+    const selGkiB = document.getElementById('gki-teamB');
+    if (selGkiB) selGkiB.addEventListener('change', function () { updateTeamCardBadge('gki-teamB', 'gki-teamcard-b-badge'); });
 
     const btnConfronta = document.getElementById('btn-gk-confronta');
     if (btnConfronta) btnConfronta.addEventListener('click', renderCompare);
