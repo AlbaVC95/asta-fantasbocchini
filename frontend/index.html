@@ -171,10 +171,16 @@
 
     <!-- ── VISTA: ANALISI COPPIA ── -->
     <div class="gk-view" id="gk-view-detail">
-      <div class="gk-pair-picker">
-        <select id="gk-detail-teamA" class="gk-select"></select>
+      <div class="gk-pair-picker gk-pair-picker-fancy">
+        <div class="gk-team-card gk-team-card-a">
+          <div class="gk-team-card-badge" id="gk-teamcard-a-badge"></div>
+          <select id="gk-detail-teamA" class="gk-select-fancy"></select>
+        </div>
         <span class="gk-pair-plus">+</span>
-        <select id="gk-detail-teamB" class="gk-select"></select>
+        <div class="gk-team-card gk-team-card-b">
+          <div class="gk-team-card-badge" id="gk-teamcard-b-badge"></div>
+          <select id="gk-detail-teamB" class="gk-select-fancy"></select>
+        </div>
         <button type="button" id="btn-gk-analizza" class="btn btn-primary btn-sm">Analizza</button>
       </div>
       <div id="gk-detail-content"></div>
