@@ -639,12 +639,12 @@ body.layout-admin .asta-row-puja .cc-avatar-icon{font-size:2.2rem!important}
 body.layout-admin .asta-row-puja .cc-avatar-initial{font-size:2rem!important}
 body.layout-admin .asta-row-puja .cc-avatar-svg{width:90%!important;height:90%!important}
 body.layout-admin .asta-row-puja .cc-avatar-img{border-radius:14px!important}
-.puja-panel-slot .chiamata-card{position:relative!important;padding:8px 16px 8px 117px!important;max-width:340px!important;flex:1.4 1 0%!important;min-width:200px!important;min-height:130px;overflow-y:auto}
-.puja-panel-slot .cc-avatar{width:101px!important;height:130px!important;aspect-ratio:101/130!important;position:absolute!important;left:8px!important;top:50%!important;transform:translateY(-50%)!important;border-radius:14px!important}.puja-panel-slot .cc-avatar{background:transparent!important}
-.puja-panel-slot .cc-avatar-icon{font-size:2.1rem!important}
-.puja-panel-slot .cc-avatar-initial{font-size:1.9rem!important}
-.puja-panel-slot .cc-avatar-svg{width:88%!important;height:88%!important}
-.puja-panel-slot .cc-avatar-img{border-radius:14px!important;object-fit:contain!important}
+.puja-panel-slot .chiamata-card{position:relative!important;padding:8px 16px 8px 134px!important;max-width:340px!important;flex:1.4 1 0%!important;min-width:200px!important;min-height:134px;overflow-y:auto}
+.puja-panel-slot .cc-avatar{width:118px!important;height:auto!important;position:absolute!important;left:8px!important;top:8px!important;bottom:8px!important;border-radius:14px!important}
+.puja-panel-slot .cc-avatar-icon{font-size:2.2rem!important}
+.puja-panel-slot .cc-avatar-initial{font-size:2rem!important}
+.puja-panel-slot .cc-avatar-svg{width:90%!important;height:90%!important}
+.puja-panel-slot .cc-avatar-img{border-radius:14px!important}
 @media (max-width:700px){
   body.layout-admin .asta-row-puja .chiamata-card{flex:0 1 120px!important;max-width:120px!important;min-width:80px!important;padding:4px 8px!important}
   body.layout-admin .asta-row-puja .cc-nome{font-size:.82rem!important}
@@ -688,10 +688,10 @@ body.layout-admin .asta-row-puja .cc-avatar-img{border-radius:14px!important}
   .puja-panel-slot{flex-wrap:wrap!important;padding:10px 12px!important;gap:8px!important}
   .puja-panel-slot .card-timer-group{flex:1 1 100%!important;border-right:none!important;padding-right:0!important;min-width:0!important}
   .puja-panel-slot .chiamata-card{flex:0 1 150px!important;max-width:150px!important}
-  .puja-panel-slot .chiamata-card{padding-left:72px!important;min-height:88px!important}
-  .puja-panel-slot .cc-avatar{width:56px!important;height:72px!important;left:8px!important;border-radius:12px!important}
-  .puja-panel-slot .cc-avatar-icon{font-size:1.5rem!important}
-  .puja-panel-slot .cc-avatar-initial{font-size:1.3rem!important}
+  .puja-panel-slot .chiamata-card{padding-left:54px!important;min-height:54px!important}
+  .puja-panel-slot .cc-avatar{width:38px!important;height:38px!important;left:8px!important;border-radius:12px!important}
+  .puja-panel-slot .cc-avatar-icon{font-size:.85rem!important}
+  .puja-panel-slot .cc-avatar-initial{font-size:.72rem!important}
   .puja-panel-slot .timer-ring{width:70px!important;height:70px!important}
   .puja-panel-slot .timer-number{font-size:1.3rem!important}
   .puja-panel-slot .timer-label-text{font-size:.6rem!important}
@@ -702,10 +702,10 @@ body.layout-admin .asta-row-puja .cc-avatar-img{border-radius:14px!important}
 @media (max-width:400px){
   .puja-panel-slot{padding:8px 10px!important;gap:6px!important}
   .puja-panel-slot .chiamata-card{flex:0 1 110px!important;max-width:110px!important}
-  .puja-panel-slot .chiamata-card{padding-left:55px!important;min-height:66px!important}
-  .puja-panel-slot .cc-avatar{width:39px!important;height:50px!important;left:8px!important;border-radius:10px!important}
-  .puja-panel-slot .cc-avatar-icon{font-size:1.05rem!important}
-  .puja-panel-slot .cc-avatar-initial{font-size:.95rem!important}
+  .puja-panel-slot .chiamata-card{padding-left:46px!important;min-height:46px!important}
+  .puja-panel-slot .cc-avatar{width:30px!important;height:30px!important;left:8px!important;border-radius:10px!important}
+  .puja-panel-slot .cc-avatar-icon{font-size:.65rem!important}
+  .puja-panel-slot .cc-avatar-initial{font-size:.55rem!important}
   .puja-panel-slot .cc-nome{font-size:.85rem!important}
   .puja-panel-slot .cc-meta,.puja-panel-slot .cc-offerente{font-size:.62rem!important}
   .puja-panel-slot .cc-offerta{font-size:1.6rem!important}
