@@ -27,11 +27,40 @@
       '</svg><div class="gk-gauge-center"><div class="gk-gauge-num" style="color:' + colorVar + '">' + score + '</div><div class="gk-gauge-max">/100</div></div></div>';
   }
 
-  function loadConfig() {
+  function loadConfigLocal() {
     try { const s = localStorage.getItem(STORAGE_KEY); if (s) return GKPlanner.mergeConfig(JSON.parse(s)); } catch (e) {}
     return GKPlanner.mergeConfig(null);
   }
-  function saveConfig(cfg) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); } catch (e) {} }
+  // Carica la configurazione dell'utente: prova prima Supabase (sincronizzata tra dispositivi
+  // per utenti loggati), poi ricade su localStorage se non loggato o in caso di errore.
+  function loadConfig() {
+    const local = loadConfigLocal();
+    try {
+      if (typeof supa !== 'undefined' && typeof S !== 'undefined' && S.userId) {
+        return supa.from('gk_planner_config').select('config').eq('user_id', S.userId).single()
+          .then(function (res) {
+            if (res && res.data && res.data.config) {
+              const merged = GKPlanner.mergeConfig(res.data.config);
+              try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch (e) {}
+              return merged;
+            }
+            return local;
+          })
+          .catch(function () { return local; });
+      }
+    } catch (e) {}
+    return Promise.resolve(local);
+  }
+  // Salva sempre in localStorage (istantaneo) e, se l'utente e' loggato, sincronizza
+  // anche su Supabase in background cosi' la configurazione e' condivisa tra dispositivi.
+  function saveConfig(cfg) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); } catch (e) {}
+    try {
+      if (typeof supa !== 'undefined' && typeof S !== 'undefined' && S.userId) {
+        supa.from('gk_planner_config').upsert({ user_id: S.userId, config: cfg, updated_at: new Date().toISOString() }).then(function () {}).catch(function () {});
+      }
+    } catch (e) {}
+  }
   function loadMode() { try { const s = localStorage.getItem(MODE_KEY); if (s === 'attaccanti' || s === 'portieri') return s; } catch (e) {} return 'portieri'; }
   function saveMode(m) { try { localStorage.setItem(MODE_KEY, m); } catch (e) {} }
 
@@ -55,7 +84,7 @@
   function ensureData() {
     GKUI.mode = loadMode();
     if (GKUI.fixtures) return Promise.resolve();
-    return loadFixtures().then(function () { GKUI.config = loadConfig(); });
+    return loadFixtures().then(function () { return loadConfig(); }).then(function (cfg) { GKUI.config = cfg; });
   }
 
   function recompute() { GKUI.rankCache = {}; }
