@@ -332,6 +332,7 @@ async function applicaUtenteLoggato(user) {
   S.userId = user.id;
   const { data: profile } = await supa.from('profiles').select('role').eq('id', user.id).single();
   S.userRole = (profile && profile.role) || 'utente';
+  document.body.classList.toggle('app-role-admin', S.userRole === 'admin');
   const btnLogout = document.getElementById('btn-logout');
   if (btnLogout) btnLogout.style.display = 'inline-block';
   const adminCard = document.getElementById('card-listino-admin');
@@ -381,6 +382,7 @@ function setupLogin() {
   if (btnLogout) btnLogout.addEventListener('click', async () => {
     await supa.auth.signOut();
     S.userRole = null; S.userId = null;
+    document.body.classList.remove('app-role-admin');
     btnLogout.style.display = 'none';
     const adminCard = document.getElementById('card-listino-admin');
     if (adminCard) adminCard.style.display = 'none';
