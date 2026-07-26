@@ -640,7 +640,7 @@ body.layout-admin .asta-row-puja .cc-avatar-initial{font-size:2rem!important}
 body.layout-admin .asta-row-puja .cc-avatar-svg{width:90%!important;height:90%!important}
 body.layout-admin .asta-row-puja .cc-avatar-img{border-radius:14px!important}
 .puja-panel-slot .chiamata-card{position:relative!important;padding:8px 16px 8px 96px!important;max-width:340px!important;flex:1.4 1 0%!important;min-width:200px!important;min-height:90px;overflow-y:auto}
-.puja-panel-slot .cc-avatar{width:80px!important;height:auto!important;position:absolute!important;left:8px!important;top:8px!important;bottom:8px!important;border-radius:12px!important}
+.puja-panel-slot .cc-avatar{width:80px!important;aspect-ratio:1/1!important;position:absolute!important;left:8px!important;top:50%!important;transform:translateY(-50%)!important;border-radius:12px!important}
 .puja-panel-slot .cc-avatar-icon{font-size:1.6rem!important}
 .puja-panel-slot .cc-avatar-initial{font-size:1.4rem!important}
 .puja-panel-slot .cc-avatar-svg{width:88%!important;height:88%!important}
