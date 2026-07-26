@@ -970,8 +970,8 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .gk-config-actions{display:flex;gap:10px;flex-wrap:wrap}
 .gk-config-actions .btn{flex:1;min-width:160px}
 .gk-admin-only{display:none}
-body.layout-admin .gk-admin-only{display:block}
-body.layout-admin .gk-config-actions.gk-admin-only{display:flex}
+body.app-role-admin .gk-admin-only{display:block}
+body.app-role-admin .gk-config-actions.gk-admin-only{display:flex}
 
 @media (max-width:600px){
   .gk-heat-cell,.gk-heat-header-cell{width:24px;height:28px}
