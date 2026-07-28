@@ -12,26 +12,48 @@
 window.toggleTema = function() {
   const isLight = document.documentElement.classList.toggle('theme-light');
   try { localStorage.setItem('tema', isLight ? 'light' : 'dark'); } catch (e) {}
-  document.querySelectorAll('.theme-toggle-fab').forEach(btn => {
+  document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
     btn.textContent = isLight ? '☀️' : '🌙';
     btn.title = isLight ? 'Passa al tema scuro' : 'Passa al tema chiaro';
+    btn.classList.toggle('muted', isLight);
   });
 };
-function _creaThemeToggleFab() {
-  if (document.querySelector('.theme-toggle-fab')) return;
+function _creaThemeToggleBottoni() {
   const isLight = document.documentElement.classList.contains('theme-light');
-  const btn = document.createElement('button');
-  btn.className = 'theme-toggle-fab';
-  btn.type = 'button';
-  btn.textContent = isLight ? '☀️' : '🌙';
-  btn.title = isLight ? 'Passa al tema scuro' : 'Passa al tema chiaro';
-  btn.onclick = window.toggleTema;
-  document.body.appendChild(btn);
+  const icon = isLight ? '☀️' : '🌙';
+  const titolo = isLight ? 'Passa al tema scuro' : 'Passa al tema chiaro';
+  // 1) Dentro alla barra icone dell'header dell'asta live (accanto a suono/impostazioni)
+  const headerRight = document.querySelector('.asta-header-right');
+  if (headerRight && !headerRight.querySelector('.theme-toggle-btn')) {
+    const btn = document.createElement('button');
+    btn.className = 'btn-sound theme-toggle-btn';
+    btn.type = 'button';
+    btn.id = 'btn-theme';
+    btn.textContent = icon;
+    btn.title = titolo;
+    btn.onclick = window.toggleTema;
+    const btnSound = document.getElementById('btn-sound');
+    if (btnSound && btnSound.parentNode === headerRight) headerRight.insertBefore(btn, btnSound);
+    else headerRight.insertBefore(btn, headerRight.firstChild);
+  }
+  // 2) In ogni header delle schermate home/lobby/strategie (in alto a sinistra, per non
+  //    sovrapporsi al link "Esci"/"← Menu" che sta sempre in alto a destra)
+  document.querySelectorAll('.home-header').forEach(header => {
+    if (header.querySelector('.theme-toggle-btn')) return;
+    const btn = document.createElement('button');
+    btn.className = 'theme-toggle-home theme-toggle-btn';
+    btn.type = 'button';
+    btn.textContent = icon;
+    btn.title = titolo;
+    btn.onclick = window.toggleTema;
+    header.appendChild(btn);
+  });
 }
-if (document.body) { _creaThemeToggleFab(); }
-else { document.addEventListener('DOMContentLoaded', _creaThemeToggleFab); }
+if (document.body) { _creaThemeToggleBottoni(); }
+else { document.addEventListener('DOMContentLoaded', _creaThemeToggleBottoni); }
 
 const socket = io({
+
 
   reconnection: true,
   reconnectionAttempts: Infinity,
