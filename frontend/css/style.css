@@ -1071,9 +1071,9 @@ body.app-role-admin .gk-config-actions.gk-admin-only{display:flex}
 }
 html.theme-light .pitch-bg{
   background-image:
-    linear-gradient(180deg, rgba(233,236,247,.60) 0%, rgba(233,236,247,.42) 35%, rgba(233,236,247,.58) 75%, rgba(233,236,247,.80) 100%),
+    linear-gradient(180deg, rgba(233,236,247,.42) 0%, rgba(233,236,247,.28) 35%, rgba(233,236,247,.42) 75%, rgba(233,236,247,.65) 100%),
     url('/img/backgrounds/stadium-bg.jpg');
-  filter:saturate(.85) brightness(1.05);
+  filter:saturate(1) brightness(1.08);
 }
 body{background:transparent!important}
 body::before{display:none}
