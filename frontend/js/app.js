@@ -7,7 +7,7 @@ const socket = io({
 });
 
 const S = {
-  astaId: null, miaSquadra: null, isAdmin: false, asta: null,
+  astaId: null, miaSquadra: null, isAdmin: false, adminToken: null, asta: null,
   filtroRuolo: 'tutti', filtroStorico: 'tutti', svincoloSel: new Set(), popupAttivoCli: null,
   attesaConferma: false, timerTotal: 30,
   userRole: null, userId: null,
@@ -60,10 +60,34 @@ window.toggleSuoni = function() {
 function salvaSessione() {
   if (!S.astaId || !S.miaSquadra) return;
   localStorage.setItem('asta_session', JSON.stringify({
-    astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: S.isAdmin
+    astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: S.isAdmin, adminToken: S.adminToken || null
   }));
 }
-function cancSessione() { localStorage.removeItem('asta_session'); }
+function cancSessione() {
+  // Rimuove anche lo stato locale della asta corrente, per evitare che
+  // localStorage accumuli all'infinito una copia completa di ogni asta mai giocata.
+  if (S.astaId) { try { localStorage.removeItem('asta_stato_' + S.astaId); } catch(e) {} }
+  localStorage.removeItem('asta_session');
+}
+// Pulizia automatica all'avvio: rimuove gli "asta_stato_*" più vecchi di 7 giorni,
+// rimasti in localStorage da sessioni passate (prima di questo fix non venivano mai eliminati).
+function _puliziaStatoLocaleVecchio() {
+  try {
+    const ORA = Date.now(), SETTE_GIORNI = 7 * 24 * 60 * 60 * 1000;
+    const daRimuovere = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || key.indexOf('asta_stato_') !== 0) continue;
+      try {
+        const raw = JSON.parse(localStorage.getItem(key));
+        const ts = raw && raw.timestamp ? new Date(raw.timestamp).getTime() : 0;
+        if (!ts || (ORA - ts) > SETTE_GIORNI) daRimuovere.push(key);
+      } catch (e) { daRimuovere.push(key); }
+    }
+    daRimuovere.forEach(k => localStorage.removeItem(k));
+  } catch (e) { /* non-fatal */ }
+}
+_puliziaStatoLocaleVecchio();
 function getSessione() {
   try { return JSON.parse(localStorage.getItem('asta_session') || 'null'); } catch(e) { return null; }
 }
@@ -239,7 +263,7 @@ socket.on('connect', () => {
   nascondiEmergenza();
   // Already have an active in-memory session (e.g. reconnect mid-asta): rejoin immediately
   if (S.astaId && S.miaSquadra) {
-    socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: S.isAdmin });
+    socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: S.isAdmin, adminToken: S.adminToken });
     return;
   }
   // Fresh page load: restore any saved session from localStorage and rejoin proactively,
@@ -249,9 +273,10 @@ socket.on('connect', () => {
     S.astaId = sess.astaId;
     S.miaSquadra = sess.nomeSquadra;
     S.isAdmin = !!sess.isAdmin;
+    S.adminToken = sess.adminToken || null;
     document.getElementById('lobby-info-asta').textContent = 'Connessione in corso...';
     showScreen('screen-lobby');
-    socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: S.isAdmin });
+    socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: S.isAdmin, adminToken: S.adminToken });
   }
 });
 
@@ -270,7 +295,7 @@ socket.on('reconnect', () => {
   toast('Riconnesso!', 'success');
   // Re-join only if actually in an asta session
   if (S.astaId && S.miaSquadra && S.asta) {
-    socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: S.isAdmin });
+    socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: S.isAdmin, adminToken: S.adminToken });
   }
 });
 
@@ -286,9 +311,20 @@ function entraConLinkInvito(id) {
   if (linkIdGroup) linkIdGroup.style.display = 'none';
 }
 
+// Link "admin" speciale (?id=...&admin=TOKEN): permette di riottenere i privilegi
+// di Admin su un secondo dispositivo/browser, senza dover indovinare nulla.
+// Va condiviso SOLO dall'admin con se stesso, mai con gli altri partecipanti.
+let _urlAdminId = null, _urlAdminToken = null;
 document.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
+  const adminParam = params.get('admin');
+  if (id && adminParam) {
+    _urlAdminId = id; _urlAdminToken = adminParam;
+    // Rimuove il token dalla barra degli indirizzi/history per evitare che finisca
+    // per errore in uno screenshot o link condiviso.
+    history.replaceState({}, '', '/?id=' + id);
+  }
   if (id) {
     // Link di invito: login obbligatorio per poter usare le proprie strategie
     const { data } = await supa.auth.getSession();
@@ -625,8 +661,8 @@ function setupHome() {
       const res = await fetch('/api/asta', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const data = await res.json();
       if (data.success) {
-        S.astaId = data.astaId; S.miaSquadra = adminNome; S.isAdmin = true;
-        socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: true }); salvaSessione();
+        S.astaId = data.astaId; S.miaSquadra = adminNome; S.isAdmin = true; S.adminToken = data.adminToken || null;
+        socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: true, adminToken: S.adminToken }); salvaSessione();
         showScreen('screen-lobby');
         const link = window.location.origin + '/?id=' + S.astaId;
         document.getElementById('lobby-link').textContent = link;
@@ -656,12 +692,14 @@ function setupHome() {
     // Determine real admin status: either we already know it from a saved session,
     // or by comparing the chosen team name against the asta's known adminNome.
     const sessPrev = getSessione();
-    const isAdminReale = !!(
-      (sessPrev && sessPrev.astaId === input && sessPrev.nomeSquadra === nome && sessPrev.isAdmin) ||
-      (_joinAstaInfo && _joinAstaInfo.astaId === input && _joinAstaInfo.adminNome && _joinAstaInfo.adminNome === nome)
-    );
-    S.astaId = input; S.miaSquadra = nome; S.isAdmin = isAdminReale; S.asta = null;
-    socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: isAdminReale }); salvaSessione();
+    // Il ruolo di Admin richiede il token segreto (mai il solo nome squadra):
+    // - da una sessione salvata in questo stesso browser (il creatore che ricarica/rientra), oppure
+    // - da un link "admin" speciale (con ?admin=TOKEN) apertosi in questa pagina.
+    const tokenSessione = (sessPrev && sessPrev.astaId === input && sessPrev.nomeSquadra === nome) ? sessPrev.adminToken : null;
+    const adminTokenDaUsare = tokenSessione || (_urlAdminToken && _urlAdminId === input ? _urlAdminToken : null);
+    const isAdminReale = !!adminTokenDaUsare;
+    S.astaId = input; S.miaSquadra = nome; S.isAdmin = isAdminReale; S.adminToken = adminTokenDaUsare; S.asta = null;
+    socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: isAdminReale, adminToken: S.adminToken }); salvaSessione();
     showScreen('screen-lobby');
     document.getElementById('lobby-info-asta').textContent = 'Connessione in corso...';
     history.replaceState({}, '', '/?id=' + S.astaId);
@@ -779,7 +817,7 @@ function renderJsonPreview(data) {
   const box = document.getElementById('json-preview');
   if (!data.squadre) { box.classList.add('hidden'); return; }
   box.innerHTML = '<strong>Squadre rilevate (' + data.squadre.length + '):</strong>' +
-    data.squadre.map(s => '<div class="sq-item"><span class="sq-nome">' + s.nome + '</span>' +
+    data.squadre.map(s => '<div class="sq-item"><span class="sq-nome">' + _escHtml(s.nome) + '</span>' +
       '<span>Gic:' + (s.giocatori ? s.giocatori.length : 0) + ' RIC:' + (s.riconferme||0) + ' PLUS:' + (s.plusvalenze||0) + ' | SlotRIC:' + (s.slotRiconferme||0) + ' SlotPLUS:' + (s.slotPlusvalenze||0) + ' | ' + (s.crediti||500) + 'cr</span></div>').join('');
   box.classList.remove('hidden');
 }
@@ -957,8 +995,8 @@ function apriModalAnnullaStorico() {
       const g = item.giocatore || {};
       const rb = g.ruolo ? '<span class="storico-ruolo ruolo-' + g.ruolo + '">' + g.ruolo + '</span>' : '';
       return '<div class="annulla-item">' + rb +
-        '<span class="annulla-nome">' + (g.nome || 'N/D') + '</span>' +
-        '<span class="annulla-sq">' + (item.squadra || '') + '</span>' +
+        '<span class="annulla-nome">' + _escHtml(g.nome || 'N/D') + '</span>' +
+        '<span class="annulla-sq">' + _escHtml(item.squadra || '') + '</span>' +
         '<span class="annulla-prezzo">' + (item.prezzo || 0) + 'cr</span>' +
         '<span class="storico-tipo tipo-tag-' + item.tipo + '">' + item.tipo + '</span>' +
         '<button class="btn btn-danger btn-small" onclick="annullaSpecifica(' + realIdx + ')">' + (item.tipo === 'scartato' ? '↩️ Riapri' : 'Annulla') + '</button>' +
@@ -1154,7 +1192,7 @@ socket.on('giocatore-assegnato', ({ giocatore, prezzo, squadra, tipo, guadagno, 
   toast(nomeConDettaglio + ' → ' + msg, 'success');
   const card = document.getElementById('chiamata-card');
   card.className = 'chiamata-card assegnata';
-  card.innerHTML = '<p class="cc-esito">✅ ' + nomeConDettaglio + '</p><p class="chiamata-stato">' + msg + '</p>';
+  card.innerHTML = '<p class="cc-esito">✅ ' + _escHtml(nomeConDettaglio) + '</p><p class="chiamata-stato">' + _escHtml(msg) + '</p>';
 });
 
 socket.on('giocatore-scartato', ({ giocatore }) => {
@@ -1163,7 +1201,7 @@ socket.on('giocatore-scartato', ({ giocatore }) => {
   playSound('buzzer');
   const card = document.getElementById('chiamata-card');
   card.className = 'chiamata-card scartata';
-  card.innerHTML = '<p class="chiamata-stato">🚫 ' + giocatore.nome + ' — scartato</p>';
+  card.innerHTML = '<p class="chiamata-stato">🚫 ' + _escHtml(giocatore.nome) + ' — scartato</p>';
   toast(giocatore.nome + ' scartato (nessuna offerta)', 'info');
 });
 
@@ -1290,7 +1328,7 @@ function renderBudgetBar(squadre) {
     return '<div class="' + cls + '">' +
       '<div class="sq-top">' +
         '<span class="sq-dot-online">' + dot + '</span>' +
-        '<span class="sq-nome">' + sq.nome + '</span>' +
+        '<span class="sq-nome">' + _escHtml(sq.nome) + '</span>' +
         '<span class="sq-crediti">💰 ' + sq.crediti + '</span>' +
       '</div>' +
       '<div class="budget-progress"><div class="budget-progress-fill ' + barCls + '" style="width:' + pct + '%"></div></div>' +
@@ -1705,21 +1743,21 @@ function renderChiamata(chiamata) {
   _chiamataAvatarVersion++;
   const _myAvatarVersion = _chiamataAvatarVersion;
   const tipoBadge = g.tipo && g.tipo !== 'NN' ? '<span class="cc-tipo-badge tipo-' + g.tipo + '">' + g.tipo + '</span>' : '';
-  const origTxt = g.squadraOriginale && g.tipo !== 'NN' ? '<small class="text-muted">ex: ' + g.squadraOriginale + '</small>' : '';
-  const clubTxt = g.squadra ? '<span class="cc-club">' + g.squadra + '</span>' : '';
+  const origTxt = g.squadraOriginale && g.tipo !== 'NN' ? '<small class="text-muted">ex: ' + _escHtml(g.squadraOriginale) + '</small>' : '';
+  const clubTxt = g.squadra ? '<span class="cc-club">' + _escHtml(g.squadra) + '</span>' : '';
   const offerenteTxt = chiamata.squadraOfferente
-    ? 'Offerta di: <strong>' + chiamata.squadraOfferente + '</strong>'
+    ? 'Offerta di: <strong>' + _escHtml(chiamata.squadraOfferente) + '</strong>'
     : '<span class="chiamata-stato">In attesa 1ª offerta...</span>';
   const offertaDisplay = chiamata.offertaAttuale === 0 ? '—' : chiamata.offertaAttuale;
   const offertaLabel = chiamata.offertaAttuale === 0 ? 'Nessuna offerta' : 'crediti';
   const attesaBadge = chiamata.aspettandoConferma
-    ? '<p class="cc-attesa-badge">⏳ In attesa decisione di <strong>' + (chiamata.proprietario || chiamata.giocatore.squadraOriginale || 'squadra') + '</strong></p>'
+    ? '<p class="cc-attesa-badge">⏳ In attesa decisione di <strong>' + _escHtml(chiamata.proprietario || chiamata.giocatore.squadraOriginale || 'squadra') + '</strong></p>'
     : '';
   card.innerHTML =
     '<div class="cc-header">' +
       '<div class="cc-avatar"><svg viewBox="0 0 100 100" class="cc-avatar-svg"><path d="M29,44 Q26,35 30,28 Q33,21 39,19 Q41,15 47,16 Q50,13 53,16 Q59,15 61,19 Q67,21 70,28 Q74,35 71,44 Q74,48 70,52 Q71,57 68,60 L68,62 C68,70 60,76 50,76 C40,76 32,70 32,62 L32,60 Q29,57 30,52 Q26,48 29,44 Z" fill="#20142f"/><path d="M12,100 L12,88 C12,74 24,63 39,61 L39,66 C39,71 44,75 50,75 C56,75 61,71 61,66 L61,61 C76,63 88,74 88,88 L88,100 Z" fill="#20142f"/></svg></div>' +
       '<div class="cc-info">' +
-        '<div class="cc-nome-row">' + ruoloBadge + '<p class="cc-nome">' + g.nome + '</p></div>' +
+        '<div class="cc-nome-row">' + ruoloBadge + '<p class="cc-nome">' + _escHtml(g.nome) + '</p></div>' +
         '<div class="cc-meta">' + clubTxt + tipoBadge + origTxt + '</div>' +
       '</div>' +
     '</div>' +
@@ -1819,16 +1857,16 @@ function renderStorico(storico) {
   }
   if (!items.length) { list.innerHTML = '<li class="text-muted" style="padding:8px">Nessun acquisto</li>'; return; }
   list.innerHTML = [...items].reverse().slice(0, 50).map(s => {
-    if (s.tipo === 'tradeoff') return '<li><span class="storico-nome">' + s.squadra + '</span><span class="storico-tipo tipo-tag-tradeoff">trade-off: ' + (TRADEOFF_LABELS[s.tradeoffTipo] || s.tradeoffTipo) + '</span></li>';
-    if (s.tipo === 'scartato') return '<li><span class="storico-nome text-muted">' + s.giocatore.nome + '</span><span class="storico-tipo tipo-tag-scartato">scartato</span></li>';
+    if (s.tipo === 'tradeoff') return '<li><span class="storico-nome">' + _escHtml(s.squadra) + '</span><span class="storico-tipo tipo-tag-tradeoff">trade-off: ' + _escHtml(TRADEOFF_LABELS[s.tradeoffTipo] || s.tradeoffTipo) + '</span></li>';
+    if (s.tipo === 'scartato') return '<li><span class="storico-nome text-muted">' + _escHtml(s.giocatore.nome) + '</span><span class="storico-tipo tipo-tag-scartato">scartato</span></li>';
     if (s.tipo === 'con_svincolo' && filtro === 'recap-riparazione') {
-      const nomi = (s.svincolati || []).map(g => g.nome).join(', ') || '—';
-      return '<li><span class="storico-nome">' + s.giocatore.nome + '</span>' +
-        '<span class="storico-sq">' + s.squadra + '</span>' +
+      const nomi = _escHtml((s.svincolati || []).map(g => g.nome).join(', ') || '—');
+      return '<li><span class="storico-nome">' + _escHtml(s.giocatore.nome) + '</span>' +
+        '<span class="storico-sq">' + _escHtml(s.squadra) + '</span>' +
         '<span class="storico-tipo tipo-tag-con_svincolo">svincolati: ' + nomi + '</span></li>';
     }
-    return '<li><span class="storico-nome">' + s.giocatore.nome + '</span>' +
-      '<span class="storico-sq">' + s.squadra + '</span>' +
+    return '<li><span class="storico-nome">' + _escHtml(s.giocatore.nome) + '</span>' +
+      '<span class="storico-sq">' + _escHtml(s.squadra) + '</span>' +
       '<span class="storico-prezzo">' + s.prezzo + 'cr</span>' +
       '<span class="storico-tipo tipo-tag-' + s.tipo + '">' + s.tipo + '</span></li>';
   }).join('');
@@ -1862,7 +1900,7 @@ function renderRose(squadre) {
       '</div>' : '';
     return '<div class="rose-col' + (isAttiva ? ' attiva' : '') + '">' +
       '<div class="rose-col-header">' +
-        '<span class="rose-col-nome">' + sq.nome + '</span>' +
+        '<span class="rose-col-nome">' + _escHtml(sq.nome) + '</span>' +
         '<span class="rose-col-budget' + (isAttiva ? ' attiva' : '') + '">🪙 ' + sq.crediti + '</span>' +
       '</div>' +
       slotsRow +
@@ -2032,8 +2070,8 @@ function renderGiocatoriLiberi(pool) {
     const sc = g.scartato ? ' scartato' : '';
     const tipoLabel = g.tipo || 'NN';
     const tb = '<span class="l-tipo-badge tipo-' + tipoLabel + '">' + tipoLabel + '</span>';
-    const orig = g.squadraOriginale ? '<span class="l-orig">ex ' + g.squadraOriginale + '</span>' : '';
-    const club = g.squadra ? '<span class="l-orig">' + g.squadra + '</span>' : '';
+    const orig = g.squadraOriginale ? '<span class="l-orig">ex ' + _escHtml(g.squadraOriginale) + '</span>' : '';
+    const club = g.squadra ? '<span class="l-orig">' + _escHtml(g.squadra) + '</span>' : '';
     const click = (!g.scartato && S.isAdmin) ? ' onclick="chiamaLibero(\'' + g.id + '\')"' : '';
     const haValore = g.valore !== undefined && g.valore !== null && g.valore !== 0;
     const valoreHTML = haValore
@@ -2041,7 +2079,7 @@ function renderGiocatoriLiberi(pool) {
       : '';
     const stratHTML = _getLiberiStrategiaBadgeHTML(g);
     return '<li class="' + sc + '"' + click + '>' + _getRuoloBadgeHTML(g.ruolo) +
-      '<span class="l-nome">' + g.nome + '</span>' + tb + club + orig + valoreHTML + stratHTML +
+      '<span class="l-nome">' + _escHtml(g.nome) + '</span>' + tb + club + orig + valoreHTML + stratHTML +
       (g.scartato ? '<span class="l-scartato-tag">Scartato</span>' : '') +
       '<span class="l-costo">' + g.costoOriginale + 'cr' + (g.scartato ? ' \u2717' : '') + '</span></li>';
   }).join('') || '<li class="text-muted" style="padding:8px">Nessun giocatore</li>';
@@ -2128,17 +2166,17 @@ function renderLobbySquadre(squadre) {
   const ul = document.getElementById('lobby-squadre');
   if (!ul) return;
   ul.innerHTML = squadre.map(s =>
-    '<li><span class="sq-dot ' + (s.online?'online':'offline') + '">●</span><strong>' + s.nome + '</strong>' +
+    '<li><span class="sq-dot ' + (s.online?'online':'offline') + '">●</span><strong>' + _escHtml(s.nome) + '</strong>' +
     '<span class="text-muted" style="font-size:0.75rem">' + (s.online?'(online)':'(offline)') + ' | ' + s.crediti + 'cr</span></li>').join('');
 }
 
 function renderFineAsta() {
   const asta = S.asta; if (!asta) return;
   document.getElementById('riepilogo-asta').innerHTML = asta.squadre.map(sq =>
-    '<div class="riepilogo-card"><h3><span>' + sq.nome + '</span><span class="rc-crediti">💰 ' + sq.crediti + 'cr</span></h3>' +
+    '<div class="riepilogo-card"><h3><span>' + _escHtml(sq.nome) + '</span><span class="rc-crediti">💰 ' + sq.crediti + 'cr</span></h3>' +
     (asta.tipoAsta === 'iniziale' ? '<p class="rc-slot">RIC ' + sq.slotsRICUsati + '/' + sq.slotsRIC + ' | PLUS ' + sq.slotsPLUSUsati + '/' + sq.slotsPLUS + ' | Recompra: ' + ((sq.recompraUsati||0) + '/' + (sq.recompra!==undefined?sq.recompra:1)) + '</p>' : '') +
     '<table><thead><tr><th>Giocatore</th><th>Ruolo</th><th>Tipo</th><th>Prezzo</th></tr></thead><tbody>' +
-    (sq.rosa.map(g => '<tr><td>' + g.nome + '</td><td>' + (g.ruolo||'?') + '</td><td>' + (g.tipo||'NN') + '</td><td>' + g.prezzo + 'cr</td></tr>').join('') ||
+    (sq.rosa.map(g => '<tr><td>' + _escHtml(g.nome) + '</td><td>' + (g.ruolo||'?') + '</td><td>' + (g.tipo||'NN') + '</td><td>' + g.prezzo + 'cr</td></tr>').join('') ||
       '<tr><td colspan="4" class="text-muted">Nessun giocatore</td></tr>') +
     '</tbody></table></div>').join('');
 }
@@ -2220,7 +2258,7 @@ function renderPopupSvincolo(popupData) {
     const recup = Math.floor(g.prezzo * fattore);
     return '<div class="sv-item" id="svi-' + g.id + '" onclick="toggleSvincolo(\'' + g.id + '\',' + recup + ')">' +
       '<input type="checkbox" id="svc-' + g.id + '" onclick="event.stopPropagation();toggleSvincolo(\'' + g.id + '\',' + recup + ')">' +
-      '<div class="sv-item-info"><div class="sv-item-nome">' + g.nome + '</div>' +
+      '<div class="sv-item-info"><div class="sv-item-nome">' + _escHtml(g.nome) + '</div>' +
       '<div class="sv-item-detail">' + (g.ruolo||'?') + ' — ' + g.prezzo + 'cr</div></div>' +
       '<span class="sv-item-recup">+' + recup + 'cr</span></div>';
   }).join('');
@@ -2295,10 +2333,10 @@ window.renderChiamaManualeLista = function() {
     return (a.nome || '').localeCompare(b.nome || '');
   });
   lista.innerHTML = disp.slice(0, 80).map(g => {
-    const orig = g.squadraOriginale ? ' · ex ' + g.squadraOriginale : '';
+    const orig = g.squadraOriginale ? ' · ex ' + _escHtml(g.squadraOriginale) : '';
     return '<div class="cm-item" onclick="chiamaDaModale(\'' + g.id + '\')">' +
       _getRuoloBadgeHTML(g.ruolo) +
-      '<span class="cm-item-nome">' + g.nome + '</span>' +
+      '<span class="cm-item-nome">' + _escHtml(g.nome) + '</span>' +
       '<span class="cm-item-info">' + (g.tipo && g.tipo !== 'NN' ? g.tipo + ' · ' : '') + (g.costoOriginale || 0) + 'cr' + orig + '</span>' +
     '</div>';
   }).join('') || '<p class="text-muted" style="padding:8px">Nessun giocatore trovato</p>';
@@ -2340,10 +2378,10 @@ window.renderAssegnaManualeLista = function() {
   });
   lista.innerHTML = disp.slice(0, 80).map(g => {
     const sel = S.amSelezionato === g.id ? ' selected' : '';
-    const orig = g.squadraOriginale ? ' · ex ' + g.squadraOriginale : '';
+    const orig = g.squadraOriginale ? ' · ex ' + _escHtml(g.squadraOriginale) : '';
     return '<div class="cm-item' + sel + '" onclick="selezionaGiocatoreAssegna(\'' + g.id + '\')">' +
       _getRuoloBadgeHTML(g.ruolo) +
-      '<span class="cm-item-nome">' + g.nome + '</span>' +
+      '<span class="cm-item-nome">' + _escHtml(g.nome) + '</span>' +
       '<span class="cm-item-info">' + (g.tipo && g.tipo !== 'NN' ? g.tipo + ' · ' : '') + (g.costoOriginale || 0) + 'cr' + orig + (g.scartato ? ' · ✗ scartato' : '') + '</span>' +
     '</div>';
   }).join('') || '<p class="text-muted" style="padding:8px">Nessun giocatore trovato</p>';
@@ -2383,7 +2421,7 @@ window.apriModalAdminConfig = function() {
   lista.innerHTML = (S.asta.squadre || []).map(sq => {
     const nomeEsc = sq.nome.replace(/'/g,"\\'");
     return '<div class="settings-team-card">' +
-      '<div class="settings-team-nome">' + sq.nome + '</div>' +
+      '<div class="settings-team-nome">' + _escHtml(sq.nome) + '</div>' +
       '<div class="settings-team-fields">' +
         '<div class="settings-field"><label>Crediti</label>' +
         '<input type="number" min="0" value="' + sq.crediti + '" onblur="confermaAdminCrediti(\'' + nomeEsc + '\', this.value)"></div>' +
@@ -2397,6 +2435,14 @@ window.apriModalAdminConfig = function() {
     '</div>';
   }).join('');
   openModal('modal-admin-config');
+};
+
+window.copiaLinkAdmin = function() {
+  if (!S.astaId || !S.adminToken) return toast('Link Admin non disponibile in questa sessione', 'error');
+  const link = window.location.origin + '/?id=' + S.astaId + '&admin=' + S.adminToken;
+  navigator.clipboard.writeText(link).then(() => {
+    toast('Link Admin copiato! Non condividerlo con i partecipanti.', 'success');
+  }).catch(() => toast('Errore nella copia del link', 'error'));
 };
 
 window.confermaAdminConfig = function() {
@@ -2436,7 +2482,7 @@ function renderMiaRosa(sq) {
     return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
   });
   lista.innerHTML = rosaOrdinata.map(g => '<div class="mr-item">' +
-    _getRuoloBadgeHTML(g.ruolo) + '<span class="mr-nome">' + g.nome + '</span>' +
+    _getRuoloBadgeHTML(g.ruolo) + '<span class="mr-nome">' + _escHtml(g.nome) + '</span>' +
     (g.tipo && g.tipo !== 'NN' ? '<span class="mr-tipo tipo-' + g.tipo + '">' + g.tipo + '</span>' : '') +
     '<span class="mr-prezzo">' + g.prezzo + 'cr</span></div>').join('');
 }
@@ -2503,6 +2549,15 @@ window.closeModalOnOverlay = function(e) {
 function hidePoupOverride() {
   document.getElementById('popup-override-box').classList.add('hidden');
   document.getElementById('popup-override-actions').innerHTML = '';
+}
+
+// Escapa caratteri HTML pericolosi da qualsiasi stringa inserita via innerHTML
+// (nomi squadra scelti liberamente dagli utenti, nomi giocatori dal listino, ecc.)
+// per evitare XSS. Usare SEMPRE per dati non generati da noi prima di innerHTML.
+function _escHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
 }
 
 function toast(msg, tipo) {
