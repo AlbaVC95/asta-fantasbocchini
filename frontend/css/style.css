@@ -1062,16 +1062,16 @@ body.app-role-admin .gk-config-actions.gk-admin-only{display:flex}
   position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;
   background-color:var(--bg-deep);
   background-image:
-    linear-gradient(180deg, rgba(8,4,20,.55) 0%, rgba(8,4,20,.30) 35%, rgba(8,4,20,.55) 75%, rgba(8,4,20,.80) 100%),
+    linear-gradient(180deg, rgba(8,4,20,.42) 0%, rgba(8,4,20,.22) 35%, rgba(8,4,20,.45) 75%, rgba(8,4,20,.68) 100%),
     url('/img/backgrounds/stadium-bg.jpg');
-  background-size: cover;
-  background-position: center 30%;
+  background-size: 100% 100%;
+  background-position: center top;
   background-repeat: no-repeat;
   transition:background .4s;
 }
 html.theme-light .pitch-bg{
   background-image:
-    linear-gradient(180deg, rgba(233,236,247,.72) 0%, rgba(233,236,247,.55) 35%, rgba(233,236,247,.68) 75%, rgba(233,236,247,.88) 100%),
+    linear-gradient(180deg, rgba(233,236,247,.60) 0%, rgba(233,236,247,.42) 35%, rgba(233,236,247,.58) 75%, rgba(233,236,247,.80) 100%),
     url('/img/backgrounds/stadium-bg.jpg');
   filter:saturate(.85) brightness(1.05);
 }
