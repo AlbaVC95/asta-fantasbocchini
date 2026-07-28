@@ -28,6 +28,16 @@ async function getRuoloUtente(req) {
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
+// Rete di sicurezza: un errore non gestito in UN singolo handler (es. dati malformati
+// mandati da un client) non deve far crashare l'intero processo, cosa che interromperebbe
+// TUTTE le aste attive di TUTTI gli utenti contemporaneamente. Logghiamo e continuiamo.
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException] Errore non gestito (il server continua a funzionare):', err && err.stack || err);
+});
+process.on('unhandledRejection', (err) => {
+  console.error('[unhandledRejection] Promise rifiutata senza catch (il server continua a funzionare):', err && err.stack || err);
+});
+
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 app.use(express.json({ limit: '10mb' }));
 
@@ -765,10 +775,12 @@ io.on('connection', (socket) => {
   socket.on('esegui-svincolo', ({ astaId, giocatoriIds }) => {
     const asta = aste.get(astaId);
     if (!asta || !asta.popupAttivo || asta.popupAttivo.tipo !== 'svincolo') return;
+    if (!Array.isArray(giocatoriIds)) return socket.emit('errore', { msg: 'Lista giocatori non valida' });
     const popup = asta.popupAttivo;
     const sq = getSquadraBySocket(asta, socket.id); const admin = isAdmin(asta, socket.id);
     if (!admin && (!sq || sq.nome !== popup.squadraVincitrice)) return;
     const squadra = getSquadra(asta, popup.squadraVincitrice);
+    if (!squadra) return socket.emit('errore', { msg: 'Squadra non trovata' });
     const fattore = asta.fattoreSvincolo || 0.5;
     let creditiRecuperati = 0; const svincolati = [];
     giocatoriIds.forEach(gId => {
@@ -944,7 +956,7 @@ setInterval(() => {
   aste.forEach((asta, id) => {
     const creataMs = asta.createdAt ? new Date(asta.createdAt).getTime() : 0;
     const eta = creataMs ? (ora - creataMs) : 0;
-    const daRimuovere = (asta.stato === 'terminata' && eta > UN_GIORNO_MS) || eta > TRENTA_GIORNI_MS;
+    const daRimuovere = (asta.stato === 'completata' && eta > UN_GIORNO_MS) || eta > TRENTA_GIORNI_MS;
     if (daRimuovere) {
       clearTimer(id);
       aste.delete(id);
