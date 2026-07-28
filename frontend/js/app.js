@@ -1,5 +1,38 @@
 // ASTA FANTASBOCCHINI — CLIENT v2
+
+// == TEMA CHIARO/SCURO ==================================
+// Applicato subito (prima del resto) per evitare flash del tema sbagliato al caricamento.
+(function initTema() {
+  try {
+    if (localStorage.getItem('tema') === 'light') {
+      document.documentElement.classList.add('theme-light');
+    }
+  } catch (e) {}
+})();
+window.toggleTema = function() {
+  const isLight = document.documentElement.classList.toggle('theme-light');
+  try { localStorage.setItem('tema', isLight ? 'light' : 'dark'); } catch (e) {}
+  document.querySelectorAll('.theme-toggle-fab').forEach(btn => {
+    btn.textContent = isLight ? '☀️' : '🌙';
+    btn.title = isLight ? 'Passa al tema scuro' : 'Passa al tema chiaro';
+  });
+};
+function _creaThemeToggleFab() {
+  if (document.querySelector('.theme-toggle-fab')) return;
+  const isLight = document.documentElement.classList.contains('theme-light');
+  const btn = document.createElement('button');
+  btn.className = 'theme-toggle-fab';
+  btn.type = 'button';
+  btn.textContent = isLight ? '☀️' : '🌙';
+  btn.title = isLight ? 'Passa al tema scuro' : 'Passa al tema chiaro';
+  btn.onclick = window.toggleTema;
+  document.body.appendChild(btn);
+}
+if (document.body) { _creaThemeToggleFab(); }
+else { document.addEventListener('DOMContentLoaded', _creaThemeToggleFab); }
+
 const socket = io({
+
   reconnection: true,
   reconnectionAttempts: Infinity,
   reconnectionDelay: 1000,
