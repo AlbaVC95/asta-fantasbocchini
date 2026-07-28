@@ -287,6 +287,11 @@ app.post('/api/asta', (req, res) => {
   const sottoTipo = b.sottoTipoRiparazione || '1';
   const fattoreSvincolo = sottoTipo === '2' ? (1 / 3) : 0.5;
 
+  // Token segreto generato server-side: solo chi lo possiede può ottenere i
+  // privilegi di Admin su questa asta (in join-asta). Non viene MAI restituito
+  // da /api/asta/:id/info (che è pubblico), solo nella risposta di creazione,
+  // così che solo il creatore (e chi lui sceglie di invitare come co-admin) lo conosca.
+  const adminToken = uuidv4();
   const asta = {
     id, nome: b.nome || 'Asta FantaSbocchini',
     tipoAsta: b.tipoAsta || 'iniziale', sottoTipoRiparazione: sottoTipo,
@@ -295,7 +300,7 @@ app.post('/api/asta', (req, res) => {
     minimoPortieri: b.minimoPortieri || 1, minimoMovimento: b.minimoMovimento || 7,
     svincoliTotali: b.svincoliTotali || 15, fattoreSvincolo,
     numeroPartecipanti: b.numeroPartecipanti || 12,
-    stato: 'attesa', squadre: [], adminNome: null, adminSocketIds: [],
+    stato: 'attesa', squadre: [], adminNome: null, adminSocketIds: [], adminToken,
     poolGiocatori: [], chiamataAttuale: null, popupAttivo: null,
     storico: [], createdAt: new Date().toISOString()
   };
@@ -341,7 +346,7 @@ app.post('/api/asta', (req, res) => {
   }
 
   aste.set(id, asta);
-  res.json({ success: true, astaId: id, link: `/?id=${id}` });
+  res.json({ success: true, astaId: id, link: `/?id=${id}`, adminToken });
 });
 
 // ══ LISTINO UFFICIALE (solo Admin) ══════════════════════
@@ -528,10 +533,6 @@ app.get('/api/asta/:id/info', (req, res) => {
   });
 });
 
-app.get('/api/aste', (req, res) => {
-  res.json(Array.from(aste.values()).map(a => ({ id: a.id, nome: a.nome, stato: a.stato, tipoAsta: a.tipoAsta })));
-});
-
 app.get('/api/asta/:id/export', (req, res) => {
   const asta = aste.get(req.params.id);
   if (!asta) return res.status(404).json({ error: 'Asta non trovata' });
@@ -554,7 +555,7 @@ app.get('/api/asta/:id/export', (req, res) => {
 io.on('connection', (socket) => {
   console.log(`[WS] Connesso: ${socket.id}`);
 
-  socket.on('join-asta', ({ astaId, nomeSquadra, isAdmin: adminFlag }) => {
+  socket.on('join-asta', ({ astaId, nomeSquadra, isAdmin: adminFlag, adminToken }) => {
     const asta = aste.get(astaId);
     if (!asta) return socket.emit('errore', { msg: 'Asta non trovata' });
     socket.join(astaId); socket.astaId = astaId; socket.nomeSquadra = nomeSquadra;
@@ -574,7 +575,11 @@ io.on('connection', (socket) => {
     }
     if (!squadra.utenti.includes(socket.id)) squadra.utenti.push(socket.id);
 
-    if (adminFlag || (asta.adminNome && asta.adminNome === nomeSquadra)) {
+    // SICUREZZA: i privilegi di Admin richiedono SEMPRE il token segreto generato
+    // alla creazione dell'asta — non basta più dichiararsi admin (isAdmin:true) o
+    // indovinare/conoscere il nome della squadra admin (che era pubblico via /info).
+    const tokenValido = !!(adminToken && asta.adminToken && adminToken === asta.adminToken);
+    if (tokenValido && (adminFlag || asta.adminNome === nomeSquadra)) {
       if (!asta.adminSocketIds.includes(socket.id)) asta.adminSocketIds.push(socket.id);
       if (!asta.adminNome) asta.adminNome = nomeSquadra;
     }
@@ -926,6 +931,27 @@ app.get('/api/backup-list', (req, res) => {
 setInterval(() => {
   aste.forEach(asta => { if (asta.stato !== 'attesa') saveBackup(asta); });
 }, 30000);
+
+// Pulizia periodica della memoria: senza questo, ogni asta creata (anche quelle
+// abbandonate o terminate da tempo) resterebbe per sempre nella Map "aste" finché
+// il processo non viene riavviato. Le astre terminate da più di 24h, o comunque
+// create da più di 30 giorni (a prescindere dallo stato), vengono rimosse dalla
+// memoria — il backup su disco resta comunque disponibile in data/backup_asta_*.json.
+const UN_GIORNO_MS = 24 * 60 * 60 * 1000;
+const TRENTA_GIORNI_MS = 30 * UN_GIORNO_MS;
+setInterval(() => {
+  const ora = Date.now();
+  aste.forEach((asta, id) => {
+    const creataMs = asta.createdAt ? new Date(asta.createdAt).getTime() : 0;
+    const eta = creataMs ? (ora - creataMs) : 0;
+    const daRimuovere = (asta.stato === 'terminata' && eta > UN_GIORNO_MS) || eta > TRENTA_GIORNI_MS;
+    if (daRimuovere) {
+      clearTimer(id);
+      aste.delete(id);
+      console.log('[cleanup] Asta rimossa dalla memoria (inattiva):', id);
+    }
+  });
+}, 60 * 60 * 1000); // ogni ora
 
 // Load backups at startup
 loadBackups();
