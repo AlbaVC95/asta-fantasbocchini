@@ -1186,14 +1186,18 @@ html.theme-light .badge-ruolo.r-XX{background:#e4e2f2;color:var(--text-muted)}
   .theme-toggle-home{width:28px;height:28px;font-size:.9rem;top:12px;left:12px}
 }
 
-/* ══ Fix: card levemente mas clara y uniforme en variantes compactas (puja-panel-slot / admin) para que resalte sobre el fondo sin ser demasiado clara ══ */
-.puja-panel-slot .chiamata-card,
-body.layout-admin .asta-row-puja .chiamata-card{
+/* ══ Fix: TODA la fila (card + timer + rilancia) con el mismo color uniforme, sin costuras entre secciones ══ */
+.puja-panel-slot,
+body.layout-admin .asta-row-puja{
   background:linear-gradient(170deg,#3c2a6e 0%,#2d1f58 100%)!important;
   border:2px solid rgba(139,92,246,.5)!important;
   box-shadow:0 0 30px rgba(139,92,246,.16),0 8px 20px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)!important;
 }
-html.theme-light .puja-panel-slot .chiamata-card,
-html.theme-light body.layout-admin .asta-row-puja .chiamata-card{
+.puja-panel-slot .chiamata-card,
+body.layout-admin .asta-row-puja .chiamata-card{
+  background:none!important;border:none!important;box-shadow:none!important;
+}
+html.theme-light .puja-panel-slot,
+html.theme-light body.layout-admin .asta-row-puja{
   background:linear-gradient(170deg,#f1e9ff 0%,#e6d9fb 100%)!important;
 }
