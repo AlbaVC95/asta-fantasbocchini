@@ -153,14 +153,12 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
 .asta-row-tabs{flex:1;min-height:0;display:flex;flex-direction:column;padding:0 12px 4px;overflow:hidden}
 .card-timer-group{display:flex;flex-direction:column;align-items:center}
 .chiamata-card{width:100%;
-  --text-primary:#241539; --text-secondary:#3d2361; --text-muted:#6b4f96; --border:rgba(124,58,237,.22);
-  background:radial-gradient(circle at 12% -10%,rgba(255,255,255,.9) 0%,transparent 55%),radial-gradient(circle at 100% 115%,rgba(255,215,140,.35) 0%,transparent 60%),linear-gradient(170deg,#f3edff 0%,#e4d4ff 100%);
-  border:2px solid rgba(139,92,246,.55);border-radius:20px 20px 0 0;padding:24px 28px 20px;text-align:center;
-  box-shadow:0 0 100px rgba(139,92,246,.25),0 24px 50px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.7),inset 0 0 60px rgba(139,92,246,.06);
-  position:relative;overflow:hidden;transition:border-color .3s,box-shadow .3s;backdrop-filter:blur(2px)}
+  background:linear-gradient(170deg,#3c2a6e 0%,#2d1f58 100%);
+  border:2px solid rgba(139,92,246,.5);border-radius:20px 20px 0 0;padding:24px 28px 20px;text-align:center;
+  box-shadow:0 0 60px rgba(139,92,246,.18),0 24px 50px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08);
+  position:relative;overflow:hidden;transition:border-color .3s,box-shadow .3s}
 html.theme-light .chiamata-card{
-  --text-primary:#241539; --text-secondary:#3d2361; --text-muted:#6b4f96;
-  background:radial-gradient(circle at 12% -10%,rgba(255,255,255,.95) 0%,transparent 55%),radial-gradient(circle at 100% 115%,rgba(255,215,140,.30) 0%,transparent 60%),linear-gradient(170deg,#faf7ff 0%,#ede1ff 100%);
+  background:linear-gradient(170deg,#f1e9ff 0%,#e6d9fb 100%);
 }
 .chiamata-card::before{content:'';position:absolute;top:0;left:10%;right:10%;height:2px;background:linear-gradient(90deg,transparent,var(--primary),transparent);border-radius:2px;box-shadow:0 0 14px 1px var(--primary-glow);animation:cc-topbar-pulse 3s ease-in-out infinite}
 .chiamata-card .chiamata-stato{color:var(--text-muted);font-size:1rem;padding:20px 0}
@@ -1188,15 +1186,14 @@ html.theme-light .badge-ruolo.r-XX{background:#e4e2f2;color:var(--text-muted)}
   .theme-toggle-home{width:28px;height:28px;font-size:.9rem;top:12px;left:12px}
 }
 
-/* ══ Fix: restaurar fondo claro del chiamata-card en variantes compactas (puja-panel-slot / admin) que lo reseteaban a "none" dejando el texto oscuro sobre fondo oscuro ══ */
+/* ══ Fix: card levemente mas clara y uniforme en variantes compactas (puja-panel-slot / admin) para que resalte sobre el fondo sin ser demasiado clara ══ */
 .puja-panel-slot .chiamata-card,
 body.layout-admin .asta-row-puja .chiamata-card{
-  --text-primary:#241539; --text-secondary:#3d2361; --text-muted:#6b4f96;
-  background:radial-gradient(circle at 12% -10%,rgba(255,255,255,.9) 0%,transparent 55%),radial-gradient(circle at 100% 115%,rgba(255,215,140,.35) 0%,transparent 60%),linear-gradient(170deg,#f3edff 0%,#e4d4ff 100%)!important;
-  border:2px solid rgba(139,92,246,.55)!important;
-  box-shadow:0 0 40px rgba(139,92,246,.22),0 8px 20px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.7)!important;
+  background:linear-gradient(170deg,#3c2a6e 0%,#2d1f58 100%)!important;
+  border:2px solid rgba(139,92,246,.5)!important;
+  box-shadow:0 0 30px rgba(139,92,246,.16),0 8px 20px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)!important;
 }
 html.theme-light .puja-panel-slot .chiamata-card,
 html.theme-light body.layout-admin .asta-row-puja .chiamata-card{
-  background:radial-gradient(circle at 12% -10%,rgba(255,255,255,.95) 0%,transparent 55%),radial-gradient(circle at 100% 115%,rgba(255,215,140,.30) 0%,transparent 60%),linear-gradient(170deg,#faf7ff 0%,#ede1ff 100%)!important;
+  background:linear-gradient(170deg,#f1e9ff 0%,#e6d9fb 100%)!important;
 }
