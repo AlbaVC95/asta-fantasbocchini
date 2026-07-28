@@ -1187,3 +1187,16 @@ html.theme-light .badge-ruolo.r-XX{background:#e4e2f2;color:var(--text-muted)}
 @media (max-width:640px){
   .theme-toggle-home{width:28px;height:28px;font-size:.9rem;top:12px;left:12px}
 }
+
+/* ══ Fix: restaurar fondo claro del chiamata-card en variantes compactas (puja-panel-slot / admin) que lo reseteaban a "none" dejando el texto oscuro sobre fondo oscuro ══ */
+.puja-panel-slot .chiamata-card,
+body.layout-admin .asta-row-puja .chiamata-card{
+  --text-primary:#241539; --text-secondary:#3d2361; --text-muted:#6b4f96;
+  background:radial-gradient(circle at 12% -10%,rgba(255,255,255,.9) 0%,transparent 55%),radial-gradient(circle at 100% 115%,rgba(255,215,140,.35) 0%,transparent 60%),linear-gradient(170deg,#f3edff 0%,#e4d4ff 100%)!important;
+  border:2px solid rgba(139,92,246,.55)!important;
+  box-shadow:0 0 40px rgba(139,92,246,.22),0 8px 20px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.7)!important;
+}
+html.theme-light .puja-panel-slot .chiamata-card,
+html.theme-light body.layout-admin .asta-row-puja .chiamata-card{
+  background:radial-gradient(circle at 12% -10%,rgba(255,255,255,.95) 0%,transparent 55%),radial-gradient(circle at 100% 115%,rgba(255,215,140,.30) 0%,transparent 60%),linear-gradient(170deg,#faf7ff 0%,#ede1ff 100%)!important;
+}
