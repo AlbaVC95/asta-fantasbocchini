@@ -377,7 +377,7 @@
   "tameze|torino": "img/players/Torino/Adrien_Tamèze.jpg",
   "tavaresn|lazio": "img/players/Lazio/Nuno_Tavares.jpg",
   "taylork|lazio": "img/players/Lazio/Kenneth_Taylor.jpg",
-  "terracciano|milan": "img/players/Milan/Pietro_Terracciano.jpg",
+  "terracciano|milan": "img/players/Milan/Terracciano_anime.jpg",
   "thuramk|juventus": "img/players/Juventus/Khéphren_Thuram.jpg",
   "thuram|inter": "img/players/Inter/Marcus_Thuram.jpg",
   "tiagogabriel|lecce": "img/players/Lecce/Tiago_Gabriel.jpg",
@@ -435,5 +435,7 @@
   "pellegrinilu|lazio": "img/players/Lazio/Luca_Pellegrini.jpg",
   "martinezjo|inter": "img/players/Inter/Josep_Martínez.jpg",
   "espositofp|inter": "img/players/Inter/Pio_Esposito.jpg",
-  "espositose|cagliari": "img/players/Cagliari/Sebastiano_Esposito.jpg"
+  "espositose|cagliari": "img/players/Cagliari/Sebastiano_Esposito.jpg",
+  "holm|bologna": "img/players/Bologna/Holm_anime.jpg",
+  "rodriguezju|cagliari": "img/players/Cagliari/Juan_Rodriguez_anime.jpg"
 }
