@@ -1651,20 +1651,19 @@ function _loadPlayerPhoto(nome, squadra, version) {
     _applyPlayerPhoto(_playerPhotoCache[cacheKey], version);
     return;
   }
+  // Solo foto locali verificate manualmente: mai foto reali da fonti esterne
+  // (incoerenti in stile, talvolta sbagliate o obsolete). Se non c'e' un match
+  // locale, si usa sempre l'illustrazione generica "unknown".
   _withTimeout(_tryLocalPhoto(nome, squadra), 4000, null)
-    .then(function(img) { return img || _withTimeout(_trySportsDB(nome, squadra), 4000, null); })
-    .then(function(img) { return img || _withTimeout(_tryWikidata(nome, squadra), 4000, null); })
-    .then(function(img) { return img || _withTimeout(_tryWikipedia(nome, squadra), 4000, null); })
-    .then(function(img) { return img || _withTimeout(_tryApiFootball(nome, squadra), 4000, null); })
     .then(function(finalUrl) {
-      // Nessuna foto trovata: manteniamo sempre l'icona generica (mai il logo squadra),
-      // per coerenza visiva in tutti i casi (incluse squadre non piu' in Serie A: Verona, Pisa, Cremonese).
-      _playerPhotoCache[cacheKey] = finalUrl || null;
-      _applyPlayerPhoto(finalUrl || null, version);
+      const url = finalUrl || 'img/players/unknown_anime.jpg';
+      _playerPhotoCache[cacheKey] = url;
+      _applyPlayerPhoto(url, version);
     })
     .catch(function() {
-      _playerPhotoCache[cacheKey] = null;
-      _applyPlayerPhoto(null, version);
+      const url = 'img/players/unknown_anime.jpg';
+      _playerPhotoCache[cacheKey] = url;
+      _applyPlayerPhoto(url, version);
     });
 }
 
