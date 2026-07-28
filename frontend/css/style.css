@@ -1050,41 +1050,28 @@ body.app-role-admin .gk-config-actions.gk-admin-only{display:flex}
 @keyframes cc-offerta-shimmer{0%,55%{left:-60%}100%{left:130%}}
 
 /* ══════════════════════════════════════════════════════════
-   FONDO CAMPO DA CALCIO — layer decorativo fisso dietro a tutta l'app
-   (div .pitch-bg aggiunto in index.html, prima di #app; pointer-events:none)
+   FONDO CAMPO DA CALCIO — foto di stadio notturno con riflettori e nebbia,
+   fissa dietro a tutta l'app (div .pitch-bg aggiunto in index.html, prima
+   di #app; pointer-events:none). Un overlay scuro/chiaro sopra la foto
+   garantisce leggibilità del contenuto nelle zone dove trapela.
    ══════════════════════════════════════════════════════════ */
 .pitch-bg{
   position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;
-  background:
-    radial-gradient(ellipse 60% 45% at 50% 8%, rgba(139,92,246,.10) 0%, transparent 70%),
-    radial-gradient(ellipse 55% 40% at 88% 92%, rgba(255,184,0,.07) 0%, transparent 70%),
-    radial-gradient(ellipse 45% 35% at 6% 85%, rgba(192,38,211,.06) 0%, transparent 70%),
-    repeating-linear-gradient(115deg, rgba(16,185,110,.05) 0px 90px, rgba(10,140,80,.025) 90px 180px),
-    var(--bg-deep);
+  background-color:var(--bg-deep);
+  background-image:
+    linear-gradient(180deg, rgba(8,4,20,.55) 0%, rgba(8,4,20,.30) 35%, rgba(8,4,20,.55) 75%, rgba(8,4,20,.80) 100%),
+    url('img/backgrounds/stadium-bg.jpg');
+  background-size: cover;
+  background-position: center 30%;
+  background-repeat: no-repeat;
   transition:background .4s;
 }
-.pitch-bg::before{
-  /* Cerchio di centrocampo, fisso al centro dello schermo */
-  content:''; position:absolute; top:50%; left:50%; width:52vmax; height:52vmax;
-  transform:translate(-50%,-50%);
-  border:2px solid rgba(255,255,255,.05);
-  border-radius:50%;
-}
-.pitch-bg::after{
-  /* Linea di metà campo */
-  content:''; position:absolute; top:50%; left:0; right:0; height:0;
-  border-top:2px solid rgba(255,255,255,.045);
-}
 html.theme-light .pitch-bg{
-  background:
-    radial-gradient(ellipse 60% 45% at 50% 8%, rgba(124,58,237,.07) 0%, transparent 70%),
-    radial-gradient(ellipse 55% 40% at 88% 92%, rgba(193,127,0,.06) 0%, transparent 70%),
-    radial-gradient(ellipse 45% 35% at 6% 85%, rgba(0,140,90,.05) 0%, transparent 70%),
-    repeating-linear-gradient(115deg, rgba(16,150,110,.055) 0px 90px, rgba(10,120,80,.03) 90px 180px),
-    var(--bg-deep);
+  background-image:
+    linear-gradient(180deg, rgba(233,236,247,.72) 0%, rgba(233,236,247,.55) 35%, rgba(233,236,247,.68) 75%, rgba(233,236,247,.88) 100%),
+    url('img/backgrounds/stadium-bg.jpg');
+  filter:saturate(.85) brightness(1.05);
 }
-html.theme-light .pitch-bg::before{border-color:rgba(20,10,50,.06)}
-html.theme-light .pitch-bg::after{border-top-color:rgba(20,10,50,.055)}
 body{background:transparent!important}
 body::before{display:none}
 
