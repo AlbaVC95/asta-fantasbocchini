@@ -1048,3 +1048,75 @@ body.app-role-admin .gk-config-actions.gk-admin-only{display:flex}
 @keyframes cc-topbar-pulse{0%,100%{opacity:.75}50%{opacity:1}}
 @keyframes cc-avatar-pulse{0%,100%{box-shadow:0 0 0 3px rgba(139,92,246,.2),0 0 18px var(--primary-glow),inset 0 2px 6px rgba(0,0,0,.18)}50%{box-shadow:0 0 0 3px rgba(139,92,246,.38),0 0 30px var(--primary-glow),inset 0 2px 6px rgba(0,0,0,.18)}}
 @keyframes cc-offerta-shimmer{0%,55%{left:-60%}100%{left:130%}}
+
+/* ══════════════════════════════════════════════════════════
+   TEMA CHIARO — override delle variabili colore per html.theme-light
+   (attivato via toggle in app.js, persistito in localStorage)
+   ══════════════════════════════════════════════════════════ */
+html.theme-light{
+  --bg-abyss:#eef0f8;
+  --bg-deep:#f4f5fb;
+  --bg-main:#ffffff;
+  --bg-card:#ffffff;
+  --bg-elevated:#f2eefb;
+  --bg-glass:rgba(255,255,255,.78);
+  --primary:#7c3aed;
+  --primary-bright:#8b5cf6;
+  --primary-dark:#5b21b6;
+  --primary-glow:rgba(124,58,237,.22);
+  --primary-subtle:rgba(124,58,237,.08);
+  --gold:#c17f00;
+  --gold-bright:#e0a100;
+  --gold-deep:#8f5f00;
+  --gold-glow:rgba(193,127,0,.22);
+  --gold-subtle:rgba(193,127,0,.08);
+  --fire:#a21caf;
+  --fire-bright:#c026d3;
+  --fire-glow:rgba(162,28,175,.25);
+  --success:#00966d;
+  --success-glow:rgba(0,150,109,.22);
+  --danger:#dc2650;
+  --danger-glow:rgba(220,38,80,.22);
+  --text-primary:#1d1330;
+  --text-secondary:#4c3f70;
+  --text-muted:#83769e;
+  --border:rgba(20,10,50,.10);
+  --border-light:rgba(20,10,50,.18);
+}
+html.theme-light body{background:var(--bg-deep)}
+html.theme-light body::before{background:radial-gradient(ellipse at 30% 20%,rgba(124,58,237,.05) 0%,transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(193,127,0,.04) 0%,transparent 50%)}
+html.theme-light .cc-avatar{background:radial-gradient(circle at 35% 28%,#ffffff 0%,#e9eaf1 55%,#d7d9e2 100%)}
+html.theme-light #screen-strategie-lista.active,
+html.theme-light #screen-strategia-form.active,
+html.theme-light #screen-strategia-editor.active{
+  background:
+    linear-gradient(rgba(238,240,248,.92), rgba(238,240,248,.94)),
+    repeating-linear-gradient(125deg, rgba(0,150,75,.10) 0px 70px, rgba(0,100,50,.06) 70px 140px),
+    var(--bg-deep);
+}
+
+/* ══ Bottone flottante toggle tema (creato via JS, aggiunto a document.body) ══ */
+.theme-toggle-fab{
+  position:fixed;
+  bottom:18px;
+  right:18px;
+  z-index:3000;
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.25rem;
+  border:1px solid var(--border-light);
+  background:linear-gradient(160deg,var(--bg-elevated) 0%,var(--bg-card) 100%);
+  color:var(--text-primary);
+  cursor:pointer;
+  box-shadow:0 8px 24px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.04) inset;
+  transition:transform .2s,box-shadow .2s;
+}
+.theme-toggle-fab:hover{transform:translateY(-2px) scale(1.06);box-shadow:0 12px 30px rgba(0,0,0,.4),0 0 20px var(--primary-glow)}
+.theme-toggle-fab:active{transform:translateY(0) scale(.94)}
+@media (max-width:640px){
+  .theme-toggle-fab{width:40px;height:40px;font-size:1.1rem;bottom:12px;right:12px}
+}
