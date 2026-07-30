@@ -479,6 +479,13 @@ body.layout-partecipante .asta-row-panels{align-items:stretch;max-height:28vh}
 body.layout-partecipante .asta-row-panels>.panel-budget{max-height:100%;align-self:stretch;overflow-y:auto;flex:0.6}
 body.layout-partecipante .asta-row-panels>#mio-panel{max-height:100%;align-self:stretch;overflow-y:auto;flex:0.7}
 body.layout-partecipante .asta-row-puja{display:none!important}
+body.layout-partecipante .asta-row-panels{max-width:1900px;margin-left:auto;margin-right:auto;width:100%}
+@media (min-width:1500px){
+body.layout-partecipante .asta-row-panels{justify-content:center}
+body.layout-partecipante .asta-row-panels>.panel-budget{flex:0 1 320px!important;max-width:320px}
+body.layout-partecipante .puja-panel-slot{flex:0 1 900px!important;max-width:900px}
+body.layout-partecipante .asta-row-panels>#mio-panel{flex:0 1 320px!important;max-width:320px}
+}
 /* ══════ RIGA 2 compatta orizzontale (puja per ADMIN) ══════ */
 body.layout-admin .asta-row-puja{align-items:stretch;padding:5px 10px;gap:8px;min-height:clamp(130px,18vh,175px);height:auto;overflow:visible}
 body.layout-admin .asta-row-puja .card-timer-group{flex-direction:row;align-items:stretch;gap:10px;flex:1;min-width:0;min-height:0;overflow:visible;height:auto}
