@@ -1820,7 +1820,7 @@ function _getChiamataStrategiaInfoHTML(g) {
   const prezzoTxt = cfg.prezzo != null ? (cfg.prezzo + ' cr') : '—';
   const pctTxt = cfg.percentuale != null ? (' (' + cfg.percentuale + '%)') : '';
   const preferitoTxt = cfg.preferito ? ' ⭐ Preferito' : '';
-  return '<p class="cc-strategia-info" style="border-color:' + f.colore + '">📊 <strong style="color:' + f.colore + '">' + f.nome + '</strong> · ' + prezzoTxt + pctTxt + preferitoTxt + '</p>';
+  return '<p class="cc-strategia-info" style="border-color:' + f.colore + '">📊 <strong style="color:' + f.colore + '">' + escapeHTML(f.nome) + '</strong> · ' + prezzoTxt + pctTxt + preferitoTxt + '</p>';
 }
 
 function renderChiamata(chiamata) {
@@ -2380,7 +2380,7 @@ function _getLiberiStrategiaBadgeHTML(g) {
   const f = strat.fasceInfo.get(cfg.fascia_id);
   const preferitoStar = cfg.preferito ? ' ⭐' : '';
   const prezzoTxt = cfg.prezzo != null ? (' \u00b7 ' + cfg.prezzo + 'cr') : '';
-  return '<span class="l-strategia-badge" style="border-color:' + f.colore + ';color:' + f.colore + '">' + f.nome + prezzoTxt + preferitoStar + '</span>';
+  return '<span class="l-strategia-badge" style="border-color:' + f.colore + ';color:' + f.colore + '">' + escapeHTML(f.nome) + prezzoTxt + preferitoStar + '</span>';
 }
 
 window.chiamaLibero = function(id) {
