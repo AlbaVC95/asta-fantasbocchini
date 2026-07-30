@@ -135,7 +135,7 @@ function assegnaGiocatoreASquadra(asta, giocatore, squadra, prezzo, usatoSlotRIC
   squadra.crediti -= prezzo;
 }
 
-function avviaChiamata(astaId, giocatore) {
+function avviaChiamata(astaId, giocatore, manuale) {
   const asta = aste.get(astaId); if (!asta) return;
   giocatore.estratto = true;
 
@@ -148,7 +148,7 @@ function avviaChiamata(astaId, giocatore) {
       asta.chiamataAttuale = {
         giocatore, offertaAttuale: giocatore.costoOriginale, squadraOfferente: null,
         proprietarioPrecedente: giocatore.squadraOriginale, aspettandoConferma: true,
-        proprietarioPrecedenteHaPuntato: false, fase: 'conferma', timer: 0
+        proprietarioPrecedenteHaPuntato: false, fase: 'conferma', timer: 0, manuale: !!manuale
       };
       broadcastStato(astaId);
       const popupData = { giocatore, costoConferma: giocatore.costoOriginale, proprietario: giocatore.squadraOriginale };
@@ -156,6 +156,7 @@ function avviaChiamata(astaId, giocatore) {
       io.to(astaId).emit('nuova-chiamata', asta.chiamataAttuale);
       emitToSquadra(astaId, giocatore.squadraOriginale, 'popup-ric-conferma', popupData);
       emitToAdmins(astaId, 'popup-ric-conferma-admin', popupData);
+      if (manuale) io.to(astaId).emit('chiamata-manuale-avviso', { giocatore });
       return;
     }
   }
@@ -165,10 +166,11 @@ function avviaChiamata(astaId, giocatore) {
     giocatore, offertaAttuale: 0, squadraOfferente: null,
     proprietarioPrecedente: giocatore.squadraOriginale || null,
     aspettandoConferma: false, proprietarioPrecedenteHaPuntato: false,
-    fase: 'prima', timer: asta.timerPrimaChiamata
+    fase: 'prima', timer: asta.timerPrimaChiamata, manuale: !!manuale
   };
   broadcastStato(astaId);
   io.to(astaId).emit('nuova-chiamata', asta.chiamataAttuale);
+  if (manuale) io.to(astaId).emit('chiamata-manuale-avviso', { giocatore });
   startTimer(astaId, 'prima');
 }
 
@@ -230,9 +232,9 @@ function chiudiAsta(astaId) {
   // Assegnazione normale
   const sqVincitrice = getSquadra(asta, squadraOfferente);
   if (sqVincitrice) assegnaGiocatoreASquadra(asta, giocatore, sqVincitrice, offertaAttuale);
-  asta.storico.push({ giocatore, prezzo: offertaAttuale, squadra: squadraOfferente, tipo: 'normale', timestamp: new Date().toISOString() });
+  asta.storico.push({ giocatore, prezzo: offertaAttuale, squadra: squadraOfferente, tipo: 'normale', manuale: !!chiamata.manuale, timestamp: new Date().toISOString() });
   asta.chiamataAttuale = null;
-  io.to(astaId).emit('giocatore-assegnato', { giocatore, prezzo: offertaAttuale, squadra: squadraOfferente, tipo: 'normale' });
+  io.to(astaId).emit('giocatore-assegnato', { giocatore, prezzo: offertaAttuale, squadra: squadraOfferente, tipo: 'normale', manuale: !!chiamata.manuale });
   broadcastStato(astaId, true);
 }
 
@@ -645,7 +647,7 @@ io.on('connection', (socket) => {
       asta.poolGiocatori.push(giocatore);
     }
     if (!giocatore) return socket.emit('errore', { msg: 'Giocatore non trovato' });
-    avviaChiamata(astaId, giocatore);
+    avviaChiamata(astaId, giocatore, true);
   });
 
   socket.on('assegna-manuale', ({ astaId, giocatoreId, squadraNome, prezzo }) => {
@@ -660,8 +662,9 @@ io.on('connection', (socket) => {
     if (squadra.crediti < p) return socket.emit('errore', { msg: 'Crediti insufficienti per questa squadra' });
     giocatore.estratto = true;
     assegnaGiocatoreASquadra(asta, giocatore, squadra, p);
-    asta.storico.push({ giocatore, prezzo: p, squadra: squadra.nome, tipo: 'normale', timestamp: new Date().toISOString() });
-    io.to(astaId).emit('giocatore-assegnato', { giocatore, prezzo: p, squadra: squadra.nome, tipo: 'normale' });
+    asta.storico.push({ giocatore, prezzo: p, squadra: squadra.nome, tipo: 'normale', manuale: true, timestamp: new Date().toISOString() });
+    io.to(astaId).emit('giocatore-assegnato', { giocatore, prezzo: p, squadra: squadra.nome, tipo: 'normale', manuale: true });
+    io.to(astaId).emit('chiamata-manuale-avviso', { giocatore, squadra: squadra.nome, prezzo: p, assegnazioneDiretta: true });
     broadcastStato(astaId, true);
   });
 
