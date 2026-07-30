@@ -2222,7 +2222,7 @@ function _renderRoseSez(titolo, giocatori, tipo, sqNome) {
             }).join('');
             return '<div class="rose-player" data-rose-nome="' + _escAttr(g.nome) + '" data-rose-squadra="' + _escAttr(sqNome) + '">' +
               ruoloBadgeHTML +
-              '<span class="rose-nome">' + g.nome + '</span>' +
+              '<span class="rose-nome">' + _escHtml(g.nome) + '</span>' +
               '<span class="rose-prezzo">🪙' + g.prezzo + '</span>' +
             '</div>';
           }).join('')
@@ -2642,7 +2642,7 @@ window.apriModalAssegnaManuale = function() {
   const inp = document.getElementById('inp-am-search'); if (inp) inp.value = '';
   const sel = document.getElementById('inp-am-squadra');
   if (sel && S.asta) {
-    sel.innerHTML = S.asta.squadre.map(sq => '<option value="' + sq.nome + '">' + sq.nome + ' (💰' + sq.crediti + ')</option>').join('');
+    sel.innerHTML = S.asta.squadre.map(sq => '<option value="' + _escAttr(sq.nome) + '">' + _escHtml(sq.nome) + ' (💰' + sq.crediti + ')</option>').join('');
   }
   document.getElementById('inp-am-prezzo').value = 1;
   renderAssegnaManualeLista();
