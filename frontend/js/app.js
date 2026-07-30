@@ -3301,10 +3301,29 @@ async function caricaStrategieCompatibili(tipoAsta) {
   return (!error && data) ? data : [];
 }
 
+function _strategiaSalvataKey(astaId) { return 'ftb_strategia_sel_' + astaId; }
+function _getStrategiaSalvata(astaId) {
+  try { return localStorage.getItem(_strategiaSalvataKey(astaId)) || null; } catch(e) { return null; }
+}
+function _salvaStrategiaSelezionata(astaId, strategiaId) {
+  try { localStorage.setItem(_strategiaSalvataKey(astaId), strategiaId); } catch(e) {}
+}
+function _rimuoviStrategiaSalvata(astaId) {
+  try { localStorage.removeItem(_strategiaSalvataKey(astaId)); } catch(e) {}
+}
+
 async function mostraPromptStrategiaSeNecessario() {
   if (!S.asta || !S.astaId || !S.userId) return;
   if (S._promptStrategiaAstaId === S.astaId) return;
   S._promptStrategiaAstaId = S.astaId;
+  // Se l'utente aveva già applicato una strategia in questa asta in una sessione precedente
+  // (salvata in localStorage), la ripristiniamo automaticamente e silenziosamente, invece di
+  // perderla ad ogni refresh/riconnessione (bug: badge fascia che spariva dopo un reload).
+  const strategiaSalvataId = _getStrategiaSalvata(S.astaId);
+  if (strategiaSalvataId && !S.strategiaAsta) {
+    const ok = await selezionaStrategiaAsta(strategiaSalvataId, true);
+    if (ok) return;
+  }
   const strategie = await caricaStrategieCompatibili(S.asta.tipoAsta);
   if (!strategie.length) return;
   apriModalStrategia(strategie);
@@ -3332,9 +3351,9 @@ function apriModalStrategia(strategie) {
   openModal('modal-strategia');
 }
 
-async function selezionaStrategiaAsta(strategiaId) {
+async function selezionaStrategiaAsta(strategiaId, silent) {
   const { data: strategia, error } = await supa.from('strategie').select('*').eq('id', strategiaId).single();
-  if (error || !strategia) { toast('Errore nel caricamento della strategia', 'error'); return; }
+  if (error || !strategia) { if (!silent) toast('Errore nel caricamento della strategia', 'error'); return false; }
 
   const { data: fasce } = await supa.from('fasce').select('*').eq('strategia_id', strategiaId).order('ordine');
   const { data: sg } = await supa.from('strategia_giocatori').select('*').eq('strategia_id', strategiaId);
@@ -3351,20 +3370,25 @@ async function selezionaStrategiaAsta(strategiaId) {
   });
 
   S.strategiaAsta = { id: strategia.id, nome: strategia.nome, crediti_totali: strategia.crediti_totali, fasceInfo, fasceOrdine, configByListinoId };
+  if (S.astaId) _salvaStrategiaSelezionata(S.astaId, strategia.id);
 
   const btnApplica = document.getElementById('btn-applica-strategia');
   if (btnApplica) { btnApplica.textContent = '📊 ' + strategia.nome + ' ▾'; btnApplica.classList.add('liberi-strategia-attiva-btn'); }
 
-  closeModal();
-  toast('Strategia "' + strategia.nome + '" applicata', 'success');
+  if (!silent) {
+    closeModal();
+    toast('Strategia "' + strategia.nome + '" applicata', 'success');
+  }
   if (S.asta) {
     renderGiocatoriLiberi(S.asta.poolGiocatori);
     if (S.asta.chiamataAttuale) renderChiamata(S.asta.chiamataAttuale);
   }
+  return true;
 }
 
 function rimuoviStrategiaAsta() {
   S.strategiaAsta = null;
+  if (S.astaId) _rimuoviStrategiaSalvata(S.astaId);
   const btnApplica = document.getElementById('btn-applica-strategia');
   if (btnApplica) { btnApplica.textContent = '📊 Applica strategia'; btnApplica.classList.remove('liberi-strategia-attiva-btn'); }
   closeModal();
