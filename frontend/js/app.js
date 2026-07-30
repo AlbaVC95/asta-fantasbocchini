@@ -1132,20 +1132,18 @@ function setupTabs() {
       row.classList.toggle('hidden');
       btnRoseSearchToggle.classList.toggle('open');
       if (willOpen) {
-        const rect = btnRoseSearchToggle.getBoundingClientRect();
-        const rowWidth = row.offsetWidth || 260;
-        const rowHeight = row.offsetHeight || 40;
-        let left = rect.right + 8;
-        if (left + rowWidth > window.innerWidth - 8) {
-          left = rect.left - rowWidth - 8;
-          if (left < 8) left = 8;
-        }
-        let top = rect.top + (rect.height / 2) - (rowHeight / 2);
-        if (top < 4) top = 4;
-        row.style.top = top + 'px';
-        row.style.left = left + 'px';
         document.getElementById('rose-cerca').focus();
       }
+    });
+  }
+  const btnRoseSearchClose = document.getElementById('rose-search-close');
+  if (btnRoseSearchClose) {
+    btnRoseSearchClose.addEventListener('click', () => {
+      const row = document.getElementById('rose-search-row');
+      row.classList.add('hidden');
+      if (btnRoseSearchToggle) btnRoseSearchToggle.classList.remove('open');
+      const dd = document.getElementById('rose-search-dropdown');
+      if (dd) { dd.classList.add('hidden'); dd.innerHTML = ''; }
     });
   }
 
