@@ -1217,3 +1217,23 @@ html.theme-light body.layout-admin .asta-row-puja{
   .tabs-nav{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap}
   .tab-btn{flex:0 0 auto}
 }
+
+/* ══════ Tab Anteprima: campo tattico e assegnazione giocatori ══════ */
+.ant-controls{display:flex;gap:8px;padding:8px;flex-wrap:wrap;align-items:center}
+.ant-select{background:var(--bg-elevated);color:var(--text-primary);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:.85rem;flex:1;min-width:120px}
+.ant-pitch{position:relative;width:100%;aspect-ratio:2/3;max-width:420px;margin:0 auto;background:linear-gradient(180deg,#2d8a3e 0%,#256e32 100%);border-radius:10px;overflow:hidden}
+.ant-pitch::before{content:'';position:absolute;top:50%;left:50%;width:70px;height:70px;border:2px solid rgba(255,255,255,.35);border-radius:50%;transform:translate(-50%,-50%)}
+.ant-pitch::after{content:'';position:absolute;top:0;left:50%;width:1px;height:100%;background:rgba(255,255,255,.25);transform:translateX(-50%)}
+.ant-slot{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;width:64px;z-index:2}
+.ant-slot-role{font-size:.6rem;font-weight:800;padding:1px 4px;border-radius:4px;background:rgba(0,0,0,.35);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.ant-slot-player{font-size:.62rem;font-weight:700;color:#fff;background:rgba(0,0,0,.55);border-radius:6px;padding:2px 4px;text-align:center;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid rgba(255,255,255,.2)}
+.ant-slot.filled .ant-slot-player{background:linear-gradient(135deg,rgba(255,179,0,.85),rgba(230,140,0,.85));color:#000;border-color:rgba(255,255,255,.4)}
+.ant-slot:hover .ant-slot-player{filter:brightness(1.15)}
+.ant-picker{position:fixed;z-index:500;background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.4);padding:8px;max-height:280px;overflow-y:auto;min-width:200px}
+.ant-picker.hidden{display:none}
+.ant-picker-item{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:.82rem}
+.ant-picker-item:hover{background:rgba(255,255,255,.08)}
+.ant-picker-hdr{font-size:.7rem;font-weight:700;color:var(--text-muted);padding:4px 8px;text-transform:uppercase}
+.ant-picker-empty{padding:8px;color:var(--text-muted);font-size:.8rem;text-align:center}
+.ant-picker-remove{margin-top:4px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:.8rem;color:#e74c3c;text-align:center;background:rgba(231,76,60,.1)}
+.ant-picker-remove:hover{background:rgba(231,76,60,.2)}
