@@ -1409,7 +1409,10 @@ function renderBudgetBar(squadre) {
       sq.crediti < 50 ? 'critica' : ''
     ].filter(Boolean).join(' ');
     const dot  = sq.online ? '🟢' : '⚪';
-    const gioc = sq.giocatori ? sq.giocatori.length : ((sq.rosa || []).length);
+    const rosaSq = sq.rosa || [];
+    const gioc = sq.giocatori ? sq.giocatori.length : rosaSq.length;
+    const maxGioc = (S.asta && ((S.asta.minimoPortieri || 0) + (S.asta.minimoMovimento || 0))) || 0;
+    const numPortieri = rosaSq.filter(g => _isPortiere(g.ruolo)).length;
     const barCls = pct <= 15 ? 'crit' : (pct <= 40 ? 'warn' : 'ok');
     return '<div class="' + cls + '">' +
       '<div class="sq-top">' +
@@ -1418,7 +1421,7 @@ function renderBudgetBar(squadre) {
         '<span class="sq-crediti">💰 ' + sq.crediti + '</span>' +
       '</div>' +
       '<div class="budget-progress"><div class="budget-progress-fill ' + barCls + '" style="width:' + pct + '%"></div></div>' +
-      '<div class="sq-bottom">🏆 ' + gioc + ' giocatori</div>' +
+      '<div class="sq-bottom">Tot: ' + gioc + '/' + maxGioc + ' <span class="sq-portieri">🧤 ' + numPortieri + '</span></div>' +
     '</div>';
   }).join('');
 }
