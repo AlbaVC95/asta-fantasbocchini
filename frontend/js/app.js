@@ -421,7 +421,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     history.replaceState({}, '', '/?id=' + sess.astaId);
     setTimeout(() => fetchAstaSquadrePerJoin(sess.astaId), 400);
   }
-  setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs(); setupLogin(); setupMenu(); setupStrategie(); setupEditor(); setupStrategiaAsta();
+  setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs(); setupLogin(); setupMenu(); setupStrategie(); setupEditor(); setupStrategiaAsta(); setupAnteprima();
   // Warn before leaving page if in active asta
   window.addEventListener('beforeunload', (e) => {
     if (S.astaId && S.asta && S.asta.stato === 'in_corso') {
@@ -1197,6 +1197,7 @@ socket.on('stato-asta', (asta) => {
     renderBudgetBar(asta.squadre);
     renderStorico(asta.storico);
     renderRose(asta.squadre);
+    populateAnteprimaSquadre(asta.squadre);
     renderGiocatoriLiberi(asta.poolGiocatori);
     renderMioPanel();
     renderAdminPanel(asta);
@@ -2005,6 +2006,200 @@ function renderRose(squadre) {
 }
 
 function _isPortiere(ruolo) { return ruolo === 'Por' || ruolo === 'P'; }
+
+/* ══════ ANTEPRIMA: simulazione formazioni/moduli (locale, per-browser) ══════ */
+const ANTEPRIMA_FORMAZIONI = {
+  '3-4-3': [['P'],['DC','DC','DC/B'],['E','M/C','C','E'],['W/A','W/A'],['A/PC']],
+  '3-4-1-2': [['P'],['DC','DC','DC/B'],['E','M/C','C','E'],['T'],['A/PC','A/PC']],
+  '3-4-2-1': [['P'],['DC','DC','DC/B'],['M','M/C','E','E/W'],['T','T/A'],['A/PC']],
+  '3-5-2': [['P'],['DC','DC','DC/B'],['E/W','M','M/C','C','E'],['A/PC','A/PC']],
+  '3-5-1-1': [['P'],['DC','DC','DC/B'],['E/W','M','C','M','E/W'],['T/A'],['A/PC']],
+  '4-3-3': [['P'],['DD','DC','DC','DS'],['M/C','M','C'],['W/A','W/A'],['A/PC']],
+  '4-3-1-2': [['P'],['DD','DC','DC','DS'],['M/C','M','C'],['T'],['T/A/PC','A/PC']],
+  '4-4-2': [['P'],['DD','DC','DC','DS'],['E/W','M/C','C','E'],['A/PC','A/PC']],
+  '4-1-4-1': [['P'],['DD','DC','DC','DS'],['M'],['E/W','C/T','T','W'],['A/PC']],
+  '4-4-1-1': [['P'],['DD','DC','DC','DS'],['E/W','M','C','E/W'],['T/A'],['A/PC']],
+  '4-2-3-1': [['P'],['DD','DC','DC','DS'],['M','M/C'],['W/T','T','W/A'],['A/PC']]
+};
+
+const ANT_LS_KEY = 'ftb_anteprima_v1';
+
+function _antLoadAll() {
+  try { return JSON.parse(localStorage.getItem(ANT_LS_KEY)) || {}; } catch(e) { return {}; }
+}
+function _antSaveAll(data) {
+  try { localStorage.setItem(ANT_LS_KEY, JSON.stringify(data)); } catch(e) {}
+}
+function _antGetSquadraState(nome) {
+  const all = _antLoadAll();
+  return all[nome] || { formazione: '4-3-3', slots: {} };
+}
+function _antSetSquadraState(nome, state) {
+  const all = _antLoadAll();
+  all[nome] = state;
+  _antSaveAll(all);
+}
+function _antRoleClass(ruolo) {
+  const base = (ruolo || '').split('/')[0].trim().toLowerCase();
+  return 'ruolo-rose-' + base;
+}
+
+function setupAnteprima() {
+  const selSquadra = document.getElementById('ant-squadra-select');
+  const selModulo = document.getElementById('ant-modulo-select');
+  const btnReset = document.getElementById('ant-reset-btn');
+  if (!selSquadra || !selModulo) return;
+
+  selSquadra.addEventListener('change', () => {
+    const nome = selSquadra.value;
+    const state = _antGetSquadraState(nome);
+    selModulo.value = state.formazione;
+    renderAnteprimaPitch();
+  });
+  selModulo.addEventListener('change', () => {
+    const nome = selSquadra.value;
+    if (!nome) return;
+    const state = _antGetSquadraState(nome);
+    if (state.formazione !== selModulo.value) {
+      state.formazione = selModulo.value;
+      state.slots = {};
+      _antSetSquadraState(nome, state);
+    }
+    renderAnteprimaPitch();
+  });
+  if (btnReset) {
+    btnReset.addEventListener('click', () => {
+      const nome = selSquadra.value;
+      if (!nome) return;
+      if (!confirm('Svuotare tutti gli slot per ' + nome + '?')) return;
+      const state = _antGetSquadraState(nome);
+      state.slots = {};
+      _antSetSquadraState(nome, state);
+      renderAnteprimaPitch();
+    });
+  }
+}
+
+function populateAnteprimaSquadre(squadre) {
+  const selSquadra = document.getElementById('ant-squadra-select');
+  const selModulo = document.getElementById('ant-modulo-select');
+  if (!selSquadra || !selModulo || !squadre) return;
+  const prevVal = selSquadra.value;
+  selSquadra.innerHTML = squadre.map(sq => '<option value="' + _escAttr(sq.nome) + '">' + _escHtml(sq.nome) + '</option>').join('');
+  if (prevVal && squadre.some(sq => sq.nome === prevVal)) {
+    selSquadra.value = prevVal;
+  }
+  if (selSquadra.value) {
+    const state = _antGetSquadraState(selSquadra.value);
+    selModulo.value = state.formazione;
+  }
+  renderAnteprimaPitch();
+}
+
+function renderAnteprimaPitch() {
+  const pitch = document.getElementById('ant-pitch');
+  const selSquadra = document.getElementById('ant-squadra-select');
+  const selModulo = document.getElementById('ant-modulo-select');
+  if (!pitch || !selSquadra || !selModulo) return;
+  const nomeSquadra = selSquadra.value;
+  if (!nomeSquadra) { pitch.innerHTML = ''; return; }
+  const modulo = selModulo.value;
+  const rows = ANTEPRIMA_FORMAZIONI[modulo];
+  if (!rows) { pitch.innerHTML = ''; return; }
+  const state = _antGetSquadraState(nomeSquadra);
+  const nRows = rows.length;
+  let html = '';
+  rows.forEach((row, ri) => {
+    const top = nRows === 1 ? 50 : 8 + ri * (84 / (nRows - 1));
+    const nCols = row.length;
+    row.forEach((ruolo, ci) => {
+      const left = nCols === 1 ? 50 : 12 + ci * (76 / (nCols - 1));
+      const slotKey = ri + '-' + ci;
+      const nomeGiocatore = state.slots[slotKey];
+      const filled = !!nomeGiocatore;
+      html += '<div class="ant-slot' + (filled ? ' filled' : '') + '" data-slotkey="' + slotKey + '" data-ruolo="' + _escAttr(ruolo) + '" style="top:' + top + '%;left:' + left + '%">' +
+        '<div class="ant-slot-role ' + _antRoleClass(ruolo) + '">' + _escHtml(ruolo) + '</div>' +
+        '<div class="ant-slot-player">' + (filled ? _escHtml(nomeGiocatore) : '+ scegli') + '</div>' +
+      '</div>';
+    });
+  });
+  pitch.innerHTML = html;
+  pitch.querySelectorAll('.ant-slot').forEach(el => {
+    el.addEventListener('click', (e) => _antOpenPicker(e.currentTarget, nomeSquadra));
+  });
+}
+
+function _antOpenPicker(slotEl, nomeSquadra) {
+  const picker = document.getElementById('ant-picker');
+  if (!picker) return;
+  const squadra = ((S.asta && S.asta.squadre) || []).find(sq => sq.nome === nomeSquadra);
+  const rosa = (squadra && squadra.rosa) || [];
+  const slotKey = slotEl.dataset.slotkey;
+  const state = _antGetSquadraState(nomeSquadra);
+  const assegnatiAltrove = new Set(Object.keys(state.slots).filter(k => k !== slotKey).map(k => state.slots[k]));
+  const disponibili = rosa.filter(g => !assegnatiAltrove.has(g.nome));
+
+  let html = '<div class="ant-picker-hdr">Scegli giocatore</div>';
+  if (disponibili.length === 0) {
+    html += '<div class="ant-picker-empty">Nessun giocatore disponibile</div>';
+  } else {
+    html += disponibili.map(g => {
+      return '<div class="ant-picker-item" data-nome="' + _escAttr(g.nome) + '">' +
+        '<span class="rose-badge ' + _antRoleClass(g.ruolo) + '">' + _escHtml((g.ruolo || 'NN').split('/')[0]) + '</span>' +
+        '<span>' + _escHtml(g.nome) + '</span>' +
+      '</div>';
+    }).join('');
+  }
+  if (state.slots[slotKey]) {
+    html += '<div class="ant-picker-remove" data-action="remove">✕ Rimuovi</div>';
+  }
+  picker.innerHTML = html;
+  picker.classList.remove('hidden');
+
+  const rect = slotEl.getBoundingClientRect();
+  let left = rect.left;
+  let top = rect.bottom + 4;
+  const maxLeft = window.innerWidth - 220;
+  if (left > maxLeft) left = maxLeft;
+  if (top + 280 > window.innerHeight) top = rect.top - 284;
+  picker.style.left = Math.max(4, left) + 'px';
+  picker.style.top = Math.max(4, top) + 'px';
+
+  picker.querySelectorAll('.ant-picker-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const nome = item.dataset.nome;
+      const st = _antGetSquadraState(nomeSquadra);
+      st.slots[slotKey] = nome;
+      _antSetSquadraState(nomeSquadra, st);
+      picker.classList.add('hidden');
+      renderAnteprimaPitch();
+    });
+  });
+  const removeBtn = picker.querySelector('.ant-picker-remove');
+  if (removeBtn) {
+    removeBtn.addEventListener('click', () => {
+      const st = _antGetSquadraState(nomeSquadra);
+      delete st.slots[slotKey];
+      _antSetSquadraState(nomeSquadra, st);
+      picker.classList.add('hidden');
+      renderAnteprimaPitch();
+    });
+  }
+
+  setTimeout(() => {
+    document.addEventListener('click', _antCloseHandler);
+  }, 0);
+}
+
+function _antCloseHandler(e) {
+  const picker = document.getElementById('ant-picker');
+  if (!picker) return;
+  if (!picker.contains(e.target) && !(e.target.closest && e.target.closest('.ant-slot'))) {
+    picker.classList.add('hidden');
+    document.removeEventListener('click', _antCloseHandler);
+  }
+}
+
 
 function _escAttr(s) {
   return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
