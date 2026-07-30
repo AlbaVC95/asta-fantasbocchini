@@ -1083,8 +1083,8 @@ body.app-role-admin .gk-config-actions.gk-admin-only{display:flex}
   background-image:
     linear-gradient(180deg, rgba(8,4,20,.42) 0%, rgba(8,4,20,.22) 35%, rgba(8,4,20,.45) 75%, rgba(8,4,20,.68) 100%),
     url('/img/backgrounds/stadium-bg.jpg');
-  background-size: 100% 100%;
-  background-position: center top;
+  background-size: cover;
+  background-position: center center;
   background-repeat: no-repeat;
   transition:background .4s;
 }
