@@ -3058,10 +3058,9 @@ function renderEditorFasce() {
 
   const renderRigaGiocatore = (g) => {
     const cfg = S.configGiocatori.get(g.id) || { fascia_id: null, prezzo: null, percentuale: null, preferito: false };
-    const avatarSlug = (g.squadra_reale || '').toLowerCase().trim();
     return (
       '<div class="editor-player-row" data-giocatore="' + g.id + '">' +
-        (avatarSlug ? '<img class="editor-player-avatar" src="https://fantasbocchini.infinityfreeapp.com/avatars/' + avatarSlug + '.png" onerror="this.style.display=\'none\'" alt="">' : '') +
+        '<img class="editor-player-avatar" data-photo-nome="' + _escAttr(g.nome) + '" data-photo-squadra="' + _escAttr(g.squadra_reale || '') + '" src="img/players/unknown_anime.jpg" alt="">' +
         _getRuoloBadgeHTML(g.ruolo) +
         '<span class="editor-player-nome">' + escapeHTML(g.nome) + '</span>' +
         '<span class="editor-player-squadra">' + escapeHTML(g.squadra_reale || '') + '</span>' +
@@ -3103,6 +3102,21 @@ function renderEditorFasce() {
     + renderGruppo(null, nonAssegnati.giocatori);
 
   wireEditorEventiRiga(container);
+  _loadEditorAvatars(container);
+}
+
+function _loadEditorAvatars(container) {
+  container.querySelectorAll('.editor-player-avatar[data-photo-nome]').forEach(img => {
+    const nome = img.getAttribute('data-photo-nome');
+    const squadra = img.getAttribute('data-photo-squadra');
+    _withTimeout(_tryLocalPhoto(nome, squadra), 4000, null).then(function(url) {
+      const finalUrl = url || 'img/players/unknown_anime.jpg';
+      const test = new Image();
+      test.onload = function() { img.src = finalUrl; };
+      test.onerror = function() { img.src = 'img/players/unknown_anime.jpg'; };
+      test.src = finalUrl;
+    }).catch(function() { img.src = 'img/players/unknown_anime.jpg'; });
+  });
 }
 
 function wireEditorEventiRiga(container) {
