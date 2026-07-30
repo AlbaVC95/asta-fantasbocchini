@@ -720,6 +720,15 @@ body.layout-admin .asta-row-puja .cc-avatar-img{border-radius:14px!important}
   .puja-panel-slot .cc-offerta{font-size:2rem!important}
   .puja-panel-slot .cc-offerta-label{font-size:.7rem!important}
   .puja-panel-slot .rilancio-box{flex:1 1 100%!important;padding-left:0!important;padding-top:8px!important;border-top:1px solid var(--border-light);position:static!important;bottom:auto!important;left:auto!important;right:auto!important;z-index:auto!important;border-radius:12px!important}
+  .puja-panel-slot .cc-meta small.text-muted,.puja-panel-slot .cc-strategia-info{display:none!important}
+  .puja-panel-slot .cc-manuale-badge{font-size:.55rem!important;padding:2px 6px!important;margin:0 0 2px!important;line-height:1.2!important}
+  .puja-panel-slot .cc-attesa-badge{font-size:.55rem!important;padding:2px 6px!important;margin:2px 0!important;line-height:1.2!important}
+  .puja-panel-slot .cc-header{margin-bottom:2px!important}
+  .puja-panel-slot .cc-nome{font-size:.85rem!important}
+  .puja-panel-slot .cc-meta{font-size:.62rem!important}
+  .puja-panel-slot .cc-body{margin-bottom:0!important}
+  .puja-panel-slot .cc-offerta-box{padding:2px 12px 4px!important;margin-bottom:2px!important}
+  .puja-panel-slot .cc-offerente{font-size:.68rem!important}
 }
 @media (max-width:400px){
   .puja-panel-slot{padding:8px 10px!important;gap:6px!important}
@@ -737,6 +746,10 @@ body.layout-admin .asta-row-puja .cc-avatar-img{border-radius:14px!important}
   .puja-panel-slot .timer-label-text{font-size:.5rem!important}
   .puja-panel-slot .btn-rilancia{font-size:.65rem!important;padding:6px 8px!important}
   .puja-panel-slot .inp-rilancio{width:56px!important;font-size:16px!important}
+  .puja-panel-slot .cc-manuale-badge,.puja-panel-slot .cc-attesa-badge{font-size:.5rem!important;padding:1px 5px!important;margin:0 0 1px!important}
+  .puja-panel-slot .cc-header{margin-bottom:1px!important}
+  .puja-panel-slot .cc-offerta-box{padding:1px 10px 3px!important;margin-bottom:1px!important}
+  .puja-panel-slot .cc-offerente{font-size:.6rem!important}
 }
 /* ══ Colori ufficiali ruoli — applicato su Chiamata/Liberi/Rose/Annulla ══ */
 /* Base badge per .storico-ruolo (oggi senza stile, solo testo semplice) */
