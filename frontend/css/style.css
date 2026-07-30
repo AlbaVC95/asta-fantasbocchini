@@ -636,7 +636,7 @@ body.layout-admin .asta-row-puja .timer-label-text{font-size:.66rem!important}
   flex:0 1 220px!important;max-width:260px;min-width:150px;
   flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:4px;
 }
-.puja-panel-slot .cc-body{flex-direction:column!important;align-items:flex-start!important;gap:2px;flex-wrap:wrap;overflow:hidden;width:100%}
+.puja-panel-slot .cc-body{flex-direction:column!important;align-items:flex-start!important;gap:2px;flex-wrap:wrap;overflow:visible;width:100%}
 .puja-panel-slot .cc-nome{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
 .puja-panel-slot .cc-offerente{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
 .puja-panel-slot .timer-ring-container{flex:1!important;display:flex;align-items:center;justify-content:center}
@@ -652,7 +652,7 @@ body.layout-admin .asta-row-puja .cc-avatar-icon{font-size:2.2rem!important}
 body.layout-admin .asta-row-puja .cc-avatar-initial{font-size:2rem!important}
 body.layout-admin .asta-row-puja .cc-avatar-svg{width:90%!important;height:90%!important}
 body.layout-admin .asta-row-puja .cc-avatar-img{border-radius:14px!important}
-.puja-panel-slot .chiamata-card{position:relative!important;padding:8px 16px 8px 134px!important;max-width:340px!important;flex:1.4 1 0%!important;min-width:200px!important;min-height:134px;overflow-y:auto;align-items:flex-start!important;justify-content:flex-start!important}
+.puja-panel-slot .chiamata-card{position:relative!important;padding:8px 16px 8px 134px!important;max-width:340px!important;flex:1.4 1 0%!important;min-width:200px!important;min-height:134px;overflow-y:auto;overflow-x:visible;align-items:flex-start!important;justify-content:flex-start!important}
 .puja-panel-slot .cc-avatar{width:118px!important;height:118px!important;position:absolute!important;left:8px!important;top:8px!important;border-radius:14px!important}
 .puja-panel-slot .cc-avatar-icon{font-size:2.2rem!important}
 .puja-panel-slot .cc-avatar-initial{font-size:2rem!important}
