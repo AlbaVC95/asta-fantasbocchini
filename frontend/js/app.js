@@ -100,6 +100,10 @@ function playSound(t) {
     _beep(880,  0.1,  'sine', 0.4);
     setTimeout(() => _beep(1320, 0.15, 'sine', 0.3),  100);
     setTimeout(() => _beep(1760, 0.2,  'sine', 0.25), 200);
+  } else if (t === 'manuale') {
+    // Suono distinto (doppio "campanello") per segnalare che l'admin ha scelto il giocatore a mano
+    _beep(660, 0.12, 'triangle', 0.35);
+    setTimeout(() => _beep(990, 0.16, 'triangle', 0.35), 140);
   }
 }
 window.toggleSuoni = function() {
@@ -108,6 +112,22 @@ window.toggleSuoni = function() {
   const btn = document.getElementById('btn-sound');
   if (btn) { btn.textContent = on ? '🔇' : '🔊'; btn.classList.toggle('muted', on); }
 };
+
+// ══ NOTIFICHE BROWSER (avvisano anche se la tab non è in primo piano) ══════
+function richiediPermessoNotifiche() {
+  try {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'default') Notification.requestPermission();
+  } catch (e) {}
+}
+function mostraNotificaBrowser(titolo, corpo) {
+  try {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    if (document.hasFocus()) return; // già visibile in app: evita doppio avviso mentre si guarda lo schermo
+    const n = new Notification(titolo, { body: corpo, tag: 'asta-chiamata-manuale' });
+    n.onclick = () => { try { window.focus(); n.close(); } catch(e) {} };
+  } catch (e) {}
+}
 
 
 
@@ -371,6 +391,7 @@ function entraConLinkInvito(id) {
 // Va condiviso SOLO dall'admin con se stesso, mai con gli altri partecipanti.
 let _urlAdminId = null, _urlAdminToken = null;
 document.addEventListener('DOMContentLoaded', async () => {
+  richiediPermessoNotifiche();
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
   const adminParam = params.get('admin');
@@ -1215,6 +1236,16 @@ socket.on('nuova-chiamata', (chiamata) => {
   setTimeout(function() { if (card) card.classList.remove('card-enter'); }, 600);
 });
 
+socket.on('chiamata-manuale-avviso', (data) => {
+  const nome = data.giocatore ? data.giocatore.nome : 'un giocatore';
+  const msg = data.assegnazioneDiretta
+    ? '🔨 L\'admin ha assegnato manualmente ' + nome + (data.squadra ? ' a ' + data.squadra : '') + (data.prezzo ? ' (' + data.prezzo + 'cr)' : '')
+    : '🔨 Chiamata manuale dell\'admin: ' + nome;
+  toast(msg, 'info');
+  playSound('manuale');
+  mostraNotificaBrowser('Chiamata manuale', msg);
+});
+
 socket.on('aggiorna-offerta', (chiamata) => {
   if (S.asta) S.asta.chiamataAttuale = chiamata;
   renderChiamata(chiamata);
@@ -1808,7 +1839,11 @@ function renderChiamata(chiamata) {
   const attesaBadge = chiamata.aspettandoConferma
     ? '<p class="cc-attesa-badge">⏳ In attesa decisione di <strong>' + _escHtml(chiamata.proprietario || chiamata.giocatore.squadraOriginale || 'squadra') + '</strong></p>'
     : '';
+  const manualeBadge = chiamata.manuale
+    ? '<p class="cc-manuale-badge">🔨 Chiamata manuale dell\'admin</p>'
+    : '';
   card.innerHTML =
+    manualeBadge +
     '<div class="cc-header">' +
       '<div class="cc-avatar"><svg viewBox="0 0 100 100" class="cc-avatar-svg"><path d="M29,44 Q26,35 30,28 Q33,21 39,19 Q41,15 47,16 Q50,13 53,16 Q59,15 61,19 Q67,21 70,28 Q74,35 71,44 Q74,48 70,52 Q71,57 68,60 L68,62 C68,70 60,76 50,76 C40,76 32,70 32,62 L32,60 Q29,57 30,52 Q26,48 29,44 Z" fill="#20142f"/><path d="M12,100 L12,88 C12,74 24,63 39,61 L39,66 C39,71 44,75 50,75 C56,75 61,71 61,66 L61,61 C76,63 88,74 88,88 L88,100 Z" fill="#20142f"/></svg></div>' +
       '<div class="cc-info">' +
@@ -1914,13 +1949,14 @@ function renderStorico(storico) {
   list.innerHTML = [...items].reverse().slice(0, 50).map(s => {
     if (s.tipo === 'tradeoff') return '<li><span class="storico-nome">' + _escHtml(s.squadra) + '</span><span class="storico-tipo tipo-tag-tradeoff">trade-off: ' + _escHtml(TRADEOFF_LABELS[s.tradeoffTipo] || s.tradeoffTipo) + '</span></li>';
     if (s.tipo === 'scartato') return '<li><span class="storico-nome text-muted">' + _escHtml(s.giocatore.nome) + '</span><span class="storico-tipo tipo-tag-scartato">scartato</span></li>';
+    const manualeTag = s.manuale ? '<span class="storico-manuale-tag" title="Chiamata/assegnazione manuale dell\'admin">🔨</span>' : '';
     if (s.tipo === 'con_svincolo' && filtro === 'recap-riparazione') {
       const nomi = _escHtml((s.svincolati || []).map(g => g.nome).join(', ') || '—');
-      return '<li><span class="storico-nome">' + _escHtml(s.giocatore.nome) + '</span>' +
+      return '<li>' + manualeTag + '<span class="storico-nome">' + _escHtml(s.giocatore.nome) + '</span>' +
         '<span class="storico-sq">' + _escHtml(s.squadra) + '</span>' +
         '<span class="storico-tipo tipo-tag-con_svincolo">svincolati: ' + nomi + '</span></li>';
     }
-    return '<li><span class="storico-nome">' + _escHtml(s.giocatore.nome) + '</span>' +
+    return '<li>' + manualeTag + '<span class="storico-nome">' + _escHtml(s.giocatore.nome) + '</span>' +
       '<span class="storico-sq">' + _escHtml(s.squadra) + '</span>' +
       '<span class="storico-prezzo">' + s.prezzo + 'cr</span>' +
       '<span class="storico-tipo tipo-tag-' + s.tipo + '">' + s.tipo + '</span></li>';
