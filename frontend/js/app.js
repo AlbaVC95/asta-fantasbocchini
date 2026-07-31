@@ -2238,14 +2238,23 @@ function _antOpenPicker(slotEl, nomeSquadra) {
   // Posiziona il picker usando le dimensioni REALI misurate dopo il render
   // (non una stima fissa), così non finisce mai fuori dallo schermo, anche
   // con nomi lunghi o su schermi piccoli/mobile.
+  // Il picker e' position:absolute rispetto al contenitore #tab-anteprima (non piu' position:fixed
+  // rispetto al viewport), perche' l'antenato .tabs-panel usa backdrop-filter, che crea un nuovo
+  // containing block per gli elementi fixed: le coordinate calcolate con getBoundingClientRect()
+  // (relative al viewport) finivano quindi disallineate rispetto alla posizione reale del click.
+  const containerEl = picker.parentElement;
+  const containerRect = containerEl.getBoundingClientRect();
   const rect = slotEl.getBoundingClientRect();
   const pRect = picker.getBoundingClientRect();
   const pW = pRect.width || 220, pH = pRect.height || 280;
-  let left = rect.left;
-  let top = rect.bottom + 4;
-  const maxLeft = window.innerWidth - pW - 8;
+  let left = rect.left - containerRect.left + containerEl.scrollLeft;
+  let top = rect.bottom - containerRect.top + containerEl.scrollTop + 4;
+  const maxLeft = containerEl.scrollLeft + containerRect.width - pW - 8;
   if (left > maxLeft) left = maxLeft;
-  if (top + pH > window.innerHeight - 8) top = rect.top - pH - 4;
+  const viewportBottomInContainer = containerEl.scrollTop + (window.innerHeight - containerRect.top) - 8;
+  if (top + pH > viewportBottomInContainer) {
+    top = (rect.top - containerRect.top + containerEl.scrollTop) - pH - 4;
+  }
   picker.style.left = Math.max(4, left) + 'px';
   picker.style.top = Math.max(4, top) + 'px';
 
