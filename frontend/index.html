@@ -14,6 +14,7 @@
 </head>
 <body>
 <div class="pitch-bg" aria-hidden="true"></div>
+<div id="user-email-badge" class="user-email-badge hidden" title="Account collegato"></div>
 <div id="app">
   <!-- ══════════ SCREEN LOGIN ══════════ -->
   <section id="screen-login" class="screen active">
@@ -381,6 +382,12 @@
             <input type="number" id="inp-min-mov" value="7" min="0" max="30">
           </div>
         </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Numero massimo giocatori per squadra (Portieri + Giocatori)</label>
+            <input type="number" id="inp-max-gioc" value="25" min="1" max="60">
+          </div>
+        </div>
         <div class="form-group">
           <label>Importa file JSON (dalla app FantaSbocchini)</label>
           <label class="file-drop" id="file-drop" for="inp-json">
@@ -592,7 +599,7 @@
         <div class="tabs-nav">
           <button class="tab-btn active" data-tab="tab-storico"><span class="tab-icon">📋</span><span class="tab-label">Storico</span></button>
           <button class="tab-btn" data-tab="tab-rose"><span class="tab-icon">👥</span><span class="tab-label">Rose <span id="btn-rose-search-toggle" class="rose-chevron" title="Cerca giocatore">⌄</span></span></button>
-          <button class="tab-btn" data-tab="tab-liberi"><span class="tab-icon">📦</span><span class="tab-label">Liberi</span></button>
+          <button class="tab-btn" data-tab="tab-liberi"><span class="tab-icon">📦</span><span class="tab-label">Svincolati</span></button>
           <button type="button" class="tab-btn" data-tab="tab-portieri"><span class="tab-icon">🥅</span><span class="tab-label">Griglia P/A</span></button>
           <button type="button" class="tab-btn" data-tab="tab-anteprima"><span class="tab-icon">⚽</span><span class="tab-label">Anteprima</span></button>
           <div id="quick-pill" class="quick-pill">
@@ -615,6 +622,13 @@
             <button class="rose-cerca-btn" onclick="selezionaPrimoRisultatoRose()">Cerca</button>
             <button type="button" id="rose-search-close" class="rose-search-close-btn" title="Chiudi">✕</button>
             <div id="rose-search-dropdown" class="rose-search-dropdown hidden"></div>
+          </div>
+          <div class="rose-compatta-row">
+            <label class="rose-compatta-toggle">
+              <input type="checkbox" id="chk-rose-compatta">
+              <span class="rose-compatta-slider"></span>
+              <span class="rose-compatta-label">Visione compatta</span>
+            </label>
           </div>
           <div id="rose-panel" class="rose-container"></div>
         </div>
@@ -962,6 +976,10 @@
       <div class="form-group">
         <label>Minimo movimento</label>
         <input type="number" id="inp-ac-min-movimento" min="0">
+      </div>
+      <div class="form-group">
+        <label>Massimo giocatori per squadra</label>
+        <input type="number" id="inp-ac-max-gioc" min="1">
       </div>
     </div>
     <div class="modal-actions">
