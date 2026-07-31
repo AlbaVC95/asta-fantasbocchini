@@ -763,6 +763,15 @@
       <p class="text-muted mt-8">Importa questo file nella app FantaSbocchini</p>
     </div>
     <div class="card mt-16" style="text-align:center">
+      <p class="text-muted mb-8">Altri formati di esportazione:</p>
+      <div class="fine-asta-export-row">
+        <button class="bk-btn" onclick="downloadBackupJSON(false)">📄 Scarica JSON</button>
+        <button class="bk-btn" onclick="downloadBackupExcel()">📊 Scarica Excel</button>
+        <button class="bk-btn" onclick="downloadFantaleghe()">📤 Fantaleghe</button>
+        <button class="bk-btn" onclick="downloadRecap()">📤 Esporta Recap</button>
+      </div>
+    </div>
+    <div class="card mt-16" style="text-align:center">
       <button id="btn-fine-asta-home" class="btn btn-secondary btn-lg">🏠 Torna alla Home</button>
     </div>
   </section>
