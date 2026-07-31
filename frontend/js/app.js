@@ -2227,22 +2227,89 @@ function populateAnteprimaSquadre(squadre) {
   renderAnteprimaPitch();
 }
 
-// Percentuali verticali per riga, calibrate per zona di gioco reale (portiere,
-// difesa, centrocampo, trequarti, attacco), evitando che una riga cada esattamente
-// sulla linea/cerchio di centrocampo (50%), cosa che risultava visivamente strana
-// con moduli a 5 linee (es. 4-1-4-1).
-const ANT_ROW_TOP_BY_COUNT = {
-  1: [50],
-  2: [12, 88],
-  3: [8, 50, 92],
-  4: [8, 27, 60, 90],
-  5: [7, 24, 40, 66, 90]
+// Coordinate fisse (left%, top%) per ogni slot di ogni modulo, calibrate per
+// riprodurre la disposizione reale di un campo tattico (stile schema "Mantra"),
+// invece di una griglia generica a righe/colonne equidistanti che risultava
+// poco realistica (es. mediano unico sovrapposto al cerchio di centrocampo).
+// La struttura rispecchia esattamente quella di ANTEPRIMA_FORMAZIONI (stesso
+// numero di righe e colonne per ogni modulo).
+const ANT_LAYOUT = {
+  '3-4-3': [
+    [[50, 8]],
+    [[28, 23], [50, 23], [72, 23]],
+    [[15, 42], [38, 46], [62, 46], [85, 42]],
+    [[24, 68], [76, 68]],
+    [[50, 89]]
+  ],
+  '3-4-1-2': [
+    [[50, 8]],
+    [[28, 23], [50, 23], [72, 23]],
+    [[15, 42], [38, 46], [62, 46], [85, 42]],
+    [[50, 62]],
+    [[36, 87], [64, 87]]
+  ],
+  '3-4-2-1': [
+    [[50, 8]],
+    [[28, 23], [50, 23], [72, 23]],
+    [[22, 42], [45, 46], [68, 42], [85, 48]],
+    [[38, 65], [64, 68]],
+    [[50, 89]]
+  ],
+  '3-5-2': [
+    [[50, 8]],
+    [[28, 23], [50, 23], [72, 23]],
+    [[12, 44], [34, 48], [50, 44], [66, 48], [88, 44]],
+    [[36, 87], [64, 87]]
+  ],
+  '3-5-1-1': [
+    [[50, 8]],
+    [[28, 23], [50, 23], [72, 23]],
+    [[12, 44], [34, 48], [50, 44], [66, 48], [88, 44]],
+    [[50, 64]],
+    [[50, 89]]
+  ],
+  '4-3-3': [
+    [[50, 8]],
+    [[16, 23], [38, 23], [62, 23], [84, 23]],
+    [[28, 46], [50, 44], [72, 46]],
+    [[22, 68], [78, 68]],
+    [[50, 89]]
+  ],
+  '4-3-1-2': [
+    [[50, 8]],
+    [[16, 23], [38, 23], [62, 23], [84, 23]],
+    [[28, 46], [50, 44], [72, 46]],
+    [[50, 62]],
+    [[36, 87], [64, 87]]
+  ],
+  '4-4-2': [
+    [[50, 8]],
+    [[16, 23], [38, 23], [62, 23], [84, 23]],
+    [[18, 54], [35, 40], [64, 50], [86, 38]],
+    [[36, 87], [64, 87]]
+  ],
+  '4-1-4-1': [
+    [[50, 8]],
+    [[16, 23], [38, 23], [62, 23], [84, 23]],
+    [[50, 40]],
+    [[14, 58], [38, 62], [62, 62], [86, 58]],
+    [[50, 89]]
+  ],
+  '4-4-1-1': [
+    [[50, 8]],
+    [[16, 23], [38, 23], [62, 23], [84, 23]],
+    [[16, 46], [40, 44], [60, 44], [84, 46]],
+    [[50, 64]],
+    [[50, 89]]
+  ],
+  '4-2-3-1': [
+    [[50, 8]],
+    [[16, 23], [38, 23], [62, 23], [84, 23]],
+    [[38, 42], [62, 42]],
+    [[20, 62], [50, 60], [80, 62]],
+    [[50, 89]]
+  ]
 };
-function _antRowTop(nRows, ri) {
-  const table = ANT_ROW_TOP_BY_COUNT[nRows];
-  if (table && table[ri] !== undefined) return table[ri];
-  return nRows === 1 ? 50 : 8 + ri * (84 / (nRows - 1));
-}
 
 function renderAnteprimaPitch() {
   const pitch = document.getElementById('ant-pitch');
@@ -2255,13 +2322,14 @@ function renderAnteprimaPitch() {
   const rows = ANTEPRIMA_FORMAZIONI[modulo];
   if (!rows) { pitch.innerHTML = ''; return; }
   const state = _antGetSquadraState(nomeSquadra);
-  const nRows = rows.length;
+  const layout = ANT_LAYOUT[modulo];
   let html = '';
   rows.forEach((row, ri) => {
-    const top = _antRowTop(nRows, ri);
     const nCols = row.length;
     row.forEach((ruolo, ci) => {
-      const left = nCols === 1 ? 50 : 12 + ci * (76 / (nCols - 1));
+      const coords = layout && layout[ri] && layout[ri][ci];
+      const left = coords ? coords[0] : (nCols === 1 ? 50 : 12 + ci * (76 / (nCols - 1)));
+      const top = coords ? coords[1] : (rows.length === 1 ? 50 : 8 + ri * (84 / (rows.length - 1)));
       const slotKey = ri + '-' + ci;
       const nomeGiocatore = state.slots[slotKey];
       const filled = !!nomeGiocatore;
