@@ -442,13 +442,13 @@ async function checkSessioneUtente() {
 
 function _aggiornaUserEmailBadge(email) {
   const el = document.getElementById('user-email-badge');
-  if (!el) return;
+  const elInline = document.getElementById('user-email-badge-inline');
   if (email) {
-    el.textContent = '👤 ' + email;
-    el.classList.remove('hidden');
+    if (el) { el.textContent = '👤 ' + email; el.classList.remove('hidden'); }
+    if (elInline) { elInline.textContent = email; elInline.title = email; elInline.classList.remove('hidden'); }
   } else {
-    el.textContent = '';
-    el.classList.add('hidden');
+    if (el) { el.textContent = ''; el.classList.add('hidden'); }
+    if (elInline) { elInline.textContent = ''; elInline.classList.add('hidden'); }
   }
 }
 
