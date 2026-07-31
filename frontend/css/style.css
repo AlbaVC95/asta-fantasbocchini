@@ -1268,7 +1268,8 @@ html.theme-light body.layout-admin .asta-row-puja{
 .ant-slot-player{font-size:.62rem;font-weight:700;color:#fff;background:rgba(0,0,0,.55);border-radius:6px;padding:2px 4px;text-align:center;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid rgba(255,255,255,.2)}
 .ant-slot.filled .ant-slot-player{background:linear-gradient(135deg,rgba(255,179,0,.85),rgba(230,140,0,.85));color:#000;border-color:rgba(255,255,255,.4)}
 .ant-slot:hover .ant-slot-player{filter:brightness(1.15)}
-.ant-picker{position:fixed;z-index:500;background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.4);padding:8px;max-height:280px;overflow-y:auto;min-width:200px;max-width:calc(100vw - 16px)}
+#tab-anteprima{position:relative}
+.ant-picker{position:absolute;z-index:500;background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.4);padding:8px;max-height:280px;overflow-y:auto;min-width:200px;max-width:calc(100vw - 16px)}
 .ant-picker.hidden{display:none}
 .ant-picker-item{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:.82rem}
 .ant-picker-item:hover{background:rgba(255,255,255,.08)}
