@@ -68,6 +68,18 @@ function saveBackupSupabase(asta, snap) {
     .catch(e => console.error('[saveBackupSupabase] eccezione (non-fatale):', e.message));
 }
 
+// Salva un export permanente dell'asta conclusa nello "Storico Esportazioni", visibile dalla
+// Home a chiunque (indipendentemente dal dispositivo/browser usato), e sopravvive a riavvii
+// del server. Non sovrascrive nulla: ogni asta terminata crea una nuova riga (id generato da
+// Postgres), così l'admin può cancellare singole voci senza toccare le altre.
+function saveExportSupabase(asta) {
+  if (!supabaseAdmin || !asta || !asta.id) return;
+  supabaseAdmin.from('asta_exports')
+    .insert({ asta_id: asta.id, tipo_asta: asta.tipoAsta || null, payload: JSON.parse(JSON.stringify(asta)) })
+    .then(({ error }) => { if (error) console.error('[saveExportSupabase] errore (non-fatale):', error.message); })
+    .catch(e => console.error('[saveExportSupabase] eccezione (non-fatale):', e.message));
+}
+
 async function loadBackups() {
   // 1) Priorità a Supabase: è l'unica fonte che sopravvive a un riavvio completo del container.
   if (supabaseAdmin) {
@@ -619,6 +631,45 @@ app.get('/api/asta/:id/export', (req, res) => {
   res.json(exportData);
 });
 
+// ══ STORICO ESPORTAZIONI (persistente su Supabase) ══════════════
+// Lista leggera (solo metadati, senza il payload completo) per popolare velocemente
+// la schermata "Storico Esportazioni" dalla Home.
+app.get('/api/exports', async (req, res) => {
+  if (!supabaseAdmin) return res.json([]);
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('asta_exports')
+      .select('id, asta_id, tipo_asta, created_at, payload')
+      .order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    const lista = (data || []).map(row => ({
+      id: row.id, astaId: row.asta_id, tipoAsta: row.tipo_asta, createdAt: row.created_at,
+      numSquadre: (row.payload && row.payload.squadre) ? row.payload.squadre.length : 0
+    }));
+    res.json(lista);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Payload completo di una singola esportazione (usato per generare JSON/Excel/Fantaleghe/Recap
+// lato client, riusando esattamente la stessa logica già usata per l'export "a caldo").
+app.get('/api/exports/:id', async (req, res) => {
+  if (!supabaseAdmin) return res.status(500).json({ error: 'Supabase non configurato sul server' });
+  try {
+    const { data, error } = await supabaseAdmin.from('asta_exports').select('payload').eq('id', req.params.id).single();
+    if (error || !data) return res.status(404).json({ error: 'Esportazione non trovata' });
+    res.json(data.payload);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/exports/:id', async (req, res) => {
+  if (!supabaseAdmin) return res.status(500).json({ error: 'Supabase non configurato sul server' });
+  try {
+    const { error } = await supabaseAdmin.from('asta_exports').delete().eq('id', req.params.id);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ============ WEBSOCKET ============
 io.on('connection', (socket) => {
   console.log(`[WS] Connesso: ${socket.id}`);
@@ -959,6 +1010,7 @@ io.on('connection', (socket) => {
     const asta = aste.get(astaId);
     if (!asta || !isAdmin(asta, socket.id)) return;
     clearTimer(astaId); asta.stato = 'completata'; asta.chiamataAttuale = null;
+    saveExportSupabase(asta);
     broadcastStato(astaId, true); io.to(astaId).emit('asta-terminata', { astaId });
   });
 
