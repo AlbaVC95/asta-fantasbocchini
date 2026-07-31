@@ -80,6 +80,17 @@ function saveExportSupabase(asta) {
     .catch(e => console.error('[saveExportSupabase] eccezione (non-fatale):', e.message));
 }
 
+// Elimina il backup "asta in corso" quando l'asta è terminata: a quel punto esiste già
+// una copia definitiva in asta_exports (Storico Esportazioni), quindi il backup non serve
+// più a nessuno (nessuno "riprenderà" un'asta già conclusa) — evita che asta_backups
+// accumuli righe orfane per ogni asta mai giocata.
+function deleteBackupSupabase(astaId) {
+  if (!supabaseAdmin || !astaId) return;
+  supabaseAdmin.from('asta_backups').delete().eq('asta_id', astaId)
+    .then(({ error }) => { if (error) console.error('[deleteBackupSupabase] errore (non-fatale):', error.message); })
+    .catch(e => console.error('[deleteBackupSupabase] eccezione (non-fatale):', e.message));
+}
+
 async function loadBackups() {
   // 1) Priorità a Supabase: è l'unica fonte che sopravvive a un riavvio completo del container.
   if (supabaseAdmin) {
@@ -231,7 +242,7 @@ function scartaGiocatore(astaId) {
   asta.storico.push({ giocatore, prezzo: 0, squadra: null, tipo: 'scartato', timestamp: new Date().toISOString() });
   asta.chiamataAttuale = null;
   io.to(astaId).emit('giocatore-scartato', { giocatore });
-  broadcastStato(astaId);
+  broadcastStato(astaId, true);
 }
 
 function chiudiAsta(astaId) {
@@ -343,7 +354,17 @@ function clearTimer(astaId) {
 }
 
 // ============ API REST ============
-app.post('/api/asta', (req, res) => {
+app.post('/api/asta', async (req, res) => {
+  // Creare un'asta richiede login (Supabase Auth): l'asta viene associata al creatore
+  // (creatorUserId/creatorEmail), così può ritrovarla in "Mie aste" da qualunque dispositivo,
+  // senza dover conservare manualmente nessun link/token.
+  if (!supabaseAdmin) return res.status(500).json({ error: 'Supabase non configurato sul server' });
+  const authHeader = req.headers.authorization || '';
+  const authToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!authToken) return res.status(401).json({ error: "Devi effettuare il login per creare un'asta" });
+  const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(authToken);
+  if (userErr || !userData || !userData.user) return res.status(401).json({ error: 'Sessione non valida, effettua di nuovo il login' });
+
   const id = uuidv4();
   const b = req.body;
   const sottoTipo = b.sottoTipoRiparazione || '1';
@@ -364,6 +385,7 @@ app.post('/api/asta', (req, res) => {
     svincoliTotali: b.svincoliTotali || 15, fattoreSvincolo,
     numeroPartecipanti: b.numeroPartecipanti || 12,
     stato: 'attesa', squadre: [], adminNome: null, adminSocketIds: [], adminToken,
+    creatorUserId: userData.user.id, creatorEmail: userData.user.email || null,
     poolGiocatori: [], chiamataAttuale: null, popupAttivo: null,
     storico: [], createdAt: new Date().toISOString()
   };
@@ -851,7 +873,7 @@ io.on('connection', (socket) => {
       asta.storico.push({ giocatore: chiamata.giocatore, prezzo: chiamata.giocatore.costoOriginale, squadra: chiamata.proprietarioPrecedente, tipo: 'riconferma', timestamp: new Date().toISOString() });
       asta.chiamataAttuale = null;
       io.to(astaId).emit('giocatore-assegnato', { giocatore: chiamata.giocatore, prezzo: chiamata.giocatore.costoOriginale, squadra: chiamata.proprietarioPrecedente, tipo: 'riconferma' });
-      broadcastStato(astaId);
+      broadcastStato(astaId, true);
       if (asta.tipoEstrazione === 'casuale') {
         setTimeout(() => { const disp = asta.poolGiocatori.filter(g => !g.estratto && !g.assegnato && !g.scartato); if (disp.length > 0) avviaChiamata(astaId, disp[Math.floor(Math.random() * disp.length)]); }, 2000);
       }
@@ -888,7 +910,7 @@ io.on('connection', (socket) => {
       asta.storico.push({ giocatore, prezzo: prezzoFinale, squadra: squadraVincitrice, tipo: 'normale', timestamp: new Date().toISOString() });
       io.to(astaId).emit('giocatore-assegnato', { giocatore, prezzo: prezzoFinale, squadra: squadraVincitrice, tipo: 'normale' });
     }
-    broadcastStato(astaId);
+    broadcastStato(astaId, true);
     if (asta.tipoEstrazione === 'casuale') {
       setTimeout(() => { const disp = asta.poolGiocatori.filter(g => !g.estratto && !g.assegnato && !g.scartato); if (disp.length > 0) avviaChiamata(astaId, disp[Math.floor(Math.random() * disp.length)]); }, 2000);
     }
@@ -920,7 +942,7 @@ io.on('connection', (socket) => {
     asta.popupAttivo = null;
     asta.storico.push({ giocatore: popup.giocatore, prezzo: popup.prezzoFinale, squadra: popup.squadraVincitrice, tipo: 'con_svincolo', svincolati, timestamp: new Date().toISOString() });
     io.to(astaId).emit('giocatore-assegnato', { giocatore: popup.giocatore, prezzo: popup.prezzoFinale, squadra: popup.squadraVincitrice, tipo: 'con_svincolo' });
-    broadcastStato(astaId);
+    broadcastStato(astaId, true);
   });
 
   socket.on('tradeoff', ({ astaId, tipo }) => {
@@ -938,7 +960,7 @@ io.on('connection', (socket) => {
       default: return socket.emit('errore', { msg: 'Tipo trade-off non valido' });
     }
     asta.storico.push({ tipo: 'tradeoff', squadra: sq.nome, tradeoffTipo: tipo, timestamp: new Date().toISOString() });
-    broadcastStato(astaId); socket.emit('tradeoff-ok');
+    broadcastStato(astaId, true); socket.emit('tradeoff-ok');
     io.to(astaId).emit('tradeoff-usato', { nomeSquadra: sq.nome, tipo });
   });
 
@@ -1003,7 +1025,7 @@ io.on('connection', (socket) => {
     if (!asta || !isAdmin(asta, socket.id)) return;
     let count = 0;
     asta.poolGiocatori.forEach(g => { if (g.scartato) { g.scartato = false; g.estratto = false; count++; } });
-    broadcastStato(astaId); socket.emit('scartati-reintrodotti', { count });
+    broadcastStato(astaId, true); socket.emit('scartati-reintrodotti', { count });
   });
 
   socket.on('termina-asta', ({ astaId }) => {
@@ -1012,6 +1034,7 @@ io.on('connection', (socket) => {
     clearTimer(astaId); asta.stato = 'completata'; asta.chiamataAttuale = null;
     saveExportSupabase(asta);
     broadcastStato(astaId, true); io.to(astaId).emit('asta-terminata', { astaId });
+    deleteBackupSupabase(astaId);
   });
 
   socket.on('modifica-timer', ({ astaId, timerPrimaChiamata, timerRilancio }) => {
@@ -1061,6 +1084,84 @@ app.get('/api/backup-list', (req, res) => {
     }).filter(Boolean);
     res.json(list);
   } catch(e) { res.json([]); }
+});
+
+// ══ MIE ASTE / RIPRENDI (login richiesto) ══════════════════════
+// Helper: valida il token Bearer e ritorna { userId, email } oppure null.
+async function getUtenteDaToken(req) {
+  if (!supabaseAdmin) return null;
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token) return null;
+  const { data, error } = await supabaseAdmin.auth.getUser(token);
+  if (error || !data || !data.user) return null;
+  return { userId: data.user.id, email: data.user.email || null };
+}
+
+// Ripristina in memoria un'asta da uno snapshot di backup (stesso identico comportamento
+// usato in loadBackups all'avvio del server), senza toccare le aste già attive.
+function ripristinaAstaInMemoria(snap) {
+  if (!snap || !snap.asta || !snap.asta.id) return null;
+  if (aste.has(snap.asta.id)) return aste.get(snap.asta.id);
+  snap.asta.adminSocketIds = [];
+  (snap.asta.squadre || []).forEach(s => { s.utenti = []; s.online = false; });
+  aste.set(snap.asta.id, snap.asta);
+  return snap.asta;
+}
+
+// Elenco leggero delle aste (in corso, non ancora terminate) create dall'utente loggato,
+// da mostrare nella sezione "Mie aste" della Home. Fonte: Supabase asta_backups, filtrando
+// per creatorUserId dentro al payload (nessuna nuova colonna necessaria).
+app.get('/api/mie-aste', async (req, res) => {
+  const utente = await getUtenteDaToken(req);
+  if (!utente) return res.status(401).json({ error: 'Login richiesto' });
+  if (!supabaseAdmin) return res.json([]);
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('asta_backups')
+      .select('asta_id, payload, updated_at')
+      .filter('payload->asta->>creatorUserId', 'eq', utente.userId);
+    if (error) return res.status(500).json({ error: error.message });
+    const lista = (data || []).map(row => {
+      const a = row.payload && row.payload.asta;
+      if (!a) return null;
+      return {
+        astaId: a.id, nome: a.nome, stato: a.stato, tipoAsta: a.tipoAsta,
+        numSquadre: (a.squadre || []).length, updatedAt: row.updated_at,
+        inMemoria: aste.has(a.id)
+      };
+    }).filter(Boolean);
+    res.json(lista);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Riprende un'asta del creatore loggato: se è già viva nel processo, ritorna semplicemente
+// il suo adminToken attuale (nessuna modifica). Se non è in memoria (server riavviato/crash),
+// la ricostruisce dal backup Supabase e genera un NUOVO adminToken (invalida il precedente),
+// senza mai disconnettere gli altri partecipanti eventualmente già collegati.
+app.post('/api/asta/:id/riprendi', async (req, res) => {
+  const utente = await getUtenteDaToken(req);
+  if (!utente) return res.status(401).json({ error: 'Login richiesto' });
+  if (!supabaseAdmin) return res.status(500).json({ error: 'Supabase non configurato sul server' });
+  const astaId = req.params.id;
+
+  let asta = aste.get(astaId);
+  if (asta) {
+    if (asta.creatorUserId !== utente.userId) return res.status(403).json({ error: 'Non sei il creatore di questa asta' });
+    return res.json({ success: true, astaId: asta.id, adminToken: asta.adminToken, ricostruita: false });
+  }
+
+  try {
+    const { data, error } = await supabaseAdmin.from('asta_backups').select('payload').eq('asta_id', astaId).single();
+    if (error || !data || !data.payload) return res.status(404).json({ error: 'Nessun backup trovato per questa asta' });
+    const snap = data.payload;
+    if (!snap.asta || snap.asta.creatorUserId !== utente.userId) return res.status(403).json({ error: 'Non sei il creatore di questa asta' });
+    asta = ripristinaAstaInMemoria(snap);
+    if (!asta) return res.status(500).json({ error: 'Backup corrotto, impossibile ripristinare' });
+    asta.adminToken = uuidv4();
+    saveBackup(asta);
+    res.json({ success: true, astaId: asta.id, adminToken: asta.adminToken, ricostruita: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // Auto-save every 30s
