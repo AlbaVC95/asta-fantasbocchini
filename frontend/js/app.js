@@ -421,7 +421,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     history.replaceState({}, '', '/?id=' + sess.astaId);
     setTimeout(() => fetchAstaSquadrePerJoin(sess.astaId), 400);
   }
-  setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs(); setupLogin(); setupMenu(); setupStrategie(); setupEditor(); setupStrategiaAsta(); setupAnteprima();
+  setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs(); setupLogin(); setupMenu(); setupStrategie(); setupEditor(); setupStrategiaAsta(); setupAnteprima(); setupRoseCompatta();
   // Warn before leaving page if in active asta
   window.addEventListener('beforeunload', (e) => {
     if (S.astaId && S.asta && S.asta.stato === 'in_corso') {
@@ -440,8 +440,22 @@ async function checkSessioneUtente() {
   }
 }
 
+function _aggiornaUserEmailBadge(email) {
+  const el = document.getElementById('user-email-badge');
+  if (!el) return;
+  if (email) {
+    el.textContent = '👤 ' + email;
+    el.classList.remove('hidden');
+  } else {
+    el.textContent = '';
+    el.classList.add('hidden');
+  }
+}
+
 async function applicaUtenteLoggato(user) {
   S.userId = user.id;
+  S.userEmail = user.email || null;
+  _aggiornaUserEmailBadge(S.userEmail);
   const { data: profile } = await supa.from('profiles').select('role').eq('id', user.id).single();
   S.userRole = (profile && profile.role) || 'utente';
   document.body.classList.toggle('app-role-admin', S.userRole === 'admin');
@@ -494,6 +508,7 @@ function setupLogin() {
   if (btnLogout) btnLogout.addEventListener('click', async () => {
     await supa.auth.signOut();
     S.userRole = null; S.userId = null;
+    _aggiornaUserEmailBadge(null);
     document.body.classList.remove('app-role-admin');
     btnLogout.style.display = 'none';
     const adminCard = document.getElementById('card-listino-admin');
@@ -730,6 +745,7 @@ function setupHome() {
       tipoEstrazione: document.getElementById('inp-estrazione').value,
       minimoPortieri: parseInt(document.getElementById('inp-min-por').value),
       minimoMovimento: parseInt(document.getElementById('inp-min-mov').value),
+      maxGiocatoriPerSquadra: parseInt(document.getElementById('inp-max-gioc').value) || 25,
       svincoliTotali: parseInt(document.getElementById('inp-svincoli').value) || 15,
       squadreJson: window._jsonData ? window._jsonData.squadre : null
     };
@@ -1165,10 +1181,25 @@ socket.on('stato-asta', (asta) => {
   // Item 6 fix: auto-hide admin popup-override-box as soon as the pending
   // popup/conferma is resolved server-side (by EITHER admin or the user),
   // instead of relying only on the admin's own manual click.
-  if (!asta.popupAttivo && !(asta.chiamataAttuale && asta.chiamataAttuale.aspettandoConferma)) {
+  const _popupRisolto = !asta.popupAttivo;
+  const _ricRisolto = !(asta.chiamataAttuale && asta.chiamataAttuale.aspettandoConferma);
+  if (_popupRisolto && _ricRisolto) {
     const pob = document.getElementById('popup-override-box');
     if (pob && !pob.classList.contains('hidden')) pob.classList.add('hidden');
-    S.popupAttivoCli = null;
+  }
+  // Fix: se un altro utente della stessa squadra (o l'admin) ha già risposto al
+  // popup (Conferma RIC / Plusvalenza-Recompra / Svincolo), l'operazione è già
+  // stata eseguita sul server: chiudi il popup anche per gli altri utenti che
+  // lo hanno ancora aperto, invece di lasciarlo bloccato a schermo.
+  if (S.popupAttivoCli) {
+    const _tipo = S.popupAttivoCli.tipo;
+    if (_popupRisolto && (_tipo === 'post-asta' || _tipo === 'svincolo')) {
+      closeModal();
+    } else if (_ricRisolto && _tipo === 'ric-conferma') {
+      closeModal();
+    } else if (_popupRisolto && _ricRisolto) {
+      S.popupAttivoCli = null;
+    }
   }
   // Navigate to the correct screen based on authoritative server state.
   if (asta.stato === 'attesa') {
@@ -1189,6 +1220,14 @@ socket.on('stato-asta', (asta) => {
   } else if (asta.stato === 'completata') {
     showScreen('screen-fine-asta');
     renderFineAsta();
+    // Fix: una volta che l'asta è terminata, rimuoviamo la sessione salvata in
+    // localStorage così che un successivo refresh della pagina NON ririagganci
+    // automaticamente l'utente a questa asta (già conclusa) — altrimenti, se
+    // l'admin crea subito una nuova asta, alcuni utenti che ricaricano la pagina
+    // resterebbero bloccati sulla schermata di riepilogo dell'asta vecchia
+    // invece di poter entrare/unirsi liberamente a quella nuova.
+    cancSessione();
+    try { history.replaceState({}, '', '/'); } catch(e) {}
   }
   renderLobbySquadre(asta.squadre);
   if (asta.stato === 'in_corso' || asta.stato === 'completata') {
@@ -1295,6 +1334,10 @@ socket.on('scartati-reintrodotti', ({ count }) => toast(count + ' giocatori rein
 socket.on('tradeoff-ok', () => { closeModal(); toast('Trade-off eseguito!', 'success'); });
 socket.on('asta-terminata', () => {
   cancSessione(); showScreen('screen-fine-asta'); renderFineAsta();
+  // Fix: rimuove l'id dell'asta terminata dalla barra degli indirizzi, così un
+  // refresh successivo non tenta più di riaggangciarsi ad essa (vedi anche il
+  // cancSessione() nell'handler stato-asta per il caso ricarica-pagina).
+  try { history.replaceState({}, '', '/'); } catch(e) {}
   toast('Asta terminata!', 'success');
   if (S.isAdmin) {
     try { downloadFantaleghe(); } catch(e) { toast('⚠️ Export Fantaleghe fallito, usa il bottone manuale', 'error'); }
@@ -1410,7 +1453,7 @@ function renderBudgetBar(squadre) {
     const dot  = sq.online ? '🟢' : '⚪';
     const rosaSq = sq.rosa || [];
     const gioc = sq.giocatori ? sq.giocatori.length : rosaSq.length;
-    const maxGioc = (S.asta && ((S.asta.minimoPortieri || 0) + (S.asta.minimoMovimento || 0))) || 0;
+    const maxGioc = (S.asta && S.asta.maxGiocatoriPerSquadra) || 25;
     const numPortieri = rosaSq.filter(g => _isPortiere(g.ruolo)).length;
     const barCls = pct <= 15 ? 'crit' : (pct <= 40 ? 'warn' : 'ok');
     return '<div class="' + cls + '">' +
@@ -1842,7 +1885,7 @@ function renderChiamata(chiamata) {
     ? '<p class="cc-attesa-badge">⏳ In attesa decisione di <strong>' + _escHtml(chiamata.proprietario || chiamata.giocatore.squadraOriginale || 'squadra') + '</strong></p>'
     : '';
   const manualeBadge = chiamata.manuale
-    ? '<p class="cc-manuale-badge">🔨 Chiamata manuale dell\'admin</p>'
+    ? '<p class="cc-manuale-badge">🔨 Manuale Admin</p>'
     : '';
   card.innerHTML =
     manualeBadge +
@@ -1965,6 +2008,19 @@ function renderStorico(storico) {
   }).join('');
 }
 
+function setupRoseCompatta() {
+  const chk = document.getElementById('chk-rose-compatta');
+  const panel = document.getElementById('rose-panel');
+  if (!chk || !panel) return;
+  const saved = localStorage.getItem('ftb_rose_compatta') === '1';
+  chk.checked = saved;
+  panel.classList.toggle('rose-compatta', saved);
+  chk.addEventListener('change', () => {
+    localStorage.setItem('ftb_rose_compatta', chk.checked ? '1' : '0');
+    panel.classList.toggle('rose-compatta', chk.checked);
+  });
+}
+
 function renderRose(squadre) {
   if (!squadre) return;
   const chiamata = S.asta && S.asta.chiamataAttuale;
@@ -2040,6 +2096,30 @@ function _antSetSquadraState(nome, state) {
 function _antRoleClass(ruolo) {
   const base = (ruolo || '').split('/')[0].trim().toLowerCase();
   return 'ruolo-rose-' + base;
+}
+// Classe di sfondo per la riga di un giocatore nella sezione "Rose", basata
+// sul suo PRIMO ruolo reale (stesso raggruppamento a 5 colori già usato per i
+// badge dei ruoli: Por=giallo, Dd/Ds/Dc/D/B=verde, M/C/E=azzurro, T/W=viola, A/Pc=rosso).
+function _roseRowRoleClass(ruolo) {
+  const r = (ruolo || '').split('/')[0].trim().toUpperCase();
+  if (r === 'POR' || r === 'P') return 'rose-riga-por';
+  if (['DD','DS','DC','D','B'].includes(r)) return 'rose-riga-verde';
+  if (['M','C','E'].includes(r)) return 'rose-riga-azzurro';
+  if (['T','W'].includes(r)) return 'rose-riga-viola';
+  if (['A','PC'].includes(r)) return 'rose-riga-rosso';
+  return '';
+}
+// Verifica se un giocatore può occupare uno slot di modulo in Anteprima, in
+// base ai ruoli REALI del giocatore (evita di poter piazzare un giocatore in
+// una posizione non compatibile, es. un Dc puro in uno slot Attaccante).
+// Entrambi i ruoli (slot e giocatore) possono contenere più opzioni separate
+// da "/" (es. slot "DC/B", giocatore "C/W"): basta UNA corrispondenza in comune.
+function _ruoliCompatibili(ruoloSlot, ruoloGiocatore) {
+  const norm = (r) => (r || '').split('/').map(x => x.trim().toUpperCase()).map(x => x === 'POR' ? 'P' : x).filter(Boolean);
+  const slotRoles = norm(ruoloSlot);
+  const gioRoles = norm(ruoloGiocatore);
+  if (slotRoles.length === 0 || gioRoles.length === 0) return true;
+  return slotRoles.some(sr => gioRoles.includes(sr));
 }
 
 function setupAnteprima() {
@@ -2135,7 +2215,8 @@ function _antOpenPicker(slotEl, nomeSquadra) {
   const slotKey = slotEl.dataset.slotkey;
   const state = _antGetSquadraState(nomeSquadra);
   const assegnatiAltrove = new Set(Object.keys(state.slots).filter(k => k !== slotKey).map(k => state.slots[k]));
-  const disponibili = rosa.filter(g => !assegnatiAltrove.has(g.nome));
+  const ruoloSlot = slotEl.dataset.ruolo;
+  const disponibili = rosa.filter(g => !assegnatiAltrove.has(g.nome) && _ruoliCompatibili(ruoloSlot, g.ruolo));
 
   let html = '<div class="ant-picker-hdr">Scegli giocatore</div>';
   if (disponibili.length === 0) {
@@ -2154,12 +2235,17 @@ function _antOpenPicker(slotEl, nomeSquadra) {
   picker.innerHTML = html;
   picker.classList.remove('hidden');
 
+  // Posiziona il picker usando le dimensioni REALI misurate dopo il render
+  // (non una stima fissa), così non finisce mai fuori dallo schermo, anche
+  // con nomi lunghi o su schermi piccoli/mobile.
   const rect = slotEl.getBoundingClientRect();
+  const pRect = picker.getBoundingClientRect();
+  const pW = pRect.width || 220, pH = pRect.height || 280;
   let left = rect.left;
   let top = rect.bottom + 4;
-  const maxLeft = window.innerWidth - 220;
+  const maxLeft = window.innerWidth - pW - 8;
   if (left > maxLeft) left = maxLeft;
-  if (top + 280 > window.innerHeight) top = rect.top - 284;
+  if (top + pH > window.innerHeight - 8) top = rect.top - pH - 4;
   picker.style.left = Math.max(4, left) + 'px';
   picker.style.top = Math.max(4, top) + 'px';
 
@@ -2220,7 +2306,7 @@ function _renderRoseSez(titolo, giocatori, tipo, sqNome) {
               x = x.trim();
               return '<span class="rose-badge ruolo-rose-' + x.toLowerCase() + '">' + x + '</span>';
             }).join('');
-            return '<div class="rose-player" data-rose-nome="' + _escAttr(g.nome) + '" data-rose-squadra="' + _escAttr(sqNome) + '">' +
+            return '<div class="rose-player ' + _roseRowRoleClass(g.ruolo) + '" data-rose-nome="' + _escAttr(g.nome) + '" data-rose-squadra="' + _escAttr(sqNome) + '">' +
               ruoloBadgeHTML +
               '<span class="rose-nome">' + _escHtml(g.nome) + '</span>' +
               '<span class="rose-prezzo">🪙' + g.prezzo + '</span>' +
@@ -2704,6 +2790,7 @@ window.apriModalAdminConfig = function() {
   document.getElementById('inp-ac-timer-rilancio').value = S.asta.timerRilancio;
   document.getElementById('inp-ac-min-portieri').value = S.asta.minimoPortieri;
   document.getElementById('inp-ac-min-movimento').value = S.asta.minimoMovimento;
+  document.getElementById('inp-ac-max-gioc').value = S.asta.maxGiocatoriPerSquadra || 25;
   const lista = document.getElementById('ac-crediti-lista');
   lista.innerHTML = (S.asta.squadre || []).map(sq => {
     const nomeEsc = sq.nome.replace(/'/g,"\\'");
@@ -2738,7 +2825,8 @@ window.confermaAdminConfig = function() {
     timerPrimaChiamata: parseInt(document.getElementById('inp-ac-timer-prima').value),
     timerRilancio: parseInt(document.getElementById('inp-ac-timer-rilancio').value),
     minimoPortieri: parseInt(document.getElementById('inp-ac-min-portieri').value),
-    minimoMovimento: parseInt(document.getElementById('inp-ac-min-movimento').value)
+    minimoMovimento: parseInt(document.getElementById('inp-ac-min-movimento').value),
+    maxGiocatoriPerSquadra: parseInt(document.getElementById('inp-ac-max-gioc').value) || 25
   });
   toast('Impostazioni aggiornate', 'success');
 };
@@ -2871,6 +2959,7 @@ function setupMenu() {
   if (btnLogoutMenu) btnLogoutMenu.addEventListener('click', async () => {
     await supa.auth.signOut();
     S.userRole = null; S.userId = null;
+    _aggiornaUserEmailBadge(null);
     showScreen('screen-login');
   });
 }
