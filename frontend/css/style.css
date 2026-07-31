@@ -461,16 +461,17 @@ html,body{height:auto!important;min-height:100vh;overflow:auto!important}
 .rose-compatta-toggle input:checked + .rose-compatta-slider{background:var(--gold)}
 .rose-compatta-toggle input:checked + .rose-compatta-slider::before{transform:translateX(14px);background:#1a1200}
 /* ══ Modalità Visione compatta: righe più basse, meno spazio orizzontale, più giocatori a schermo ══ */
-.rose-container.rose-compatta{gap:2px;padding:4px}
-.rose-container.rose-compatta .rose-col{min-width:96px;padding:3px;border-radius:8px}
-.rose-container.rose-compatta .rose-col-header{padding-bottom:2px;margin-bottom:2px}
-.rose-container.rose-compatta .rose-col-nome{font-size:.7rem}
-.rose-container.rose-compatta .rose-col-budget{font-size:.66rem}
-.rose-container.rose-compatta .rose-sec-hdr{padding:2px 5px;margin-bottom:2px;font-size:.58rem}
-.rose-container.rose-compatta .rose-player{padding:1px 3px;margin-bottom:0;font-size:.58rem;gap:3px}
-.rose-container.rose-compatta .rose-badge{font-size:.46rem;padding:0 2px;min-width:11px}
-.rose-container.rose-compatta .rose-prezzo{font-size:.55rem;padding:0 4px}
-.rose-container.rose-compatta .slot-chip{font-size:.52rem;padding:1px 3px}
+.rose-container.rose-compatta{gap:1px;padding:2px}
+.rose-container.rose-compatta .rose-col{min-width:78px;padding:2px;border-radius:6px}
+.rose-container.rose-compatta .rose-col-header{padding-bottom:1px;margin-bottom:1px}
+.rose-container.rose-compatta .rose-col-nome{font-size:.6rem}
+.rose-container.rose-compatta .rose-col-budget{font-size:.56rem}
+.rose-container.rose-compatta .rose-col-slots{gap:2px;margin-bottom:2px}
+.rose-container.rose-compatta .rose-sec-hdr{padding:1px 4px;margin-bottom:1px;font-size:.5rem}
+.rose-container.rose-compatta .rose-player{padding:0 2px;margin-bottom:0;font-size:.5rem;gap:2px;line-height:1.25}
+.rose-container.rose-compatta .rose-badge{font-size:.4rem;padding:0 1px;min-width:9px}
+.rose-container.rose-compatta .rose-prezzo{font-size:.46rem;padding:0 3px}
+.rose-container.rose-compatta .slot-chip{font-size:.44rem;padding:0 2px}
 .rose-prezzo{font-family:var(--font-display);font-weight:800;color:#1a1200;font-size:.68rem;background:linear-gradient(135deg,var(--gold-bright),var(--gold));padding:1px 7px;border-radius:8px;flex-shrink:0}
 .rose-empty{color:var(--text-muted);font-size:.68rem;padding:3px 6px;font-style:italic}
 /* ══════ RIGA 1 middle slot (puja per NON-admin) ══════ */
