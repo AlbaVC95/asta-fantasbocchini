@@ -69,6 +69,9 @@
     <div class="card mt-16">
       <button type="button" id="btn-menu-gk-planner" class="btn btn-primary btn-lg" style="width:100%">🥅⚽ Griglia Portieri/Attaccanti</button>
     </div>
+    <div class="card mt-16">
+      <button type="button" id="btn-menu-storico-esportazioni" class="btn btn-secondary btn-lg" style="width:100%" onclick="apriStoricoEsportazioni()">📦 Storico Esportazioni</button>
+    </div>
   </section>
   <!-- ══════════ SCREEN STRATEGIE — LISTA ══════════ -->
   <section id="screen-strategie-lista" class="screen">
@@ -858,6 +861,17 @@
     </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal()">No, grazie</button>
+    </div>
+  </div>
+  <!-- Modal: Storico Esportazioni -->
+  <div id="modal-storico-esportazioni" class="modal hidden storico-esportazioni-modal">
+    <h2 class="modal-title">📦 Storico Esportazioni</h2>
+    <div class="modal-body">
+      <p class="hint-text">Ogni volta che un'asta viene terminata, viene salvata qui automaticamente. Puoi scaricarla in qualsiasi formato in qualsiasi momento, oppure eliminarla se non serve più.</p>
+      <div id="storico-esportazioni-lista"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Chiudi</button>
     </div>
   </div>
   <!-- Modal: Post-asta -->
