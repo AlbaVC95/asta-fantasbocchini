@@ -189,34 +189,25 @@ function nascondiEmergenza() {
   if (el) el.classList.add('hidden');
 }
 
-// ══ BACKUP DOWNLOAD ══════════════════════
-window.downloadBackupJSON = function(fromLocal) {
-  let data;
-  if (fromLocal || !S.asta) {
-    const saved = getStatoLocale();
-    if (!saved) return toast('Nessun backup locale disponibile', 'error');
-    data = saved;
-  } else {
-    data = { backup: true, timestamp: new Date().toISOString(), asta: S.asta };
-  }
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  const ts   = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  a.href = url; a.download = 'backup-asta-' + ts + '.json';
+// ══ BACKUP/EXPORT — funzioni generiche (riusate sia dal menu live sia dallo Storico Esportazioni) ══
+function _triggerBlobDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
   document.body.appendChild(a); a.click();
   document.body.removeChild(a); URL.revokeObjectURL(url);
-  const bm = document.getElementById('backup-menu');
-  if (bm) bm.classList.add('hidden');
-};
+}
 
-window.downloadBackupExcel = function() {
-  const asta = S.asta;
-  if (!asta) return toast('Nessun dato disponibile', 'error');
+function _exportAstaJSON(asta, prefix) {
+  const data = { backup: true, timestamp: new Date().toISOString(), asta };
+  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  _triggerBlobDownload(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), prefix + '-' + ts + '.json');
+}
+
+function _exportAstaExcel(asta, prefix) {
   const XLSX = window.XLSX;
   if (!XLSX) return toast('Libreria Excel non disponibile', 'error');
   const wb = XLSX.utils.book_new();
-  // Foglio 1: Riepilogo
   const riepilogo = asta.squadre.map(sq => ({
     'Squadra': sq.nome, 'Crediti': sq.crediti,
     'Giocatori': (sq.rosa||[]).length,
@@ -225,36 +216,26 @@ window.downloadBackupExcel = function() {
     'Recompra usati': (sq.recompraUsati||0) + '/' + (sq.recompra!==undefined?sq.recompra:1)
   }));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riepilogo), 'Riepilogo');
-  // Foglio 2: Rose
   const roseRows = [];
   asta.squadre.forEach(sq => (sq.rosa||[]).forEach(g => {
     roseRows.push({ 'Squadra': sq.nome, 'Giocatore': g.nome, 'Ruolo': g.ruolo||'?', 'Prezzo': g.prezzo, 'Tipo': g.tipo||'normale' });
   }));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(roseRows.length ? roseRows : [{}]), 'Rose');
-  // Foglio 3: Storico
   const storico = (asta.storico||[]).map((s,i) => ({
     '#': i+1, 'Giocatore': s.giocatore ? s.giocatore.nome : '?',
     'Ruolo': s.giocatore ? (s.giocatore.ruolo||'?') : '?',
     'Prezzo': s.prezzo, 'Squadra': s.squadra||'', 'Tipo': s.tipo||''
   }));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(storico.length ? storico : [{}]), 'Storico');
-  // Foglio 4: Liberi
   const liberi = (asta.poolGiocatori||[])
     .filter(g => !g.assegnato && !g.scartato)
     .map(g => ({ 'Giocatore': g.nome, 'Ruolo': g.ruolo||'?', 'Costo': g.costoOriginale, 'Tipo': g.tipo||'NN', 'Squadra orig.': g.squadraOriginale||'' }));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(liberi.length ? liberi : [{}]), 'Liberi');
   const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  XLSX.writeFile(wb, 'backup-asta-' + ts + '.xlsx');
-  const bm = document.getElementById('backup-menu');
-  if (bm) bm.classList.add('hidden');
-};
+  XLSX.writeFile(wb, prefix + '-' + ts + '.xlsx');
+}
 
-window.downloadBackupEmergenza = function() { downloadBackupJSON(true); };
-
-// ══ EXPORT FANTALEGHE (CSV) ══════════════
-window.downloadFantaleghe = function() {
-  const asta = S.asta;
-  if (!asta) { toast('Nessun dato disponibile', 'error'); return; }
+function _exportAstaFantaleghe(asta, prefix) {
   const rows = [];
   let omessi = 0;
   (asta.storico || []).forEach(s => {
@@ -270,23 +251,13 @@ window.downloadFantaleghe = function() {
   }
   const lines = ['$,$,$'].concat(rows).concat(['$,$,$']);
   const csv = lines.join(String.fromCharCode(13,10));
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  const ts   = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  a.href = url; a.download = 'fantaleghe-' + asta.id + '-' + ts + '.csv';
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a); URL.revokeObjectURL(url);
+  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  _triggerBlobDownload(new Blob([csv], { type: 'text/csv' }), prefix + '-' + (asta.id||'') + '-' + ts + '.csv');
   if (omessi > 0) toast('⚠️ ' + omessi + ' giocatori omessi (IdFantaleghe mancante)', 'error');
   else toast('Fantaleghe CSV scaricato', 'success');
-  const bm = document.getElementById('backup-menu');
-  if (bm) bm.classList.add('hidden');
-};
+}
 
-// ══ EXPORT RECAP (Conferme/Plusvalenze/Recompra/Svincoli) ══════════════
-window.downloadRecap = function() {
-  const asta = S.asta;
-  if (!asta) { toast('Nessun dato disponibile', 'error'); return; }
+function _exportAstaRecap(asta, prefix) {
   const squadre = {};
   const ensure = (nome) => {
     if (!squadre[nome]) squadre[nome] = { conferme: [], plusvalenze: [], recompre: [], svincoli: [] };
@@ -306,14 +277,45 @@ window.downloadRecap = function() {
     }
   });
   const data = { astaId: asta.id, tipoAsta: asta.tipoAsta, squadre };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  const ts   = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  a.href = url; a.download = 'recap-' + asta.id + '-' + ts + '.json';
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a); URL.revokeObjectURL(url);
+  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  _triggerBlobDownload(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), prefix + '-' + (asta.id||'') + '-' + ts + '.json');
   toast('Recap scaricato', 'success');
+}
+
+// ══ BACKUP DOWNLOAD (asta live, dal menu 💾 Backup) ══════════════
+window.downloadBackupJSON = function(fromLocal) {
+  let asta;
+  if (fromLocal || !S.asta) {
+    const saved = getStatoLocale();
+    if (!saved) return toast('Nessun backup locale disponibile', 'error');
+    asta = saved.asta;
+  } else {
+    asta = S.asta;
+  }
+  _exportAstaJSON(asta, 'backup-asta');
+  const bm = document.getElementById('backup-menu');
+  if (bm) bm.classList.add('hidden');
+};
+
+window.downloadBackupExcel = function() {
+  if (!S.asta) return toast('Nessun dato disponibile', 'error');
+  _exportAstaExcel(S.asta, 'backup-asta');
+  const bm = document.getElementById('backup-menu');
+  if (bm) bm.classList.add('hidden');
+};
+
+window.downloadBackupEmergenza = function() { downloadBackupJSON(true); };
+
+window.downloadFantaleghe = function() {
+  if (!S.asta) return toast('Nessun dato disponibile', 'error');
+  _exportAstaFantaleghe(S.asta, 'fantaleghe');
+  const bm = document.getElementById('backup-menu');
+  if (bm) bm.classList.add('hidden');
+};
+
+window.downloadRecap = function() {
+  if (!S.asta) return toast('Nessun dato disponibile', 'error');
+  _exportAstaRecap(S.asta, 'recap');
   const bm = document.getElementById('backup-menu');
   if (bm) bm.classList.add('hidden');
 };
@@ -321,6 +323,74 @@ window.downloadRecap = function() {
 window.apriMenuBackup = function() {
   const bm = document.getElementById('backup-menu');
   if (bm) bm.classList.toggle('hidden');
+};
+
+// ══ STORICO ESPORTAZIONI (persistente su Supabase, accessibile dalla Home) ══════════════
+async function _fetchExportPayload(id) {
+  const res = await fetch('/api/exports/' + id);
+  if (!res.ok) { toast('Esportazione non trovata (forse è stata cancellata)', 'error'); return null; }
+  return res.json();
+}
+
+window.apriStoricoEsportazioni = async function() {
+  showScreen('screen-menu-principale');
+  openModal('modal-storico-esportazioni');
+  await _ricaricaStoricoEsportazioni();
+};
+
+async function _ricaricaStoricoEsportazioni() {
+  const box = document.getElementById('storico-esportazioni-lista');
+  if (!box) return;
+  box.innerHTML = '<p class="text-muted" style="text-align:center;padding:16px">⏳ Caricamento...</p>';
+  try {
+    const res = await fetch('/api/exports');
+    const lista = await res.json();
+    if (!Array.isArray(lista) || !lista.length) {
+      box.innerHTML = '<p class="text-muted" style="text-align:center;padding:16px">Nessuna asta conclusa ancora esportata.</p>';
+      return;
+    }
+    box.innerHTML = lista.map(item => {
+      const data = new Date(item.createdAt);
+      const dataStr = data.toLocaleDateString('it-IT') + ' ' + data.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+      return '<div class="storico-export-item">' +
+        '<div class="storico-export-info">' +
+          '<div class="storico-export-data">📅 ' + _escHtml(dataStr) + '</div>' +
+          '<div class="storico-export-meta">' + _escHtml(item.tipoAsta || '?') + ' · ' + item.numSquadre + ' squadre</div>' +
+        '</div>' +
+        '<div class="storico-export-actions">' +
+          '<button class="bk-btn" onclick="storicoScarica(\'' + item.id + '\',\'json\')">📄 JSON</button>' +
+          '<button class="bk-btn" onclick="storicoScarica(\'' + item.id + '\',\'excel\')">📊 Excel</button>' +
+          '<button class="bk-btn" onclick="storicoScarica(\'' + item.id + '\',\'fantaleghe\')">📤 Fantaleghe</button>' +
+          '<button class="bk-btn" onclick="storicoScarica(\'' + item.id + '\',\'recap\')">📤 Recap</button>' +
+          '<button class="bk-btn bk-btn-danger" onclick="storicoElimina(\'' + item.id + '\')">🗑️ Elimina</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  } catch (e) {
+    box.innerHTML = '<p class="text-muted" style="text-align:center;padding:16px">⚠️ Errore di caricamento</p>';
+  }
+}
+
+window.storicoScarica = async function(id, formato) {
+  const asta = await _fetchExportPayload(id);
+  if (!asta) return;
+  const prefix = 'storico-' + id.slice(0, 8);
+  if (formato === 'json') _exportAstaJSON(asta, prefix);
+  else if (formato === 'excel') _exportAstaExcel(asta, prefix);
+  else if (formato === 'fantaleghe') _exportAstaFantaleghe(asta, prefix);
+  else if (formato === 'recap') _exportAstaRecap(asta, prefix);
+};
+
+window.storicoElimina = async function(id) {
+  if (!confirm('Eliminare definitivamente questa esportazione? Non potrà essere recuperata.')) return;
+  try {
+    const res = await fetch('/api/exports/' + id, { method: 'DELETE' });
+    if (!res.ok) throw new Error('delete failed');
+    toast('Esportazione eliminata', 'success');
+    _ricaricaStoricoEsportazioni();
+  } catch (e) {
+    toast('Errore durante l\'eliminazione', 'error');
+  }
 };
 
 window.esciDallAsta = function() {
