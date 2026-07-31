@@ -2227,6 +2227,23 @@ function populateAnteprimaSquadre(squadre) {
   renderAnteprimaPitch();
 }
 
+// Percentuali verticali per riga, calibrate per zona di gioco reale (portiere,
+// difesa, centrocampo, trequarti, attacco), evitando che una riga cada esattamente
+// sulla linea/cerchio di centrocampo (50%), cosa che risultava visivamente strana
+// con moduli a 5 linee (es. 4-1-4-1).
+const ANT_ROW_TOP_BY_COUNT = {
+  1: [50],
+  2: [12, 88],
+  3: [8, 50, 92],
+  4: [8, 27, 60, 90],
+  5: [7, 24, 40, 66, 90]
+};
+function _antRowTop(nRows, ri) {
+  const table = ANT_ROW_TOP_BY_COUNT[nRows];
+  if (table && table[ri] !== undefined) return table[ri];
+  return nRows === 1 ? 50 : 8 + ri * (84 / (nRows - 1));
+}
+
 function renderAnteprimaPitch() {
   const pitch = document.getElementById('ant-pitch');
   const selSquadra = document.getElementById('ant-squadra-select');
@@ -2241,7 +2258,7 @@ function renderAnteprimaPitch() {
   const nRows = rows.length;
   let html = '';
   rows.forEach((row, ri) => {
-    const top = nRows === 1 ? 50 : 8 + ri * (84 / (nRows - 1));
+    const top = _antRowTop(nRows, ri);
     const nCols = row.length;
     row.forEach((ruolo, ci) => {
       const left = nCols === 1 ? 50 : 12 + ci * (76 / (nCols - 1));
