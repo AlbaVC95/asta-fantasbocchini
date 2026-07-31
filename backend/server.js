@@ -457,6 +457,23 @@ app.post('/api/listino/upload', async (req, res) => {
 // server cosi' che TUTTI gli utenti dell'app vedano subito lo stesso calendario.
 const GK_CALENDARIO_FILE = path.join(BACKUP_DIR, 'gk_planner_calendario_custom.json');
 
+// ══ Keepalive Supabase ══════════════════════════════════
+// Endpoint pensato per essere chiamato periodicamente da un monitor esterno
+// (es. UptimeRobot) ogni pochi giorni. Fa una query minima e leggera al DB
+// così il progetto Supabase free non accumula mai 7 giorni di inattività
+// consecutiva e non viene mai messo in pausa automaticamente.
+app.get('/api/keepalive-supabase', async (req, res) => {
+  if (!supabaseAdmin) return res.json({ ok: false, reason: 'supabase-not-configured' });
+  try {
+    const { error } = await supabaseAdmin.from('asta_backups').select('asta_id').limit(1);
+    if (error) return res.json({ ok: false, reason: error.message });
+    return res.json({ ok: true, timestamp: new Date().toISOString() });
+  } catch (e) {
+    return res.json({ ok: false, reason: e.message });
+  }
+});
+
+
 app.get('/api/gk-planner/calendario', (req, res) => {
   try {
     if (fs.existsSync(GK_CALENDARIO_FILE)) {
