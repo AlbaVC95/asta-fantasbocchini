@@ -85,6 +85,15 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
 .home-logo{font-size:3rem;margin-bottom:8px;filter:drop-shadow(0 0 20px rgba(139,92,246,.4))}
 .home-title{font-family:var(--font-display);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;background:linear-gradient(135deg,var(--primary-bright),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
 .home-subtitle{color:var(--text-secondary);font-size:1rem}
+/* Home (menu principale): layout più compatto per far entrare tutte le voci di menu
+   in una sola schermata, senza scroll, anche con più voci aggiunte nel tempo. */
+#screen-menu-principale .home-header{padding:20px 20px 14px}
+#screen-menu-principale .home-logo{font-size:2.1rem;margin-bottom:4px}
+#screen-menu-principale .home-title{font-size:clamp(1.3rem,3.4vw,1.9rem);margin-bottom:2px}
+#screen-menu-principale .home-subtitle{font-size:.86rem}
+#screen-menu-principale .card{padding:10px;margin:0 auto 8px}
+#screen-menu-principale .card .btn-lg{padding:11px 20px;font-size:.9rem}
+#screen-menu-principale .mt-16{margin-top:8px}
 .card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:700px;margin:0 auto 16px;position:relative;overflow:hidden}
 .card::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--border-light),transparent)}
 .card-title{font-family:var(--font-display);font-size:1.25rem;font-weight:800;margin-bottom:20px}
