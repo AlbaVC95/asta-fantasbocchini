@@ -2139,11 +2139,47 @@ function _ruoliCompatibili(ruoloSlot, ruoloGiocatore) {
   return slotRoles.some(sr => gioRoles.includes(sr));
 }
 
+const ANT_PITCH_SIZE_MIN = 220;
+const ANT_PITCH_SIZE_MAX = 460;
+const ANT_PITCH_SIZE_STEP = 30;
+const ANT_PITCH_SIZE_DEFAULT = 300;
+
+function _antApplyPitchSize(px) {
+  const pitch = document.getElementById('ant-pitch');
+  if (pitch) pitch.style.setProperty('--ant-pitch-size', px + 'px');
+}
+
+function _antGetPitchSize() {
+  const raw = parseInt(localStorage.getItem('antPitchSize'), 10);
+  if (!raw || isNaN(raw)) return ANT_PITCH_SIZE_DEFAULT;
+  return Math.min(ANT_PITCH_SIZE_MAX, Math.max(ANT_PITCH_SIZE_MIN, raw));
+}
+
+function _antSetPitchSize(px) {
+  const clamped = Math.min(ANT_PITCH_SIZE_MAX, Math.max(ANT_PITCH_SIZE_MIN, px));
+  localStorage.setItem('antPitchSize', String(clamped));
+  _antApplyPitchSize(clamped);
+}
+
 function setupAnteprima() {
   const selSquadra = document.getElementById('ant-squadra-select');
   const selModulo = document.getElementById('ant-modulo-select');
   const btnReset = document.getElementById('ant-reset-btn');
+  const btnZoomIn = document.getElementById('ant-zoom-in');
+  const btnZoomOut = document.getElementById('ant-zoom-out');
   if (!selSquadra || !selModulo) return;
+
+  _antApplyPitchSize(_antGetPitchSize());
+  if (btnZoomIn) {
+    btnZoomIn.addEventListener('click', () => {
+      _antSetPitchSize(_antGetPitchSize() + ANT_PITCH_SIZE_STEP);
+    });
+  }
+  if (btnZoomOut) {
+    btnZoomOut.addEventListener('click', () => {
+      _antSetPitchSize(_antGetPitchSize() - ANT_PITCH_SIZE_STEP);
+    });
+  }
 
   selSquadra.addEventListener('change', () => {
     const nome = selSquadra.value;
