@@ -310,6 +310,7 @@ app.post('/api/asta', (req, res) => {
     crediti: b.crediti || 500, timerPrimaChiamata: b.timerPrimaChiamata || 7,
     timerRilancio: b.timerRilancio || 5, tipoEstrazione: b.tipoEstrazione || 'manuale',
     minimoPortieri: b.minimoPortieri || 1, minimoMovimento: b.minimoMovimento || 7,
+    maxGiocatoriPerSquadra: b.maxGiocatoriPerSquadra || 25,
     svincoliTotali: b.svincoliTotali || 15, fattoreSvincolo,
     numeroPartecipanti: b.numeroPartecipanti || 12,
     stato: 'attesa', squadre: [], adminNome: null, adminSocketIds: [], adminToken,
@@ -612,6 +613,18 @@ io.on('connection', (socket) => {
     if (asta.chiamataAttuale && asta.chiamataAttuale.fase === 'attesa-conferma' && isAdmin(asta, socket.id)) {
       socket.emit('attesa-conferma', asta.chiamataAttuale);
     }
+    // Fix: se il client si (ri)connette mentre una chiamata è già in corso in
+    // fase di puja normale (non conferma RIC, non attesa-conferma admin), il
+    // client non riceve mai l'evento 'nuova-chiamata' iniziale (viene emesso
+    // solo quando la chiamata PARTE), quindi la card e il box di rilancio
+    // restano nascosti e l'utente non può fare offerte finché non ne parte
+    // una nuova. Ri-emettiamo lo stato della chiamata attiva solo a questo socket.
+    if (asta.chiamataAttuale && !asta.chiamataAttuale.aspettandoConferma && asta.chiamataAttuale.fase !== 'attesa-conferma') {
+      socket.emit('nuova-chiamata', asta.chiamataAttuale);
+      if (asta.chiamataAttuale.timer != null) {
+        socket.emit('timer-tick', { secondi: asta.chiamataAttuale.timer, fase: asta.chiamataAttuale.fase });
+      }
+    }
   });
 
   socket.on('inizia-asta', ({ astaId }) => {
@@ -823,13 +836,14 @@ io.on('connection', (socket) => {
     io.to(astaId).emit('tradeoff-usato', { nomeSquadra: sq.nome, tipo });
   });
 
-  socket.on('admin-update-config', ({ astaId, timerPrimaChiamata, timerRilancio, minimoPortieri, minimoMovimento }) => {
+  socket.on('admin-update-config', ({ astaId, timerPrimaChiamata, timerRilancio, minimoPortieri, minimoMovimento, maxGiocatoriPerSquadra }) => {
     const asta = aste.get(astaId);
     if (!asta || !isAdmin(asta, socket.id)) return;
     if (timerPrimaChiamata !== undefined) asta.timerPrimaChiamata = Math.max(1, parseInt(timerPrimaChiamata) || asta.timerPrimaChiamata);
     if (timerRilancio !== undefined) asta.timerRilancio = Math.max(1, parseInt(timerRilancio) || asta.timerRilancio);
     if (minimoPortieri !== undefined) asta.minimoPortieri = Math.max(0, parseInt(minimoPortieri) || 0);
     if (minimoMovimento !== undefined) asta.minimoMovimento = Math.max(0, parseInt(minimoMovimento) || 0);
+    if (maxGiocatoriPerSquadra !== undefined) asta.maxGiocatoriPerSquadra = Math.max(1, parseInt(maxGiocatoriPerSquadra) || asta.maxGiocatoriPerSquadra || 25);
     broadcastStato(astaId);
   });
 
