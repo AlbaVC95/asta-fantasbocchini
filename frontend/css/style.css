@@ -539,12 +539,16 @@ body.layout-admin .asta-row-puja .inp-rilancio{width:50px!important;font-size:16
 body.layout-admin .asta-row-puja .manual-bid-row{margin:0;grid-column:2;grid-row:2;display:flex;gap:4px}
 body.layout-admin .asta-row-puja .btn-manuale{padding:6px 10px;font-size:.82rem}
 /* ══════ Pillola compatta Assegna/Chiama — dentro tabs-nav, attaccata a destra, admin-only ══════ */
-.quick-pill{display:none;margin-left:auto;align-items:center;gap:6px;padding:6px 8px}
+.quick-pill{display:none;margin-left:auto;align-items:center;gap:8px;padding:6px 10px}
 body.layout-admin .quick-pill{display:flex}
-.pill-btn{width:30px;height:30px;border-radius:8px;border:none;font-size:.9rem;line-height:1;cursor:pointer;background:var(--bg-main);color:var(--text-primary);display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s;flex-shrink:0}
-.pill-btn:hover{transform:translateY(-1px)}
-#pill-assegna{background:linear-gradient(135deg,var(--success),#00c853);color:#000}
-#pill-chiama{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff}
+.pill-btn{width:34px;height:34px;border-radius:11px;border:1px solid rgba(255,255,255,.14);font-size:1rem;line-height:1;cursor:pointer;color:var(--text-primary);display:flex;align-items:center;justify-content:center;transition:transform .18s,box-shadow .18s,filter .18s;flex-shrink:0;position:relative;overflow:hidden}
+.pill-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,0) 55%);pointer-events:none}
+.pill-btn:hover{transform:translateY(-2px) scale(1.06);filter:brightness(1.1)}
+.pill-btn:active{transform:translateY(0) scale(.95)}
+#pill-assegna{background:linear-gradient(135deg,var(--success) 0%,#00c853 100%);color:#04220f;box-shadow:0 3px 10px rgba(0,200,83,.35),inset 0 1px 0 rgba(255,255,255,.25)}
+#pill-assegna:hover{box-shadow:0 5px 16px rgba(0,200,83,.5),inset 0 1px 0 rgba(255,255,255,.3)}
+#pill-chiama{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:#fff;box-shadow:0 3px 10px rgba(139,92,246,.4),inset 0 1px 0 rgba(255,255,255,.2)}
+#pill-chiama:hover{box-shadow:0 5px 16px rgba(139,92,246,.55),inset 0 1px 0 rgba(255,255,255,.25)}
 /* ══════ Liberi list — nuovo layout con Valore Algoritmico ══════ */
 .liberi-list li{gap:6px}
 .l-nome{flex:1;font-weight:600;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
