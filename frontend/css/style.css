@@ -270,6 +270,16 @@ html.theme-light .chiamata-card{
 .bk-btn:hover{background:var(--bg-elevated);border-color:var(--primary)}.bk-btn-muted{color:var(--text-muted)}
 .fine-asta-export-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 .fine-asta-export-row .bk-btn{flex:1 1 140px;text-align:center;padding:10px 12px}
+.storico-esportazioni-modal{max-width:560px;width:calc(100vw - 32px)}
+#storico-esportazioni-lista{display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow-y:auto}
+.storico-export-item{background:var(--bg-main);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.storico-export-info{display:flex;flex-direction:column;gap:2px}
+.storico-export-data{font-weight:700;font-size:.86rem;color:var(--text-primary)}
+.storico-export-meta{font-size:.76rem;color:var(--text-muted);text-transform:capitalize}
+.storico-export-actions{display:flex;flex-wrap:wrap;gap:6px}
+.storico-export-actions .bk-btn{flex:1 1 auto;text-align:center;font-size:.74rem;padding:6px 8px}
+.bk-btn-danger{color:#e74c3c;border-color:rgba(231,76,60,.35)}
+.bk-btn-danger:hover{background:rgba(231,76,60,.14);border-color:#e74c3c}
 .popup-override{background:rgba(255,77,42,.05);border:1px solid rgba(255,77,42,.2);border-radius:10px;padding:6px;margin-top:4px}
 .popup-override p{font-size:.72rem;color:var(--text-secondary);margin-bottom:4px}
 .popup-override .btn{margin:2px 3px 2px 0;font-size:.7rem;padding:4px 8px}
