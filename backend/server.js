@@ -1167,9 +1167,11 @@ app.post('/api/asta/:id/riprendi', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Auto-save every 30s
+// Auto-save every 30s — esclude 'attesa' (nulla da salvare) e 'completata' (il backup di
+// un'asta conclusa viene eliminato esplicitamente in termina-asta: risalvarlo qui ogni 30s
+// lo farebbe reapparire per sempre come riga orfana in asta_backups).
 setInterval(() => {
-  aste.forEach(asta => { if (asta.stato !== 'attesa') saveBackup(asta); });
+  aste.forEach(asta => { if (asta.stato !== 'attesa' && asta.stato !== 'completata') saveBackup(asta); });
 }, 30000);
 
 // Pulizia periodica della memoria: senza questo, ogni asta creata (anche quelle
