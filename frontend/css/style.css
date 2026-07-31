@@ -1277,9 +1277,10 @@ html.theme-light body.layout-admin .asta-row-puja{
 .ant-picker-remove{margin-top:4px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:.8rem;color:#e74c3c;text-align:center;background:rgba(231,76,60,.1)}
 .ant-picker-remove:hover{background:rgba(231,76,60,.2)}
 
-/* ══ Badge email utente loggato — visibile fisso in alto a destra su tutte le schermate ══ */
+/* ══ Badge email utente loggato — visibile fisso in alto a sinistra, tranne durante l'asta
+   (dove viene mostrato inline nell'header per non sovrapporsi a nessun controllo esistente) ══ */
 .user-email-badge{
-  position:fixed; top:8px; right:8px; z-index:60;
+  position:fixed; top:8px; left:8px; z-index:60;
   background:rgba(20,20,30,.72); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
   border:1px solid rgba(255,255,255,.12); border-radius:20px;
   padding:4px 12px; font-size:.68rem; font-weight:600; color:var(--text-secondary,#c8cad4);
@@ -1287,5 +1288,8 @@ html.theme-light body.layout-admin .asta-row-puja{
   pointer-events:none; line-height:1.4; box-shadow:0 2px 10px rgba(0,0,0,.25);
 }
 @media (max-width:520px){
-  .user-email-badge{font-size:.6rem; padding:3px 9px; max-width:52vw; top:6px; right:6px}
+  .user-email-badge{font-size:.6rem; padding:3px 9px; max-width:52vw; top:6px; left:6px}
 }
+body:has(#screen-asta.active) .user-email-badge{display:none}
+.asta-header-email{font-size:.6rem;font-weight:600;color:var(--text-secondary);margin-left:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px;opacity:.85}
+@media (max-width:520px){.asta-header-email{display:none}}
