@@ -533,6 +533,7 @@ async function applicaUtenteLoggato(user) {
   if (btnLogout) btnLogout.style.display = 'inline-block';
   const adminCard = document.getElementById('card-listino-admin');
   if (adminCard) adminCard.style.display = (S.userRole === 'admin') ? 'block' : 'none';
+  caricaMieAste();
   if (S._invitoAstaId) {
     const invitoId = S._invitoAstaId;
     S._invitoAstaId = null;
@@ -541,6 +542,48 @@ async function applicaUtenteLoggato(user) {
     showScreen('screen-menu-principale');
   }
 }
+
+// ══ MIE ASTE (Home) ══════════════════════════════════════════
+// Mostra le aste create dall'utente loggato ancora "vive" (non terminate), permettendo
+// di riprenderle da qualunque dispositivo senza dover conservare nessun link manualmente.
+async function caricaMieAste() {
+  const card = document.getElementById('card-mie-aste');
+  const lista = document.getElementById('lista-mie-aste');
+  if (!card || !lista) return;
+  try {
+    const { data: sessData } = await supa.auth.getSession();
+    const accessToken = sessData && sessData.session ? sessData.session.access_token : null;
+    if (!accessToken) { card.style.display = 'none'; return; }
+    const res = await fetch('/api/mie-aste', { headers: { 'Authorization': 'Bearer ' + accessToken } });
+    if (!res.ok) { card.style.display = 'none'; return; }
+    const aste = await res.json();
+    if (!Array.isArray(aste) || aste.length === 0) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+    lista.innerHTML = aste.map(a => {
+      const nomeEsc = (a.nome || 'Asta senza nome').replace(/'/g, "\\'");
+      const statoLabel = a.stato === 'attesa' ? 'In attesa' : a.stato === 'in_corso' ? 'In corso' : a.stato;
+      return '<div class="settings-field" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">' +
+        '<div><strong>' + nomeEsc + '</strong><br><span class="hint-text">' + statoLabel + ' · ' + (a.numSquadre || 0) + ' squadre</span></div>' +
+        '<button type="button" class="btn btn-primary" onclick="riprendiAsta(\'' + a.astaId + '\')">▶️ Riprendi</button>' +
+      '</div>';
+    }).join('');
+  } catch (e) { card.style.display = 'none'; }
+}
+
+window.riprendiAsta = async function(astaId) {
+  try {
+    const { data: sessData } = await supa.auth.getSession();
+    const accessToken = sessData && sessData.session ? sessData.session.access_token : null;
+    if (!accessToken) return toast('Devi accedere per riprendere un\'asta', 'error');
+    const res = await fetch('/api/asta/' + astaId + '/riprendi', { method: 'POST', headers: { 'Authorization': 'Bearer ' + accessToken } });
+    const data = await res.json();
+    if (!data.success) return toast(data.error || 'Impossibile riprendere questa asta', 'error');
+    S.astaId = data.astaId; S.adminToken = data.adminToken; S.isAdmin = true;
+    S.miaSquadra = null;
+    salvaSessione();
+    window.location.href = window.location.origin + '/?id=' + data.astaId + '&admin=' + data.adminToken;
+  } catch (e) { toast('Errore di rete nel riprendere l\'asta', 'error'); }
+};
 
 function setupLogin() {
   const btnLogin = document.getElementById('btn-login');
@@ -820,8 +863,12 @@ function setupHome() {
       squadreJson: window._jsonData ? window._jsonData.squadre : null
     };
     try {
-      const res = await fetch('/api/asta', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const { data: sessData } = await supa.auth.getSession();
+      const accessToken = sessData && sessData.session ? sessData.session.access_token : null;
+      if (!accessToken) return toast('Devi accedere con il tuo account per creare un\'asta', 'error');
+      const res = await fetch('/api/asta', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken }, body: JSON.stringify(body) });
       const data = await res.json();
+      if (!res.ok && !data.success) return toast(data.error || 'Errore nella creazione dell\'asta', 'error');
       if (data.success) {
         S.astaId = data.astaId; S.miaSquadra = adminNome; S.isAdmin = true; S.adminToken = data.adminToken || null;
         socket.emit('join-asta', { astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: true, adminToken: S.adminToken }); salvaSessione();
