@@ -1216,7 +1216,7 @@ html.theme-light .badge-ruolo.r-XX{background:#e4e2f2;color:var(--text-muted)}
    in alto a sinistra, per non sovrapporsi al link "Esci"/"← Menu" che sta a destra ══ */
 .theme-toggle-home{
   position:absolute;
-  top:16px; left:16px;
+  top:52px; left:16px;
   width:32px; height:32px;
   border-radius:50%;
   display:flex; align-items:center; justify-content:center;
@@ -1232,7 +1232,7 @@ html.theme-light .badge-ruolo.r-XX{background:#e4e2f2;color:var(--text-muted)}
 .theme-toggle-home:hover{transform:translateY(-1px) scale(1.06);box-shadow:0 6px 16px rgba(0,0,0,.22),0 0 14px var(--primary-glow)}
 .theme-toggle-home:active{transform:translateY(0) scale(.94)}
 @media (max-width:640px){
-  .theme-toggle-home{width:28px;height:28px;font-size:.9rem;top:12px;left:12px}
+  .theme-toggle-home{width:28px;height:28px;font-size:.9rem;top:46px;left:12px}
 }
 
 /* ══ Fix: TODA la fila (card + timer + rilancia) con el mismo color uniforme, sin costuras entre secciones ══ */
