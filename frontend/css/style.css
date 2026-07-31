@@ -1264,14 +1264,42 @@ html.theme-light body.layout-admin .asta-row-puja{
 /* ══════ Tab Anteprima: campo tattico e assegnazione giocatori ══════ */
 .ant-controls{display:flex;gap:8px;padding:8px;flex-wrap:wrap;align-items:center}
 .ant-select{background:var(--bg-elevated);color:var(--text-primary);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:.85rem;flex:1;min-width:120px}
-.ant-pitch{position:relative;width:100%;aspect-ratio:2/3;max-width:420px;flex-shrink:0;margin:0 auto;background:linear-gradient(180deg,#2d8a3e 0%,#256e32 100%);border-radius:10px;overflow:hidden}
-.ant-pitch::before{content:'';position:absolute;top:50%;left:50%;width:70px;height:70px;border:2px solid rgba(255,255,255,.35);border-radius:50%;transform:translate(-50%,-50%)}
-.ant-pitch::after{content:'';position:absolute;top:0;left:50%;width:1px;height:100%;background:rgba(255,255,255,.25);transform:translateX(-50%)}
+.ant-pitch{
+  position:relative;width:100%;aspect-ratio:2/3;max-width:420px;flex-shrink:0;margin:0 auto;
+  border-radius:14px;overflow:hidden;background-color:#040f09;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.028) 0 2px, transparent 2px 26px),
+    linear-gradient(rgba(56,255,196,.65), rgba(56,255,196,.65)),
+    linear-gradient(rgba(56,255,196,.65), rgba(56,255,196,.65)),
+    linear-gradient(rgba(56,255,196,.65), rgba(56,255,196,.65)),
+    linear-gradient(rgba(56,255,196,.65), rgba(56,255,196,.65)),
+    linear-gradient(rgba(56,255,196,.65), rgba(56,255,196,.65)),
+    linear-gradient(rgba(56,255,196,.65), rgba(56,255,196,.65)),
+    radial-gradient(ellipse at 50% -10%, rgba(56,255,196,.14), transparent 55%),
+    linear-gradient(180deg,#0e3a22 0%,#0a2a19 45%,#061c11 100%);
+  background-repeat:no-repeat;
+  background-size:
+    100% 100%,
+    46% 2px, 2px 12%, 2px 12%,
+    46% 2px, 2px 12%, 2px 12%,
+    100% 100%, 100% 100%;
+  background-position:
+    0 0,
+    50% 12%, 27% 0%, 73% 0%,
+    50% 88%, 27% 100%, 73% 100%,
+    0 0, 0 0;
+  box-shadow:
+    inset 0 0 0 2px rgba(56,255,196,.55),
+    inset 0 0 34px rgba(56,255,196,.14),
+    0 0 22px rgba(56,255,196,.32);
+}
+.ant-pitch::before{content:'';position:absolute;left:6%;right:6%;top:50%;height:2px;background:rgba(56,255,196,.85);box-shadow:0 0 6px rgba(56,255,196,.9),0 0 16px rgba(56,255,196,.55);transform:translateY(-50%)}
+.ant-pitch::after{content:'';position:absolute;top:50%;left:50%;width:74px;height:74px;border:2px solid rgba(56,255,196,.85);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 10px rgba(56,255,196,.75),inset 0 0 12px rgba(56,255,196,.4)}
 .ant-slot{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;width:64px;z-index:2}
-.ant-slot-role{font-size:.6rem;font-weight:800;padding:1px 4px;border-radius:4px;background:rgba(0,0,0,.35);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
-.ant-slot-player{font-size:.62rem;font-weight:700;color:#fff;background:rgba(0,0,0,.55);border-radius:6px;padding:2px 4px;text-align:center;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid rgba(255,255,255,.2)}
-.ant-slot.filled .ant-slot-player{background:linear-gradient(135deg,rgba(255,179,0,.85),rgba(230,140,0,.85));color:#000;border-color:rgba(255,255,255,.4)}
-.ant-slot:hover .ant-slot-player{filter:brightness(1.15)}
+.ant-slot-role{font-size:.6rem;font-weight:800;padding:1px 4px;border-radius:4px;background:rgba(4,15,10,.55);color:#dffff2;text-shadow:0 0 4px rgba(56,255,196,.6);border:1px solid rgba(56,255,196,.35)}
+.ant-slot-player{font-size:.62rem;font-weight:700;color:#eafff6;background:rgba(4,15,10,.72);border-radius:6px;padding:2px 4px;text-align:center;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid rgba(56,255,196,.3);box-shadow:0 0 6px rgba(56,255,196,.15);transition:box-shadow .15s,transform .15s}
+.ant-slot.filled .ant-slot-player{background:linear-gradient(135deg,rgba(0,255,196,.28),rgba(0,180,255,.28));color:#fff;border-color:rgba(56,255,196,.75);box-shadow:0 0 10px rgba(56,255,196,.55),inset 0 0 8px rgba(56,255,196,.25)}
+.ant-slot:hover .ant-slot-player{box-shadow:0 0 14px rgba(56,255,196,.85),inset 0 0 8px rgba(56,255,196,.3);transform:scale(1.06)}
 #tab-anteprima{position:relative}
 .ant-picker{position:absolute;z-index:500;background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.4);padding:8px;max-height:280px;overflow-y:auto;min-width:200px;max-width:calc(100vw - 16px)}
 .ant-picker.hidden{display:none}
