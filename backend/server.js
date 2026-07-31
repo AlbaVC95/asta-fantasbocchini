@@ -1033,7 +1033,10 @@ io.on('connection', (socket) => {
     if (!asta || !isAdmin(asta, socket.id)) return;
     clearTimer(astaId); asta.stato = 'completata'; asta.chiamataAttuale = null;
     saveExportSupabase(asta);
-    broadcastStato(astaId, true); io.to(astaId).emit('asta-terminata', { astaId });
+    // NB: niente backup=true qui — l'asta è conclusa, il backup verrà eliminato subito sotto,
+    // quindi salvarlo prima causerebbe una race condition (upsert asincrono che potrebbe
+    // completarsi DOPO la delete, ricreando la riga con stato "completata" per sempre).
+    broadcastStato(astaId); io.to(astaId).emit('asta-terminata', { astaId });
     deleteBackupSupabase(astaId);
   });
 
