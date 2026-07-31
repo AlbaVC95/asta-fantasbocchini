@@ -320,7 +320,7 @@ html.theme-light .chiamata-card{
 .tab-content.active.tab-rose-content{position:relative;padding:0;display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}.rose-container{flex:1;min-height:0;overflow-x:auto;overflow-y:auto;display:flex;gap:4px;padding:8px;align-items:flex-start}
 .rose-search-row{display:flex;gap:6px;margin:6px 8px;flex-wrap:nowrap;max-width:280px}
 .rose-chevron{display:inline-flex;align-items:center;justify-content:center;margin-left:6px;font-size:1.3rem;line-height:1;padding:6px 8px;border-radius:6px;transition:transform .2s,background .15s;cursor:pointer}.rose-chevron:hover{background:rgba(255,255,255,.12)}
-.rose-chevron.open{transform:rotate(180deg)}
+.rose-chevron.open{transform:scale(1.15);background:rgba(255,255,255,.18)}
 #tab-rose .rose-search-row{position:relative;z-index:20;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:4px 6px;box-shadow:0 4px 14px rgba(0,0,0,.35);margin:4px 8px;max-width:340px;width:calc(100% - 16px);flex-shrink:0}
 #tab-rose .rose-search-row .rose-search-close-btn{background:none;border:none;color:var(--text-muted);font-size:1rem;cursor:pointer;padding:2px 4px;flex-shrink:0;display:flex;align-items:center}
 #tab-rose .rose-search-row .rose-search-close-btn:hover{color:var(--text-primary)}
