@@ -53,10 +53,48 @@ function saveBackup(asta) {
   try {
     const snap = { backup: true, timestamp: new Date().toISOString(), asta: JSON.parse(JSON.stringify(asta)) };
     fs.writeFileSync(path.join(BACKUP_DIR, 'backup_asta_' + asta.id + '.json'), JSON.stringify(snap));
+    saveBackupSupabase(asta, snap);
   } catch(e) { /* non-fatal */ }
 }
 
-function loadBackups() {
+// Salva il backup anche su Supabase (Postgres persistente), così sopravvive a QUALSIASI
+// riavvio del processo Render (crash, deploy, manutenzione) — non solo al risveglio da sleep.
+// Fire-and-forget: non blocca mai il flusso principale, eventuali errori vengono solo loggati.
+function saveBackupSupabase(asta, snap) {
+  if (!supabaseAdmin || !asta || !asta.id) return;
+  supabaseAdmin.from('asta_backups')
+    .upsert({ asta_id: asta.id, payload: snap, updated_at: new Date().toISOString() }, { onConflict: 'asta_id' })
+    .then(({ error }) => { if (error) console.error('[saveBackupSupabase] errore (non-fatale):', error.message); })
+    .catch(e => console.error('[saveBackupSupabase] eccezione (non-fatale):', e.message));
+}
+
+async function loadBackups() {
+  // 1) Priorità a Supabase: è l'unica fonte che sopravvive a un riavvio completo del container.
+  if (supabaseAdmin) {
+    try {
+      const { data, error } = await supabaseAdmin.from('asta_backups').select('asta_id, payload, updated_at');
+      if (error) {
+        console.error('[loadBackups] Errore lettura Supabase (non-fatale, uso solo backup locale):', error.message);
+      } else if (data) {
+        let n = 0;
+        data.forEach(row => {
+          try {
+            const snap = row.payload;
+            if (snap && snap.backup && snap.asta && snap.asta.id && !aste.has(snap.asta.id)) {
+              snap.asta.adminSocketIds = [];
+              snap.asta.squadre.forEach(s => { s.utenti = []; s.online = false; });
+              aste.set(snap.asta.id, snap.asta);
+              n++;
+              console.log('  ☁️  Ripristinata da Supabase: ' + (snap.asta.nome || snap.asta.id) + ' (' + row.updated_at + ')');
+            }
+          } catch(e) { /* skip corrupt row */ }
+        });
+        if (n > 0) console.log('✅ ' + n + ' asta/e ripristinate da Supabase');
+      }
+    } catch(e) { console.error('[loadBackups] Eccezione Supabase (non-fatale, uso solo backup locale):', e.message); }
+  }
+  // 2) Fallback su disco locale — utile in sviluppo locale o se Supabase non è configurato,
+  //    e come seconda rete di sicurezza (dedup automatico: !aste.has() salta ciò già ripristinato sopra).
   try {
     if (!fs.existsSync(BACKUP_DIR)) return;
     const files = fs.readdirSync(BACKUP_DIR).filter(f => f.startsWith('backup_asta_') && f.endsWith('.json'));
@@ -71,11 +109,11 @@ function loadBackups() {
           data.asta.squadre.forEach(s => { s.utenti = []; s.online = false; });
           aste.set(data.asta.id, data.asta);
           n++;
-          console.log('  ♻️  Ripristinata: ' + (data.asta.nome || data.asta.id) + ' (' + data.timestamp + ')');
+          console.log('  ♻️  Ripristinata da disco locale: ' + (data.asta.nome || data.asta.id) + ' (' + data.timestamp + ')');
         }
       } catch(e) { /* skip corrupt file */ }
     });
-    if (n > 0) console.log('✅ ' + n + ' asta/e ripristinate da backup');
+    if (n > 0) console.log('✅ ' + n + ' asta/e ripristinate da disco locale');
   } catch(e) { console.error('loadBackups error:', e.message); }
 }
 
@@ -983,7 +1021,7 @@ setInterval(() => {
 }, 60 * 60 * 1000); // ogni ora
 
 // Load backups at startup
-loadBackups();
+loadBackups().catch(e => console.error('[loadBackups] fatale (non-fatale per il server, l\'asta parte comunque vuota):', e.message));
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
