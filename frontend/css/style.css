@@ -1264,9 +1264,14 @@ html.theme-light body.layout-admin .asta-row-puja{
 /* ══════ Tab Anteprima: campo tattico e assegnazione giocatori ══════ */
 .ant-controls{display:flex;gap:8px;padding:8px;flex-wrap:wrap;align-items:center}
 .ant-select{background:var(--bg-elevated);color:var(--text-primary);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:.85rem;flex:1;min-width:120px}
+.ant-zoom-controls{display:flex;align-items:center;gap:4px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;padding:2px 6px}
+.ant-zoom-btn{background:transparent;border:none;color:var(--text-primary);font-size:.95rem;line-height:1;padding:4px 8px;cursor:pointer;border-radius:6px;transition:background .15s}
+.ant-zoom-btn:hover{background:rgba(255,255,255,.1)}
+.ant-zoom-btn:active{transform:scale(.9)}
+.ant-zoom-icon{font-size:.8rem;opacity:.7;padding:0 2px}
 .ant-pitch{
-  position:relative;width:100%;aspect-ratio:5/6;max-width:300px;flex-shrink:0;margin:0 auto;
-  border-radius:14px;overflow:hidden;background-color:#040f09;
+  position:relative;width:100%;aspect-ratio:5/6;max-width:var(--ant-pitch-size,300px);flex-shrink:0;margin:0 auto;
+  border-radius:14px;overflow:hidden;background-color:#040f09;transition:max-width .15s ease;
   background-image:
     repeating-linear-gradient(90deg, rgba(255,255,255,.028) 0 2px, transparent 2px 26px),
     linear-gradient(rgba(56,255,196,.65), rgba(56,255,196,.65)),
