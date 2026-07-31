@@ -421,7 +421,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     history.replaceState({}, '', '/?id=' + sess.astaId);
     setTimeout(() => fetchAstaSquadrePerJoin(sess.astaId), 400);
   }
-  setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs(); setupLogin(); setupMenu(); setupStrategie(); setupEditor(); setupStrategiaAsta(); setupAnteprima(); setupRoseCompatta();
+  setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs(); setupLogin(); setupMenu(); setupStrategie(); setupEditor(); setupStrategiaAsta(); setupAnteprima(); setupRoseCompatta(); setupAstaMobileAccordion();
   // Warn before leaving page if in active asta
   window.addEventListener('beforeunload', (e) => {
     if (S.astaId && S.asta && S.asta.stato === 'in_corso') {
@@ -2006,6 +2006,23 @@ function renderStorico(storico) {
       '<span class="storico-prezzo">' + s.prezzo + 'cr</span>' +
       '<span class="storico-tipo tipo-tag-' + s.tipo + '">' + s.tipo + '</span></li>';
   }).join('');
+}
+
+function setupAstaMobileAccordion() {
+  // Pannelli a fisarmonica per la vista mobile di screen-asta (Riepilogo squadre / Mio team).
+  // Su desktop questa classe non ha alcun effetto visivo (nessuna regola CSS fuori dai media query mobile).
+  const budgetHdr = document.querySelector('.panel-budget-hdr');
+  const budgetPanel = document.querySelector('.panel-budget');
+  if (budgetHdr && budgetPanel && !budgetHdr.dataset.accBound) {
+    budgetHdr.dataset.accBound = '1';
+    budgetHdr.addEventListener('click', () => budgetPanel.classList.toggle('acc-open'));
+  }
+  const mioHdr = document.querySelector('.mio-panel-header');
+  const mioPanel = document.getElementById('mio-panel');
+  if (mioHdr && mioPanel && !mioHdr.dataset.accBound) {
+    mioHdr.dataset.accBound = '1';
+    mioHdr.addEventListener('click', () => mioPanel.classList.toggle('acc-open'));
+  }
 }
 
 function setupRoseCompatta() {
