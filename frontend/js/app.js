@@ -3907,26 +3907,63 @@ function setupStrategiaAsta() {
     setTimeout(() => t.remove(), 2500);
   }
 
+  function rendiTrascinabile(panel, maniglia) {
+    let dragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
+    maniglia.style.cursor = 'grab';
+    maniglia.addEventListener('mousedown', (e) => {
+      if (e.target.closest('button')) return; // non avviare drag se si clicca un bottone della maniglia
+      dragging = true;
+      const r = panel.getBoundingClientRect();
+      startX = e.clientX; startY = e.clientY; startLeft = r.left; startTop = r.top;
+      panel.style.right = 'auto'; panel.style.left = startLeft + 'px'; panel.style.top = startTop + 'px';
+      maniglia.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      let nx = startLeft + dx, ny = startTop + dy;
+      nx = Math.max(0, Math.min(window.innerWidth - 60, nx));
+      ny = Math.max(0, Math.min(window.innerHeight - 40, ny));
+      panel.style.left = nx + 'px';
+      panel.style.top = ny + 'px';
+    });
+    document.addEventListener('mouseup', () => { dragging = false; maniglia.style.cursor = 'grab'; });
+  }
+
   function creaPannelloControlli() {
     const panel = document.createElement('div');
     panel.id = 'editor-panel-controlli';
     panel.style.cssText = `
-      position:fixed;top:60px;right:12px;width:270px;max-height:80vh;overflow-y:auto;
-      background:#1c1c2e;border:2px solid #ffb300;border-radius:12px;padding:14px;
+      position:fixed;top:60px;right:12px;width:270px;max-height:min(70vh, calc(100vh - 140px));
+      display:flex;flex-direction:column;
+      background:#1c1c2e;border:2px solid #ffb300;border-radius:12px;
       z-index:100000;font-family:sans-serif;color:#eee;box-shadow:0 8px 30px rgba(0,0,0,.5);
       display:none;`;
     panel.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <strong style="font-size:.9rem">🎨 Elemento selezionato</strong>
-        <button id="editor-chiudi-pannello" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer">✕</button>
+      <div id="editor-panel-maniglia" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #333;flex-shrink:0">
+        <strong style="font-size:.9rem">✥ 🎨 Elemento selezionato</strong>
+        <div style="display:flex;gap:6px">
+          <button id="editor-minimizza-pannello" style="background:none;border:none;color:#fff;font-size:1rem;cursor:pointer">➖</button>
+          <button id="editor-chiudi-pannello" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer">✕</button>
+        </div>
       </div>
-      <div id="editor-selettore-label" style="font-size:.7rem;color:#aaa;margin-bottom:10px;word-break:break-all"></div>
-      <div id="editor-controlli-lista" style="display:flex;flex-direction:column;gap:8px;font-size:.78rem"></div>
-      <div style="margin-top:12px;display:flex;gap:6px">
-        <button id="editor-btn-annulla-elemento" style="flex:1;padding:6px;background:#444;border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:.75rem">↩ Reset elemento</button>
+      <div id="editor-panel-corpo" style="padding:14px;overflow-y:auto;flex:1;min-height:0">
+        <div id="editor-selettore-label" style="font-size:.7rem;color:#aaa;margin-bottom:10px;word-break:break-all"></div>
+        <div id="editor-controlli-lista" style="display:flex;flex-direction:column;gap:8px;font-size:.78rem"></div>
+        <div style="margin-top:12px;display:flex;gap:6px">
+          <button id="editor-btn-annulla-elemento" style="flex:1;padding:6px;background:#444;border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:.75rem">↩ Reset elemento</button>
+        </div>
       </div>
     `;
     document.body.appendChild(panel);
+    rendiTrascinabile(panel, document.getElementById('editor-panel-maniglia'));
+    let minimizzato = false;
+    document.getElementById('editor-minimizza-pannello').onclick = () => {
+      minimizzato = !minimizzato;
+      document.getElementById('editor-panel-corpo').style.display = minimizzato ? 'none' : 'block';
+      document.getElementById('editor-minimizza-pannello').textContent = minimizzato ? '⬆' : '➖';
+    };
     document.getElementById('editor-chiudi-pannello').onclick = () => deselezionaElemento();
     document.getElementById('editor-btn-annulla-elemento').onclick = () => {
       if (!elementoSelezionato) return;
@@ -4062,7 +4099,7 @@ function setupStrategiaAsta() {
     elementoSelezionato = el;
     el.classList.add('editor-elemento-selezionato');
     const panel = document.getElementById('editor-panel-controlli');
-    panel.style.display = 'block';
+    panel.style.display = 'flex';
     renderControlliPer(el);
     creaTiratoriRedimensiona(el);
   }
