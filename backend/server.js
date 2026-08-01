@@ -1181,6 +1181,60 @@ app.post('/api/asta/:id/riprendi', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// Scarica lo snapshot completo dell'asta (stesso formato usato internamente per il backup)
+// per permettere al creatore di conservare una propria copia locale, da poter ri-uploadare
+// in seguito con /api/asta/ripristina-da-file se il backup automatico su Supabase non fosse
+// disponibile per qualsiasi motivo. Solo il creatore dell'asta può scaricarlo.
+app.get('/api/asta/:id/mio-backup', async (req, res) => {
+  const utente = await getUtenteDaToken(req);
+  if (!utente) return res.status(401).json({ error: 'Login richiesto' });
+  const astaId = req.params.id;
+
+  let asta = aste.get(astaId);
+  let snap;
+  if (asta) {
+    if (asta.creatorUserId !== utente.userId) return res.status(403).json({ error: 'Non sei il creatore di questa asta' });
+    snap = { backup: true, timestamp: new Date().toISOString(), asta: JSON.parse(JSON.stringify(asta)) };
+  } else {
+    if (!supabaseAdmin) return res.status(500).json({ error: 'Supabase non configurato sul server' });
+    try {
+      const { data, error } = await supabaseAdmin.from('asta_backups').select('payload').eq('asta_id', astaId).single();
+      if (error || !data || !data.payload) return res.status(404).json({ error: 'Nessun backup trovato per questa asta' });
+      snap = data.payload;
+      if (!snap.asta || snap.asta.creatorUserId !== utente.userId) return res.status(403).json({ error: 'Non sei il creatore di questa asta' });
+    } catch (e) { return res.status(500).json({ error: e.message }); }
+  }
+  res.setHeader('Content-Disposition', 'attachment; filename="backup-asta-' + astaId + '.json"');
+  res.json(snap);
+});
+
+// Ripristina un'asta a partire da un file di backup caricato manualmente dal creatore
+// (seconda via di recupero, indipendente dal backup automatico su Supabase). Il file deve
+// essere esattamente uno scaricato tramite /api/asta/:id/mio-backup (stesso formato).
+// Per sicurezza, viene verificato che l'asta contenuta nel file appartenga davvero
+// all'utente loggato, prima di rimetterla in memoria e generare un nuovo adminToken.
+app.post('/api/asta/ripristina-da-file', async (req, res) => {
+  const utente = await getUtenteDaToken(req);
+  if (!utente) return res.status(401).json({ error: 'Login richiesto' });
+  try {
+    const snap = req.body;
+    if (!snap || !snap.asta || !snap.asta.id) return res.status(400).json({ error: 'File non valido: struttura asta mancante' });
+    if (snap.asta.creatorUserId !== utente.userId) return res.status(403).json({ error: 'Questo file non appartiene a un\'asta creata da te' });
+
+    let asta = aste.get(snap.asta.id);
+    if (asta) {
+      if (asta.creatorUserId !== utente.userId) return res.status(403).json({ error: 'Non sei il creatore di questa asta' });
+      return res.json({ success: true, astaId: asta.id, adminToken: asta.adminToken, ricostruita: false });
+    }
+
+    asta = ripristinaAstaInMemoria(snap);
+    if (!asta) return res.status(500).json({ error: 'File corrotto, impossibile ripristinare' });
+    asta.adminToken = uuidv4();
+    saveBackup(asta);
+    res.json({ success: true, astaId: asta.id, adminToken: asta.adminToken, ricostruita: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // Auto-save every 30s — esclude 'attesa' (nulla da salvare) e 'completata' (il backup di
 // un'asta conclusa viene eliminato esplicitamente in termina-asta: risalvarlo qui ogni 30s
 // lo farebbe reapparire per sempre come riga orfana in asta_backups).
