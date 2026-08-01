@@ -1474,35 +1474,48 @@ body:has(#screen-asta.active) .user-email-badge{display:none}
   #screen-asta.active { overflow-x:hidden!important; }
   .asta-row-puja,
   .puja-panel-slot,
+  body.layout-partecipante .puja-panel-slot,
   body.layout-admin .asta-row-puja {
     flex-direction:column!important;
     width:100%!important; max-width:100%!important;
+    min-width:0!important;
     box-sizing:border-box!important;
+    overflow-x:hidden!important;
   }
   .asta-row-puja .card-timer-group,
   .puja-panel-slot .card-timer-group,
+  body.layout-partecipante .puja-panel-slot .card-timer-group,
   body.layout-admin .asta-row-puja .card-timer-group {
     flex-direction:column!important;
     width:100%!important; max-width:100%!important;
+    min-width:0!important;
     border-right:none!important; padding-right:0!important;
   }
   .asta-row-puja .rilancio-box,
   .puja-panel-slot .rilancio-box,
+  body.layout-partecipante .puja-panel-slot .rilancio-box,
   body.layout-admin .asta-row-puja .rilancio-box {
     position:static!important; bottom:auto!important; left:auto!important; right:auto!important; top:auto!important;
-    width:100%!important; max-width:100%!important;
+    width:100%!important; max-width:100%!important; min-width:0!important;
     flex:1 1 100%!important;
     box-sizing:border-box!important;
+    display:flex!important; flex-direction:column!important;
   }
   .puja-panel-slot .chiamata-card,
+  body.layout-partecipante .puja-panel-slot .chiamata-card,
   body.layout-admin .asta-row-puja .chiamata-card {
-    width:100%!important; max-width:100%!important;
+    width:100%!important; max-width:100%!important; min-width:0!important;
     box-sizing:border-box!important;
   }
-  .quick-bids-row, .manual-bid-row {
-    flex-wrap:wrap!important; width:100%!important; max-width:100%!important;
+  .quick-bids-row, .manual-bid-row,
+  body.layout-partecipante .puja-panel-slot .quick-bids-row,
+  body.layout-partecipante .puja-panel-slot .manual-bid-row {
+    flex-wrap:wrap!important; width:100%!important; max-width:100%!important; min-width:0!important;
+    box-sizing:border-box!important;
   }
-  .btn-quick, .btn-rilancia, .inp-rilancio, .btn-manuale {
-    max-width:100%!important; box-sizing:border-box!important;
+  .btn-quick, .btn-rilancia, .inp-rilancio, .btn-manuale,
+  body.layout-partecipante .puja-panel-slot .btn-quick,
+  body.layout-partecipante .puja-panel-slot .inp-rilancio {
+    max-width:100%!important; box-sizing:border-box!important; min-width:0!important; flex:1 1 auto!important;
   }
 }
