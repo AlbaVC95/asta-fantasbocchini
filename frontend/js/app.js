@@ -860,7 +860,8 @@ function setupHome() {
       minimoMovimento: parseInt(document.getElementById('inp-min-mov').value),
       maxGiocatoriPerSquadra: parseInt(document.getElementById('inp-max-gioc').value) || 25,
       svincoliTotali: parseInt(document.getElementById('inp-svincoli').value) || 15,
-      squadreJson: window._jsonData ? window._jsonData.squadre : null
+      squadreJson: window._jsonData ? window._jsonData.squadre : null,
+      svincolatiJson: window._jsonData ? window._jsonData.svincolati : null
     };
     try {
       const { data: sessData } = await supa.auth.getSession();
