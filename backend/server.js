@@ -430,6 +430,20 @@ app.post('/api/asta', async (req, res) => {
     });
   }
 
+  if (b.svincolatiJson && Array.isArray(b.svincolatiJson)) {
+    b.svincolatiJson.forEach(g => {
+      asta.poolGiocatori.push({
+        id: uuidv4(), nome: g.nome, ruolo: g.ruolo || '', tipo: 'NN',
+        costoOriginale: g.costo || 1, valore: g.valore || 0, squadraOriginale: null,
+        estratto: false, assegnato: false, scartato: false,
+        squadra: g.squadra || null,
+        pgv: g.pgv ?? null, mv: g.mv ?? null, fm: g.fm ?? null,
+        fvmp600: g.fvmp600 ?? null, qam: g.qam ?? null,
+        idFantaleghe: g.idFantaleghe ?? null
+      });
+    });
+  }
+
   aste.set(id, asta);
   res.json({ success: true, astaId: id, link: `/?id=${id}`, adminToken });
 });
