@@ -491,7 +491,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     history.replaceState({}, '', '/?id=' + sess.astaId);
     setTimeout(() => fetchAstaSquadrePerJoin(sess.astaId), 400);
   }
-  setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs(); setupLogin(); setupMenu(); setupStrategie(); setupEditor(); setupStrategiaAsta(); setupAnteprima(); setupRoseCompatta(); setupAstaMobileAccordion();
+  setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs(); setupLogin(); setupMenu(); setupStrategie(); setupEditor(); setupStrategiaAsta(); setupAnteprima(); setupRoseCompatta(); setupAstaMobileAccordion(); setupRipristinaDaFile();
   // Warn before leaving page if in active asta
   window.addEventListener('beforeunload', (e) => {
     if (S.astaId && S.asta && S.asta.stato === 'in_corso') {
@@ -564,7 +564,10 @@ async function caricaMieAste() {
       const statoLabel = a.stato === 'attesa' ? 'In attesa' : a.stato === 'in_corso' ? 'In corso' : a.stato;
       return '<div class="settings-field" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">' +
         '<div><strong>' + nomeEsc + '</strong><br><span class="hint-text">' + statoLabel + ' · ' + (a.numSquadre || 0) + ' squadre</span></div>' +
-        '<button type="button" class="btn btn-primary" onclick="riprendiAsta(\'' + a.astaId + '\')">▶️ Riprendi</button>' +
+        '<div style="display:flex;gap:8px">' +
+          '<button type="button" class="btn btn-secondary" title="Scarica un backup di questa asta sul tuo dispositivo" onclick="scaricaBackupAsta(\'' + a.astaId + '\')">⬇️</button>' +
+          '<button type="button" class="btn btn-primary" onclick="riprendiAsta(\'' + a.astaId + '\')">▶️ Riprendi</button>' +
+        '</div>' +
       '</div>';
     }).join('');
   } catch (e) { card.style.display = 'none'; }
@@ -584,6 +587,57 @@ window.riprendiAsta = async function(astaId) {
     window.location.href = window.location.origin + '/?id=' + data.astaId + '&admin=' + data.adminToken;
   } catch (e) { toast('Errore di rete nel riprendere l\'asta', 'error'); }
 };
+
+// Scarica un backup completo dell'asta (stesso file usabile poi con "Ripristina da file")
+// come seconda via di recupero manuale, indipendente dal backup automatico su Supabase.
+window.scaricaBackupAsta = async function(astaId) {
+  try {
+    const { data: sessData } = await supa.auth.getSession();
+    const accessToken = sessData && sessData.session ? sessData.session.access_token : null;
+    if (!accessToken) return toast('Devi accedere per scaricare il backup', 'error');
+    const res = await fetch('/api/asta/' + astaId + '/mio-backup', { headers: { 'Authorization': 'Bearer ' + accessToken } });
+    const data = await res.json();
+    if (!res.ok) return toast(data.error || 'Impossibile scaricare il backup', 'error');
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    _triggerBlobDownload(new Blob([JSON.stringify(data)], { type: 'application/json' }), 'backup-asta-' + astaId + '-' + ts + '.json');
+    toast('Backup scaricato', 'success');
+  } catch (e) { toast('Errore di rete nello scaricare il backup', 'error'); }
+};
+
+// Ripristina un'asta a partire da un file di backup caricato manualmente (seconda via di
+// recupero, se per qualsiasi motivo il backup automatico su Supabase non fosse disponibile).
+function setupRipristinaDaFile() {
+  const btn = document.getElementById('btn-ripristina-file');
+  const inp = document.getElementById('inp-ripristina-file');
+  if (!btn || !inp) return;
+  btn.addEventListener('click', () => inp.click());
+  inp.addEventListener('change', () => {
+    const file = inp.files[0];
+    inp.value = '';
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const snap = JSON.parse(e.target.result);
+        const { data: sessData } = await supa.auth.getSession();
+        const accessToken = sessData && sessData.session ? sessData.session.access_token : null;
+        if (!accessToken) return toast('Devi accedere per ripristinare un\'asta', 'error');
+        const res = await fetch('/api/asta/ripristina-da-file', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken },
+          body: JSON.stringify(snap)
+        });
+        const data = await res.json();
+        if (!data.success) return toast(data.error || 'Impossibile ripristinare da questo file', 'error');
+        S.astaId = data.astaId; S.adminToken = data.adminToken; S.isAdmin = true;
+        S.miaSquadra = null;
+        salvaSessione();
+        window.location.href = window.location.origin + '/?id=' + data.astaId + '&admin=' + data.adminToken;
+      } catch (err) { toast('File non valido', 'error'); }
+    };
+    reader.readAsText(file);
+  });
+}
 
 function setupLogin() {
   const btnLogin = document.getElementById('btn-login');
