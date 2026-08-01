@@ -3939,15 +3939,25 @@ function setupStrategiaAsta() {
   }
 
   const CONTROLLI = [
-    { label: 'Larghezza', prop: 'width', tipo: 'text', placeholder: 'es. 220px, 100%' },
-    { label: 'Altezza', prop: 'height', tipo: 'text', placeholder: 'es. 60px, auto' },
-    { label: 'Padding interno', prop: 'padding', tipo: 'text', placeholder: 'es. 10px' },
-    { label: 'Margine esterno', prop: 'margin', tipo: 'text', placeholder: 'es. 8px' },
+    { label: 'Larghezza (px)', prop: 'width', tipo: 'slider', min: 0, max: 800, unit: 'px', step: 1 },
+    { label: 'Altezza (px)', prop: 'height', tipo: 'slider', min: 0, max: 600, unit: 'px', step: 1 },
+    { label: 'Padding interno (px)', prop: 'padding', tipo: 'slider', min: 0, max: 80, unit: 'px', step: 1 },
+    { label: 'Margine esterno (px)', prop: 'margin', tipo: 'slider', min: 0, max: 80, unit: 'px', step: 1 },
     { label: 'Colore sfondo', prop: 'background-color', tipo: 'color' },
     { label: 'Colore testo', prop: 'color', tipo: 'color' },
-    { label: 'Dimensione testo', prop: 'font-size', tipo: 'text', placeholder: 'es. 1rem, 16px' },
-    { label: 'Angoli arrotondati', prop: 'border-radius', tipo: 'text', placeholder: 'es. 12px' },
+    { label: 'Dimensione testo (px)', prop: 'font-size', tipo: 'slider', min: 8, max: 48, unit: 'px', step: 1 },
+    { label: 'Angoli arrotondati (px)', prop: 'border-radius', tipo: 'slider', min: 0, max: 60, unit: 'px', step: 1 },
+    { label: 'Grassetto', prop: 'font-weight', tipo: 'select', opzioni: [['', 'Normale'], ['700', 'Grassetto'], ['300', 'Sottile']] },
+    { label: 'Allineamento testo', prop: 'text-align', tipo: 'select', opzioni: [['', 'Predefinito'], ['left', 'Sinistra'], ['center', 'Centro'], ['right', 'Destra']] },
+    { label: 'Ombra', prop: 'box-shadow', tipo: 'select', opzioni: [['', 'Nessuna'], ['0 2px 8px rgba(0,0,0,.35)', 'Leggera'], ['0 6px 20px rgba(0,0,0,.5)', 'Media'], ['0 0 30px rgba(255,179,0,.5)', 'Bagliore dorato']] },
+    { label: 'Opacità', prop: 'opacity', tipo: 'slider', min: 0.1, max: 1, unit: '', step: 0.05 },
   ];
+
+  function parseNumero(v, fallback) {
+    if (!v) return fallback;
+    const n = parseFloat(String(v).replace(/[^\d.]/g, ''));
+    return isNaN(n) ? fallback : n;
+  }
 
   function renderControlliPer(el) {
     const sel = selettoreDi(el);
@@ -3961,16 +3971,26 @@ function setupStrategiaAsta() {
       if (c.tipo === 'color') {
         wrap.innerHTML = `<label style="display:block;margin-bottom:2px">${c.label}</label>
           <input type="color" data-prop="${c.prop}" value="${val && val.startsWith('#') ? val : '#ffffff'}" style="width:100%;height:28px;border:none;border-radius:4px;cursor:pointer">`;
-      } else {
+      } else if (c.tipo === 'select') {
+        const opts = c.opzioni.map(o => `<option value="${o[0]}" ${val === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('');
         wrap.innerHTML = `<label style="display:block;margin-bottom:2px">${c.label}</label>
-          <input type="text" data-prop="${c.prop}" value="${val}" placeholder="${c.placeholder || ''}"
-            style="width:100%;padding:5px;border-radius:4px;border:1px solid #555;background:#111;color:#fff;font-size:.78rem">`;
+          <select data-prop="${c.prop}" style="width:100%;padding:5px;border-radius:4px;border:1px solid #555;background:#111;color:#fff;font-size:.78rem">${opts}</select>`;
+      } else { // slider
+        const attuale = parseNumero(val, c.min);
+        wrap.innerHTML = `<label style="display:flex;justify-content:space-between;margin-bottom:2px"><span>${c.label}</span><span data-valore-di="${c.prop}">${val || '—'}</span></label>
+          <input type="range" data-prop="${c.prop}" data-unit="${c.unit}" min="${c.min}" max="${c.max}" step="${c.step}" value="${attuale}" style="width:100%">`;
       }
       lista.appendChild(wrap);
-      const input = wrap.querySelector('input');
+      const input = wrap.querySelector('input, select');
       input.addEventListener('input', () => {
         const prop = input.dataset.prop;
-        const value = input.value;
+        let value = input.value;
+        if (input.type === 'range') {
+          const unit = input.dataset.unit || '';
+          value = value + unit;
+          const label = wrap.querySelector(`[data-valore-di="${prop}"]`);
+          if (label) label.textContent = value;
+        }
         if (!overridesCorrenti[sel]) overridesCorrenti[sel] = {};
         if (value) overridesCorrenti[sel][prop] = value;
         else delete overridesCorrenti[sel][prop];
@@ -3979,17 +3999,78 @@ function setupStrategiaAsta() {
     });
   }
 
+  function creaTiratoriRedimensiona(el) {
+    rimuoviTiratori();
+    const posizioni = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
+    posizioni.forEach(pos => {
+      const t = document.createElement('div');
+      t.className = 'editor-tiratore editor-tiratore-' + pos;
+      t.dataset.pos = pos;
+      document.body.appendChild(t);
+      t.addEventListener('mousedown', (e) => iniziaResize(e, el, pos));
+    });
+    posizionaTiratori(el);
+  }
+
+  function rimuoviTiratori() {
+    document.querySelectorAll('.editor-tiratore').forEach(t => t.remove());
+  }
+
+  function posizionaTiratori(el) {
+    const r = el.getBoundingClientRect();
+    const mappa = {
+      nw: [r.left, r.top], n: [r.left + r.width / 2, r.top], ne: [r.right, r.top],
+      e: [r.right, r.top + r.height / 2], se: [r.right, r.bottom], s: [r.left + r.width / 2, r.bottom],
+      sw: [r.left, r.bottom], w: [r.left, r.top + r.height / 2]
+    };
+    document.querySelectorAll('.editor-tiratore').forEach(t => {
+      const [x, y] = mappa[t.dataset.pos];
+      t.style.left = (x - 5) + 'px';
+      t.style.top = (y - 5) + 'px';
+    });
+  }
+
+  function iniziaResize(e, el, pos) {
+    e.preventDefault(); e.stopPropagation();
+    const startX = e.clientX, startY = e.clientY;
+    const r = el.getBoundingClientRect();
+    const startW = r.width, startH = r.height;
+    function onMove(ev) {
+      const dx = ev.clientX - startX, dy = ev.clientY - startY;
+      let nuovaW = startW, nuovaH = startH;
+      if (pos.includes('e')) nuovaW = Math.max(20, startW + dx);
+      if (pos.includes('w')) nuovaW = Math.max(20, startW - dx);
+      if (pos.includes('s')) nuovaH = Math.max(20, startH + dy);
+      if (pos.includes('n')) nuovaH = Math.max(20, startH - dy);
+      const sel = selettoreDi(el);
+      if (!overridesCorrenti[sel]) overridesCorrenti[sel] = {};
+      if (pos !== 'n' && pos !== 's') overridesCorrenti[sel]['width'] = Math.round(nuovaW) + 'px';
+      if (pos !== 'e' && pos !== 'w') overridesCorrenti[sel]['height'] = Math.round(nuovaH) + 'px';
+      applicaOverridesAlDOM();
+      posizionaTiratori(el);
+      renderControlliPer(el);
+    }
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }
+
   function selezionaElemento(el) {
     elementoSelezionato = el;
     el.classList.add('editor-elemento-selezionato');
     const panel = document.getElementById('editor-panel-controlli');
     panel.style.display = 'block';
     renderControlliPer(el);
+    creaTiratoriRedimensiona(el);
   }
 
   function deselezionaElemento() {
     if (elementoSelezionato) elementoSelezionato.classList.remove('editor-elemento-selezionato');
     elementoSelezionato = null;
+    rimuoviTiratori();
     const panel = document.getElementById('editor-panel-controlli');
     if (panel) panel.style.display = 'none';
   }
@@ -4029,17 +4110,43 @@ function setupStrategiaAsta() {
     mostraToast('Modo editor disattivato');
   }
 
+  function apriVistaSimulata(larghezza, etichetta) {
+    let overlay = document.getElementById('editor-vista-overlay');
+    if (overlay) overlay.remove();
+    overlay = document.createElement('div');
+    overlay.id = 'editor-vista-overlay';
+    overlay.style.cssText = `
+      position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200000;
+      display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;`;
+    const url = window.location.origin + window.location.pathname + '?editor=' + encodeURIComponent(editorKey);
+    overlay.innerHTML = `
+      <div style="color:#fff;margin-bottom:10px;font-family:sans-serif;font-size:.85rem;display:flex;align-items:center;gap:12px">
+        <span>👁 Vista simulata: <strong>${etichetta}</strong> (${larghezza}px)</span>
+        <button id="editor-chiudi-vista" style="background:#ff5555;border:none;color:#111;padding:6px 14px;border-radius:16px;cursor:pointer;font-weight:700">✕ Chiudi vista</button>
+      </div>
+      <iframe id="editor-vista-iframe" src="${url}" style="width:${larghezza}px;max-width:95vw;height:80vh;border:3px solid #ffb300;border-radius:12px;background:#fff"></iframe>
+    `;
+    document.body.appendChild(overlay);
+    document.getElementById('editor-chiudi-vista').onclick = () => overlay.remove();
+  }
+
   function creaToolbar() {
     const bar = document.createElement('div');
     bar.id = 'editor-toolbar';
     bar.style.cssText = `
       position:fixed;bottom:16px;right:16px;z-index:100001;
-      display:flex;gap:8px;background:#1c1c2e;padding:8px;border-radius:30px;
+      display:flex;flex-wrap:wrap;gap:8px;max-width:340px;justify-content:flex-end;
+      background:#1c1c2e;padding:8px;border-radius:16px;
       border:2px solid #ffb300;box-shadow:0 4px 20px rgba(0,0,0,.5);`;
     bar.innerHTML = `
       <button id="editor-toggle-btn" style="padding:8px 16px;border-radius:20px;border:none;background:#ffb300;color:#111;font-weight:700;cursor:pointer;font-size:.8rem">🎨 Modo Edizione</button>
       <button id="editor-salva-btn" style="padding:8px 16px;border-radius:20px;border:none;background:#4dff88;color:#111;font-weight:700;cursor:pointer;font-size:.8rem">💾 Salva</button>
       <button id="editor-reset-tutto-btn" style="padding:8px 16px;border-radius:20px;border:none;background:#ff5555;color:#111;font-weight:700;cursor:pointer;font-size:.8rem">🗑 Reset tutto</button>
+      <div style="width:100%;display:flex;gap:6px;justify-content:flex-end;margin-top:2px">
+        <button id="editor-vista-desktop" style="padding:6px 10px;border-radius:14px;border:none;background:#333;color:#fff;cursor:pointer;font-size:.72rem">💻 Desktop</button>
+        <button id="editor-vista-tablet" style="padding:6px 10px;border-radius:14px;border:none;background:#333;color:#fff;cursor:pointer;font-size:.72rem">📱 Tablet</button>
+        <button id="editor-vista-mobile" style="padding:6px 10px;border-radius:14px;border:none;background:#333;color:#fff;cursor:pointer;font-size:.72rem">📱 Móbile</button>
+      </div>
     `;
     document.body.appendChild(bar);
     document.getElementById('editor-toggle-btn').onclick = () => {
@@ -4052,6 +4159,9 @@ function setupStrategiaAsta() {
       applicaOverridesAlDOM();
       deselezionaElemento();
     };
+    document.getElementById('editor-vista-desktop').onclick = () => apriVistaSimulata(1280, 'Desktop');
+    document.getElementById('editor-vista-tablet').onclick = () => apriVistaSimulata(768, 'Tablet');
+    document.getElementById('editor-vista-mobile').onclick = () => apriVistaSimulata(390, 'Móbile');
   }
 
   function iniettaCSSEditor() {
@@ -4060,8 +4170,18 @@ function setupStrategiaAsta() {
       body.editor-modo-attivo * { cursor: crosshair !important; }
       .editor-elemento-hover { outline: 2px dashed #4da3ff !important; outline-offset: 1px; }
       .editor-elemento-selezionato { outline: 3px solid #ffb300 !important; outline-offset: 1px; }
+      .editor-tiratore {
+        position: fixed; width: 10px; height: 10px; background: #ffb300;
+        border: 2px solid #111; border-radius: 50%; z-index: 100002; cursor: pointer;
+      }
+      .editor-tiratore-n, .editor-tiratore-s { cursor: ns-resize; }
+      .editor-tiratore-e, .editor-tiratore-w { cursor: ew-resize; }
+      .editor-tiratore-nw, .editor-tiratore-se { cursor: nwse-resize; }
+      .editor-tiratore-ne, .editor-tiratore-sw { cursor: nesw-resize; }
     `;
     document.head.appendChild(s);
+    window.addEventListener('scroll', () => { if (elementoSelezionato) posizionaTiratori(elementoSelezionato); }, true);
+    window.addEventListener('resize', () => { if (elementoSelezionato) posizionaTiratori(elementoSelezionato); });
   }
 
   function init() {
