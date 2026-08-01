@@ -1614,7 +1614,10 @@ socket.on('popup-post-asta-admin', function(popup) {
   if (!S.isAdmin) return;
   var g = Math.max(0, popup.prezzoFinale - popup.giocatore.costoOriginale);
   var tipoLabel = popup.tipo === 'post-asta-ric' ? 'RIC' : 'PLUS';
-  var infoTxt = tipoLabel + ' — ' + popup.giocatore.nome + ' → ' + popup.squadraVincitrice + ' @ ' + popup.prezzoFinale + 'cr';
+  var propOriginale = popup.proprietarioPrecedente || '?';
+  // Fix chiarezza: senza il nome della squadra originale, l'admin non capiva a chi si
+  // riferisse l'avviso (vedeva solo il vincitore dell'asta, non chi doveva decidere).
+  var infoTxt = propOriginale + ' potrebbe riprendersi ' + popup.giocatore.nome + ' (' + tipoLabel + ', ora di ' + popup.squadraVincitrice + ' @ ' + popup.prezzoFinale + 'cr)';
   if (popup.opzioni.plusvalenza) infoTxt += ' | Plus +' + g + 'cr';
   if (popup.opzioni.recompra) infoTxt += ' | Recompra ' + (popup.prezzoFinale + 1) + 'cr';
   document.getElementById('popup-override-chi').textContent = infoTxt;
