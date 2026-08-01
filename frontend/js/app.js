@@ -828,10 +828,12 @@ function setupHome() {
   const btnChoiceJson = document.getElementById('btn-choice-json');
   const inpExcelChoice = document.getElementById('inp-excel-choice');
   const btnBackHome = document.getElementById('btn-back-home');
+  const btnBackHomeMenu = document.getElementById('btn-back-home-menu');
   if (btnChoiceJson) btnChoiceJson.addEventListener('click', () => showScreen('screen-crea-asta'));
   if (btnChoiceExcel) btnChoiceExcel.addEventListener('click', () => inpExcelChoice.click());
   if (inpExcelChoice) inpExcelChoice.addEventListener('change', () => handleExcelFile(inpExcelChoice.files[0]));
   if (btnBackHome) btnBackHome.addEventListener('click', () => showScreen('screen-home'));
+  if (btnBackHomeMenu) btnBackHomeMenu.addEventListener('click', () => showScreen('screen-menu-principale'));
   const inpTipo = document.getElementById('inp-tipo-asta');
   inpTipo.addEventListener('change', () => {
     document.getElementById('row-sottotipo').style.display = inpTipo.value === 'riparazione' ? 'flex' : 'none';
