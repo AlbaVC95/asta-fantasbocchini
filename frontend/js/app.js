@@ -132,13 +132,32 @@ function mostraNotificaBrowser(titolo, corpo) {
 
 
 // ══ SESSION PERSISTENCE ══════════════════
+// ══ SIMULAZIONE RUOLO (editor visuale) ══════════════
+// Permette di aprire una vista "utente" o "admin" isolata dentro un iframe della
+// stessa pagina SENZA leggere/sovrascrivere la sessione reale salvata in localStorage
+// dell'utente che sta usando l'editor — così si possono avere entrambi i ruoli aperti
+// contemporaneamente senza che si "rubino" la sessione a vicenda.
+window._simParams = (function () {
+  const p = new URLSearchParams(window.location.search);
+  const ruolo = p.get('simRuolo');
+  if (!ruolo) return null;
+  return {
+    ruolo,
+    astaId: p.get('simAstaId') || '',
+    nome: p.get('simNome') || 'Test',
+    adminToken: p.get('simAdminToken') || null
+  };
+})();
+
 function salvaSessione() {
+  if (window._simParams) return; // non toccare mai la sessione reale durante una simulazione
   if (!S.astaId || !S.miaSquadra) return;
   localStorage.setItem('asta_session', JSON.stringify({
     astaId: S.astaId, nomeSquadra: S.miaSquadra, isAdmin: S.isAdmin, adminToken: S.adminToken || null
   }));
 }
 function cancSessione() {
+  if (window._simParams) return; // non toccare mai la sessione reale durante una simulazione
   // Rimuove anche lo stato locale della asta corrente, per evitare che
   // localStorage accumuli all'infinito una copia completa di ogni asta mai giocata.
   if (S.astaId) { try { localStorage.removeItem('asta_stato_' + S.astaId); } catch(e) {} }
@@ -164,6 +183,16 @@ function _puliziaStatoLocaleVecchio() {
 }
 _puliziaStatoLocaleVecchio();
 function getSessione() {
+  if (window._simParams) {
+    const sp = window._simParams;
+    if (!sp.astaId) return null;
+    return {
+      astaId: sp.astaId,
+      nomeSquadra: sp.nome,
+      isAdmin: sp.ruolo === 'admin',
+      adminToken: sp.ruolo === 'admin' ? sp.adminToken : null
+    };
+  }
   try { return JSON.parse(localStorage.getItem('asta_session') || 'null'); } catch(e) { return null; }
 }
 
@@ -4147,24 +4176,86 @@ function setupStrategiaAsta() {
     mostraToast('Modo editor disattivato');
   }
 
+  function costruisciUrlSimulazione(larghezza) {
+    const ruolo = document.getElementById('editor-vista-ruolo').value;
+    const astaId = document.getElementById('editor-vista-astaid').value.trim();
+    const nome = document.getElementById('editor-vista-nome').value.trim() || 'Test';
+    const p = new URLSearchParams();
+    p.set('editor', editorKey);
+    if (astaId) {
+      p.set('simRuolo', ruolo);
+      p.set('simAstaId', astaId);
+      p.set('simNome', nome);
+      if (ruolo === 'admin' && S.adminToken) p.set('simAdminToken', S.adminToken);
+    }
+    return window.location.origin + window.location.pathname + '?' + p.toString();
+  }
+
+  function aggiornaIframeSimulazione(larghezza, etichetta) {
+    const url = costruisciUrlSimulazione(larghezza);
+    const iframe = document.getElementById('editor-vista-iframe');
+    if (iframe) {
+      iframe.style.width = larghezza + 'px';
+      iframe.src = url;
+    }
+    const lbl = document.getElementById('editor-vista-etichetta');
+    if (lbl) lbl.textContent = etichetta + ' (' + larghezza + 'px)';
+  }
+
   function apriVistaSimulata(larghezza, etichetta) {
     let overlay = document.getElementById('editor-vista-overlay');
     if (overlay) overlay.remove();
     overlay = document.createElement('div');
     overlay.id = 'editor-vista-overlay';
     overlay.style.cssText = `
-      position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200000;
-      display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;`;
-    const url = window.location.origin + window.location.pathname + '?editor=' + encodeURIComponent(editorKey);
+      position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200000;
+      display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px;overflow-y:auto;`;
+    const astaIdAttuale = S.astaId || '';
     overlay.innerHTML = `
-      <div style="color:#fff;margin-bottom:10px;font-family:sans-serif;font-size:.85rem;display:flex;align-items:center;gap:12px">
-        <span>👁 Vista simulata: <strong>${etichetta}</strong> (${larghezza}px)</span>
-        <button id="editor-chiudi-vista" style="background:#ff5555;border:none;color:#111;padding:6px 14px;border-radius:16px;cursor:pointer;font-weight:700">✕ Chiudi vista</button>
+      <div style="width:100%;max-width:900px;color:#fff;font-family:sans-serif;font-size:.8rem;margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+          <span>👁 Vista simulata: <strong id="editor-vista-etichetta">${etichetta} (${larghezza}px)</strong></span>
+          <button id="editor-chiudi-vista" style="background:#ff5555;border:none;color:#111;padding:6px 14px;border-radius:16px;cursor:pointer;font-weight:700">✕ Chiudi vista</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;background:#1c1c2e;border:1px solid #ffb300;border-radius:10px;padding:10px">
+          <div>
+            <label style="display:block;margin-bottom:2px;color:#aaa">Ruolo da simulare</label>
+            <select id="editor-vista-ruolo" style="padding:6px;border-radius:6px;border:1px solid #555;background:#111;color:#fff">
+              <option value="utente">👤 Utente (partecipante)</option>
+              <option value="admin">👑 Admin</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block;margin-bottom:2px;color:#aaa">ID Asta</label>
+            <input id="editor-vista-astaid" type="text" value="${astaIdAttuale}" placeholder="es. ABC123" style="padding:6px;border-radius:6px;border:1px solid #555;background:#111;color:#fff;width:130px">
+          </div>
+          <div>
+            <label style="display:block;margin-bottom:2px;color:#aaa">Nome squadra di test</label>
+            <input id="editor-vista-nome" type="text" value="Test Utente" style="padding:6px;border-radius:6px;border:1px solid #555;background:#111;color:#fff;width:150px">
+          </div>
+          <button id="editor-vista-carica" style="padding:8px 16px;border-radius:8px;border:none;background:#4dff88;color:#111;font-weight:700;cursor:pointer">▶ Carica vista</button>
+        </div>
+        <div style="margin-top:6px;color:#999;font-size:.7rem">
+          Nota: questa vista simulata NON tocca la tua sessione reale — puoi tenerla aperta insieme alla tua vista normale senza conflitti.
+          Se lasci "ID Asta" vuoto, si aprirà la schermata home normale.
+        </div>
       </div>
-      <iframe id="editor-vista-iframe" src="${url}" style="width:${larghezza}px;max-width:95vw;height:80vh;border:3px solid #ffb300;border-radius:12px;background:#fff"></iframe>
+      <iframe id="editor-vista-iframe" src="${costruisciUrlSimulataIniziale(astaIdAttuale, larghezza)}" style="width:${larghezza}px;max-width:95vw;height:65vh;border:3px solid #ffb300;border-radius:12px;background:#fff"></iframe>
     `;
     document.body.appendChild(overlay);
     document.getElementById('editor-chiudi-vista').onclick = () => overlay.remove();
+    document.getElementById('editor-vista-carica').onclick = () => aggiornaIframeSimulazione(larghezza, etichetta);
+  }
+
+  function costruisciUrlSimulataIniziale(astaId, larghezza) {
+    const p = new URLSearchParams();
+    p.set('editor', editorKey);
+    if (astaId) {
+      p.set('simRuolo', 'utente');
+      p.set('simAstaId', astaId);
+      p.set('simNome', 'Test Utente');
+    }
+    return window.location.origin + window.location.pathname + '?' + p.toString();
   }
 
   function creaToolbar() {
