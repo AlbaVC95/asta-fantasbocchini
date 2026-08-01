@@ -3894,13 +3894,30 @@ function setupStrategiaAsta() {
     document.head.appendChild(styleSheetOverride);
   }
 
+  // Le proprietà che iniziano con "_" sono pseudo-proprietà interne che vengono combinate
+  // in un\'unica regola CSS "transform" — così spostare/ruotare/scalare un elemento con
+  // 3 slider indipendenti non sovrascrive gli altri (transform accetta solo 1 valore).
+  function costruisciTransformCss(props) {
+    const parti = [];
+    if (props['_translateX'] || props['_translateY']) {
+      parti.push(`translate(${props['_translateX'] || '0px'}, ${props['_translateY'] || '0px'})`);
+    }
+    if (props['_rotate']) parti.push(`rotate(${props['_rotate']})`);
+    if (props['_scale']) parti.push(`scale(${props['_scale']})`);
+    return parti.length ? parti.join(' ') : null;
+  }
+
   function applicaOverridesAlDOM() {
     if (!styleSheetOverride) creaStylesheetOverride();
     let css = '';
     Object.keys(overridesCorrenti).forEach(sel => {
       const props = overridesCorrenti[sel];
-      const propsCss = Object.keys(props).map(p => `${p}:${props[p]} !important;`).join('');
-      css += `${sel}{${propsCss}}\n`;
+      const transformCss = costruisciTransformCss(props);
+      const propsCss = Object.keys(props)
+        .filter(p => !p.startsWith('_'))
+        .map(p => `${p}:${props[p]} !important;`).join('');
+      const transformDecl = transformCss ? `transform:${transformCss} !important;` : '';
+      css += `${sel}{${propsCss}${transformDecl}}\n`;
     });
     styleSheetOverride.textContent = css;
   }
@@ -4004,32 +4021,67 @@ function setupStrategiaAsta() {
     return panel;
   }
 
-  const CONTROLLI = [
-    { label: 'Larghezza (px)', prop: 'width', tipo: 'slider', min: 0, max: 800, unit: 'px', step: 1 },
-    { label: 'Altezza (px)', prop: 'height', tipo: 'slider', min: 0, max: 600, unit: 'px', step: 1 },
-    { label: 'Padding interno (px)', prop: 'padding', tipo: 'slider', min: 0, max: 80, unit: 'px', step: 1 },
-    { label: 'Margine esterno (px)', prop: 'margin', tipo: 'slider', min: 0, max: 80, unit: 'px', step: 1 },
-    { label: 'Colore sfondo', prop: 'background-color', tipo: 'color' },
-    { label: 'Colore testo', prop: 'color', tipo: 'color' },
-    { label: 'Dimensione testo (px)', prop: 'font-size', tipo: 'slider', min: 8, max: 48, unit: 'px', step: 1 },
-    { label: 'Angoli arrotondati (px)', prop: 'border-radius', tipo: 'slider', min: 0, max: 60, unit: 'px', step: 1 },
-    { label: 'Grassetto', prop: 'font-weight', tipo: 'select', opzioni: [['', 'Normale'], ['700', 'Grassetto'], ['300', 'Sottile']] },
-    { label: 'Allineamento testo', prop: 'text-align', tipo: 'select', opzioni: [['', 'Predefinito'], ['left', 'Sinistra'], ['center', 'Centro'], ['right', 'Destra']] },
-    { label: 'Ombra', prop: 'box-shadow', tipo: 'select', opzioni: [['', 'Nessuna'], ['0 2px 8px rgba(0,0,0,.35)', 'Leggera'], ['0 6px 20px rgba(0,0,0,.5)', 'Media'], ['0 0 30px rgba(255,179,0,.5)', 'Bagliore dorato']] },
-    { label: 'Opacità', prop: 'opacity', tipo: 'slider', min: 0.1, max: 1, unit: '', step: 0.05 },
-    { label: 'Animazione', prop: 'animation', tipo: 'select', opzioni: [
-      ['', 'Nessuna'],
-      ['editor-anim-pulse 1.6s ease-in-out infinite', 'Pulsazione'],
-      ['editor-anim-bounce 1.2s ease-in-out infinite', 'Rimbalzo'],
-      ['editor-anim-shake .5s ease-in-out infinite', 'Vibrazione'],
-      ['editor-anim-glow 2s ease-in-out infinite', 'Bagliore pulsante'],
-      ['editor-anim-fadein .6s ease-out 1', 'Apparizione (una volta)'],
-    ] },
+  // Controlli organizzati in categorie pieghevoli. I prop che iniziano con "_" sono
+  // pseudo-proprietà combinate in transform (vedi costruisciTransformCss).
+  const CATEGORIE_CONTROLLI = [
+    { titolo: '↕️ Sposta (senza rompere il layout)', apertoDiDefault: true, controlli: [
+      { label: 'Sposta orizzontale (px)', prop: '_translateX', tipo: 'slider', min: -200, max: 200, unit: 'px', step: 1 },
+      { label: 'Sposta verticale (px)', prop: '_translateY', tipo: 'slider', min: -200, max: 200, unit: 'px', step: 1 },
+      { label: 'Ruota (gradi)', prop: '_rotate', tipo: 'slider', min: -180, max: 180, unit: 'deg', step: 1 },
+      { label: 'Scala (zoom)', prop: '_scale', tipo: 'slider', min: 0.3, max: 2, unit: '', step: 0.05 },
+    ]},
+    { titolo: '📐 Dimensioni', apertoDiDefault: true, controlli: [
+      { label: 'Larghezza (px)', prop: 'width', tipo: 'slider', min: 0, max: 800, unit: 'px', step: 1 },
+      { label: 'Altezza (px)', prop: 'height', tipo: 'slider', min: 0, max: 600, unit: 'px', step: 1 },
+      { label: 'Larghezza minima (px)', prop: 'min-width', tipo: 'slider', min: 0, max: 400, unit: 'px', step: 1 },
+    ]},
+    { titolo: '📦 Spaziatura', apertoDiDefault: false, controlli: [
+      { label: 'Padding interno (px)', prop: 'padding', tipo: 'slider', min: 0, max: 80, unit: 'px', step: 1 },
+      { label: 'Margine esterno (px)', prop: 'margin', tipo: 'slider', min: 0, max: 80, unit: 'px', step: 1 },
+      { label: 'Spazio tra elementi (gap, px)', prop: 'gap', tipo: 'slider', min: 0, max: 60, unit: 'px', step: 1 },
+    ]},
+    { titolo: '🎨 Colori', apertoDiDefault: false, controlli: [
+      { label: 'Colore sfondo', prop: 'background-color', tipo: 'color' },
+      { label: 'Colore testo', prop: 'color', tipo: 'color' },
+      { label: 'Colore bordo', prop: 'border-color', tipo: 'color' },
+    ]},
+    { titolo: '🔤 Tipografia', apertoDiDefault: false, controlli: [
+      { label: 'Dimensione testo (px)', prop: 'font-size', tipo: 'slider', min: 8, max: 48, unit: 'px', step: 1 },
+      { label: 'Spaziatura lettere (px)', prop: 'letter-spacing', tipo: 'slider', min: -2, max: 10, unit: 'px', step: 0.5 },
+      { label: 'Altezza riga', prop: 'line-height', tipo: 'slider', min: 0.8, max: 2.5, unit: '', step: 0.05 },
+      { label: 'Grassetto', prop: 'font-weight', tipo: 'select', opzioni: [['', 'Normale'], ['700', 'Grassetto'], ['300', 'Sottile'], ['900', 'Extra bold']] },
+      { label: 'Corsivo', prop: 'font-style', tipo: 'select', opzioni: [['', 'No'], ['italic', 'Sì']] },
+      { label: 'Maiuscole/minuscole', prop: 'text-transform', tipo: 'select', opzioni: [['', 'Predefinito'], ['uppercase', 'MAIUSCOLE'], ['lowercase', 'minuscole'], ['capitalize', 'Iniziali Maiuscole']] },
+      { label: 'Allineamento testo', prop: 'text-align', tipo: 'select', opzioni: [['', 'Predefinito'], ['left', 'Sinistra'], ['center', 'Centro'], ['right', 'Destra']] },
+      { label: 'Sottolineato', prop: 'text-decoration', tipo: 'select', opzioni: [['', 'No'], ['underline', 'Sì'], ['line-through', 'Barrato']] },
+    ]},
+    { titolo: '🖼️ Bordi', apertoDiDefault: false, controlli: [
+      { label: 'Angoli arrotondati (px)', prop: 'border-radius', tipo: 'slider', min: 0, max: 60, unit: 'px', step: 1 },
+      { label: 'Spessore bordo (px)', prop: 'border-width', tipo: 'slider', min: 0, max: 10, unit: 'px', step: 1 },
+      { label: 'Stile bordo', prop: 'border-style', tipo: 'select', opzioni: [['solid', 'Continuo'], ['dashed', 'Tratteggiato'], ['dotted', 'Puntinato'], ['double', 'Doppio'], ['none', 'Nessuno']] },
+    ]},
+    { titolo: '✨ Effetti', apertoDiDefault: false, controlli: [
+      { label: 'Ombra', prop: 'box-shadow', tipo: 'select', opzioni: [['', 'Nessuna'], ['0 2px 8px rgba(0,0,0,.35)', 'Leggera'], ['0 6px 20px rgba(0,0,0,.5)', 'Media'], ['0 0 30px rgba(255,179,0,.5)', 'Bagliore dorato'], ['0 0 30px rgba(77,163,255,.6)', 'Bagliore blu']] },
+      { label: 'Opacità', prop: 'opacity', tipo: 'slider', min: 0.1, max: 1, unit: '', step: 0.05 },
+      { label: 'Sfocatura (blur, px)', prop: 'filter', tipo: 'select', opzioni: [['', 'Nessuna'], ['blur(2px)', 'Leggera'], ['blur(5px)', 'Media'], ['grayscale(1)', 'Bianco e nero'], ['brightness(1.3)', 'Più luminoso'], ['brightness(.7)', 'Più scuro']] },
+      { label: 'Cursore al passaggio', prop: 'cursor', tipo: 'select', opzioni: [['', 'Predefinito'], ['pointer', 'Manina (cliccabile)'], ['grab', 'Mano aperta'], ['not-allowed', 'Non permesso']] },
+    ]},
+    { titolo: '🎬 Animazione', apertoDiDefault: false, controlli: [
+      { label: 'Animazione', prop: 'animation', tipo: 'select', opzioni: [
+        ['', 'Nessuna'],
+        ['editor-anim-pulse 1.6s ease-in-out infinite', 'Pulsazione'],
+        ['editor-anim-bounce 1.2s ease-in-out infinite', 'Rimbalzo'],
+        ['editor-anim-shake .5s ease-in-out infinite', 'Vibrazione'],
+        ['editor-anim-glow 2s ease-in-out infinite', 'Bagliore pulsante'],
+        ['editor-anim-fadein .6s ease-out 1', 'Apparizione (una volta)'],
+      ] },
+      { label: 'Transizione fluida', prop: 'transition', tipo: 'select', opzioni: [['', 'Nessuna (cambi scattosi)'], ['all .2s ease', 'Rapida'], ['all .5s ease', 'Media'], ['all 1s ease', 'Lenta']] },
+    ]},
   ];
 
   function parseNumero(v, fallback) {
     if (!v) return fallback;
-    const n = parseFloat(String(v).replace(/[^\d.]/g, ''));
+    const n = parseFloat(String(v).replace(/[^\d.-]/g, ''));
     return isNaN(n) ? fallback : n;
   }
 
@@ -4039,36 +4091,58 @@ function setupStrategiaAsta() {
     const lista = document.getElementById('editor-controlli-lista');
     lista.innerHTML = '';
     const valoriAttuali = overridesCorrenti[sel] || {};
-    CONTROLLI.forEach(c => {
-      const wrap = document.createElement('div');
-      const val = valoriAttuali[c.prop] || '';
-      if (c.tipo === 'color') {
-        wrap.innerHTML = `<label style="display:block;margin-bottom:2px">${c.label}</label>
-          <input type="color" data-prop="${c.prop}" value="${val && val.startsWith('#') ? val : '#ffffff'}" style="width:100%;height:28px;border:none;border-radius:4px;cursor:pointer">`;
-      } else if (c.tipo === 'select') {
-        const opts = c.opzioni.map(o => `<option value="${o[0]}" ${val === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('');
-        wrap.innerHTML = `<label style="display:block;margin-bottom:2px">${c.label}</label>
-          <select data-prop="${c.prop}" style="width:100%;padding:5px;border-radius:4px;border:1px solid #555;background:#111;color:#fff;font-size:.78rem">${opts}</select>`;
-      } else { // slider
-        const attuale = parseNumero(val, c.min);
-        wrap.innerHTML = `<label style="display:flex;justify-content:space-between;margin-bottom:2px"><span>${c.label}</span><span data-valore-di="${c.prop}">${val || '—'}</span></label>
-          <input type="range" data-prop="${c.prop}" data-unit="${c.unit}" min="${c.min}" max="${c.max}" step="${c.step}" value="${attuale}" style="width:100%">`;
-      }
-      lista.appendChild(wrap);
-      const input = wrap.querySelector('input, select');
-      input.addEventListener('input', () => {
-        const prop = input.dataset.prop;
-        let value = input.value;
-        if (input.type === 'range') {
-          const unit = input.dataset.unit || '';
-          value = value + unit;
-          const label = wrap.querySelector(`[data-valore-di="${prop}"]`);
-          if (label) label.textContent = value;
+
+    CATEGORIE_CONTROLLI.forEach((cat, catIdx) => {
+      const catWrap = document.createElement('div');
+      catWrap.style.cssText = 'margin-bottom:6px;border:1px solid #333;border-radius:8px;overflow:hidden';
+      const contenutoId = `editor-cat-corpo-${catIdx}`;
+      catWrap.innerHTML = `
+        <div class="editor-cat-header" style="padding:8px 10px;background:#26263c;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:.78rem">
+          <span>${cat.titolo}</span><span class="editor-cat-freccia">${cat.apertoDiDefault ? '▾' : '▸'}</span>
+        </div>
+        <div id="${contenutoId}" style="padding:10px;display:flex;flex-direction:column;gap:8px;${cat.apertoDiDefault ? '' : 'display:none'}"></div>
+      `;
+      lista.appendChild(catWrap);
+      const header = catWrap.querySelector('.editor-cat-header');
+      const corpo = catWrap.querySelector(`#${contenutoId}`);
+      header.addEventListener('click', () => {
+        const aperto = corpo.style.display !== 'none';
+        corpo.style.display = aperto ? 'none' : 'flex';
+        catWrap.querySelector('.editor-cat-freccia').textContent = aperto ? '▸' : '▾';
+      });
+
+      cat.controlli.forEach(c => {
+        const wrap = document.createElement('div');
+        const val = valoriAttuali[c.prop] || '';
+        if (c.tipo === 'color') {
+          wrap.innerHTML = `<label style="display:block;margin-bottom:2px;font-size:.75rem">${c.label}</label>
+            <input type="color" data-prop="${c.prop}" value="${val && val.startsWith('#') ? val : '#ffffff'}" style="width:100%;height:28px;border:none;border-radius:4px;cursor:pointer">`;
+        } else if (c.tipo === 'select') {
+          const opts = c.opzioni.map(o => `<option value="${o[0]}" ${val === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('');
+          wrap.innerHTML = `<label style="display:block;margin-bottom:2px;font-size:.75rem">${c.label}</label>
+            <select data-prop="${c.prop}" style="width:100%;padding:5px;border-radius:4px;border:1px solid #555;background:#111;color:#fff;font-size:.78rem">${opts}</select>`;
+        } else { // slider
+          const attuale = parseNumero(val, 0);
+          wrap.innerHTML = `<label style="display:flex;justify-content:space-between;margin-bottom:2px;font-size:.75rem"><span>${c.label}</span><span data-valore-di="${c.prop}">${val || '0' + (c.unit || '')}</span></label>
+            <input type="range" data-prop="${c.prop}" data-unit="${c.unit}" min="${c.min}" max="${c.max}" step="${c.step}" value="${attuale}" style="width:100%">`;
         }
-        if (!overridesCorrenti[sel]) overridesCorrenti[sel] = {};
-        if (value) overridesCorrenti[sel][prop] = value;
-        else delete overridesCorrenti[sel][prop];
-        applicaOverridesAlDOM();
+        corpo.appendChild(wrap);
+        const input = wrap.querySelector('input, select');
+        input.addEventListener('input', () => {
+          const prop = input.dataset.prop;
+          let value = input.value;
+          if (input.type === 'range') {
+            const unit = input.dataset.unit || '';
+            value = value + unit;
+            const lbl = wrap.querySelector(`[data-valore-di="${prop}"]`);
+            if (lbl) lbl.textContent = value;
+          }
+          if (!overridesCorrenti[sel]) overridesCorrenti[sel] = {};
+          const valoreVuoto = (prop.startsWith('_') && (value === '0px' || value === '0deg' || value === '1'));
+          if (value && !valoreVuoto) overridesCorrenti[sel][prop] = value;
+          else delete overridesCorrenti[sel][prop];
+          applicaOverridesAlDOM();
+        });
       });
     });
   }
