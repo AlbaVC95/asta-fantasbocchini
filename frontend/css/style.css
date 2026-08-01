@@ -1461,6 +1461,64 @@ body:has(#screen-asta.active) .user-email-badge{display:none}
   .tab-label{font-size:.72rem!important}
 }
 
+/* ══════ VISTA UTENTE MOBILE: controlli di puja impilati sotto la card ══════
+   Il tentativo precedente di far entrare Rilancia/+5/+10/Offri AFFIANCO alla card
+   giocatore continuava a tagliarsi sui telefoni stretti, perché flexbox non
+   riusciva a comprimerli abbastanza. Soluzione definitiva: SOLO per la vista
+   utente (non-admin) su schermi mobile, i controlli di puja vengono impilati
+   in verticale, uno sotto l'altro, a piena larghezza — così nulla esce mai
+   dallo schermo e tutti i bottoni restano sempre cliccabili. */
+@media (max-width:900px){
+  body.layout-partecipante .puja-panel-slot{
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  body.layout-partecipante .puja-panel-slot .card-timer-group{
+    order:1!important;
+    flex-direction:row!important;
+    width:100%!important;
+  }
+  body.layout-partecipante .puja-panel-slot .rilancio-box{
+    order:2!important;
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    gap:10px!important;
+    margin-top:10px!important;
+    padding-top:10px!important;
+    border-top:1px solid var(--border-light)!important;
+  }
+  body.layout-partecipante .puja-panel-slot .quick-bids-row{
+    display:flex!important;
+    flex-direction:row!important;
+    width:100%!important;
+    gap:8px!important;
+    order:2!important;
+  }
+  body.layout-partecipante .puja-panel-slot .quick-bids-row .btn-quick{
+    flex:1 1 0%!important;
+    width:auto!important;
+  }
+  body.layout-partecipante .puja-panel-slot .btn-rilancia{
+    order:1!important;
+    width:100%!important;
+  }
+  body.layout-partecipante .puja-panel-slot .manual-bid-row{
+    display:flex!important;
+    flex-direction:row!important;
+    width:100%!important;
+    gap:8px!important;
+    order:3!important;
+  }
+  body.layout-partecipante .puja-panel-slot .inp-rilancio{
+    flex:1 1 auto!important;
+    width:auto!important;
+  }
+  body.layout-partecipante .puja-panel-slot .manual-bid-row .btn-manuale{
+    flex:0 0 auto!important;
+  }
+}
+
 /* ══════ RETE DI SICUREZZA ANTI-OVERFLOW MOBILE (fix definitivo) ══════
    Diversi breakpoint precedenti (480/400/640/700/768px) potevano entrare in
    conflitto tra loro su larghezze "intermedie" non standard (es. alcuni
