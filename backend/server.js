@@ -1052,6 +1052,14 @@ io.on('connection', (socket) => {
     // completarsi DOPO la delete, ricreando la riga con stato "completata" per sempre).
     broadcastStato(astaId); io.to(astaId).emit('asta-terminata', { astaId });
     deleteBackupSupabase(astaId);
+    // Rete di sicurezza contro la race condition descritta sopra: se un autosave dei 30s
+    // era già "in volo" (avviato pochi istanti prima di questo terminare) e completa DOPO
+    // la delete qui sopra, ricreerebbe per sempre una riga fantasma in asta_backups con lo
+    // stato precedente ("in corso"), facendo apparire l'asta come ancora attiva nella Home
+    // anche se in realtà è già conclusa. Ripetendo la delete due volte in differita, con
+    // margine ampio rispetto a qualsiasi upsert in ritardo, la riga fantasma viene rimossa.
+    setTimeout(() => deleteBackupSupabase(astaId), 8000);
+    setTimeout(() => deleteBackupSupabase(astaId), 20000);
   });
 
   socket.on('modifica-timer', ({ astaId, timerPrimaChiamata, timerRilancio }) => {
@@ -1142,10 +1150,17 @@ app.get('/api/mie-aste', async (req, res) => {
     const lista = (data || []).map(row => {
       const a = row.payload && row.payload.asta;
       if (!a) return null;
+      // Se il processo ha ancora l'asta viva in memoria, il SUO stato è quello vero e
+      // aggiornato; il payload salvato su Supabase potrebbe invece essere una riga
+      // "fantasma" risorta da una race condition di autosave (vedi commento in
+      // 'termina-asta'), quindi diamo sempre precedenza allo stato in memoria quando c'è.
+      const live = aste.get(a.id);
+      const statoReale = live ? live.stato : a.stato;
+      if (statoReale === 'completata') return null; // asta già conclusa: non mostrarla come "in corso"
       return {
-        astaId: a.id, nome: a.nome, stato: a.stato, tipoAsta: a.tipoAsta,
+        astaId: a.id, nome: a.nome, stato: statoReale, tipoAsta: a.tipoAsta,
         numSquadre: (a.squadre || []).length, updatedAt: row.updated_at,
-        inMemoria: aste.has(a.id)
+        inMemoria: !!live
       };
     }).filter(Boolean);
     res.json(lista);
@@ -1303,8 +1318,32 @@ setInterval(() => {
   });
 }, 60 * 60 * 1000); // ogni ora
 
+// Pulizia di riga "fantasma" in asta_backups: se un'asta è già presente in asta_exports
+// (prova definitiva che è stata terminata correttamente con /termina-asta), ma esiste
+// ANCORA una riga corrispondente in asta_backups, significa che una race condition tra
+// l'autosave dei 30s e la delete di fine-asta l'ha risuscitata (vedi commento in
+// 'termina-asta'). La rimuoviamo qui, una volta ad ogni avvio del server, così un'asta
+// già conclusa non appare più erroneamente come "in corso" nella Home di nessuno.
+async function puliziaBackupFantasma() {
+  if (!supabaseAdmin) return;
+  try {
+    const { data: exports, error: expErr } = await supabaseAdmin.from('asta_exports').select('asta_id');
+    if (expErr || !exports || !exports.length) return;
+    const idsTerminate = new Set(exports.map(r => r.asta_id));
+    const { data: backups, error: bkErr } = await supabaseAdmin.from('asta_backups').select('asta_id');
+    if (bkErr || !backups || !backups.length) return;
+    const daPulire = backups.map(r => r.asta_id).filter(id => idsTerminate.has(id));
+    if (!daPulire.length) return;
+    console.log('[puliziaBackupFantasma] Rimuovo', daPulire.length, 'backup fantasma di aste già concluse:', daPulire.join(', '));
+    for (const id of daPulire) deleteBackupSupabase(id);
+  } catch (e) {
+    console.error('[puliziaBackupFantasma] errore (non-fatale):', e.message);
+  }
+}
+
 // Load backups at startup
 loadBackups().catch(e => console.error('[loadBackups] fatale (non-fatale per il server, l\'asta parte comunque vuota):', e.message));
+puliziaBackupFantasma().catch(e => console.error('[puliziaBackupFantasma] fatale (non-fatale):', e.message));
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
