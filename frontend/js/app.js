@@ -3833,3 +3833,245 @@ function setupStrategiaAsta() {
     if (S.asta) renderGiocatoriLiberi(S.asta.poolGiocatori);
   });
 }
+
+// ══════════════════════════════════════════════════════════════
+// EDITOR VISUALE DI STILE (Fase 1) — attivabile con ?editor=CHIAVE
+// ══════════════════════════════════════════════════════════════
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const editorKey = params.get('editor');
+  const modoEditorDisponibile = !!editorKey;
+
+  let editorAttivo = false;
+  let elementoSelezionato = null;
+  let overlayHover = null;
+  let styleSheetOverride = null; // <style> dinamico con le regole salvate
+  let overridesCorrenti = {};    // { 'selettore css': { proprieta: valore, ... }, ... }
+  const historyUndo = [];
+
+  function selettoreDi(el) {
+    // Genera un selettore stabile basato su classi (ignora id generati runtime se possibile)
+    if (el.id && !/^\d/.test(el.id)) return '#' + el.id;
+    if (el.className) {
+      const classi = el.className.split(' ').filter(c => c && !c.startsWith('hidden')).slice(0, 2);
+      if (classi.length) return '.' + classi.join('.');
+    }
+    return el.tagName.toLowerCase();
+  }
+
+  function creaStylesheetOverride() {
+    styleSheetOverride = document.createElement('style');
+    styleSheetOverride.id = 'editor-overrides-style';
+    document.head.appendChild(styleSheetOverride);
+  }
+
+  function applicaOverridesAlDOM() {
+    if (!styleSheetOverride) creaStylesheetOverride();
+    let css = '';
+    Object.keys(overridesCorrenti).forEach(sel => {
+      const props = overridesCorrenti[sel];
+      const propsCss = Object.keys(props).map(p => `${p}:${props[p]} !important;`).join('');
+      css += `${sel}{${propsCss}}\n`;
+    });
+    styleSheetOverride.textContent = css;
+  }
+
+  async function caricaOverridesSalvati() {
+    try {
+      const r = await fetch('/api/theme');
+      const j = await r.json();
+      overridesCorrenti = j.styles || {};
+      applicaOverridesAlDOM();
+    } catch (e) { console.warn('Editor: impossibile caricare theme', e); }
+  }
+
+  async function salvaOverrides() {
+    try {
+      const r = await fetch('/api/theme?editorKey=' + encodeURIComponent(editorKey), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ styles: overridesCorrenti, editorKey })
+      });
+      const j = await r.json();
+      if (j.success) mostraToast('✅ Stile salvato per tutti gli utenti');
+      else mostraToast('❌ Errore: ' + (j.error || 'salvataggio falito'));
+    } catch (e) { mostraToast('❌ Errore di rete nel salvataggio'); }
+  }
+
+  function mostraToast(msg) {
+    if (typeof window.toast === 'function') { window.toast(msg); return; }
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 18px;border-radius:8px;z-index:99999;font-size:.85rem';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2500);
+  }
+
+  function creaPannelloControlli() {
+    const panel = document.createElement('div');
+    panel.id = 'editor-panel-controlli';
+    panel.style.cssText = `
+      position:fixed;top:60px;right:12px;width:270px;max-height:80vh;overflow-y:auto;
+      background:#1c1c2e;border:2px solid #ffb300;border-radius:12px;padding:14px;
+      z-index:100000;font-family:sans-serif;color:#eee;box-shadow:0 8px 30px rgba(0,0,0,.5);
+      display:none;`;
+    panel.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <strong style="font-size:.9rem">🎨 Elemento selezionato</strong>
+        <button id="editor-chiudi-pannello" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer">✕</button>
+      </div>
+      <div id="editor-selettore-label" style="font-size:.7rem;color:#aaa;margin-bottom:10px;word-break:break-all"></div>
+      <div id="editor-controlli-lista" style="display:flex;flex-direction:column;gap:8px;font-size:.78rem"></div>
+      <div style="margin-top:12px;display:flex;gap:6px">
+        <button id="editor-btn-annulla-elemento" style="flex:1;padding:6px;background:#444;border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:.75rem">↩ Reset elemento</button>
+      </div>
+    `;
+    document.body.appendChild(panel);
+    document.getElementById('editor-chiudi-pannello').onclick = () => deselezionaElemento();
+    document.getElementById('editor-btn-annulla-elemento').onclick = () => {
+      if (!elementoSelezionato) return;
+      const sel = selettoreDi(elementoSelezionato);
+      delete overridesCorrenti[sel];
+      applicaOverridesAlDOM();
+      renderControlliPer(elementoSelezionato);
+    };
+    return panel;
+  }
+
+  const CONTROLLI = [
+    { label: 'Larghezza', prop: 'width', tipo: 'text', placeholder: 'es. 220px, 100%' },
+    { label: 'Altezza', prop: 'height', tipo: 'text', placeholder: 'es. 60px, auto' },
+    { label: 'Padding interno', prop: 'padding', tipo: 'text', placeholder: 'es. 10px' },
+    { label: 'Margine esterno', prop: 'margin', tipo: 'text', placeholder: 'es. 8px' },
+    { label: 'Colore sfondo', prop: 'background-color', tipo: 'color' },
+    { label: 'Colore testo', prop: 'color', tipo: 'color' },
+    { label: 'Dimensione testo', prop: 'font-size', tipo: 'text', placeholder: 'es. 1rem, 16px' },
+    { label: 'Angoli arrotondati', prop: 'border-radius', tipo: 'text', placeholder: 'es. 12px' },
+  ];
+
+  function renderControlliPer(el) {
+    const sel = selettoreDi(el);
+    document.getElementById('editor-selettore-label').textContent = sel;
+    const lista = document.getElementById('editor-controlli-lista');
+    lista.innerHTML = '';
+    const valoriAttuali = overridesCorrenti[sel] || {};
+    CONTROLLI.forEach(c => {
+      const wrap = document.createElement('div');
+      const val = valoriAttuali[c.prop] || '';
+      if (c.tipo === 'color') {
+        wrap.innerHTML = `<label style="display:block;margin-bottom:2px">${c.label}</label>
+          <input type="color" data-prop="${c.prop}" value="${val && val.startsWith('#') ? val : '#ffffff'}" style="width:100%;height:28px;border:none;border-radius:4px;cursor:pointer">`;
+      } else {
+        wrap.innerHTML = `<label style="display:block;margin-bottom:2px">${c.label}</label>
+          <input type="text" data-prop="${c.prop}" value="${val}" placeholder="${c.placeholder || ''}"
+            style="width:100%;padding:5px;border-radius:4px;border:1px solid #555;background:#111;color:#fff;font-size:.78rem">`;
+      }
+      lista.appendChild(wrap);
+      const input = wrap.querySelector('input');
+      input.addEventListener('input', () => {
+        const prop = input.dataset.prop;
+        const value = input.value;
+        if (!overridesCorrenti[sel]) overridesCorrenti[sel] = {};
+        if (value) overridesCorrenti[sel][prop] = value;
+        else delete overridesCorrenti[sel][prop];
+        applicaOverridesAlDOM();
+      });
+    });
+  }
+
+  function selezionaElemento(el) {
+    elementoSelezionato = el;
+    el.classList.add('editor-elemento-selezionato');
+    const panel = document.getElementById('editor-panel-controlli');
+    panel.style.display = 'block';
+    renderControlliPer(el);
+  }
+
+  function deselezionaElemento() {
+    if (elementoSelezionato) elementoSelezionato.classList.remove('editor-elemento-selezionato');
+    elementoSelezionato = null;
+    const panel = document.getElementById('editor-panel-controlli');
+    if (panel) panel.style.display = 'none';
+  }
+
+  function onMouseOver(e) {
+    if (!editorAttivo) return;
+    if (e.target.closest('#editor-panel-controlli, #editor-toolbar')) return;
+    if (overlayHover) overlayHover.classList.remove('editor-elemento-hover');
+    overlayHover = e.target;
+    overlayHover.classList.add('editor-elemento-hover');
+  }
+
+  function onClick(e) {
+    if (!editorAttivo) return;
+    if (e.target.closest('#editor-panel-controlli, #editor-toolbar')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (elementoSelezionato) elementoSelezionato.classList.remove('editor-elemento-selezionato');
+    selezionaElemento(e.target);
+  }
+
+  function attivaEditor() {
+    editorAttivo = true;
+    document.addEventListener('mouseover', onMouseOver, true);
+    document.addEventListener('click', onClick, true);
+    document.body.classList.add('editor-modo-attivo');
+    mostraToast('🎨 Modo editor ATTIVO — clicca su un elemento per modificarlo');
+  }
+
+  function disattivaEditor() {
+    editorAttivo = false;
+    document.removeEventListener('mouseover', onMouseOver, true);
+    document.removeEventListener('click', onClick, true);
+    document.body.classList.remove('editor-modo-attivo');
+    if (overlayHover) overlayHover.classList.remove('editor-elemento-hover');
+    deselezionaElemento();
+    mostraToast('Modo editor disattivato');
+  }
+
+  function creaToolbar() {
+    const bar = document.createElement('div');
+    bar.id = 'editor-toolbar';
+    bar.style.cssText = `
+      position:fixed;bottom:16px;right:16px;z-index:100001;
+      display:flex;gap:8px;background:#1c1c2e;padding:8px;border-radius:30px;
+      border:2px solid #ffb300;box-shadow:0 4px 20px rgba(0,0,0,.5);`;
+    bar.innerHTML = `
+      <button id="editor-toggle-btn" style="padding:8px 16px;border-radius:20px;border:none;background:#ffb300;color:#111;font-weight:700;cursor:pointer;font-size:.8rem">🎨 Modo Edizione</button>
+      <button id="editor-salva-btn" style="padding:8px 16px;border-radius:20px;border:none;background:#4dff88;color:#111;font-weight:700;cursor:pointer;font-size:.8rem">💾 Salva</button>
+      <button id="editor-reset-tutto-btn" style="padding:8px 16px;border-radius:20px;border:none;background:#ff5555;color:#111;font-weight:700;cursor:pointer;font-size:.8rem">🗑 Reset tutto</button>
+    `;
+    document.body.appendChild(bar);
+    document.getElementById('editor-toggle-btn').onclick = () => {
+      if (editorAttivo) disattivaEditor(); else attivaEditor();
+    };
+    document.getElementById('editor-salva-btn').onclick = salvaOverrides;
+    document.getElementById('editor-reset-tutto-btn').onclick = () => {
+      if (!confirm('Ripristinare TUTTI gli stili personalizzati? Questa azione non può essere annullata (a meno di non aver ancora salvato).')) return;
+      overridesCorrenti = {};
+      applicaOverridesAlDOM();
+      deselezionaElemento();
+    };
+  }
+
+  function iniettaCSSEditor() {
+    const s = document.createElement('style');
+    s.textContent = `
+      body.editor-modo-attivo * { cursor: crosshair !important; }
+      .editor-elemento-hover { outline: 2px dashed #4da3ff !important; outline-offset: 1px; }
+      .editor-elemento-selezionato { outline: 3px solid #ffb300 !important; outline-offset: 1px; }
+    `;
+    document.head.appendChild(s);
+  }
+
+  function init() {
+    caricaOverridesSalvati(); // applica gli stili salvati per TUTTI gli utenti
+    if (!modoEditorDisponibile) return; // toolbar/pannello solo per chi ha la chiave editor
+    iniettaCSSEditor();
+    creaToolbar();
+    creaPannelloControlli();
+  }
+
+  if (document.body) init();
+  else document.addEventListener('DOMContentLoaded', init);
+})();
