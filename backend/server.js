@@ -1204,8 +1204,17 @@ app.get('/api/asta/:id/mio-backup', async (req, res) => {
       if (!snap.asta || snap.asta.creatorUserId !== utente.userId) return res.status(403).json({ error: 'Non sei il creatore di questa asta' });
     } catch (e) { return res.status(500).json({ error: e.message }); }
   }
+  // Rimuove dal file scaricato i dati sensibili non necessari per un ripristino:
+  // l'adminToken darebbe controllo completo dell'asta a chiunque avesse il file, e non
+  // serve comunque perché /api/asta/ripristina-da-file ne genera sempre uno nuovo.
+  const snapSicuro = JSON.parse(JSON.stringify(snap));
+  if (snapSicuro.asta) {
+    delete snapSicuro.asta.adminToken;
+    delete snapSicuro.asta.creatorEmail;
+    delete snapSicuro.asta.adminSocketIds;
+  }
   res.setHeader('Content-Disposition', 'attachment; filename="backup-asta-' + astaId + '.json"');
-  res.json(snap);
+  res.json(snapSicuro);
 });
 
 // Ripristina un'asta a partire da un file di backup caricato manualmente dal creatore
