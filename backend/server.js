@@ -1244,6 +1244,37 @@ app.post('/api/asta/ripristina-da-file', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ══════ EDITOR VISUALE DI STILE (Fase 1) ══════
+// Chiave segreta semplice per proteggere il salvataggio (solo il proprietario la conosce).
+// Usata come query param ?editorKey=... sia per leggere sia per salvare.
+const THEME_EDITOR_SECRET = 'fasce-editor-2026-vc95';
+
+app.get('/api/theme', async (req, res) => {
+  try {
+    if (!supabaseAdmin) return res.json({ styles: {} });
+    const { data, error } = await supabaseAdmin.from('theme_overrides').select('styles').eq('id', 'default').single();
+    if (error) return res.json({ styles: {} });
+    res.json({ styles: (data && data.styles) || {} });
+  } catch (e) {
+    res.json({ styles: {} });
+  }
+});
+
+app.post('/api/theme', async (req, res) => {
+  try {
+    const key = req.query.editorKey || (req.body && req.body.editorKey);
+    if (key !== THEME_EDITOR_SECRET) return res.status(403).json({ error: 'Chiave editor non valida' });
+    if (!supabaseAdmin) return res.status(500).json({ error: 'Supabase non configurato' });
+    const styles = (req.body && req.body.styles) || {};
+    const { error } = await supabaseAdmin.from('theme_overrides')
+      .upsert({ id: 'default', styles, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Auto-save every 30s — esclude 'attesa' (nulla da salvare) e 'completata' (il backup di
 // un'asta conclusa viene eliminato esplicitamente in termina-asta: risalvarlo qui ogni 30s
 // lo farebbe reapparire per sempre come riga orfana in asta_backups).
