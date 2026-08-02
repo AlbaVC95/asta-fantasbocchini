@@ -1289,6 +1289,7 @@ function forzaVisibilitaRilancioMobile() {
   if (cardGroup) {
     cardGroup.style.setProperty('width', '100%', 'important');
     cardGroup.style.setProperty('flex', 'none', 'important');
+    cardGroup.style.setProperty('flex-direction', 'column', 'important');
   }
   // Box di rilancio: sempre sotto, a piena larghezza, mai accanto alla card.
   box.style.setProperty('display', 'flex', 'important');
