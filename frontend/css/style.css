@@ -1612,3 +1612,20 @@ body.layout-partecipante .puja-panel-slot .cc-offerta-box{max-width:100%!importa
 body.layout-partecipante .puja-panel-slot .cc-offerta,
 body.layout-partecipante .puja-panel-slot .cc-offerta-label{max-width:100%!important;overflow-wrap:anywhere!important;white-space:normal!important}
 body.layout-partecipante .asta-row-panels{overflow:visible!important}
+
+/* ══════ FIX: rilancio-box.hidden debe permanecer oculto en mobile ══════
+   Los bloques @media(max-width:900px/640px) de más arriba fuerzan
+   display:flex!important en .rilancio-box (para mostrarlo bien apilado en
+   columna cuando SÍ está visible), pero eso ignora la clase .hidden que JS
+   le pone a propósito para congelar la puja (ej. estado "aspettando
+   conferma" en llamadas RIC, o antes de la 1ª offerta). Como .hidden por sí
+   sola tiene menor especificidad que esos selectores compuestos, pierde el
+   empate aunque también tenga !important. Esta regla, más específica y
+   colocada al final del archivo (gana también por orden de cascada), la
+   anula explícitamente cuando tiene .hidden. Solo vista utente/admin del
+   propio rilancio-box, sin afectar ningún otro elemento. */
+body.layout-partecipante .puja-panel-slot .rilancio-box.hidden,
+.puja-panel-slot .rilancio-box.hidden,
+#rilancio-box.hidden {
+  display:none!important;
+}
