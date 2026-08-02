@@ -10,25 +10,25 @@
   'use strict';
 
   // ── Statistiche di default per squadra: Attacco e Difesa separati ──
+  // Valori aggiornati (scala interna 30-99, corrispondente a slider utente 1-10)
   const DEFAULT_TEAM_STATS = {
-    Inter:     { attacco: 92, difesa: 88 }, Napoli:    { attacco: 88, difesa: 86 },
-    Juventus:  { attacco: 82, difesa: 87 }, Milan:     { attacco: 84, difesa: 80 },
-    Atalanta:  { attacco: 83, difesa: 76 }, Roma:      { attacco: 76, difesa: 78 },
-    Lazio:     { attacco: 74, difesa: 74 }, Fiorentina:{ attacco: 73, difesa: 72 },
-    Bologna:   { attacco: 70, difesa: 73 }, Torino:    { attacco: 58, difesa: 64 },
-    Udinese:   { attacco: 56, difesa: 58 }, Genoa:     { attacco: 52, difesa: 58 },
-    Cagliari:  { attacco: 50, difesa: 55 }, Sassuolo:  { attacco: 55, difesa: 48 },
-    Lecce:     { attacco: 46, difesa: 52 }, Monza:     { attacco: 44, difesa: 44 },
-    Parma:     { attacco: 48, difesa: 46 }, Como:      { attacco: 44, difesa: 47 },
-    Venezia:   { attacco: 40, difesa: 42 }, Frosinone: { attacco: 42, difesa: 38 }
+    Atalanta:   { attacco: 84, difesa: 84 }, Bologna:   { attacco: 84, difesa: 76 },
+    Cagliari:   { attacco: 61, difesa: 61 }, Como:      { attacco: 99, difesa: 91 },
+    Fiorentina: { attacco: 68, difesa: 68 }, Frosinone: { attacco: 61, difesa: 53 },
+    Genoa:      { attacco: 84, difesa: 68 }, Inter:     { attacco: 99, difesa: 99 },
+    Juventus:   { attacco: 91, difesa: 91 }, Lazio:     { attacco: 76, difesa: 84 },
+    Lecce:      { attacco: 53, difesa: 61 }, Milan:     { attacco: 91, difesa: 91 },
+    Monza:      { attacco: 53, difesa: 53 }, Napoli:    { attacco: 91, difesa: 91 },
+    Parma:      { attacco: 53, difesa: 61 }, Roma:      { attacco: 91, difesa: 99 },
+    Sassuolo:   { attacco: 68, difesa: 61 }, Torino:    { attacco: 61, difesa: 53 },
+    Udinese:    { attacco: 68, difesa: 68 }, Venezia:   { attacco: 61, difesa: 53 }
   };
 
   const DEFAULT_WEIGHTS = {
     coverage: 35,       // % di giornate con almeno un titolare in una partita favorevole
     difficoltaMedia: 25,// media della difficoltà minima per giornata (invertita: più bassa = meglio)
     alternanza: 15,     // quanto si alternano bene casa/fuori i giocatori del gruppo
-    giornateCritiche: 15,// penalità per giornate in cui TUTTI hanno partite difficili
-    fuoriCasaDoppio: 10  // penalità per giornate in cui TUTTI giocano in trasferta
+    giornateCritiche: 15// penalità per giornate in cui TUTTI hanno partite difficili
   };
 
   const DEFAULT_CONFIG = {
@@ -63,14 +63,25 @@
       });
     }
     if (userConfig.weights) Object.assign(cfg.weights, userConfig.weights);
+    delete cfg.weights.fuoriCasaDoppio; // rimosso: fattore ridondante con "alternanza" (retrocompatibilita' config vecchie)
     ['homeAdvantage', 'awayPenalty', 'ownStrengthFactor', 'sogliaFacile', 'sogliaDifficile'].forEach(function (k) {
       if (typeof userConfig[k] === 'number') cfg[k] = userConfig[k];
     });
     return cfg;
   }
 
+  // ── Ricerca case-insensitive di una squadra in teamStats: evita che nomi con
+  //    maiuscole/minuscole diverse nel calendario (es. "como" vs "Como") vengano
+  //    ignorati silenziosamente dal motore di calcolo. ──
+  function findTeamStat(team, cfg) {
+    if (cfg.teamStats[team]) return cfg.teamStats[team];
+    const lower = String(team).toLowerCase();
+    const key = Object.keys(cfg.teamStats).find(function (k) { return k.toLowerCase() === lower; });
+    return key ? cfg.teamStats[key] : null;
+  }
+
   function getStat(team, stat, cfg) {
-    const s = cfg.teamStats[team];
+    const s = findTeamStat(team, cfg);
     if (!s) return 55;
     return (stat === 'attacco') ? s.attacco : s.difesa;
   }
@@ -95,12 +106,14 @@
   }
 
   // ── Calendario di una squadra: 38 righe {giornata, opponent, isHome, difficolta, livello} ──
+  function sameTeam(a, b) { return String(a).toLowerCase() === String(b).toLowerCase(); }
+
   function calendarioSquadra(team, fixtures, cfg, mode) {
     const out = [];
     fixtures.forEach(function (f) {
       let opponent = null, isHome = null;
-      if (f.casa === team) { opponent = f.ospite; isHome = true; }
-      else if (f.ospite === team) { opponent = f.casa; isHome = false; }
+      if (sameTeam(f.casa, team)) { opponent = f.ospite; isHome = true; }
+      else if (sameTeam(f.ospite, team)) { opponent = f.casa; isHome = false; }
       if (opponent === null) return;
       const diff = difficoltaPartita(team, opponent, isHome, cfg, mode);
       out.push({
@@ -175,24 +188,21 @@
     const difficoltaMediaScore = 100 - clamp((sommaMinDifficolta / n), 0, 100);
     const alternanzaPct = (sbilanciamentoCasa / n) * 100;
     const critichePenalty = 100 - clamp((critiche / n) * 100 * 3, 0, 100);
-    const fuoriCasaPenalty = 100 - clamp((tuttiFuori / n) * 100 * 2, 0, 100);
 
     const breakdown = {
       coverage: round1(coveragePct),
       difficoltaMedia: round1(difficoltaMediaScore),
       alternanza: round1(alternanzaPct),
-      giornateCritiche: round1(critichePenalty),
-      fuoriCasaDoppio: round1(fuoriCasaPenalty)
+      giornateCritiche: round1(critichePenalty)
     };
 
     const w = cfg.weights;
-    const pesoTotale = w.coverage + w.difficoltaMedia + w.alternanza + w.giornateCritiche + w.fuoriCasaDoppio;
+    const pesoTotale = w.coverage + w.difficoltaMedia + w.alternanza + w.giornateCritiche;
     const scoreRaw = (
       breakdown.coverage * w.coverage +
       breakdown.difficoltaMedia * w.difficoltaMedia +
       breakdown.alternanza * w.alternanza +
-      breakdown.giornateCritiche * w.giornateCritiche +
-      breakdown.fuoriCasaDoppio * w.fuoriCasaDoppio
+      breakdown.giornateCritiche * w.giornateCritiche
     ) / (pesoTotale * 100);
     const score = round1(scoreRaw * 100);
 
