@@ -538,10 +538,12 @@ body.layout-partecipante .asta-row-panels>#mio-panel{max-height:100%;align-self:
    e non viene 'stretch'-ata alla stessa altezza di budget/team (che restano
    compatti con scroll interno). Solo vista UTENTE (layout-partecipante). */
 body.layout-partecipante .puja-panel-slot{align-self:flex-start!important;height:auto!important;max-height:none!important;overflow:visible!important}
-body.layout-partecipante .puja-panel-slot .card-timer-group{height:auto!important;overflow:visible!important}
-body.layout-partecipante .puja-panel-slot .chiamata-card{height:auto!important;max-height:none!important;overflow:visible!important}
-body.layout-partecipante .puja-panel-slot .cc-body{overflow:visible!important;white-space:normal!important}
-body.layout-partecipante .puja-panel-slot .cc-strategia-info{white-space:normal!important;overflow:visible!important;text-overflow:unset!important}
+body.layout-partecipante .puja-panel-slot .card-timer-group{height:auto!important;overflow:visible!important;align-items:flex-start!important}
+body.layout-partecipante .puja-panel-slot .chiamata-card{height:auto!important;max-height:none!important;overflow:visible!important;flex-wrap:wrap!important;align-items:flex-start!important;row-gap:4px!important}
+body.layout-partecipante .puja-panel-slot .cc-body{overflow:visible!important;white-space:normal!important;flex-wrap:wrap!important;width:100%!important;flex:1 1 100%!important;row-gap:2px!important}
+body.layout-partecipante .puja-panel-slot .cc-strategia-info{white-space:normal!important;overflow:visible!important;text-overflow:unset!important;flex:1 1 100%!important;width:100%!important;margin-top:2px!important}
+body.layout-partecipante .puja-panel-slot .cc-offerente{white-space:normal!important}
+body.layout-partecipante .puja-panel-slot .cc-attesa-badge{flex:1 1 100%!important;width:100%!important;white-space:normal!important}
 body.layout-partecipante .asta-row-panels{overflow:visible!important}
 body.layout-partecipante .asta-row-puja{display:none!important}
 body.layout-partecipante .asta-row-panels{max-width:1900px;margin-left:auto;margin-right:auto;width:100%}
