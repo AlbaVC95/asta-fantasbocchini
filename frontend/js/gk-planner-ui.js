@@ -97,6 +97,67 @@
     return GKUI.rankCache[key];
   }
 
+  function getPairScoreMap() {
+    const key = GKUI.mode + '-pairmap';
+    if (!GKUI.rankCache[key]) {
+      const list = getRanking(2);
+      const map = {};
+      list.forEach(function (p) {
+        const k = p.teams.slice().sort().join('|');
+        map[k] = p;
+      });
+      GKUI.rankCache[key] = map;
+    }
+    return GKUI.rankCache[key];
+  }
+
+  function scoreToColor(score, lo, hi) {
+    const t = Math.max(0, Math.min(1, (score - lo) / (hi - lo || 1)));
+    const c1 = [42, 26, 88];
+    const c2 = [0, 224, 160];
+    const r = Math.round(c1[0] + (c2[0] - c1[0]) * t);
+    const g = Math.round(c1[1] + (c2[1] - c1[1]) * t);
+    const b = Math.round(c1[2] + (c2[2] - c1[2]) * t);
+    return { css: 'rgb(' + r + ',' + g + ',' + b + ')', t: t };
+  }
+
+  function renderGrid() {
+    const container = document.getElementById('gk-grid-scroll');
+    if (!container) return;
+    const teams = Object.keys(GKUI.config.teamStats).sort();
+    const map = getPairScoreMap();
+    const scores = Object.keys(map).map(function (k) { return map[k].score; });
+    if (!scores.length) { container.innerHTML = ''; return; }
+    const lo = Math.min.apply(null, scores), hi = Math.max.apply(null, scores);
+    let html = '<div class="gk-grid" style="grid-template-columns:84px repeat(' + teams.length + ',44px)">';
+    html += '<div class="gk-grid-corner"></div>';
+    teams.forEach(function (t) { html += '<div class="gk-grid-col-header" title="' + t + '">' + teamBadge(t) + '</div>'; });
+    teams.forEach(function (rowTeam) {
+      html += '<div class="gk-grid-row-label">' + teamBadge(rowTeam) + '<span>' + rowTeam.substring(0, 3).toUpperCase() + '</span></div>';
+      teams.forEach(function (colTeam) {
+        if (rowTeam === colTeam) { html += '<div class="gk-grid-cell gk-grid-cell-diag"></div>'; return; }
+        const key = [rowTeam, colTeam].sort().join('|');
+        const entry = map[key];
+        if (!entry) { html += '<div class="gk-grid-cell"></div>'; return; }
+        const col = scoreToColor(entry.score, lo, hi);
+        const fg = col.t > 0.55 ? '#04120a' : '#f3eefe';
+        html += '<div class="gk-grid-cell" style="background:' + col.css + ';color:' + fg + '" data-teams="' + rowTeam + '|' + colTeam + '" title="' + rowTeam + ' + ' + colTeam + ': ' + Math.round(entry.score) + '">' + Math.round(entry.score) + '</div>';
+      });
+    });
+    html += '</div>';
+    container.innerHTML = html;
+    container.querySelectorAll('.gk-grid-cell[data-teams]').forEach(function (cell) {
+      cell.addEventListener('click', function () {
+        const teams2 = cell.getAttribute('data-teams').split('|');
+        setTeamsToPicker('gk-detail', teams2);
+        renderDetail(teams2, 'gk-detail-content');
+        switchView('detail');
+      });
+    });
+    const legendRange = document.getElementById('gk-grid-legend-range');
+    if (legendRange) legendRange.textContent = 'Punteggi da ' + Math.round(lo) + ' a ' + Math.round(hi) + ' su 100.';
+  }
+
   function applyModeToggleUI() {
     document.querySelectorAll('.gk-mode-btn').forEach(function (btn) {
       btn.classList.toggle('active', btn.getAttribute('data-gk-mode') === GKUI.mode);
@@ -124,6 +185,8 @@
         renderRanking(listId, parseInt(activeBtn.getAttribute('data-ranksub'), 10));
       }
     });
+    const gridView = document.getElementById('gk-view-grid');
+    if (gridView && gridView.classList.contains('active')) { renderGrid(); }
   }
 
   function switchView(view) {
@@ -131,6 +194,7 @@
     document.querySelectorAll('#screen-gk-planner .gk-view').forEach(function (v) { v.classList.toggle('active', v.id === 'gk-view-' + view); });
     if (view === 'ranking') renderRanking('gk-ranking-list', 2);
     if (view === 'config') renderConfig();
+    if (view === 'grid') renderGrid();
   }
 
   // ── RANKING ──
