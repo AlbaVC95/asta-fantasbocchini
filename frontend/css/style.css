@@ -530,9 +530,9 @@ html,body{height:auto!important;min-height:100vh;overflow:auto!important}
 .puja-panel-slot .manual-bid-row{margin:0}
 .puja-panel-slot .inp-rilancio{padding:5px!important;font-size:16px!important;width:64px!important}
 /* Budget squadre e Mio team più stretti quando è visibile la riga puja del partecipante */
-body.layout-partecipante .asta-row-panels{align-items:stretch;max-height:28vh}
-body.layout-partecipante .asta-row-panels>.panel-budget{max-height:100%;align-self:stretch;overflow-y:auto;flex:0.6}
-body.layout-partecipante .asta-row-panels>#mio-panel{max-height:100%;align-self:stretch;overflow-y:auto;flex:0.7}
+body.layout-partecipante .asta-row-panels{align-items:stretch}
+body.layout-partecipante .asta-row-panels>.panel-budget{max-height:28vh;align-self:stretch;overflow-y:auto;flex:0.6}
+body.layout-partecipante .asta-row-panels>#mio-panel{max-height:28vh;align-self:stretch;overflow-y:auto;flex:0.7}
 /* La card di chiamata (con fascia strategia) non deve mai essere tagliata dal
    limite di altezza dei pannelli laterali: si auto-dimensiona col contenuto
    e non viene 'stretch'-ata alla stessa altezza di budget/team (che restano
