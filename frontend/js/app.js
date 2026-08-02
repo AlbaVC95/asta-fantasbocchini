@@ -1254,6 +1254,46 @@ function inviaRilancioManuale() {
   inp.value = '';
 }
 
+// Forza la visibilita' del box di rilancio su mobile (vista utente) con stili
+// inline !important via JS: bypassa qualsiasi conflitto tra le tante regole CSS
+// storiche su .rilancio-box/.puja-panel-slot che potevano lasciarlo a display:none
+// o altezza 0 su alcuni telefoni (es. Samsung Chrome).
+function forzaVisibilitaRilancioMobile() {
+  const box = document.getElementById('rilancio-box');
+  if (!box || S.isAdmin) return;
+  if (box.classList.contains('hidden') || window.innerWidth > 900) {
+    box.style.removeProperty('display');
+    box.style.removeProperty('visibility');
+    box.style.removeProperty('opacity');
+    box.style.removeProperty('position');
+    box.style.removeProperty('height');
+    box.style.removeProperty('max-height');
+    box.style.removeProperty('overflow');
+    box.style.removeProperty('width');
+    return;
+  }
+  box.style.setProperty('display', 'flex', 'important');
+  box.style.setProperty('visibility', 'visible', 'important');
+  box.style.setProperty('opacity', '1', 'important');
+  box.style.setProperty('position', 'static', 'important');
+  box.style.setProperty('height', 'auto', 'important');
+  box.style.setProperty('max-height', 'none', 'important');
+  box.style.setProperty('overflow', 'visible', 'important');
+  box.style.setProperty('width', '100%', 'important');
+  const slot = document.getElementById('puja-panel-slot');
+  if (slot) {
+    slot.style.setProperty('overflow', 'visible', 'important');
+    slot.style.setProperty('max-height', 'none', 'important');
+    slot.style.setProperty('height', 'auto', 'important');
+  }
+  const row = document.querySelector('.asta-row-panels');
+  if (row) {
+    row.style.setProperty('overflow', 'visible', 'important');
+    row.style.setProperty('max-height', 'none', 'important');
+  }
+}
+window.addEventListener('resize', forzaVisibilitaRilancioMobile);
+
 function aggiornaQuickBids() {
   const canB = canBid();
   ['btn-quick-5','btn-quick-10'].forEach(id => {
@@ -1268,6 +1308,7 @@ function aggiornaQuickBids() {
   if (inpM) inpM.disabled = !canB;
   const btnScarta = document.getElementById('btn-scarta-attuale');
   if (btnScarta) btnScarta.disabled = !(S.asta && S.asta.chiamataAttuale);
+  forzaVisibilitaRilancioMobile();
 }
 
 function nascondiConfermaBox() {
@@ -2886,6 +2927,7 @@ function applyLayoutRuolo() {
     document.body.classList.add('layout-partecipante');
     document.body.classList.remove('layout-admin');
   }
+  forzaVisibilitaRilancioMobile();
 }
 
 function renderLobbySquadre(squadre) {
