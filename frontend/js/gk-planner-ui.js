@@ -274,7 +274,7 @@
   }
 
   function renderBreakdownItems(breakdown) {
-    const labels = { coverage: 'Copertura calendario', difficoltaMedia: 'Difficolta media (inv.)', alternanza: 'Alternanza casa/fuori', giornateCritiche: 'Giornate critiche (inv.)', fuoriCasaDoppio: 'Doppia trasferta (inv.)' };
+    const labels = { coverage: 'Copertura calendario', difficoltaMedia: 'Difficolta media (inv.)', alternanza: 'Alternanza casa/fuori', giornateCritiche: 'Giornate critiche (inv.)' };
     let html = '';
     Object.keys(breakdown).forEach(function (k) {
       const v = breakdown[k];
@@ -345,10 +345,15 @@
   }
 
   // ── IMPOSTAZIONI ──
+  // ── Conversione slider "Forza squadre": visual 1-10 <-> interno 30-99 ──
+  // (round-trip esatto sui 10 valori ancora: 1->30, 2->38, 3->45, 4->53, 5->61, 6->68, 7->76, 8->84, 9->91, 10->99)
+  function sliderToInternal(v) { return Math.round(30 + (v - 1) * 69 / 9); }
+  function internalToSlider(internal) { return Math.max(1, Math.min(10, Math.round(1 + (internal - 30) * 9 / 69))); }
+
   function renderConfig() {
     updateGkImportStatusText();
     const cfg = GKUI.config;
-    const weightLabels = { coverage: 'Copertura calendario', difficoltaMedia: 'Difficolta media', alternanza: 'Alternanza casa/fuori', giornateCritiche: 'Giornate critiche', fuoriCasaDoppio: 'Doppia trasferta' };
+    const weightLabels = { coverage: 'Copertura calendario', difficoltaMedia: 'Difficolta media', alternanza: 'Alternanza casa/fuori', giornateCritiche: 'Giornate critiche' };
     let wHtml = '';
     Object.keys(cfg.weights).forEach(function (k) {
       wHtml += '<div class="gk-config-row"><label>' + weightLabels[k] + '</label><input type="range" min="0" max="50" value="' + cfg.weights[k] + '" data-weight="' + k + '"><span class="gk-config-val">' + cfg.weights[k] + '</span></div>';
@@ -360,14 +365,15 @@
     let sHtml = '';
     Object.keys(cfg.teamStats).sort().forEach(function (t) {
       const s = cfg.teamStats[t];
+      const vAtt = internalToSlider(s.attacco), vDif = internalToSlider(s.difesa);
       sHtml += '<div class="gk-strength-item gk-strength-item-dual">' +
         '<label class="gk-strength-team-label">' + teamBadge(t) + ' ' + t + '</label>' +
         '<div class="gk-strength-dual-row"><span class="gk-strength-dual-tag">&#9876;&#65039; Attacco</span>' +
-          '<input type="range" min="30" max="99" value="' + s.attacco + '" data-team="' + t + '" data-stat="attacco">' +
-          '<span class="gk-config-val">' + s.attacco + '</span></div>' +
+          '<input type="range" min="1" max="10" step="1" value="' + vAtt + '" data-team="' + t + '" data-stat="attacco">' +
+          '<span class="gk-config-val">' + vAtt + '</span></div>' +
         '<div class="gk-strength-dual-row"><span class="gk-strength-dual-tag">&#128737;&#65039; Difesa</span>' +
-          '<input type="range" min="30" max="99" value="' + s.difesa + '" data-team="' + t + '" data-stat="difesa">' +
-          '<span class="gk-config-val">' + s.difesa + '</span></div></div>';
+          '<input type="range" min="1" max="10" step="1" value="' + vDif + '" data-team="' + t + '" data-stat="difesa">' +
+          '<span class="gk-config-val">' + vDif + '</span></div></div>';
     });
     document.getElementById('gk-config-strength').innerHTML = sHtml;
     document.querySelectorAll('#gk-config-weights input[type=range],#gk-config-home input[type=range]').forEach(function (inp) {
@@ -375,6 +381,23 @@
     });
     document.querySelectorAll('#gk-config-strength input[type=range]').forEach(function (inp) {
       inp.addEventListener('input', function () { inp.parentElement.querySelector('.gk-config-val').textContent = inp.value; });
+    });
+  }
+
+  // ── Se una vista Analisi/Confronto ha gia' un risultato mostrato, la aggiorna
+  //    subito con la nuova configurazione (evita di dover premere di nuovo "Analizza") ──
+  function refreshOpenDetailAndCompareViews() {
+    [['gk-detail', 'gk-detail-content'], ['gki-detail', 'gki-detail-content']].forEach(function (pair) {
+      var contentEl = document.getElementById(pair[1]);
+      if (contentEl && contentEl.innerHTML.trim()) {
+        renderDetail(readTeamsFromPicker(pair[0]), pair[1]);
+      }
+    });
+    [['gk-cmp-a', 'gk-cmp-b', 'gk-compare-content'], ['gki-cmp-a', 'gki-cmp-b', 'gki-compare-content']].forEach(function (t) {
+      var contentEl = document.getElementById(t[2]);
+      if (contentEl && contentEl.innerHTML.trim()) {
+        renderCompare(t[0], t[1], t[2]);
+      }
     });
   }
 
@@ -386,11 +409,12 @@
     document.querySelectorAll('#gk-config-strength input[type=range]').forEach(function (inp) {
       const team = inp.getAttribute('data-team'), stat = inp.getAttribute('data-stat');
       if (!cfg.teamStats[team]) cfg.teamStats[team] = { attacco: 55, difesa: 55 };
-      cfg.teamStats[team][stat] = parseInt(inp.value, 10);
+      cfg.teamStats[team][stat] = sliderToInternal(parseInt(inp.value, 10));
     });
     GKUI.config = GKPlanner.mergeConfig(cfg);
     saveConfig(GKUI.config);
     recompute();
+    refreshOpenDetailAndCompareViews();
     if (typeof toast === 'function') toast('Impostazioni applicate, analisi ricalcolata', 'success');
     switchView('ranking');
   }
