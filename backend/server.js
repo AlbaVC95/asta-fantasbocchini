@@ -524,7 +524,18 @@ app.get('/api/keepalive-supabase', async (req, res) => {
 });
 
 
-app.get('/api/gk-planner/calendario', (req, res) => {
+app.get('/api/gk-planner/calendario', async (req, res) => {
+  // Fonte di verita': Supabase (persiste tra i deploy, che azzerano il disco locale).
+  // Il file locale funge solo da cache rapida all'interno dello stesso processo.
+  try {
+    if (supabaseAdmin) {
+      const { data, error } = await supabaseAdmin.from('theme_overrides').select('styles').eq('id', 'gk_planner_calendario').single();
+      if (!error && data && data.styles && data.styles.partite) {
+        try { fs.writeFileSync(GK_CALENDARIO_FILE, JSON.stringify(data.styles)); } catch (e) {}
+        return res.json(data.styles);
+      }
+    }
+  } catch (e) { /* fallback sotto */ }
   try {
     if (fs.existsSync(GK_CALENDARIO_FILE)) {
       const data = JSON.parse(fs.readFileSync(GK_CALENDARIO_FILE, 'utf-8'));
@@ -562,7 +573,10 @@ app.post('/api/gk-planner/calendario', async (req, res) => {
       giornate_totali: Math.max.apply(null, righeValide.map(p => p.giornata)),
       partite: righeValide.map(p => ({ giornata: p.giornata, casa: p.casa.trim(), ospite: p.ospite.trim() }))
     };
-    fs.writeFileSync(GK_CALENDARIO_FILE, JSON.stringify(payload));
+    const { error: upsertErr } = await supabaseAdmin.from('theme_overrides')
+      .upsert({ id: 'gk_planner_calendario', styles: payload, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    if (upsertErr) return res.status(500).json({ error: 'Errore nel salvataggio del calendario su Supabase: ' + upsertErr.message });
+    try { fs.writeFileSync(GK_CALENDARIO_FILE, JSON.stringify(payload)); } catch (e) {}
     res.json({ ok: true, totalPartite: payload.partite.length, giornateTotali: payload.giornate_totali });
   } catch (err) {
     console.error('Errore salvataggio calendario GK Planner:', err.message);
@@ -576,6 +590,8 @@ app.delete('/api/gk-planner/calendario', async (req, res) => {
   if (auth.error) return res.status(auth.status).json({ error: auth.error });
   if (auth.role !== 'admin') return res.status(403).json({ error: 'Solo un Admin può ripristinare il calendario' });
   try {
+    const { error: delErr } = await supabaseAdmin.from('theme_overrides').delete().eq('id', 'gk_planner_calendario');
+    if (delErr) return res.status(500).json({ error: 'Errore nel ripristino del calendario su Supabase: ' + delErr.message });
     if (fs.existsSync(GK_CALENDARIO_FILE)) fs.unlinkSync(GK_CALENDARIO_FILE);
     res.json({ ok: true });
   } catch (err) {
