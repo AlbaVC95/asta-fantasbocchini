@@ -1916,8 +1916,17 @@ function _loadPlayerPhotoIndex() {
   return _playerPhotoIndexPromise;
 }
 // Normalizza un nome per il confronto: minuscolo, senza accenti, solo lettere/numeri.
+// Prima di normalize('NFD') si traslittera esplicitamente le lettere che sono
+// unicode base proprio (non decorazione), quindi normalize('NFD') NON le
+// convertirebbe in "lettera+accento" separabile e finirebbero cancellate
+// invece che traslitterate (es. la "ı" turca senza punto in "Yıldız" -> "Yldz").
 function _normalizePhotoName(s) {
-  return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  return (s || '').toString()
+    .replace(/ı/g, 'i').replace(/İ/g, 'I')
+    .replace(/ø/g, 'o').replace(/Ø/g, 'O')
+    .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+    .replace(/ł/g, 'l').replace(/Ł/g, 'L')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
 // Mapping esplicito nome-Excel(+squadra) -> file immagine, generato a mano dal
@@ -1962,13 +1971,41 @@ function _tryLocalPhoto(nome, squadra) {
     const targetNorm = _normalizePhotoName(nome);
     if (!targetNorm) return null;
     const files = idx[folder];
-    // Confronto esatto sul nome normalizzato (senza estensione), poi fallback a "contiene".
+    // Confronto esatto sul nome normalizzato (senza estensione), poi match
+    // "Cognome + iniziale/abbreviazione" (es. "Pessina Mas." -> "Massimo_Pessina.jpg"),
+    // poi fallback finale a "contiene".
     let best = null;
     for (let i = 0; i < files.length; i++) {
       const fname = files[i];
       const base = fname.replace(/\.[a-zA-Z]+$/, '');
       const fnorm = _normalizePhotoName(base.replace(/_/g, ' '));
       if (fnorm === targetNorm) { best = fname; break; }
+    }
+    if (!best) {
+      // Il listino a volte scrive "Cognome Iniz." (1 lettera, o 2-4 lettere+punto)
+      // invece del nome di battesimo per esteso: es. "Pessina Mas." = Massimo Pessina,
+      // "Moro L." = Luca Moro. I file sono "Nome_Cognome.jpg": bisogna confrontare
+      // l'ULTIMA parte del file col cognome, e la PRIMA parte del file deve iniziare
+      // con l'abbreviazione.
+      const words = (nome || '').toString().trim().split(/\s+/).filter(Boolean);
+      if (words.length >= 2) {
+        const lastWord = words[words.length - 1];
+        const abbrevMatch = lastWord.match(/^([A-Za-zÀ-ÿ]{1,4})\.?$/);
+        const isAbbrev = !!abbrevMatch && (abbrevMatch[1].length === 1 || (abbrevMatch[1].length >= 2 && lastWord.slice(-1) === '.'));
+        if (isAbbrev) {
+          const cognomeNorm = _normalizePhotoName(words.slice(0, -1).join(' '));
+          const abbrevNorm = _normalizePhotoName(abbrevMatch[1]);
+          for (let i = 0; i < files.length; i++) {
+            const fname = files[i];
+            const base = fname.replace(/\.[a-zA-Z]+$/, '');
+            const parts = base.split('_').filter(Boolean);
+            if (parts.length < 2) continue;
+            const lastPartNorm = _normalizePhotoName(parts[parts.length - 1]);
+            const firstPartNorm = _normalizePhotoName(parts[0]);
+            if (lastPartNorm === cognomeNorm && firstPartNorm.indexOf(abbrevNorm) === 0) { best = fname; break; }
+          }
+        }
+      }
     }
     if (!best) {
       for (let i = 0; i < files.length; i++) {
