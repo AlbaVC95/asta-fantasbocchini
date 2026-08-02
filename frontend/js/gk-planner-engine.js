@@ -25,20 +25,20 @@
   };
 
   const DEFAULT_WEIGHTS = {
-    coverage: 35,       // % di giornate con almeno un titolare in una partita favorevole
-    difficoltaMedia: 25,// media della difficoltà minima per giornata (invertita: più bassa = meglio)
-    alternanza: 15,     // quanto si alternano bene casa/fuori i giocatori del gruppo
-    giornateCritiche: 15// penalità per giornate in cui TUTTI hanno partite difficili
+    coverage: 38,       // % di giornate con almeno un titolare in una partita favorevole
+    difficoltaMedia: 22,// media della difficoltà minima per giornata (invertita: più bassa = meglio)
+    alternanza: 10,     // quanto si alternano bene casa/fuori i giocatori del gruppo
+    giornateCritiche: 30// penalità per giornate in cui TUTTI hanno partite difficili
   };
 
   const DEFAULT_CONFIG = {
     teamStats: JSON.parse(JSON.stringify(DEFAULT_TEAM_STATS)),
     weights: Object.assign({}, DEFAULT_WEIGHTS),
     homeAdvantage: 8,   // bonus (riduzione difficoltà) per chi gioca in casa
-    awayPenalty: 6,     // penalità (aumento difficoltà) per chi gioca in trasferta
-    ownStrengthFactor: 0.3, // quanto la propria statistica riduce la difficoltà
-    sogliaFacile: 35,   // difficoltà <= questa soglia => partita "facile/favorevole"
-    sogliaDifficile: 60 // difficoltà > questa soglia => partita "difficile/rischiosa"
+    awayPenalty: 8,     // penalità (aumento difficoltà) per chi gioca in trasferta
+    ownStrengthFactor: 0.25, // quanto la propria statistica riduce la difficoltà
+    sogliaFacile: 62,   // difficoltà <= questa soglia => partita "facile/favorevole"
+    sogliaDifficile: 80 // difficoltà > questa soglia => partita "difficile/rischiosa"
   };
 
   function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
