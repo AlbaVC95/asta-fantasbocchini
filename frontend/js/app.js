@@ -520,7 +520,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     history.replaceState({}, '', '/?id=' + sess.astaId);
     setTimeout(() => fetchAstaSquadrePerJoin(sess.astaId), 400);
   }
-  setupHome(); setupLobby(); setupAsta(); setupFilters(); setupTabs(); setupLogin(); setupMenu(); setupStrategie(); setupEditor(); setupStrategiaAsta(); setupAnteprima(); setupRoseCompatta(); setupAstaMobileAccordion(); setupRipristinaDaFile();
+  function safeSetup(fn) {
+    try { fn(); } catch (e) { console.error('[init] errore in ' + (fn.name || 'setup anonimo') + ':', e); }
+  }
+  [setupHome, setupLobby, setupAsta, setupFilters, setupTabs, setupLogin, setupMenu, setupStrategie, setupEditor, setupStrategiaAsta, setupAnteprima, setupRoseCompatta, setupAstaMobileAccordion, setupRipristinaDaFile].forEach(safeSetup);
   // Warn before leaving page if in active asta
   window.addEventListener('beforeunload', (e) => {
     if (S.astaId && S.asta && S.asta.stato === 'in_corso') {
