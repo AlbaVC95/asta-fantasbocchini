@@ -1402,6 +1402,13 @@ body:has(#screen-asta.active) .user-email-badge{display:none}
   #mio-panel.acc-open #mio-slot-counter{display:block!important;margin-top:6px}
   #mio-panel.acc-open .mio-panel-actions{display:flex!important;margin-top:8px}
   #mio-panel .mio-panel-actions .btn{font-size:.85rem!important;padding:11px 10px!important}
+  /* Fix acordeón cerrado: la regla de tablet (max-width:768px, arriba en el
+     archivo) fija flex-basis:200px!important con la misma especificidad, y
+     al tener menor prioridad de cascada por orden esta regla de aquí gana:
+     obliga al panel a encoger a la altura de su contenido real (solo la
+     cabecera) cuando está cerrado, en vez de reservar 200px vacíos. */
+  body.layout-partecipante .asta-row-panels>.panel-budget{flex:0 0 auto!important}
+  body.layout-partecipante .asta-row-panels>#mio-panel{flex:0 0 auto!important}
 
   /* ══ Card di chiamata: priorità massima, a piena larghezza, testo e pulsanti leggibili ══ */
   .puja-panel-slot,body.layout-admin .asta-row-puja{
