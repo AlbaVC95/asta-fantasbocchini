@@ -1269,13 +1269,14 @@ function forzaVisibilitaRilancioMobile() {
   const quickRow = box.querySelector('.quick-bids-row');
   const manualRow = box.querySelector('.manual-bid-row');
   const btnRil = document.getElementById('btn-rilancio');
+  const strategiaInfo = document.querySelector('#chiamata-card .cc-strategia-info');
   const boxTargets = [box, quickRow, manualRow, btnRil].filter(Boolean);
   const structuralTargets = [slot, cardGroup].filter(Boolean);
   const isMobile = window.innerWidth <= 900;
 
   if (!isMobile) {
     // Desktop/tablet: revertire tutto (struttura + box), nessun forzatura JS necessaria.
-    [].concat(boxTargets, structuralTargets).forEach(function(el) {
+    [].concat(boxTargets, structuralTargets, strategiaInfo ? [strategiaInfo] : []).forEach(function(el) {
       ['display','visibility','opacity','position','height','max-height','overflow',
        'width','max-width','min-width','flex','flex-direction','flex-wrap','flex-basis',
        'gap','margin-top'].forEach(function(p) { el.style.removeProperty(p); });
@@ -1355,6 +1356,24 @@ function forzaVisibilitaRilancioMobile() {
       const btnM = manualRow.querySelector('.btn-manuale');
       if (btnM) { btnM.style.setProperty('flex', '0 0 auto', 'important'); }
     }
+  }
+
+  // Il testo della fascia strategia (.cc-strategia-info) puo' restare collassato
+  // su alcuni browser mobile (es. Samsung/Brave Chromium) anche con le regole CSS
+  // !important dedicate, per lo stesso motivo documentato sopra per rilancio-box.
+  // Va forzato sempre in mobile, indipendentemente dallo stato .hidden di rilancio-box
+  // (la fascia non ha relazione con lo stato della puja). Non si cachea il riferimento
+  // perche' l'elemento viene rigenerato ad ogni renderChiamata().
+  if (strategiaInfo) {
+    strategiaInfo.style.setProperty('display', 'block', 'important');
+    strategiaInfo.style.setProperty('visibility', 'visible', 'important');
+    strategiaInfo.style.setProperty('opacity', '1', 'important');
+    strategiaInfo.style.setProperty('height', 'auto', 'important');
+    strategiaInfo.style.setProperty('overflow', 'visible', 'important');
+    strategiaInfo.style.setProperty('white-space', 'normal', 'important');
+    strategiaInfo.style.setProperty('width', '100%', 'important');
+    strategiaInfo.style.setProperty('max-width', '100%', 'important');
+    void strategiaInfo.offsetHeight;
   }
 
   const row = document.querySelector('.asta-row-panels');
@@ -2215,8 +2234,7 @@ function _applyPlayerPhoto(url, version) {
 
 function _getChiamataStrategiaInfoHTML(g) {
   const strat = S.strategiaAsta;
-  if (!strat) return '';
-  const cfg = strat.configByListinoId.get(g.idFantaleghe);
+  const cfg = strat ? strat.configByListinoId.get(g.idFantaleghe) : null;
   if (!cfg || !cfg.fascia_id || !strat.fasceInfo.has(cfg.fascia_id)) {
     return '<p class="cc-strategia-info cc-strategia-vuota">📊 Nessuna fascia assegnata</p>';
   }
