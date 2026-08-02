@@ -314,9 +314,11 @@ function _annullaItem(asta, index) {
       if (idx !== -1) sq.rosa.splice(idx, 1);
       if (item.tipo === 'riconferma') sq.slotsRICUsati = Math.max(0, sq.slotsRICUsati - 1);
       if (item.tipo === 'plusvalenza') {
-        sq.slotsPLUSUsati = Math.max(0, sq.slotsPLUSUsati - 1);
         const sqPrec = getSquadra(asta, item.plusvalenzaA);
-        if (sqPrec) sqPrec.crediti -= (item.guadagno || 0);
+        if (sqPrec) {
+          sqPrec.crediti -= (item.guadagno || 0);
+          sqPrec.slotsPLUSUsati = Math.max(0, sqPrec.slotsPLUSUsati - 1);
+        }
       }
       if (item.tipo === 'recompra') sq.recompraUsati = Math.max(0, (sq.recompraUsati || 0) - 1);
     }
