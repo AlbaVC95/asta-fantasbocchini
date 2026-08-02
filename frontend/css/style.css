@@ -1602,8 +1602,13 @@ body:has(#screen-asta.active) .user-email-badge{display:none}
 body.layout-partecipante .puja-panel-slot{align-self:flex-start!important;height:auto!important;max-height:none!important;overflow:visible!important}
 body.layout-partecipante .puja-panel-slot .card-timer-group{height:auto!important;overflow:visible!important;align-items:flex-start!important}
 body.layout-partecipante .puja-panel-slot .chiamata-card{height:auto!important;max-height:none!important;overflow:visible!important;flex-wrap:wrap!important;align-items:flex-start!important;row-gap:4px!important}
-body.layout-partecipante .puja-panel-slot .cc-body{overflow:visible!important;white-space:normal!important;flex-wrap:wrap!important;width:100%!important;flex:1 1 100%!important;row-gap:2px!important}
-body.layout-partecipante .puja-panel-slot .cc-strategia-info{white-space:normal!important;overflow:visible!important;text-overflow:unset!important;flex:1 1 100%!important;width:100%!important;margin-top:2px!important}
-body.layout-partecipante .puja-panel-slot .cc-offerente{white-space:normal!important}
-body.layout-partecipante .puja-panel-slot .cc-attesa-badge{flex:1 1 100%!important;width:100%!important;white-space:normal!important}
+body.layout-partecipante .puja-panel-slot .cc-body{overflow:visible!important;white-space:normal!important;flex-wrap:wrap!important;width:100%!important;max-width:100%!important;flex:1 1 100%!important;row-gap:2px!important;box-sizing:border-box!important}
+body.layout-partecipante .puja-panel-slot .cc-strategia-info{white-space:normal!important;overflow:visible!important;text-overflow:unset!important;flex:1 1 100%!important;width:100%!important;max-width:100%!important;margin-top:2px!important;box-sizing:border-box!important;overflow-wrap:anywhere!important}
+body.layout-partecipante .puja-panel-slot .cc-offerente{white-space:normal!important;max-width:100%!important;overflow-wrap:anywhere!important}
+body.layout-partecipante .puja-panel-slot .cc-attesa-badge{flex:1 1 100%!important;width:100%!important;max-width:100%!important;white-space:normal!important;box-sizing:border-box!important;overflow-wrap:anywhere!important}
+body.layout-partecipante .puja-panel-slot .cc-nome{white-space:normal!important;overflow:visible!important;text-overflow:unset!important;max-width:100%!important;overflow-wrap:anywhere!important}
+body.layout-partecipante .puja-panel-slot .cc-meta{white-space:normal!important;overflow:visible!important;max-width:100%!important;flex-wrap:wrap!important}
+body.layout-partecipante .puja-panel-slot .cc-offerta-box{max-width:100%!important;box-sizing:border-box!important;flex-wrap:wrap!important}
+body.layout-partecipante .puja-panel-slot .cc-offerta,
+body.layout-partecipante .puja-panel-slot .cc-offerta-label{max-width:100%!important;overflow-wrap:anywhere!important;white-space:normal!important}
 body.layout-partecipante .asta-row-panels{overflow:visible!important}
