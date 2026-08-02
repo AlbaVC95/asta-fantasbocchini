@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=1785704090179">
+  <link rel="stylesheet" href="css/style.css?v=1785712663138">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -177,6 +177,7 @@
       <button type="button" class="gk-tab active" data-gk-view="ranking">&#127942; Ranking</button>
       <button type="button" class="gk-tab" data-gk-view="detail">&#128269; Analisi</button>
       <button type="button" class="gk-tab" data-gk-view="compare">&#9878;&#65039; Confronto</button>
+      <button type="button" class="gk-tab" data-gk-view="grid">&#128293; Griglia</button>
       <button type="button" class="gk-tab" data-gk-view="config">&#9881;&#65039; Impostazioni</button>
     </nav>
 
@@ -277,6 +278,15 @@
         <button type="button" id="btn-gk-reset-config" class="btn btn-secondary">Ripristina default</button>
         <button type="button" id="btn-gk-apply-config" class="btn btn-primary">Applica e ricalcola</button>
       </div>
+    </div>
+
+    <!-- Vista: GRIGLIA -->
+    <div class="gk-view" id="gk-view-grid">
+      <div class="gk-view-intro"><p>Punteggio di compatibilità (0-100) tra ogni coppia di squadre, calcolato sull intero calendario. Piu alto = squadre piu complementari per l intera stagione. Clicca una cella per vedere l analisi dettagliata.</p></div>
+      <div class="gk-grid-wrap">
+        <div class="gk-grid-scroll" id="gk-grid-scroll"></div>
+      </div>
+      <div class="gk-grid-legend"><span id="gk-grid-legend-range"></span></div>
     </div>
   </section>
 
@@ -1067,7 +1077,7 @@
 </div>
 <script src="/socket.io/socket.io.js"></script>
 <script src="js/gk-planner-engine.js?v=1785711897555"></script>
-<script src="js/gk-planner-ui.js?v=1785697858985"></script>
+<script src="js/gk-planner-ui.js?v=1785712663139"></script>
 <script src="js/app.js?v=1785709116484"></script>
 </body>
 </html>
