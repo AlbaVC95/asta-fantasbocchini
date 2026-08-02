@@ -533,6 +533,16 @@ html,body{height:auto!important;min-height:100vh;overflow:auto!important}
 body.layout-partecipante .asta-row-panels{align-items:stretch;max-height:28vh}
 body.layout-partecipante .asta-row-panels>.panel-budget{max-height:100%;align-self:stretch;overflow-y:auto;flex:0.6}
 body.layout-partecipante .asta-row-panels>#mio-panel{max-height:100%;align-self:stretch;overflow-y:auto;flex:0.7}
+/* La card di chiamata (con fascia strategia) non deve mai essere tagliata dal
+   limite di altezza dei pannelli laterali: si auto-dimensiona col contenuto
+   e non viene 'stretch'-ata alla stessa altezza di budget/team (che restano
+   compatti con scroll interno). Solo vista UTENTE (layout-partecipante). */
+body.layout-partecipante .puja-panel-slot{align-self:flex-start!important;height:auto!important;max-height:none!important;overflow:visible!important}
+body.layout-partecipante .puja-panel-slot .card-timer-group{height:auto!important;overflow:visible!important}
+body.layout-partecipante .puja-panel-slot .chiamata-card{height:auto!important;max-height:none!important;overflow:visible!important}
+body.layout-partecipante .puja-panel-slot .cc-body{overflow:visible!important;white-space:normal!important}
+body.layout-partecipante .puja-panel-slot .cc-strategia-info{white-space:normal!important;overflow:visible!important;text-overflow:unset!important}
+body.layout-partecipante .asta-row-panels{overflow:visible!important}
 body.layout-partecipante .asta-row-puja{display:none!important}
 body.layout-partecipante .asta-row-panels{max-width:1900px;margin-left:auto;margin-right:auto;width:100%}
 @media (min-width:1500px){
