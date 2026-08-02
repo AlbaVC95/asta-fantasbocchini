@@ -1261,18 +1261,38 @@ function inviaRilancioManuale() {
 function forzaVisibilitaRilancioMobile() {
   const box = document.getElementById('rilancio-box');
   if (!box || S.isAdmin) return;
-  if (box.classList.contains('hidden') || window.innerWidth > 900) {
-    box.style.removeProperty('display');
-    box.style.removeProperty('visibility');
-    box.style.removeProperty('opacity');
-    box.style.removeProperty('position');
-    box.style.removeProperty('height');
-    box.style.removeProperty('max-height');
-    box.style.removeProperty('overflow');
-    box.style.removeProperty('width');
+  const slot = document.getElementById('puja-panel-slot');
+  const cardGroup = document.getElementById('card-timer-group');
+  const quickRow = box.querySelector('.quick-bids-row');
+  const manualRow = box.querySelector('.manual-bid-row');
+  const btnRil = document.getElementById('btn-rilancio');
+  const targets = [box, slot, cardGroup, quickRow, manualRow, btnRil].filter(Boolean);
+  const isMobile = window.innerWidth <= 900;
+  if (box.classList.contains('hidden') || !isMobile) {
+    targets.forEach(function(el) {
+      ['display','visibility','opacity','position','height','max-height','overflow',
+       'width','max-width','min-width','flex','flex-direction','flex-wrap','flex-basis',
+       'gap','margin-top'].forEach(function(p) { el.style.removeProperty(p); });
+    });
     return;
   }
+  // Contenitore principale: colonna verticale a piena larghezza, mai riga.
+  if (slot) {
+    slot.style.setProperty('display', 'flex', 'important');
+    slot.style.setProperty('flex-direction', 'column', 'important');
+    slot.style.setProperty('width', '100%', 'important');
+    slot.style.setProperty('max-width', '100%', 'important');
+    slot.style.setProperty('overflow', 'visible', 'important');
+    slot.style.setProperty('max-height', 'none', 'important');
+    slot.style.setProperty('height', 'auto', 'important');
+  }
+  if (cardGroup) {
+    cardGroup.style.setProperty('width', '100%', 'important');
+    cardGroup.style.setProperty('flex', 'none', 'important');
+  }
+  // Box di rilancio: sempre sotto, a piena larghezza, mai accanto alla card.
   box.style.setProperty('display', 'flex', 'important');
+  box.style.setProperty('flex-direction', 'column', 'important');
   box.style.setProperty('visibility', 'visible', 'important');
   box.style.setProperty('opacity', '1', 'important');
   box.style.setProperty('position', 'static', 'important');
@@ -1280,16 +1300,48 @@ function forzaVisibilitaRilancioMobile() {
   box.style.setProperty('max-height', 'none', 'important');
   box.style.setProperty('overflow', 'visible', 'important');
   box.style.setProperty('width', '100%', 'important');
-  const slot = document.getElementById('puja-panel-slot');
-  if (slot) {
-    slot.style.setProperty('overflow', 'visible', 'important');
-    slot.style.setProperty('max-height', 'none', 'important');
-    slot.style.setProperty('height', 'auto', 'important');
+  box.style.setProperty('max-width', '100%', 'important');
+  box.style.setProperty('min-width', '0', 'important');
+  box.style.setProperty('flex', 'none', 'important');
+  box.style.setProperty('gap', '10px', 'important');
+  box.style.setProperty('margin-top', '10px', 'important');
+  if (quickRow) {
+    quickRow.style.setProperty('display', 'flex', 'important');
+    quickRow.style.setProperty('flex-direction', 'row', 'important');
+    quickRow.style.setProperty('flex-wrap', 'wrap', 'important');
+    quickRow.style.setProperty('width', '100%', 'important');
+    quickRow.style.setProperty('gap', '8px', 'important');
+    Array.prototype.forEach.call(quickRow.querySelectorAll('.btn-quick'), function(b) {
+      b.style.setProperty('flex', '1 1 auto', 'important');
+      b.style.setProperty('width', 'auto', 'important');
+      b.style.setProperty('max-width', '100%', 'important');
+    });
+  }
+  if (btnRil) {
+    btnRil.style.setProperty('width', '100%', 'important');
+    btnRil.style.setProperty('max-width', '100%', 'important');
+  }
+  if (manualRow) {
+    manualRow.style.setProperty('display', 'flex', 'important');
+    manualRow.style.setProperty('flex-direction', 'row', 'important');
+    manualRow.style.setProperty('flex-wrap', 'wrap', 'important');
+    manualRow.style.setProperty('width', '100%', 'important');
+    manualRow.style.setProperty('gap', '8px', 'important');
+    const inp = manualRow.querySelector('.inp-rilancio');
+    if (inp) { inp.style.setProperty('flex', '1 1 auto', 'important'); inp.style.setProperty('width', 'auto', 'important'); inp.style.setProperty('max-width', '100%', 'important'); }
+    const btnM = manualRow.querySelector('.btn-manuale');
+    if (btnM) { btnM.style.setProperty('flex', '0 0 auto', 'important'); }
   }
   const row = document.querySelector('.asta-row-panels');
   if (row) {
     row.style.setProperty('overflow', 'visible', 'important');
     row.style.setProperty('max-height', 'none', 'important');
+  }
+  const rowPuja = document.querySelector('.asta-row-puja');
+  if (rowPuja) {
+    rowPuja.style.setProperty('flex-direction', 'column', 'important');
+    rowPuja.style.setProperty('width', '100%', 'important');
+    rowPuja.style.setProperty('overflow', 'visible', 'important');
   }
 }
 window.addEventListener('resize', forzaVisibilitaRilancioMobile);
