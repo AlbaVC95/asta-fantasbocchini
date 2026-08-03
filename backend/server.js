@@ -1362,6 +1362,8 @@ setInterval(() => {
     if (daRimuovere) {
       clearTimer(id);
       aste.delete(id);
+      _ultimoBackupHash.delete(id); // evita una piccola fuga di memoria: senza questo, la Map
+      // continuerebbe a crescere di una entry per ogni asta rimossa da qui, per sempre.
       console.log('[cleanup] Asta rimossa dalla memoria (inattiva):', id);
     }
   });
