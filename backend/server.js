@@ -56,11 +56,20 @@ const timers = new Map();
 const BACKUP_DIR = path.join(__dirname, 'data');
 if (!fs.existsSync(BACKUP_DIR)) { try { fs.mkdirSync(BACKUP_DIR, { recursive: true }); } catch(e) {} }
 
+const _ultimoBackupHash = new Map(); // asta_id -> hash dell'ultimo contenuto salvato
+
 function saveBackup(asta) {
   if (!asta || !asta.id) return;
   try {
-    const snap = { backup: true, timestamp: new Date().toISOString(), asta: JSON.parse(JSON.stringify(asta)) };
+    const astaJson = JSON.stringify(asta);
+    // Evita upload ridondanti verso Supabase (banda) quando un'asta e' ferma/abbandonata:
+    // se il contenuto e' identico all'ultimo salvato, salta l'upsert remoto (il file locale
+    // viene comunque riscritto, e' gratuito).
+    const hash = astaJson.length + ':' + astaJson.slice(0, 64) + astaJson.slice(-64);
+    const snap = { backup: true, timestamp: new Date().toISOString(), asta: JSON.parse(astaJson) };
     fs.writeFileSync(path.join(BACKUP_DIR, 'backup_asta_' + asta.id + '.json'), JSON.stringify(snap));
+    if (_ultimoBackupHash.get(asta.id) === hash) return;
+    _ultimoBackupHash.set(asta.id, hash);
     saveBackupSupabase(asta, snap);
   } catch(e) { /* non-fatal */ }
 }
@@ -1330,16 +1339,24 @@ setInterval(() => {
 // memoria — il backup su disco resta comunque disponibile in data/backup_asta_*.json.
 const UN_GIORNO_MS = 24 * 60 * 60 * 1000;
 const TRENTA_GIORNI_MS = 30 * UN_GIORNO_MS;
+const DODICI_ORE_MS = 12 * 60 * 60 * 1000;
 setInterval(() => {
   const ora = Date.now();
   aste.forEach((asta, id) => {
     const creataMs = asta.createdAt ? new Date(asta.createdAt).getTime() : 0;
     const eta = creataMs ? (ora - creataMs) : 0;
-    const daRimuovere = (asta.stato === 'completata' && eta > UN_GIORNO_MS) || eta > TRENTA_GIORNI_MS;
+    // Un'asta mai avviata (stato 'attesa') o rimasta bloccata/abbandonata (nessuna chiamata
+    // attiva, nessun cambio di stato) per piu' di 12h viene considerata "zombie": va rimossa
+    // prima delle 30 giorni standard, altrimenti continuerebbe a occupare banda con
+    // l'autosave ogni 30s verso Supabase per settimane (vedi incidente banda agosto 2026).
+    const abbandonata = asta.stato !== 'completata' && !asta.chiamataAttuale && eta > DODICI_ORE_MS;
+    const daRimuovere = (asta.stato === 'completata' && eta > UN_GIORNO_MS) || abbandonata || eta > TRENTA_GIORNI_MS;
     if (daRimuovere) {
       clearTimer(id);
       aste.delete(id);
-      console.log('[cleanup] Asta rimossa dalla memoria (inattiva):', id);
+      _ultimoBackupHash.delete(id);
+      deleteBackupSupabase(id);
+      console.log('[cleanup] Asta rimossa dalla memoria (inattiva/abbandonata):', id);
     }
   });
 }, 60 * 60 * 1000); // ogni ora
