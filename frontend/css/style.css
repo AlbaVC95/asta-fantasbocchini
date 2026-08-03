@@ -1010,6 +1010,7 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .gk-mini-stat-facile .gk-mini-stat-num{color:var(--success)}
 .gk-mini-stat-media .gk-mini-stat-num{color:var(--gold-bright)}
 .gk-mini-stat-difficile .gk-mini-stat-num{color:var(--danger)}
+.gk-mini-stat-molto-difficile .gk-mini-stat-num{color:#a3001e}
 
 /* ── Card gauge "a la FantaLab": glow oro + grid statistiche 3+2 ── */
 .gk-summary-fancy{display:flex;align-items:center;gap:22px;flex-wrap:wrap;background:linear-gradient(135deg,var(--bg-elevated),var(--bg-card));border:1px solid var(--gold-glow);box-shadow:0 0 0 1px var(--gold-glow),0 0 30px var(--gold-glow),inset 0 0 50px rgba(255,179,0,.04)}
@@ -1035,6 +1036,7 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .gk-heat-facile{background:linear-gradient(135deg,#4ee39a,#00c37a);color:#00250f}
 .gk-heat-media{background:linear-gradient(135deg,#ffd166,#ffab00);color:#3a2400}
 .gk-heat-difficile{background:linear-gradient(135deg,#ff6b6b,#e8283e);color:#3a0008}
+.gk-heat-molto_difficile{background:linear-gradient(135deg,#a3001e,#4a0009);color:#fff}
 .gk-heat-cell.gk-heat-reco{box-shadow:0 0 0 2px var(--text-primary) inset}
 .gk-heat-header-cell{width:34px;text-align:center;font-size:.62rem;color:var(--text-muted);font-family:var(--font-mono);font-weight:700}
 .gk-heat-legend{display:flex;gap:14px;margin-top:10px;font-size:.7rem;color:var(--text-muted);flex-wrap:wrap}
