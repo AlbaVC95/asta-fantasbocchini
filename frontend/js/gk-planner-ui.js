@@ -317,6 +317,7 @@
           '<div class="gk-mini-stat gk-mini-stat-facile"><span class="gk-mini-stat-num">' + d.facili + '</span><span class="gk-mini-stat-lbl">facili</span></div>' +
           '<div class="gk-mini-stat gk-mini-stat-media"><span class="gk-mini-stat-num">' + d.medie + '</span><span class="gk-mini-stat-lbl">medie</span></div>' +
           '<div class="gk-mini-stat gk-mini-stat-difficile"><span class="gk-mini-stat-num">' + d.difficili + '</span><span class="gk-mini-stat-lbl">difficili</span></div>' +
+          '<div class="gk-mini-stat gk-mini-stat-molto-difficile"><span class="gk-mini-stat-num">' + d.moltoDifficili + '</span><span class="gk-mini-stat-lbl">molto diff.</span></div>' +
         '</div>' +
         '<div class="gk-mini-row">' +
           '<div class="gk-mini-stat"><span class="gk-mini-stat-num">' + d.inCasaReco + '</span><span class="gk-mini-stat-lbl">in casa</span></div>' +
@@ -338,7 +339,7 @@
   }
 
   function renderBreakdownItems(breakdown) {
-    const labels = { coverage: 'Copertura calendario', difficoltaMedia: 'Difficolta media (inv.)', alternanza: 'Alternanza casa/fuori', giornateCritiche: 'Giornate critiche (inv.)' };
+    const labels = { facili: 'Giornate facili', medie: 'Giornate medie', difficili: 'Giornate difficili', moltoDifficili: 'Giornate molto difficili' };
     let html = '';
     Object.keys(breakdown).forEach(function (k) {
       const v = breakdown[k];
@@ -373,6 +374,7 @@
         '<span><i style="background:linear-gradient(135deg,#4ee39a,#00c37a)"></i> Facile</span>' +
         '<span><i style="background:linear-gradient(135deg,#ffd166,#ffab00)"></i> Media</span>' +
         '<span><i style="background:linear-gradient(135deg,#ff6b6b,#e8283e)"></i> Difficile</span>' +
+        '<span><i style="background:linear-gradient(135deg,#a3001e,#4a0009)"></i> Molto difficile</span>' +
         '<span>Bordo bianco = titolare consigliato quella giornata</span>' +
       '</div></div>';
   }
@@ -409,35 +411,42 @@
   }
 
   // ── IMPOSTAZIONI ──
-  // ── Conversione slider "Forza squadre": visual 1-10 <-> interno 30-99 ──
-  // (round-trip esatto sui 10 valori ancora: 1->30, 2->38, 3->45, 4->53, 5->61, 6->68, 7->76, 8->84, 9->91, 10->99)
-  function sliderToInternal(v) { return Math.round(30 + (v - 1) * 69 / 9); }
-  function internalToSlider(internal) { return Math.max(1, Math.min(10, Math.round(1 + (internal - 30) * 9 / 69))); }
 
   function renderConfig() {
     updateGkImportStatusText();
     const cfg = GKUI.config;
-    const weightLabels = { coverage: 'Copertura calendario', difficoltaMedia: 'Difficolta media', alternanza: 'Alternanza casa/fuori', giornateCritiche: 'Giornate critiche' };
+    const paramMeta = {
+      sogliaFacile: { label: 'Soglia "facile" (diff &gt;)', min: 0, max: 9, step: 1 },
+      sogliaDifficile: { label: 'Soglia "difficile" (diff &lt;)', min: -9, max: 0, step: 1 },
+      sogliaMoltoDifficile: { label: 'Soglia "molto difficile" (diff &lt;=)', min: -9, max: 0, step: 1 },
+      ballottaggioDelta: { label: 'Margine ballottaggio', min: 0, max: 5, step: 1 },
+      puntiFacile: { label: 'Punti per giornata facile', min: 0, max: 10, step: 1 },
+      puntiMedia: { label: 'Punti per giornata media', min: 0, max: 10, step: 1 },
+      malusDifficile: { label: 'Malus giornata difficile', min: 0, max: 15, step: 1 },
+      malusMoltoDifficile: { label: 'Malus giornata molto difficile', min: 0, max: 15, step: 1 },
+      malusCriticaComune: { label: 'Malus giornata critica (tutti a rischio)', min: 0, max: 15, step: 1 }
+    };
     let wHtml = '';
-    Object.keys(cfg.weights).forEach(function (k) {
-      wHtml += '<div class="gk-config-row"><label>' + weightLabels[k] + '</label><input type="range" min="0" max="50" value="' + cfg.weights[k] + '" data-weight="' + k + '"><span class="gk-config-val">' + cfg.weights[k] + '</span></div>';
+    Object.keys(paramMeta).forEach(function (k) {
+      const meta = paramMeta[k];
+      const v = cfg.params[k];
+      wHtml += '<div class="gk-config-row"><label>' + meta.label + '</label><input type="range" min="' + meta.min + '" max="' + meta.max + '" step="' + meta.step + '" value="' + v + '" data-param="' + k + '"><span class="gk-config-val">' + v + '</span></div>';
     });
     document.getElementById('gk-config-weights').innerHTML = wHtml;
     document.getElementById('gk-config-home').innerHTML =
-      '<div class="gk-config-row"><label>Bonus casa</label><input type="range" min="0" max="20" value="' + cfg.homeAdvantage + '" id="gk-cfg-home"><span class="gk-config-val">' + cfg.homeAdvantage + '</span></div>' +
-      '<div class="gk-config-row"><label>Penalita fuori casa</label><input type="range" min="0" max="20" value="' + cfg.awayPenalty + '" id="gk-cfg-away"><span class="gk-config-val">' + cfg.awayPenalty + '</span></div>';
+      '<div class="gk-config-row"><label>Bonus casa</label><input type="range" min="0" max="5" step="1" value="' + cfg.params.homeBonus + '" id="gk-cfg-home"><span class="gk-config-val">' + cfg.params.homeBonus + '</span></div>' +
+      '<div class="gk-config-row"><label>Penalita fuori casa</label><input type="range" min="0" max="5" step="1" value="' + cfg.params.awayPenalty + '" id="gk-cfg-away"><span class="gk-config-val">' + cfg.params.awayPenalty + '</span></div>';
     let sHtml = '';
     Object.keys(cfg.teamStats).sort().forEach(function (t) {
       const s = cfg.teamStats[t];
-      const vAtt = internalToSlider(s.attacco), vDif = internalToSlider(s.difesa);
       sHtml += '<div class="gk-strength-item gk-strength-item-dual">' +
         '<label class="gk-strength-team-label">' + teamBadge(t) + ' ' + t + '</label>' +
         '<div class="gk-strength-dual-row"><span class="gk-strength-dual-tag">&#9876;&#65039; Attacco</span>' +
-          '<input type="range" min="1" max="10" step="1" value="' + vAtt + '" data-team="' + t + '" data-stat="attacco">' +
-          '<span class="gk-config-val">' + vAtt + '</span></div>' +
+          '<input type="range" min="1" max="10" step="1" value="' + s.attacco + '" data-team="' + t + '" data-stat="attacco">' +
+          '<span class="gk-config-val">' + s.attacco + '</span></div>' +
         '<div class="gk-strength-dual-row"><span class="gk-strength-dual-tag">&#128737;&#65039; Difesa</span>' +
-          '<input type="range" min="1" max="10" step="1" value="' + vDif + '" data-team="' + t + '" data-stat="difesa">' +
-          '<span class="gk-config-val">' + vDif + '</span></div></div>';
+          '<input type="range" min="1" max="10" step="1" value="' + s.difesa + '" data-team="' + t + '" data-stat="difesa">' +
+          '<span class="gk-config-val">' + s.difesa + '</span></div></div>';
     });
     document.getElementById('gk-config-strength').innerHTML = sHtml;
     document.querySelectorAll('#gk-config-weights input[type=range],#gk-config-home input[type=range]').forEach(function (inp) {
@@ -447,8 +456,7 @@
       inp.addEventListener('input', function () { inp.parentElement.querySelector('.gk-config-val').textContent = inp.value; });
     });
   }
-
-  // ── Se una vista Analisi/Confronto ha gia' un risultato mostrato, la aggiorna
+ ── Se una vista Analisi/Confronto ha gia' un risultato mostrato, la aggiorna
   //    subito con la nuova configurazione (evita di dover premere di nuovo "Analizza") ──
   function refreshOpenDetailAndCompareViews() {
     [['gk-detail', 'gk-detail-content'], ['gki-detail', 'gki-detail-content']].forEach(function (pair) {
@@ -467,13 +475,13 @@
 
   function applyConfigFromForm() {
     const cfg = JSON.parse(JSON.stringify(GKUI.config));
-    document.querySelectorAll('#gk-config-weights input[type=range]').forEach(function (inp) { cfg.weights[inp.getAttribute('data-weight')] = parseInt(inp.value, 10); });
-    cfg.homeAdvantage = parseInt(document.getElementById('gk-cfg-home').value, 10);
-    cfg.awayPenalty = parseInt(document.getElementById('gk-cfg-away').value, 10);
+    document.querySelectorAll('#gk-config-weights input[type=range]').forEach(function (inp) { cfg.params[inp.getAttribute('data-param')] = parseInt(inp.value, 10); });
+    cfg.params.homeBonus = parseInt(document.getElementById('gk-cfg-home').value, 10);
+    cfg.params.awayPenalty = parseInt(document.getElementById('gk-cfg-away').value, 10);
     document.querySelectorAll('#gk-config-strength input[type=range]').forEach(function (inp) {
       const team = inp.getAttribute('data-team'), stat = inp.getAttribute('data-stat');
-      if (!cfg.teamStats[team]) cfg.teamStats[team] = { attacco: 55, difesa: 55 };
-      cfg.teamStats[team][stat] = sliderToInternal(parseInt(inp.value, 10));
+      if (!cfg.teamStats[team]) cfg.teamStats[team] = { attacco: 5, difesa: 5 };
+      cfg.teamStats[team][stat] = parseInt(inp.value, 10);
     });
     GKUI.config = GKPlanner.mergeConfig(cfg);
     saveConfig(GKUI.config);
@@ -483,7 +491,8 @@
     switchView('ranking');
   }
 
-  function resetConfig() {
+  
+function resetConfig() {
     GKUI.config = GKPlanner.mergeConfig(null);
     saveConfig(GKUI.config);
     recompute();
