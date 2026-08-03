@@ -5,6 +5,7 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const fs   = require('fs');
 const { createClient } = require('@supabase/supabase-js');
+const crypto = require('crypto');
 
 const app = express();
 
@@ -56,11 +57,20 @@ const timers = new Map();
 const BACKUP_DIR = path.join(__dirname, 'data');
 if (!fs.existsSync(BACKUP_DIR)) { try { fs.mkdirSync(BACKUP_DIR, { recursive: true }); } catch(e) {} }
 
+// Map che tiene traccia dell'ultimo hash del contenuto (asta) salvato su Supabase per ogni asta_id:
+// evita di ricaricare su Supabase (consumo di banda "Service-Initiated") lo stesso backup identico
+// ogni 30s se nel frattempo non e' cambiato nulla (es. asta in pausa, nessuna offerta nuova).
+const _ultimoBackupHash = new Map();
+
 function saveBackup(asta) {
   if (!asta || !asta.id) return;
   try {
-    const snap = { backup: true, timestamp: new Date().toISOString(), asta: JSON.parse(JSON.stringify(asta)) };
+    const astaJson = JSON.stringify(asta);
+    const snap = { backup: true, timestamp: new Date().toISOString(), asta: JSON.parse(astaJson) };
     fs.writeFileSync(path.join(BACKUP_DIR, 'backup_asta_' + asta.id + '.json'), JSON.stringify(snap));
+    const hash = crypto.createHash('sha1').update(astaJson).digest('hex');
+    if (_ultimoBackupHash.get(asta.id) === hash) return;
+    _ultimoBackupHash.set(asta.id, hash);
     saveBackupSupabase(asta, snap);
   } catch(e) { /* non-fatal */ }
 }
@@ -626,57 +636,6 @@ app.delete('/api/gk-planner/calendario', async (req, res) => {
   }
 });
 
-// ══ API-FOOTBALL PROXY (foto giocatori) — limite 100 richieste/giorno ══
-// La API key resta solo sul backend (mai esposta al frontend).
-const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY || null;
-const API_FOOTBALL_DAILY_LIMIT = 100;
-const API_FOOTBALL_USAGE_FILE = path.join(BACKUP_DIR, 'api_football_usage.json');
-
-function _todayUTC() {
-  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-}
-
-function _loadApiFootballUsage() {
-  try {
-    if (fs.existsSync(API_FOOTBALL_USAGE_FILE)) {
-      const raw = JSON.parse(fs.readFileSync(API_FOOTBALL_USAGE_FILE, 'utf-8'));
-      if (raw && raw.date === _todayUTC()) return raw;
-    }
-  } catch (e) { /* ignore, riparte da zero */ }
-  return { date: _todayUTC(), count: 0 };
-}
-
-function _saveApiFootballUsage(usage) {
-  try { fs.writeFileSync(API_FOOTBALL_USAGE_FILE, JSON.stringify(usage)); } catch (e) { /* non-fatal */ }
-}
-
-let _apiFootballUsage = _loadApiFootballUsage();
-
-app.get('/api/player-photo', async (req, res) => {
-  if (!API_FOOTBALL_KEY) return res.json({ photo: null, reason: 'not-configured' });
-  const nome = (req.query.name || '').toString().trim();
-  if (!nome) return res.json({ photo: null, reason: 'missing-name' });
-
-  if (_apiFootballUsage.date !== _todayUTC()) _apiFootballUsage = { date: _todayUTC(), count: 0 };
-  if (_apiFootballUsage.count >= API_FOOTBALL_DAILY_LIMIT) {
-    return res.json({ photo: null, reason: 'daily-limit-reached' });
-  }
-
-  try {
-    _apiFootballUsage.count++;
-    _saveApiFootballUsage(_apiFootballUsage);
-    const url = 'https://v3.football.api-sports.io/players/profiles?search=' + encodeURIComponent(nome);
-    const r = await fetch(url, { headers: { 'x-apisports-key': API_FOOTBALL_KEY } });
-    const data = await r.json();
-    const list = (data && data.response) || [];
-    if (!list.length) return res.json({ photo: null, reason: 'not-found' });
-    const found = list[0].player;
-    if (!found || !found.photo) return res.json({ photo: null, reason: 'no-photo' });
-    return res.json({ photo: found.photo });
-  } catch (e) {
-    return res.json({ photo: null, reason: 'error' });
-  }
-});
 
 app.get('/api/asta/:id', (req, res) => {
   const asta = aste.get(req.params.id);
