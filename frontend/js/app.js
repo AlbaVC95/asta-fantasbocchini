@@ -2522,6 +2522,19 @@ function _roseRowRoleClass(ruolo) {
 // una posizione non compatibile, es. un Dc puro in uno slot Attaccante).
 // Entrambi i ruoli (slot e giocatore) possono contenere più opzioni separate
 // da "/" (es. slot "DC/B", giocatore "C/W"): basta UNA corrispondenza in comune.
+// Restituisce il ruolo REALE del giocatore (nella sua grafia originale, es. 'T' da 'W/T')
+// che corrisponde allo slot in cui lo si sta per piazzare, cosi' nel selettore si mostra
+// sempre il ruolo pertinente alla posizione, non semplicemente il primo ruolo del giocatore.
+function _ruoloCorrispondente(ruoloSlot, ruoloGiocatore) {
+  const norm = (r) => (r || '').split('/').map(x => x.trim()).filter(Boolean);
+  const slotRolesUpper = norm(ruoloSlot).map(x => x.toUpperCase());
+  const gioRoles = norm(ruoloGiocatore);
+  const match = gioRoles.find(r => {
+    const ru = r.toUpperCase() === 'POR' ? 'P' : r.toUpperCase();
+    return slotRolesUpper.includes(ru);
+  });
+  return match || gioRoles[0] || ruoloGiocatore || 'NN';
+}
 function _ruoliCompatibili(ruoloSlot, ruoloGiocatore) {
   const norm = (r) => (r || '').split('/').map(x => x.trim().toUpperCase()).map(x => x === 'POR' ? 'P' : x).filter(Boolean);
   const slotRoles = norm(ruoloSlot);
@@ -2752,8 +2765,9 @@ function _antOpenPicker(slotEl, nomeSquadra) {
     html += '<div class="ant-picker-empty">Nessun giocatore disponibile</div>';
   } else {
     html += disponibili.map(g => {
+      const ruoloMostrato = _ruoloCorrispondente(ruoloSlot, g.ruolo);
       return '<div class="ant-picker-item" data-nome="' + _escAttr(g.nome) + '">' +
-        '<span class="rose-badge ' + _antRoleClass(g.ruolo) + '">' + _escHtml((g.ruolo || 'NN').split('/')[0]) + '</span>' +
+        '<span class="rose-badge ' + _antRoleClass(ruoloMostrato) + '">' + _escHtml(ruoloMostrato) + '</span>' +
         '<span>' + _escHtml(g.nome) + '</span>' +
       '</div>';
     }).join('');
