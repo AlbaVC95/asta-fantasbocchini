@@ -565,6 +565,8 @@ async function applicaUtenteLoggato(user) {
   if (btnLogout) btnLogout.style.display = 'inline-block';
   const adminCard = document.getElementById('card-listino-admin');
   if (adminCard) adminCard.style.display = (S.userRole === 'admin') ? 'block' : 'none';
+  const superAdminCard = document.getElementById('card-super-admin');
+  if (superAdminCard) superAdminCard.style.display = (S.userEmail === 'albavicentecarragal@gmail.com') ? 'block' : 'none';
   caricaMieAste();
   if (S._invitoAstaId) {
     const invitoId = S._invitoAstaId;
@@ -776,6 +778,49 @@ function setupLogin() {
   if (btnChoiceListino && inpListino) {
     btnChoiceListino.addEventListener('click', () => inpListino.click());
     inpListino.addEventListener('change', (e) => handleListinoExcelFile(e.target.files[0]));
+  }
+
+  const btnSuperAdminChiudiTutte = document.getElementById('btn-super-admin-chiudi-tutte');
+  if (btnSuperAdminChiudiTutte) {
+    btnSuperAdminChiudiTutte.addEventListener('click', handleSuperAdminChiudiTutteLeAste);
+  }
+}
+
+async function handleSuperAdminChiudiTutteLeAste() {
+  const conferma1 = confirm(
+    'ATTENZIONE: stai per chiudere e cancellare TUTTE le aste attualmente aperte, ' +
+    'comprese eventuali aste in corso con partecipanti attivi in questo momento.\n\n' +
+    'Questa azione e\' IRREVERSIBILE.\n\nVuoi continuare?'
+  );
+  if (!conferma1) return;
+  const conferma2 = confirm(
+    'Ultima conferma: sei DAVVERO sicuro di voler chiudere TUTTE le aste aperte adesso?\n\n' +
+    'Scrivi "OK" mentalmente e premi Conferma solo se sei certo.'
+  );
+  if (!conferma2) return;
+
+  const statusEl = document.getElementById('super-admin-status');
+  const { data: sessionData } = await supa.auth.getSession();
+  const accessToken = sessionData && sessionData.session ? sessionData.session.access_token : null;
+  if (!accessToken) return toast('Devi accedere per eseguire questa azione', 'error');
+
+  try {
+    if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Chiusura in corso...'; }
+    const res = await fetch('/api/admin/chiudi-tutte-le-aste', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + accessToken }
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      toast(data.error || 'Errore durante la chiusura delle aste', 'error');
+      if (statusEl) statusEl.textContent = 'Errore: ' + (data.error || 'sconosciuto');
+      return;
+    }
+    toast('Chiuse ' + data.chiuse + ' aste', 'success');
+    if (statusEl) statusEl.textContent = 'Chiuse ' + data.chiuse + ' aste con successo.';
+  } catch (e) {
+    toast('Errore di rete durante la chiusura delle aste', 'error');
+    if (statusEl) statusEl.textContent = 'Errore di rete.';
   }
 }
 
