@@ -121,8 +121,13 @@
     return { css: 'rgb(' + r + ',' + g + ',' + b + ')', t: t };
   }
 
-  function renderGrid() {
-    const container = document.getElementById('gk-grid-scroll');
+  function renderGrid(variant) {
+    const isInline = variant === 'inline';
+    const scrollId = isInline ? 'gki-grid-scroll' : 'gk-grid-scroll';
+    const legendId = isInline ? 'gki-grid-legend-range' : 'gk-grid-legend-range';
+    const detailPrefix = isInline ? 'gki-detail' : 'gk-detail';
+    const detailContentId = isInline ? 'gki-detail-content' : 'gk-detail-content';
+    const container = document.getElementById(scrollId);
     if (!container) return;
     const teams = Object.keys(GKUI.config.teamStats).sort();
     const map = getPairScoreMap();
@@ -149,12 +154,12 @@
     container.querySelectorAll('.gk-grid-cell[data-teams]').forEach(function (cell) {
       cell.addEventListener('click', function () {
         const teams2 = cell.getAttribute('data-teams').split('|');
-        setTeamsToPicker('gk-detail', teams2);
-        renderDetail(teams2, 'gk-detail-content');
-        switchView('detail');
+        setTeamsToPicker(detailPrefix, teams2);
+        renderDetail(teams2, detailContentId);
+        if (isInline) { activateGkiSubview('analisi'); } else { switchView('detail'); }
       });
     });
-    const legendRange = document.getElementById('gk-grid-legend-range');
+    const legendRange = document.getElementById(legendId);
     if (legendRange) legendRange.textContent = 'Punteggi da ' + Math.round(lo) + ' a ' + Math.round(hi) + ' su 100.';
   }
 
@@ -187,6 +192,14 @@
     });
     const gridView = document.getElementById('gk-view-grid');
     if (gridView && gridView.classList.contains('active')) { renderGrid(); }
+    const gridViewInline = document.getElementById('gki-view-griglia');
+    if (gridViewInline && gridViewInline.classList.contains('active')) { renderGrid('inline'); }
+  }
+
+  function activateGkiSubview(target) {
+    document.querySelectorAll('.gki-subtabs .gki-subtab').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-gki-view') === target); });
+    document.querySelectorAll('#tab-portieri .gki-view').forEach(function (v) { v.classList.toggle('active', v.id === 'gki-view-' + target); });
+    if (target === 'griglia') renderGrid('inline');
   }
 
   function switchView(view) {
@@ -676,14 +689,9 @@ function resetConfig() {
     const btnGkiConfronta = document.getElementById('btn-gki-confronta');
     if (btnGkiConfronta) btnGkiConfronta.addEventListener('click', function () { renderCompare('gki-cmp-a', 'gki-cmp-b', 'gki-compare-content'); });
 
-    // Sub-tab interne della tab Asta (Ranking/Analisi/Confronto)
+    // Sub-tab interne della tab Asta (Ranking/Analisi/Confronto/Griglia)
     document.querySelectorAll('.gki-subtabs .gki-subtab').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        const target = btn.getAttribute('data-gki-view');
-        document.querySelectorAll('.gki-subtabs .gki-subtab').forEach(function (b) { b.classList.remove('active'); });
-        btn.classList.add('active');
-        document.querySelectorAll('#tab-portieri .gki-view').forEach(function (v) { v.classList.toggle('active', v.id === 'gki-view-' + target); });
-      });
+      btn.addEventListener('click', function () { activateGkiSubview(btn.getAttribute('data-gki-view')); });
     });
   }
 
