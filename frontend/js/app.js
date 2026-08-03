@@ -594,7 +594,7 @@ async function caricaMieAste() {
     if (!Array.isArray(aste) || aste.length === 0) { card.style.display = 'none'; return; }
     card.style.display = 'block';
     lista.innerHTML = aste.map(a => {
-      const nomeEsc = (a.nome || 'Asta senza nome').replace(/'/g, "\\'");
+      const nomeEsc = _escHtml(a.nome || 'Asta senza nome');
       const statoLabel = a.stato === 'attesa' ? 'In attesa' : a.stato === 'in_corso' ? 'In corso' : a.stato;
       return '<div class="settings-field" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">' +
         '<div><strong>' + nomeEsc + '</strong><br><span class="hint-text">' + statoLabel + ' · ' + (a.numSquadre || 0) + ' squadre</span></div>' +
@@ -2886,6 +2886,21 @@ function _escAttr(s) {
   return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+// Escapa una stringa per inserirla in modo sicuro dentro un attributo HTML (tra doppi apici)
+// che contiene a sua volta un letterale JS tra apici singoli, es: onclick="fn('...')".
+// Senza questo, un nome squadra scelto liberamente da un partecipante (nessuna validazione)
+// potrebbe chiudere l'attributo o la stringa JS ed eseguire codice arbitrario nel browser
+// dell'admin (XSS memorizzato) — vedi audit sicurezza agosto 2026.
+function _escJsAttr(s) {
+  return String(s == null ? '' : s)
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 function _renderRoseSez(titolo, giocatori, tipo, sqNome) {
   sqNome = sqNome || '';
   const secId = 'rsec-' + tipo + '-' + sqNome.replace(/\W/g,'');
@@ -3391,7 +3406,7 @@ window.apriModalAdminConfig = function() {
   document.getElementById('inp-ac-max-gioc').value = S.asta.maxGiocatoriPerSquadra || 25;
   const lista = document.getElementById('ac-crediti-lista');
   lista.innerHTML = (S.asta.squadre || []).map(sq => {
-    const nomeEsc = sq.nome.replace(/'/g,"\\'");
+    const nomeEsc = _escJsAttr(sq.nome);
     return '<div class="settings-team-card">' +
       '<div class="settings-team-nome">' + _escHtml(sq.nome) + '</div>' +
       '<div class="settings-team-fields">' +
