@@ -566,7 +566,9 @@ async function applicaUtenteLoggato(user) {
   const adminCard = document.getElementById('card-listino-admin');
   if (adminCard) adminCard.style.display = (S.userRole === 'admin') ? 'block' : 'none';
   const superAdminCard = document.getElementById('card-super-admin');
-  if (superAdminCard) superAdminCard.style.display = (S.userEmail === 'albavicentecarragal@gmail.com') ? 'block' : 'none';
+  const isSuperAdmin = (S.userEmail === 'albavicentecarragal@gmail.com');
+  if (superAdminCard) superAdminCard.style.display = isSuperAdmin ? 'block' : 'none';
+  if (isSuperAdmin) caricaStatoBackupSuperAdmin();
   caricaMieAste();
   if (S._invitoAstaId) {
     const invitoId = S._invitoAstaId;
@@ -783,6 +785,61 @@ function setupLogin() {
   const btnSuperAdminChiudiTutte = document.getElementById('btn-super-admin-chiudi-tutte');
   if (btnSuperAdminChiudiTutte) {
     btnSuperAdminChiudiTutte.addEventListener('click', handleSuperAdminChiudiTutteLeAste);
+  }
+
+  const chkSuperAdminBackupToggle = document.getElementById('chk-super-admin-backup-toggle');
+  if (chkSuperAdminBackupToggle) {
+    chkSuperAdminBackupToggle.addEventListener('change', (e) => handleToggleBackupSuperAdmin(e.target.checked));
+  }
+}
+
+// Carica lo stato attuale del toggle "backup su Supabase" e aggiorna il checkbox di
+// conseguenza, così riflette sempre la realtà del server (utile se lo si è disattivato
+// da un altro dispositivo/sessione e ci si è scordati di riattivarlo).
+async function caricaStatoBackupSuperAdmin() {
+  const chk = document.getElementById('chk-super-admin-backup-toggle');
+  if (!chk) return;
+  try {
+    const { data: sessionData } = await supa.auth.getSession();
+    const accessToken = sessionData && sessionData.session ? sessionData.session.access_token : null;
+    if (!accessToken) return;
+    const res = await fetch('/api/admin/backup-status', {
+      headers: { 'Authorization': 'Bearer ' + accessToken }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    chk.checked = !!data.backupSupabaseAttivo;
+  } catch (e) { /* non-fatale: lascia il checkbox nel suo stato di default */ }
+}
+
+async function handleToggleBackupSuperAdmin(attivo) {
+  const chk = document.getElementById('chk-super-admin-backup-toggle');
+  const statusEl = document.getElementById('super-admin-backup-status');
+  const { data: sessionData } = await supa.auth.getSession();
+  const accessToken = sessionData && sessionData.session ? sessionData.session.access_token : null;
+  if (!accessToken) { toast('Devi accedere per eseguire questa azione', 'error'); if (chk) chk.checked = !attivo; return; }
+  try {
+    const res = await fetch('/api/admin/toggle-backup', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ attivo })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      toast(data.error || 'Errore durante il cambio di stato', 'error');
+      if (chk) chk.checked = !attivo;
+      return;
+    }
+    if (statusEl) {
+      statusEl.style.display = 'block';
+      statusEl.textContent = data.backupSupabaseAttivo
+        ? 'Backup su Supabase riattivato.'
+        : 'Backup su Supabase disattivato (il backup locale su disco resta attivo).';
+    }
+    toast(data.backupSupabaseAttivo ? 'Backup su Supabase riattivato' : 'Backup su Supabase disattivato', 'success');
+  } catch (e) {
+    toast('Errore di rete durante il cambio di stato', 'error');
+    if (chk) chk.checked = !attivo;
   }
 }
 
