@@ -456,7 +456,8 @@
       inp.addEventListener('input', function () { inp.parentElement.querySelector('.gk-config-val').textContent = inp.value; });
     });
   }
- ── Se una vista Analisi/Confronto ha gia' un risultato mostrato, la aggiorna
+
+  // ── Se una vista Analisi/Confronto ha gia' un risultato mostrato, la aggiorna
   //    subito con la nuova configurazione (evita di dover premere di nuovo "Analizza") ──
   function refreshOpenDetailAndCompareViews() {
     [['gk-detail', 'gk-detail-content'], ['gki-detail', 'gki-detail-content']].forEach(function (pair) {
