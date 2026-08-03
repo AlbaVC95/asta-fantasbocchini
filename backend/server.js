@@ -56,20 +56,11 @@ const timers = new Map();
 const BACKUP_DIR = path.join(__dirname, 'data');
 if (!fs.existsSync(BACKUP_DIR)) { try { fs.mkdirSync(BACKUP_DIR, { recursive: true }); } catch(e) {} }
 
-const _ultimoBackupHash = new Map(); // asta_id -> hash dell'ultimo contenuto salvato
-
 function saveBackup(asta) {
   if (!asta || !asta.id) return;
   try {
-    const astaJson = JSON.stringify(asta);
-    // Evita upload ridondanti verso Supabase (banda) quando un'asta e' ferma/abbandonata:
-    // se il contenuto e' identico all'ultimo salvato, salta l'upsert remoto (il file locale
-    // viene comunque riscritto, e' gratuito).
-    const hash = astaJson.length + ':' + astaJson.slice(0, 64) + astaJson.slice(-64);
-    const snap = { backup: true, timestamp: new Date().toISOString(), asta: JSON.parse(astaJson) };
+    const snap = { backup: true, timestamp: new Date().toISOString(), asta: JSON.parse(JSON.stringify(asta)) };
     fs.writeFileSync(path.join(BACKUP_DIR, 'backup_asta_' + asta.id + '.json'), JSON.stringify(snap));
-    if (_ultimoBackupHash.get(asta.id) === hash) return;
-    _ultimoBackupHash.set(asta.id, hash);
     saveBackupSupabase(asta, snap);
   } catch(e) { /* non-fatal */ }
 }
@@ -540,6 +531,25 @@ app.get('/api/keepalive-supabase', async (req, res) => {
   }
 });
 
+// Health-check pensato per un monitor esterno (es. UptimeRobot, keyword monitoring su
+// "ALERT"): segnala un numero anomalo di aste attive in memoria (soglia empirica, il
+// normale utilizzo raramente supera poche aste contemporanee). Un numero anomalo e' il
+// sintomo tipico di aste "zombie" abbandonate che si autosalvano ogni 30s consumando
+// banda verso Supabase (vedi incidente banda agosto 2026).
+const SOGLIA_ASTE_ATTIVE = 8;
+app.get('/api/health/banda', (req, res) => {
+  const attive = [...aste.values()].filter(a => a.stato !== 'completata');
+  const zombie = attive.filter(a => !a.chiamataAttuale);
+  const status = zombie.length >= SOGLIA_ASTE_ATTIVE ? 'ALERT' : 'OK';
+  res.json({
+    status,
+    asteAttiveTotali: attive.length,
+    asteZombieSospette: zombie.length,
+    soglia: SOGLIA_ASTE_ATTIVE,
+    timestamp: new Date().toISOString()
+  });
+});
+
 
 app.get('/api/gk-planner/calendario', async (req, res) => {
   // Fonte di verita': Supabase (persiste tra i deploy, che azzerano il disco locale).
@@ -739,6 +749,45 @@ app.delete('/api/exports/:id', async (req, res) => {
     if (error) return res.status(500).json({ error: error.message });
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Diagnostica/pulizia aste "zombie": aste create ma mai avviate o rimaste bloccate
+// (nessuna chiamataAttuale) da piu' di N ore. Utile per individuare/rimuovere in un click
+// aste di test dimenticate, che altrimenti continuerebbero ad autosalvarsi ogni 30s su
+// Supabase consumando banda (vedi incidente banda agosto 2026).
+app.get('/api/admin/aste-zombie', async (req, res) => {
+  const auth = await getRuoloUtente(req);
+  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  if (auth.role !== 'admin') return res.status(403).json({ error: 'Solo un Admin puo\' vedere le aste zombie' });
+  const ora = Date.now();
+  const risultato = [];
+  aste.forEach((asta, id) => {
+    const creataMs = asta.createdAt ? new Date(asta.createdAt).getTime() : 0;
+    const oreVita = creataMs ? (ora - creataMs) / (60 * 60 * 1000) : null;
+    const abbandonata = asta.stato !== 'completata' && !asta.chiamataAttuale;
+    if (abbandonata) {
+      risultato.push({ id, nome: asta.nome, stato: asta.stato, oreVita: oreVita != null ? Math.round(oreVita * 10) / 10 : null });
+    }
+  });
+  res.json(risultato);
+});
+
+app.post('/api/admin/pulisci-aste-zombie', async (req, res) => {
+  const auth = await getRuoloUtente(req);
+  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  if (auth.role !== 'admin') return res.status(403).json({ error: 'Solo un Admin puo\' pulire le aste zombie' });
+  const rimosse = [];
+  aste.forEach((asta, id) => {
+    const abbandonata = asta.stato !== 'completata' && !asta.chiamataAttuale;
+    if (abbandonata) {
+      clearTimer(id);
+      aste.delete(id);
+      _ultimoBackupHash.delete(id);
+      deleteBackupSupabase(id);
+      rimosse.push(id);
+    }
+  });
+  res.json({ ok: true, rimosse: rimosse.length, ids: rimosse });
 });
 
 // ============ WEBSOCKET ============
@@ -1339,24 +1388,16 @@ setInterval(() => {
 // memoria — il backup su disco resta comunque disponibile in data/backup_asta_*.json.
 const UN_GIORNO_MS = 24 * 60 * 60 * 1000;
 const TRENTA_GIORNI_MS = 30 * UN_GIORNO_MS;
-const DODICI_ORE_MS = 12 * 60 * 60 * 1000;
 setInterval(() => {
   const ora = Date.now();
   aste.forEach((asta, id) => {
     const creataMs = asta.createdAt ? new Date(asta.createdAt).getTime() : 0;
     const eta = creataMs ? (ora - creataMs) : 0;
-    // Un'asta mai avviata (stato 'attesa') o rimasta bloccata/abbandonata (nessuna chiamata
-    // attiva, nessun cambio di stato) per piu' di 12h viene considerata "zombie": va rimossa
-    // prima delle 30 giorni standard, altrimenti continuerebbe a occupare banda con
-    // l'autosave ogni 30s verso Supabase per settimane (vedi incidente banda agosto 2026).
-    const abbandonata = asta.stato !== 'completata' && !asta.chiamataAttuale && eta > DODICI_ORE_MS;
-    const daRimuovere = (asta.stato === 'completata' && eta > UN_GIORNO_MS) || abbandonata || eta > TRENTA_GIORNI_MS;
+    const daRimuovere = (asta.stato === 'completata' && eta > UN_GIORNO_MS) || eta > TRENTA_GIORNI_MS;
     if (daRimuovere) {
       clearTimer(id);
       aste.delete(id);
-      _ultimoBackupHash.delete(id);
-      deleteBackupSupabase(id);
-      console.log('[cleanup] Asta rimossa dalla memoria (inattiva/abbandonata):', id);
+      console.log('[cleanup] Asta rimossa dalla memoria (inattiva):', id);
     }
   });
 }, 60 * 60 * 1000); // ogni ora
