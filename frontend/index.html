@@ -310,6 +310,13 @@
       <p class="hint-text">Chiude e cancella <strong>TUTTE</strong> le aste attualmente aperte (memoria + backup su cloud), comprese quelle in corso con partecipanti attivi. Azione irreversibile: usala solo quando vuoi davvero fare pulizia generale.</p>
       <button type="button" id="btn-super-admin-chiudi-tutte" class="btn btn-danger btn-lg">🗑️ Chiudi TUTTE le aste aperte</button>
       <p id="super-admin-status" class="hint-text" style="display:none"></p>
+      <hr class="mt-16">
+      <div class="form-group mt-16" style="display:flex;align-items:center;gap:10px">
+        <input type="checkbox" id="chk-super-admin-backup-toggle" checked>
+        <label for="chk-super-admin-backup-toggle" style="margin:0"><strong>💾 Backup su Supabase attivo</strong></label>
+      </div>
+      <p class="hint-text">Disattivalo solo durante le prove/test, per non generare traffico e righe inutili su Supabase. Il backup locale su disco resta sempre attivo come rete di sicurezza.</p>
+      <p id="super-admin-backup-status" class="hint-text" style="display:none"></p>
     </div>
     <div class="card">
       <h2 class="card-title">Crea nuova asta</h2>
