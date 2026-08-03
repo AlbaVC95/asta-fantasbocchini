@@ -38,7 +38,15 @@ process.on('unhandledRejection', (err) => {
   console.error('[unhandledRejection] Promise rifiutata senza catch (il server continua a funzionare):', err && err.stack || err);
 });
 
-app.use(express.static(path.join(__dirname, '..', 'frontend')));
+app.use(express.static(path.join(__dirname, '..', 'frontend'), {
+  setHeaders: (res, filePath) => {
+    // Immagini e font cambiano raramente: cache lunga per risparmiare banda.
+    // HTML/JS/CSS usano cache-busting (?v=timestamp) o vanno revalidati ad ogni deploy.
+    if (/\.(png|jpe?g|gif|svg|webp|ico|woff2?|ttf|eot)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+    }
+  }
+}));
 app.use(express.json({ limit: '10mb' }));
 
 const aste = new Map();
