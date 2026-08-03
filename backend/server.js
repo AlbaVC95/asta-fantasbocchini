@@ -651,12 +651,6 @@ app.delete('/api/gk-planner/calendario', async (req, res) => {
 });
 
 
-app.get('/api/asta/:id', (req, res) => {
-  const asta = aste.get(req.params.id);
-  if (!asta) return res.status(404).json({ error: 'Asta non trovata' });
-  res.json(asta);
-});
-
 app.get('/api/asta/:id/info', (req, res) => {
   const asta = aste.get(req.params.id);
   if (!asta) return res.status(404).json({ error: 'Asta non trovata' });
@@ -1160,32 +1154,11 @@ io.on('connection', (socket) => {
 });
 
 // ══ BACKUP API ══════════════════════════════
-app.get('/api/asta/:id/backup', (req, res) => {
-  const asta = aste.get(req.params.id);
-  if (asta) {
-    return res.json({ backup: true, timestamp: new Date().toISOString(), asta });
-  }
-  const file = path.join(BACKUP_DIR, 'backup_asta_' + req.params.id + '.json');
-  if (fs.existsSync(file)) {
-    try { return res.json(JSON.parse(fs.readFileSync(file, 'utf-8'))); } catch(e) {}
-  }
-  res.status(404).json({ error: 'Backup non trovato' });
-});
-
-app.get('/api/backup-list', (req, res) => {
-  try {
-    const files = fs.existsSync(BACKUP_DIR)
-      ? fs.readdirSync(BACKUP_DIR).filter(f => f.startsWith('backup_asta_'))
-      : [];
-    const list = files.map(f => {
-      try {
-        const d = JSON.parse(fs.readFileSync(path.join(BACKUP_DIR, f), 'utf-8'));
-        return { id: d.asta.id, nome: d.asta.nome, timestamp: d.timestamp, stato: d.asta.stato };
-      } catch(e) { return null; }
-    }).filter(Boolean);
-    res.json(list);
-  } catch(e) { res.json([]); }
-});
+// NB: GET /api/asta/:id/backup e GET /api/backup-list sono stati rimossi (agosto 2026):
+// esponevano l'adminToken completo (e la lista di TUTTE le aste) senza alcuna autenticazione,
+// permettendo a chiunque conoscesse l'ID di un'asta di ottenere pieno controllo admin su di
+// essa. Nessuna parte del frontend li utilizzava. Le funzioni equivalenti e sicure (con verifica
+// del creatore loggato) sono /api/asta/:id/mio-backup e /api/mie-aste, piu' sotto.
 
 // ══ MIE ASTE / RIPRENDI (login richiesto) ══════════════════════
 // Helper: valida il token Bearer e ritorna { userId, email } oppure null.
