@@ -768,7 +768,7 @@ body.layout-admin .asta-row-puja .cc-avatar-img{border-radius:14px!important}
   body.layout-admin .asta-row-puja .btn-manuale{font-size:.55rem!important;padding:3px 4px!important}
 }
 @media (max-width:1200px){
-  .puja-panel-slot{flex-wrap:wrap!important;padding:10px 12px!important;gap:8px!important}
+  .puja-panel-slot{flex-wrap:nowrap!important;padding:10px 12px!important;gap:8px!important}
   .puja-panel-slot .card-timer-group{flex:1 1 100%!important;border-right:none!important;padding-right:0!important;min-width:0!important}
   .puja-panel-slot .chiamata-card{flex:0 1 220px!important;max-width:220px!important}
   .puja-panel-slot .chiamata-card{padding-left:54px!important;min-height:54px!important}
