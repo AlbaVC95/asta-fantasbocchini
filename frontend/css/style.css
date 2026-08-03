@@ -1110,6 +1110,7 @@ body.app-role-admin .gk-config-actions.gk-admin-only{display:flex}
 .gk-help-tag-facile{background:rgba(0,224,160,.18);color:var(--success)}
 .gk-help-tag-media{background:rgba(255,171,0,.18);color:var(--gold-bright)}
 .gk-help-tag-difficile{background:rgba(255,56,96,.18);color:var(--danger)}
+.gk-help-tag-molto-difficile{background:rgba(163,0,30,.28);color:#ff4d6d}
 
 /* ── Toggle Portieri/Attaccanti ── */
 .gk-mode-toggle{display:flex;gap:6px;padding:10px 14px 0;justify-content:center}
