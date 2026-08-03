@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=1785717557150">
+  <link rel="stylesheet" href="css/style.css?v=1785755139679">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -693,6 +693,7 @@
             <button type="button" class="gki-subtab active" data-gki-view="ranking">&#127942; Ranking</button>
             <button type="button" class="gki-subtab" data-gki-view="analisi">&#128269; Analisi</button>
             <button type="button" class="gki-subtab" data-gki-view="confronto">&#9878;&#65039; Confronto</button>
+            <button type="button" class="gki-subtab" data-gki-view="griglia">&#128293; Griglia</button>
           </nav>
           <!-- RANKING -->
           <div id="gki-view-ranking" class="gki-view active">
@@ -754,6 +755,14 @@
             </div>
             <button type="button" id="btn-gki-confronta" class="btn btn-primary" style="width:100%;margin-top:12px">Confronta</button>
             <div id="gki-compare-content"></div>
+          </div>
+          <!-- GRIGLIA -->
+          <div id="gki-view-griglia" class="gki-view">
+            <div class="gk-view-intro"><p>Punteggio di compatibilità (0-100) tra ogni coppia di squadre, calcolato sull intero calendario. Piu alto = squadre piu complementari per l intera stagione. Clicca una cella per vedere l analisi dettagliata.</p></div>
+            <div class="gk-grid-wrap">
+              <div class="gk-grid-scroll" id="gki-grid-scroll"></div>
+            </div>
+            <div class="gk-grid-legend"><span id="gki-grid-legend-range"></span></div>
           </div>
         </div>
         <div id="tab-anteprima" class="tab-content">
@@ -836,23 +845,25 @@
   <div id="modal-gk-help" class="modal hidden gk-help-modal">
     <h2 class="modal-title">❓ Come funziona la Griglia Portieri/Attaccanti</h2>
     <div class="modal-body gk-help-body">
-      <p>Il <strong>Goalkeeper Planner</strong> analizza il calendario di Serie A per suggerirti le coppie di portieri (titolare + di scorta) che ti garantiscono più giornate favorevoli possibili durante tutta la stagione.</p>
-      <h3>📊 Come si calcola il punteggio</h3>
-      <p>Ogni coppia riceve un punteggio da 0 a 100, calcolato combinando 5 fattori pesati:</p>
+      <p>Il <strong>Goalkeeper Planner</strong> analizza il calendario di Serie A per suggerirti le coppie o i terzetti (titolare + alternative) che ti garantiscono più giornate favorevoli possibili durante tutta la stagione.</p>
+      <h3>📊 Come si calcola la difficoltà di una partita</h3>
+      <p>Ogni squadra ha due valori indipendenti da 1 a 10: <strong>Attacco</strong> e <strong>Difesa</strong>. La difficoltà di una partita si ottiene confrontando direttamente la propria statistica con quella dell'avversario, con un piccolo bonus per chi gioca in casa e un piccolo malus per chi gioca in trasferta:</p>
       <ul>
-        <li><strong>Copertura (35%)</strong> — quante giornate su 38 almeno uno dei due portieri affronta un avversario abbordabile.</li>
-        <li><strong>Difficoltà media (25%)</strong> — quanto è "leggero" in media il calendario del portiere migliore giornata per giornata.</li>
-        <li><strong>Alternanza casa/fuori (15%)</strong> — premia le coppie in cui uno gioca in casa mentre l'altro è in trasferta, per bilanciare il rischio.</li>
-        <li><strong>Giornate critiche (15%)</strong> — penalizza le giornate in cui ENTRAMBI i portieri affrontano un avversario forte contemporaneamente.</li>
-        <li><strong>Doppia trasferta (10%)</strong> — penalizza le giornate in cui entrambi giocano fuori casa nello stesso turno.</li>
+        <li>Per i <strong>portieri</strong>: Difesa (propria) − Attacco (avversario) ± fattore campo.</li>
+        <li>Per gli <strong>attaccanti</strong>: Attacco (proprio) − Difesa (avversario) ± fattore campo.</li>
       </ul>
       <h3>🎯 Livelli di difficoltà</h3>
-      <p>Ogni partita viene classificata come <span class="gk-help-tag gk-help-tag-facile">Facile</span>, <span class="gk-help-tag gk-help-tag-media">Media</span> o <span class="gk-help-tag gk-help-tag-difficile">Difficile</span> in base alla forza dell'avversario, corretta per il fattore campo (giocare in casa aiuta, giocare fuori penalizza leggermente).</p>
+      <p>In base al risultato, ogni partita viene classificata come <span class="gk-help-tag gk-help-tag-facile">Facile</span>, <span class="gk-help-tag gk-help-tag-media">Media</span>, <span class="gk-help-tag gk-help-tag-difficile">Difficile</span> o <span class="gk-help-tag gk-help-tag-molto-difficile">Molto difficile</span>. Le soglie che separano queste categorie sono configurabili dalla scheda "⚙️ Impostazioni".</p>
+      <h3>📊 Come si calcola il punteggio del gruppo</h3>
+      <p>Per ogni gruppo di 2 o 3 squadre, in ciascuna delle 38 giornate si considera la <strong>migliore partita disponibile</strong> tra i membri del gruppo (si schiera chi ha l'incontro più favorevole quella settimana). Il punteggio grezzo del gruppo premia le giornate facili e medie, e penalizza quelle difficili e molto difficili — con una penalità extra nelle <strong>giornate critiche</strong>, cioè quando TUTTI i membri del gruppo affrontano contemporaneamente un avversario difficile o molto difficile, senza alcuna alternativa comoda quella settimana.</p>
+      <p>Il punteggio grezzo viene poi convertito in una scala da 1 a 100, confrontando ogni gruppo con tutte le combinazioni possibili dello stesso tipo (coppie o terzetti), così il punteggio riflette sempre la posizione relativa di quel gruppo rispetto a tutte le altre opzioni disponibili.</p>
       <h3>🗺️ Come leggere la heatmap</h3>
-      <p>Nella scheda "Analisi coppia" ogni riga rappresenta il calendario di un portiere: lo stemma della squadra avversaria compare in ogni casella, colorata di verde se la partita è facile, giallo/oro se è media e rosso se è difficile. La riga "Consiglio" indica quale portiere titolare conviene schierare in quella giornata.</p>
+      <p>Nella scheda "Analisi" ogni riga rappresenta il calendario di una squadra: lo stemma della squadra avversaria compare in ogni casella, colorata di verde se la partita è facile, giallo/oro se è media, rosso se è difficile e rosso scuro se è molto difficile. Il bordo bianco indica quale titolare conviene schierare in quella giornata.</p>
+      <h3>🔲 La Griglia</h3>
+      <p>Nella scheda "Griglia" trovi una matrice "battaglia navale" con tutte le squadre: ogni casella incrocia due squadre e mostra il punteggio della coppia formata da quelle due, colorato dal viola (punteggio basso) al verde (punteggio alto), per confrontare a colpo d'occhio tutte le combinazioni possibili.</p>
       <h3>📥 Calendario reale</h3>
       <p>Di base il Planner usa un calendario segnaposto. Un amministratore può caricare il calendario ufficiale reale (file .json/.csv) dalla scheda "⚙️ Impostazioni", così le analisi rifletteranno gli accoppiamenti veri di questa stagione.</p>
-      <p class="text-muted">L'algoritmo di calcolo è proprietario e i pesi dei fattori sono configurabili dalla scheda Impostazioni.</p>
+      <p class="text-muted">L'algoritmo di calcolo è proprietario e tutte le soglie e i pesi sono configurabili dalla scheda Impostazioni.</p>
     </div>
     <div class="modal-actions">
       <button class="btn btn-primary" onclick="closeModal()">Ho capito</button>
