@@ -1611,7 +1611,7 @@ body.layout-partecipante .puja-panel-slot .cc-offerente{white-space:normal!impor
 body.layout-partecipante .puja-panel-slot .cc-attesa-badge{flex:1 1 100%!important;width:100%!important;max-width:100%!important;white-space:normal!important;box-sizing:border-box!important;overflow-wrap:anywhere!important}
 body.layout-partecipante .puja-panel-slot .cc-nome{white-space:normal!important;overflow:visible!important;text-overflow:unset!important;max-width:100%!important;overflow-wrap:anywhere!important}
 body.layout-partecipante .puja-panel-slot .cc-meta{white-space:normal!important;overflow:visible!important;max-width:100%!important;flex-wrap:wrap!important}
-body.layout-partecipante .puja-panel-slot .cc-offerta-box{max-width:100%!important;box-sizing:border-box!important;flex-wrap:wrap!important}
+body.layout-partecipante .puja-panel-slot .cc-offerta-box{max-width:100%!important;box-sizing:border-box!important;flex-wrap:nowrap!important;flex-shrink:0!important}
 body.layout-partecipante .puja-panel-slot .cc-offerta,
 body.layout-partecipante .puja-panel-slot .cc-offerta-label{max-width:100%!important;overflow-wrap:anywhere!important;white-space:normal!important}
 body.layout-partecipante .asta-row-panels{overflow:visible!important}
