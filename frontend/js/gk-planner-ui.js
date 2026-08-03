@@ -121,6 +121,14 @@
     return { css: 'rgb(' + r + ',' + g + ',' + b + ')', t: t };
   }
 
+  function scoreToColorRow(score, rowMin, rowMax) {
+    const neutral = { css: 'rgb(58,50,84)', t: 0.5 };
+    if (rowMin === null || rowMax === null || rowMax - rowMin < 0.001) { return neutral; }
+    if (Math.abs(score - rowMax) < 0.001) { return { css: 'rgb(0,196,140)', t: 1 }; }
+    if (Math.abs(score - rowMin) < 0.001) { return { css: 'rgb(224,64,64)', t: 0 }; }
+    return neutral;
+  }
+
   function renderGrid(variant) {
     const isInline = variant === 'inline';
     const scrollId = isInline ? 'gki-grid-scroll' : 'gk-grid-scroll';
@@ -138,13 +146,22 @@
     html += '<div class="gk-grid-corner"></div>';
     teams.forEach(function (t) { html += '<div class="gk-grid-col-header" title="' + t + '">' + teamBadge(t) + '</div>'; });
     teams.forEach(function (rowTeam) {
+      const rowScores = [];
+      teams.forEach(function (t2) {
+        if (t2 === rowTeam) { return; }
+        const k2 = [rowTeam, t2].sort().join('|');
+        const e2 = map[k2];
+        if (e2) { rowScores.push(e2.score); }
+      });
+      const rowMin = rowScores.length ? Math.min.apply(null, rowScores) : null;
+      const rowMax = rowScores.length ? Math.max.apply(null, rowScores) : null;
       html += '<div class="gk-grid-row-label">' + teamBadge(rowTeam) + '<span>' + rowTeam.substring(0, 3).toUpperCase() + '</span></div>';
       teams.forEach(function (colTeam) {
         if (rowTeam === colTeam) { html += '<div class="gk-grid-cell gk-grid-cell-diag"></div>'; return; }
         const key = [rowTeam, colTeam].sort().join('|');
         const entry = map[key];
         if (!entry) { html += '<div class="gk-grid-cell"></div>'; return; }
-        const col = scoreToColor(entry.score, lo, hi);
+        const col = scoreToColorRow(entry.score, rowMin, rowMax);
         const fg = col.t > 0.55 ? '#04120a' : '#f3eefe';
         html += '<div class="gk-grid-cell" style="background:' + col.css + ';color:' + fg + '" data-teams="' + rowTeam + '|' + colTeam + '" title="' + rowTeam + ' + ' + colTeam + ': ' + Math.round(entry.score) + '">' + Math.round(entry.score) + '</div>';
       });
