@@ -76,6 +76,26 @@ if (!fs.existsSync(BACKUP_DIR)) { try { fs.mkdirSync(BACKUP_DIR, { recursive: tr
 // ogni 30s se nel frattempo non e' cambiato nulla (es. asta in pausa, nessuna offerta nuova).
 const _ultimoBackupHash = new Map();
 
+// Toggle globale (Super Admin) per disattivare temporaneamente l'upload dei backup su
+// Supabase durante le prove/test, senza perdere il backup locale su disco come rete di
+// sicurezza. Persistito nella tabella "app_settings" di Supabase (non solo in RAM), cosi'
+// sopravvive a QUALSIASI riavvio/deploy del processo Render. Di default attivo, cosi' il
+// comportamento resta invariato finche' non lo si disattiva esplicitamente.
+let backupSupabaseAttivo = true;
+async function loadBackupSupabaseAttivo() {
+  if (!supabaseAdmin) return;
+  try {
+    const { data, error } = await supabaseAdmin.from('app_settings').select('value').eq('id', 'backup_supabase_attivo').maybeSingle();
+    if (!error && data && typeof data.value === 'boolean') backupSupabaseAttivo = data.value;
+  } catch (e) { /* non-fatale: resta il default (true) */ }
+}
+async function persistBackupSupabaseAttivo(valore) {
+  if (!supabaseAdmin) return;
+  try {
+    await supabaseAdmin.from('app_settings').upsert({ id: 'backup_supabase_attivo', value: valore, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+  } catch (e) { console.error('[persistBackupSupabaseAttivo] errore (non-fatale):', e.message); }
+}
+
 function saveBackup(asta) {
   if (!asta || !asta.id) return;
   try {
@@ -85,7 +105,7 @@ function saveBackup(asta) {
     const hash = crypto.createHash('sha1').update(astaJson).digest('hex');
     if (_ultimoBackupHash.get(asta.id) === hash) return;
     _ultimoBackupHash.set(asta.id, hash);
-    saveBackupSupabase(asta, snap);
+    if (backupSupabaseAttivo) saveBackupSupabase(asta, snap);
   } catch(e) { /* non-fatal */ }
 }
 
@@ -776,6 +796,22 @@ app.post('/api/admin/chiudi-tutte-le-aste', async (req, res) => {
   res.json({ ok: true, chiuse: chiuse.length, ids: chiuse });
 });
 
+// Permette al Super Admin di leggere/modificare lo stato del toggle "backup su Supabase",
+// utile durante test/prove per non generare traffico e righe inutili su Supabase.
+// Il backup locale su disco (rete di sicurezza contro crash del processo) resta sempre attivo.
+app.get('/api/admin/backup-status', async (req, res) => {
+  const auth = await getSuperAdminAuth(req);
+  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  res.json({ backupSupabaseAttivo });
+});
+app.post('/api/admin/toggle-backup', async (req, res) => {
+  const auth = await getSuperAdminAuth(req);
+  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  backupSupabaseAttivo = !!(req.body && req.body.attivo);
+  await persistBackupSupabaseAttivo(backupSupabaseAttivo);
+  res.json({ ok: true, backupSupabaseAttivo });
+});
+
 // ============ WEBSOCKET ============
 io.on('connection', (socket) => {
   console.log(`[WS] Connesso: ${socket.id}`);
@@ -1394,6 +1430,7 @@ async function puliziaBackupFantasma() {
 
 // Load backups at startup
 loadBackups().catch(e => console.error('[loadBackups] fatale (non-fatale per il server, l\'asta parte comunque vuota):', e.message));
+loadBackupSupabaseAttivo().catch(e => console.error('[loadBackupSupabaseAttivo] fatale (non-fatale, resta il default true):', e.message));
 puliziaBackupFantasma().catch(e => console.error('[puliziaBackupFantasma] fatale (non-fatale):', e.message));
 
 const PORT = process.env.PORT || 3000;
