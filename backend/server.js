@@ -26,6 +26,20 @@ async function getRuoloUtente(req) {
   if (profErr || !profile) return { error: 'Profilo utente non trovato', status: 403 };
   return { role: profile.role, userId: userData.user.id };
 }
+
+const SUPER_ADMIN_EMAIL = 'albavicentecarragal@gmail.com';
+async function getSuperAdminAuth(req) {
+  if (!supabaseAdmin) return { error: 'Supabase non configurato sul server', status: 500 };
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token) return { error: 'Token mancante', status: 401 };
+  const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token);
+  if (userErr || !userData || !userData.user) return { error: 'Token non valido', status: 401 };
+  if (userData.user.email !== SUPER_ADMIN_EMAIL) {
+    return { error: 'Solo il Super Admin puo\' eseguire questa azione', status: 403 };
+  }
+  return { userId: userData.user.id, email: userData.user.email };
+}
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
@@ -747,6 +761,25 @@ app.post('/api/admin/pulisci-aste-zombie', async (req, res) => {
     }
   });
   res.json({ ok: true, rimosse: rimosse.length, ids: rimosse });
+});
+
+// Endpoint riservato al Super Admin: chiude e cancella TUTTE le aste attualmente
+// aperte (attive o non), sia in memoria che nel backup su Supabase. Azione
+// irreversibile: da usare solo per una pulizia generale voluta esplicitamente,
+// non e' un'operazione automatica.
+app.post('/api/admin/chiudi-tutte-le-aste', async (req, res) => {
+  const auth = await getSuperAdminAuth(req);
+  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  const chiuse = [];
+  aste.forEach((asta, id) => {
+    try { io.to(id).emit('asta-terminata', { astaId: id, motivo: 'Chiusa dal Super Admin' }); } catch (e) {}
+    clearTimer(id);
+    aste.delete(id);
+    _ultimoBackupHash.delete(id);
+    deleteBackupSupabase(id);
+    chiuse.push(id);
+  });
+  res.json({ ok: true, chiuse: chiuse.length, ids: chiuse });
 });
 
 // ============ WEBSOCKET ============
