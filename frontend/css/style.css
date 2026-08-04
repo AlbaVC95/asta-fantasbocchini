@@ -41,7 +41,12 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
 @keyframes spotlight-drift{0%{transform:translate(0,0)}100%{transform:translate(-3%,-3%)}}
 #app{position:relative;z-index:1}
 .screen{display:none;min-height:100vh}.screen.active{display:block;height:100vh;overflow-y:auto}
-.btn-back-sticky{position:sticky;top:10px;z-index:50;margin-bottom:16px;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+/* position:fixed invece di sticky: su mobile (soprattutto iOS) lo sticky dentro un
+   contenitore con overflow-y:auto "saltava" durante lo scroll inerziale, rendendo il
+   pulsante difficile da toccare con precisione. Fixed lo ancora al viewport, sempre stabile. */
+.btn-back-sticky{position:fixed;top:10px;left:14px;z-index:50;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+#screen-home .home-header,
+#screen-crea-asta .home-header{padding-top:72px}
 /* Sfondo tematico calcio per le schermate Strategie (lista, form nuova, editor): campo da gioco
    molto scurito, solo un tocco decorativo che non deve disturbare la lettura del contenuto. */
 #screen-strategie-lista.active,
