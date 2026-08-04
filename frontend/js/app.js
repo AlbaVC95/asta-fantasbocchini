@@ -563,12 +563,12 @@ async function applicaUtenteLoggato(user) {
   document.body.classList.toggle('app-role-admin', S.userRole === 'admin');
   const btnLogout = document.getElementById('btn-logout');
   if (btnLogout) btnLogout.style.display = 'inline-block';
+  const isAdmin = (S.userRole === 'admin');
   const adminCard = document.getElementById('card-listino-admin');
-  if (adminCard) adminCard.style.display = (S.userRole === 'admin') ? 'block' : 'none';
+  if (adminCard) adminCard.style.display = isAdmin ? 'block' : 'none';
   const superAdminCard = document.getElementById('card-super-admin');
-  const isSuperAdmin = (S.userEmail === 'albavicentecarragal@gmail.com');
-  if (superAdminCard) superAdminCard.style.display = isSuperAdmin ? 'block' : 'none';
-  if (isSuperAdmin) caricaStatoBackupSuperAdmin();
+  if (superAdminCard) superAdminCard.style.display = isAdmin ? 'block' : 'none';
+  if (isAdmin) caricaStatoBackupSuperAdmin();
   caricaMieAste();
   if (S._invitoAstaId) {
     const invitoId = S._invitoAstaId;
@@ -842,6 +842,14 @@ async function handleToggleBackupSuperAdmin(attivo) {
     if (chk) chk.checked = !attivo;
   }
 }
+
+// Tiene sincronizzato il checkbox su TUTTI i dispositivi/sessioni Admin connessi quando
+// uno di loro cambia il toggle (es. Admin A lo disattiva dal telefono, Admin B lo vede
+// aggiornarsi da solo sul portatile, senza dover ricaricare la pagina).
+socket.on('backup-toggle-changed', ({ backupSupabaseAttivo }) => {
+  const chk = document.getElementById('chk-super-admin-backup-toggle');
+  if (chk) chk.checked = !!backupSupabaseAttivo;
+});
 
 async function handleSuperAdminChiudiTutteLeAste() {
   const conferma1 = confirm(

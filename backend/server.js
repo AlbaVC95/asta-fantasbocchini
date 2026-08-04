@@ -27,19 +27,6 @@ async function getRuoloUtente(req) {
   return { role: profile.role, userId: userData.user.id };
 }
 
-const SUPER_ADMIN_EMAIL = 'albavicentecarragal@gmail.com';
-async function getSuperAdminAuth(req) {
-  if (!supabaseAdmin) return { error: 'Supabase non configurato sul server', status: 500 };
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  if (!token) return { error: 'Token mancante', status: 401 };
-  const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token);
-  if (userErr || !userData || !userData.user) return { error: 'Token non valido', status: 401 };
-  if (userData.user.email !== SUPER_ADMIN_EMAIL) {
-    return { error: 'Solo il Super Admin puo\' eseguire questa azione', status: 403 };
-  }
-  return { userId: userData.user.id, email: userData.user.email };
-}
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
@@ -777,16 +764,17 @@ app.post('/api/admin/pulisci-aste-zombie', async (req, res) => {
   res.json({ ok: true, rimosse: rimosse.length, ids: rimosse });
 });
 
-// Endpoint riservato al Super Admin: chiude e cancella TUTTE le aste attualmente
+// Endpoint riservato agli Admin: chiude e cancella TUTTE le aste attualmente
 // aperte (attive o non), sia in memoria che nel backup su Supabase. Azione
 // irreversibile: da usare solo per una pulizia generale voluta esplicitamente,
 // non e' un'operazione automatica.
 app.post('/api/admin/chiudi-tutte-le-aste', async (req, res) => {
-  const auth = await getSuperAdminAuth(req);
+  const auth = await getRuoloUtente(req);
   if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  if (auth.role !== 'admin') return res.status(403).json({ error: 'Solo un Admin puo\' chiudere tutte le aste' });
   const chiuse = [];
   aste.forEach((asta, id) => {
-    try { io.to(id).emit('asta-terminata', { astaId: id, motivo: 'Chiusa dal Super Admin' }); } catch (e) {}
+    try { io.to(id).emit('asta-terminata', { astaId: id, motivo: 'Chiusa da un Admin' }); } catch (e) {}
     clearTimer(id);
     aste.delete(id);
     _ultimoBackupHash.delete(id);
@@ -796,19 +784,24 @@ app.post('/api/admin/chiudi-tutte-le-aste', async (req, res) => {
   res.json({ ok: true, chiuse: chiuse.length, ids: chiuse });
 });
 
-// Permette al Super Admin di leggere/modificare lo stato del toggle "backup su Supabase",
+// Permette agli Admin di leggere/modificare lo stato del toggle "backup su Supabase",
 // utile durante test/prove per non generare traffico e righe inutili su Supabase.
 // Il backup locale su disco (rete di sicurezza contro crash del processo) resta sempre attivo.
 app.get('/api/admin/backup-status', async (req, res) => {
-  const auth = await getSuperAdminAuth(req);
+  const auth = await getRuoloUtente(req);
   if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  if (auth.role !== 'admin') return res.status(403).json({ error: 'Solo un Admin puo\' vedere lo stato del backup' });
   res.json({ backupSupabaseAttivo });
 });
 app.post('/api/admin/toggle-backup', async (req, res) => {
-  const auth = await getSuperAdminAuth(req);
+  const auth = await getRuoloUtente(req);
   if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  if (auth.role !== 'admin') return res.status(403).json({ error: 'Solo un Admin puo\' modificare lo stato del backup' });
   backupSupabaseAttivo = !!(req.body && req.body.attivo);
   await persistBackupSupabaseAttivo(backupSupabaseAttivo);
+  // Notifica in tempo reale tutti gli Admin connessi (non solo chi ha premuto il toggle),
+  // così il checkbox resta sincronizzato su ogni dispositivo/sessione senza dover ricaricare.
+  io.emit('backup-toggle-changed', { backupSupabaseAttivo });
   res.json({ ok: true, backupSupabaseAttivo });
 });
 
