@@ -953,10 +953,32 @@ function handleListinoExcelFile(file) {
   reader.readAsArrayBuffer(file);
 }
 
+// ══ WAKE LOCK (schermo sempre acceso durante l'asta live) ══════════════
+// Il browser rilascia automaticamente il wake lock quando la tab va in background
+// (es. si passa ad un'altra app per un attimo), senza riacquisirlo da solo: bisogna
+// rifarne richiesta al ritorno in foreground, altrimenti resta disattivato per il
+// resto della sessione anche tornando sulla schermata asta.
+let _wakeLock = null;
+async function _richiediWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try { _wakeLock = await navigator.wakeLock.request('screen'); }
+  catch (e) { /* non-fatale: es. batteria bassa o permesso negato dal sistema */ }
+}
+function _rilasciaWakeLock() {
+  if (_wakeLock) { _wakeLock.release().catch(() => {}); _wakeLock = null; }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && document.getElementById('screen-asta').classList.contains('active')) {
+    _richiediWakeLock();
+  }
+});
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
+  if (id === 'screen-asta') _richiediWakeLock();
+  else _rilasciaWakeLock();
 }
 
 // ════ HOME ════════════════════════════════════
@@ -4068,6 +4090,14 @@ async function caricaStrategieCompatibili(tipoAsta) {
   return (!error && data) ? data : [];
 }
 
+// Le strategie salvano tipo_asta come 'iniziale' | 'riparazione1' | 'riparazione2', mentre
+// l'asta ha 'iniziale' | 'riparazione' + sottoTipoRiparazione separato — bisogna ricomporli
+// per far combaciare il confronto, altrimenti nessuna strategia di riparazione risulta mai compatibile.
+function _tipoAstaPerStrategia(asta) {
+  if (asta.tipoAsta === 'riparazione') return 'riparazione' + (String(asta.sottoTipoRiparazione) === '2' ? '2' : '1');
+  return asta.tipoAsta;
+}
+
 function _strategiaSalvataKey(astaId) { return 'ftb_strategia_sel_' + astaId; }
 function _getStrategiaSalvata(astaId) {
   try { return localStorage.getItem(_strategiaSalvataKey(astaId)) || null; } catch(e) { return null; }
@@ -4091,7 +4121,7 @@ async function mostraPromptStrategiaSeNecessario() {
     const ok = await selezionaStrategiaAsta(strategiaSalvataId, true);
     if (ok) return;
   }
-  const strategie = await caricaStrategieCompatibili(S.asta.tipoAsta);
+  const strategie = await caricaStrategieCompatibili(_tipoAstaPerStrategia(S.asta));
   if (!strategie.length) return;
   apriModalStrategia(strategie);
 }
@@ -4173,7 +4203,7 @@ function setupStrategiaAsta() {
 
   if (btnApplica) btnApplica.addEventListener('click', async () => {
     if (!S.asta) return;
-    const strategie = await caricaStrategieCompatibili(S.asta.tipoAsta);
+    const strategie = await caricaStrategieCompatibili(_tipoAstaPerStrategia(S.asta));
     if (!strategie.length && !S.strategiaAsta) { toast('Non hai strategie compatibili con questo tipo di asta', 'info'); return; }
     apriModalStrategia(strategie);
   });
