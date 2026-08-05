@@ -1005,6 +1005,11 @@ function showScreen(id) {
   window.scrollTo(0, 0);
   if (id === 'screen-asta') _richiediWakeLock();
   else _rilasciaWakeLock();
+  // caricaMieAste() viene chiamata solo al login: se si torna al menu dopo essere
+  // usciti da un'asta (es. asta appena conclusa), "Riprendi Asta" resterebbe con la
+  // lista vecchia finche' non si ricarica la pagina a mano. Rifacendo qui la fetch
+  // ogni volta che si rientra nel menu, la sezione resta sempre aggiornata.
+  if (id === 'screen-menu-principale') caricaMieAste();
 }
 
 // ════ HOME ════════════════════════════════════
