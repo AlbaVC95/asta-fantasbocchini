@@ -1065,6 +1065,8 @@ function setupHome() {
   const btnBackHomeMenu = document.getElementById('btn-back-home-menu');
   if (btnChoiceJson) btnChoiceJson.addEventListener('click', () => showScreen('screen-crea-asta'));
   if (btnChoiceExcel) btnChoiceExcel.addEventListener('click', () => inpExcelChoice.click());
+  const btnUsaListino = document.getElementById('btn-usa-listino-ufficiale');
+  if (btnUsaListino) btnUsaListino.addEventListener('click', usaListinoUfficialePerNuovaAsta);
   if (inpExcelChoice) inpExcelChoice.addEventListener('change', () => handleExcelFile(inpExcelChoice.files[0]));
   if (btnBackHome) btnBackHome.addEventListener('click', () => showScreen('screen-home'));
   if (btnBackHomeMenu) btnBackHomeMenu.addEventListener('click', () => showScreen('screen-menu-principale'));
@@ -1164,6 +1166,51 @@ function aggiornaAdminNomeDropdown(data) {
     sel.appendChild(opt);
   });
   wrap.innerHTML = ''; wrap.appendChild(sel);
+}
+
+// Crea un'asta partendo dal Listino Ufficiale (Supabase, tabella listino_giocatori):
+// tutti i giocatori entrano come svincolati (squadre = []), pronti per essere chiamati,
+// senza dover caricare nessun file. Il valore iniziale di ogni giocatore libero è QUOT.
+// (quotazione), non un valore ricalcolato — l'utente riempie il resto del form a mano
+// come già fa con Excel/JSON.
+async function usaListinoUfficialePerNuovaAsta() {
+  const btn = document.getElementById('btn-usa-listino-ufficiale');
+  const labelOriginale = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Caricamento...'; }
+  try {
+    const { data, error } = await supa.from('listino_giocatori').select('*').order('nome');
+    if (error) throw error;
+    if (!data || !data.length) {
+      toast('Nessun Listino Ufficiale caricato: chiedi a un Admin di caricarlo prima', 'error');
+      return;
+    }
+    const svincolati = data.map(r => ({
+      nome: r.nome,
+      ruolo: r.ruolo,
+      squadra: r.squadra_reale,
+      pgv: r.pgv, mv: r.mv, fm: r.fm,
+      fvmp600: r.fvm1000,
+      costo: r.quotazione, valore: r.quotazione,
+      idFantaleghe: r.id,
+      under: r.eta, u21: r.u21
+    }));
+    const data2 = { squadre: [], svincolati };
+    window._jsonData = data2;
+    const box = document.getElementById('json-preview');
+    if (box) {
+      box.innerHTML = '<strong>🏆 Listino Ufficiale caricato: ' + svincolati.length + ' giocatori liberi</strong>';
+      box.classList.remove('hidden');
+    }
+    const dropLabel = document.getElementById('file-drop-label');
+    if (dropLabel) dropLabel.textContent = '✅ Listino Ufficiale (' + svincolati.length + ' giocatori)';
+    aggiornaAdminNomeDropdown(data2);
+    toast('Listino Ufficiale caricato: ' + svincolati.length + ' giocatori liberi', 'success');
+    showScreen('screen-crea-asta');
+  } catch (err) {
+    toast('Errore nel caricamento del Listino Ufficiale: ' + err.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = labelOriginale; }
+  }
 }
 
 function handleJsonFile(file) {
