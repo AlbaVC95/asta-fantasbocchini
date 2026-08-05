@@ -122,6 +122,12 @@ input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0
    un pulsante fisso in un angolo, sempre visibile, il micro-spostamento di 1px sotto al
    cursore si percepisce come se "scappasse" mentre lo si punta. Lo disattiviamo qui. */
 .btn-back-sticky:hover,.btn-back-sticky:active{transform:none}
+/* I bottoni #btn-back-home-menu/#btn-back-home vivono ora fuori da #app (vedi index.html),
+   fratelli di tutte le .screen, quindi sempre nel DOM: la visibilità va gestita qui in base
+   a quale schermata è attiva, invece che con display/JS nella sezione stessa. */
+#btn-back-home-menu,#btn-back-home{display:none}
+body:has(#screen-home.active) #btn-back-home-menu{display:inline-flex}
+body:has(#screen-crea-asta.active) #btn-back-home{display:inline-flex}
 .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;box-shadow:0 4px 15px var(--primary-glow)}
 .btn-primary:hover{box-shadow:0 6px 20px rgba(139,92,246,.5)}
 .btn-secondary{background:var(--bg-elevated);border:1px solid var(--border-light);color:var(--text-primary)}

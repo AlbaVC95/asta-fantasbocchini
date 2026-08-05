@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=1785755139679">
+  <link rel="stylesheet" href="css/style.css?v=1785950000000">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -15,6 +15,15 @@
 <body>
 <div class="pitch-bg" aria-hidden="true"></div>
 <div id="user-email-badge" class="user-email-badge hidden" title="Account collegato"></div>
+<!-- Bottoni "Torna al menu/indietro" fuori da #app apposta: dentro alle sezioni .screen
+     (che hanno overflow-y:auto, sono loro il contenitore che scrolla) un elemento
+     position:fixed puo' comunque "ballare" o restare intrappolato durante lo scroll
+     inerziale su iOS Safari, un bug noto di WebKit con position:fixed annidato in un
+     antenato scrollabile. Da fratelli di #app, allo stesso livello del badge email qui
+     sopra (che infatti non ha mai avuto questo problema), sono ancorati al viewport in
+     modo affidabile su tutti i browser. Visibilita' gestita in CSS via :has(). -->
+<button type="button" id="btn-back-home-menu" class="btn btn-secondary btn-back-sticky">← Torna al menu</button>
+<button type="button" id="btn-back-home" class="btn btn-secondary btn-back-sticky">← Torna indietro</button>
 <div id="app">
   <!-- ══════════ SCREEN LOGIN ══════════ -->
   <section id="screen-login" class="screen active">
@@ -297,7 +306,6 @@
       <p class="home-subtitle">Tool per la tua lega di fantacalcio</p>
       <button id="btn-logout" class="btn-logout-link" style="display:none">🚪 Esci</button>
     </header>
-    <button type="button" id="btn-back-home-menu" class="btn btn-secondary btn-back-sticky">← Torna al menu</button>
     <div id="card-listino-admin" class="card" style="display:none">
       <h2 class="card-title">📋 Listino ufficiale (Admin)</h2>
       <p class="hint-text">Carica il listino completo dei giocatori. Sostituisce il listino attuale per tutti gli utenti.</p>
@@ -350,7 +358,6 @@
       <h1 class="home-title">Crea nuova asta</h1>
       <p class="home-subtitle">Compila i dettagli e crea la tua asta</p>
     </header>
-    <button type="button" id="btn-back-home" class="btn btn-secondary btn-back-sticky">← Torna indietro</button>
     <div class="card">
       <h2 class="card-title">Crea nuova asta</h2>
       <form id="form-crea-asta" autocomplete="off">
