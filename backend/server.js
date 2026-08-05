@@ -512,7 +512,12 @@ app.post('/api/listino/upload', async (req, res) => {
         ruolo: r.ruolo || null,
         squadra_reale: r.squadra_reale || null,
         quotazione: r.quotazione != null ? Number(r.quotazione) : null,
-        fmvp600: r.fmvp600 != null ? Number(r.fmvp600) : null
+        fvm1000: r.fvm1000 != null ? Number(r.fvm1000) : null,
+        eta: r.eta != null ? Number(r.eta) : null,
+        u21: !!r.u21,
+        pgv: r.pgv != null ? Number(r.pgv) : null,
+        mv: r.mv != null ? Number(r.mv) : null,
+        fm: r.fm != null ? Number(r.fm) : null
       }));
 
     const nuoviIds = new Set(nuoveRighe.map(r => r.id));

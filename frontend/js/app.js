@@ -904,26 +904,42 @@ function handleListinoExcelFile(file) {
       const headers = Object.keys(rows[0]);
       const findCol = (...names) => headers.find(h => names.some(n => norm(h) === norm(n)));
 
+      // Formato Listino Ufficiale Mantra: # Nome | Fuori lista | Sq. | Under | R. | R.MANTRA |
+      // PGv | MV | FM | FVM/1000 | QUOT. | FantaSquadra | Costo — usiamo solo le colonne che
+      // servono. IMPORTANTE: usiamo sempre R.MANTRA per i ruoli, mai R. (quella è Fantacalcio
+      // Classic, questa app è basata esclusivamente su Mantra).
       const colId = findCol('#', 'Id', 'ID');
-      const colNome = findCol('Giocatore', 'Nome');
-      const colRuolo = findCol('Ruolo');
-      const colSquadra = findCol('Squadra');
-      const colQuot = findCol('QAM', 'Quotazione', 'Quotazione Attuale');
-      const colFvmp600 = findCol('FVMp600');
+      const colNome = findCol('Nome', 'Giocatore');
+      const colSquadra = findCol('Sq.', 'Squadra');
+      const colUnder = findCol('Under');
+      const colRuoloMantra = findCol('R.MANTRA', 'R.Mantra', 'RM');
+      const colPgv = findCol('PGv');
+      const colMv = findCol('MV');
+      const colFm = findCol('FM');
+      const colFvm1000 = findCol('FVM/1000', 'FVM1000');
+      const colQuot = findCol('QUOT.', 'QUOT', 'Quotazione');
 
-      if (!colId || !colNome || !colRuolo) {
-        toast('Colonne obbligatorie mancanti nel listino (#, Giocatore, Ruolo)', 'error');
+      if (!colId || !colNome || !colRuoloMantra) {
+        toast('Colonne obbligatorie mancanti nel listino (#, Nome, R.MANTRA)', 'error');
         return;
       }
 
-      const listino = rows.filter(r => r[colId] !== '' && r[colNome]).map(r => ({
-        id: Number(r[colId]),
-        nome: r[colNome],
-        ruolo: r[colRuolo],
-        squadra_reale: colSquadra ? (r[colSquadra] || null) : null,
-        quotazione: colQuot && r[colQuot] !== '' ? Number(r[colQuot]) : null,
-        fmvp600: colFvmp600 && r[colFvmp600] !== '' ? Number(r[colFvmp600]) : null
-      }));
+      const listino = rows.filter(r => r[colId] !== '' && r[colNome]).map(r => {
+        const eta = colUnder && r[colUnder] !== '' ? Number(r[colUnder]) : null;
+        return {
+          id: Number(r[colId]),
+          nome: r[colNome],
+          ruolo: r[colRuoloMantra],
+          squadra_reale: colSquadra ? (r[colSquadra] || null) : null,
+          quotazione: colQuot && r[colQuot] !== '' ? Number(r[colQuot]) : null,
+          fvm1000: colFvm1000 && r[colFvm1000] !== '' ? Number(r[colFvm1000]) : null,
+          eta,
+          u21: eta != null && eta <= 21,
+          pgv: colPgv && r[colPgv] !== '' ? Number(r[colPgv]) : null,
+          mv: colMv && r[colMv] !== '' ? Number(r[colMv]) : null,
+          fm: colFm && r[colFm] !== '' ? Number(r[colFm]) : null
+        };
+      });
 
       if (!listino.length) return toast('Nessun giocatore valido trovato nel listino', 'error');
 
@@ -3854,7 +3870,7 @@ function renderEditorFasce() {
         '<span class="editor-player-nome">' + escapeHTML(g.nome) + '</span>' +
         '<span class="editor-player-squadra">' + escapeHTML(g.squadra_reale || '') + '</span>' +
         '<span class="editor-player-quot">Q: ' + (g.quotazione != null ? g.quotazione : '-') + '</span>' +
-        '<span class="editor-player-fvm">FVM: ' + (g.fmvp600 != null ? g.fmvp600 : '-') + '</span>' +
+        '<span class="editor-player-fvm">FVM/1000: ' + (g.fvm1000 != null ? g.fvm1000 : '-') + '</span>' +
         '<button type="button" class="editor-preferito-btn ' + (cfg.preferito ? 'active' : '') + '" data-giocatore="' + g.id + '">' + (cfg.preferito ? '★' : '☆') + '</button>' +
         '<select class="editor-fascia-select" data-giocatore="' + g.id + '">' + opzioniFascia.replace(
           'value="' + (cfg.fascia_id || '') + '"', 'value="' + (cfg.fascia_id || '') + '" selected'
