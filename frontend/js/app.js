@@ -4224,10 +4224,20 @@ async function selezionaStrategiaAsta(strategiaId, silent) {
   const fasceOrdine = new Map();
   (fasce || []).forEach(f => { fasceInfo.set(f.id, { nome: f.nome, colore: f.colore, ordine: f.ordine }); fasceOrdine.set(f.id, f.ordine); });
 
+  // La strategia salva sempre la percentuale rispetto al SUO budget originale
+  // (crediti_totali, impostato quando è stata creata). Ma la squadra che la applica
+  // durante l'asta può avere un budget reale diverso — quindi il prezzo mostrato va
+  // ricalcolato sulla percentuale * budget reale dell'asta corrente, non riusato così
+  // com'è. "Budget reale" = crediti per squadra configurati per QUESTA asta (S.asta.crediti,
+  // fisso), non i crediti residui della squadra (che scendono man mano che compra).
+  const budgetReale = (S.asta && S.asta.crediti) ? S.asta.crediti : strategia.crediti_totali;
   const configByListinoId = new Map();
   (sg || []).forEach(row => {
+    const prezzoReale = row.percentuale != null
+      ? Math.max(1, Math.round(row.percentuale / 100 * budgetReale))
+      : row.prezzo;
     configByListinoId.set(row.giocatore_id, {
-      fascia_id: row.fascia_id, prezzo: row.prezzo, percentuale: row.percentuale, preferito: row.preferito
+      fascia_id: row.fascia_id, prezzo: prezzoReale, percentuale: row.percentuale, preferito: row.preferito
     });
   });
 
