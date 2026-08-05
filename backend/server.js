@@ -794,10 +794,12 @@ app.post('/api/admin/chiudi-tutte-le-aste', async (req, res) => {
 // Permette agli Admin di leggere/modificare lo stato del toggle "backup su Supabase",
 // utile durante test/prove per non generare traffico e righe inutili su Supabase.
 // Il backup locale su disco (rete di sicurezza contro crash del processo) resta sempre attivo.
+// Lettura aperta a QUALSIASI utente loggato (non solo Admin): serve anche alla schermata
+// "Riprendi Asta" del menu principale, per decidere se proporre il ripristino da Supabase
+// oltre a quello da file — non e' un dato sensibile, e' solo un feature flag.
 app.get('/api/admin/backup-status', async (req, res) => {
-  const auth = await getRuoloUtente(req);
-  if (auth.error) return res.status(auth.status).json({ error: auth.error });
-  if (auth.role !== 'admin') return res.status(403).json({ error: 'Solo un Admin puo\' vedere lo stato del backup' });
+  const utente = await getUtenteDaToken(req);
+  if (!utente) return res.status(401).json({ error: 'Login richiesto' });
   res.json({ backupSupabaseAttivo });
 });
 app.post('/api/admin/toggle-backup', async (req, res) => {

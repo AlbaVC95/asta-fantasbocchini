@@ -583,18 +583,28 @@ async function applicaUtenteLoggato(user) {
 // Mostra le aste create dall'utente loggato ancora "vive" (non terminate), permettendo
 // di riprenderle da qualunque dispositivo senza dover conservare nessun link manualmente.
 async function caricaMieAste() {
-  const card = document.getElementById('card-mie-aste');
+  // Il bottone "Riprendi Asta" (card-mie-aste) e' SEMPRE visibile — cambia solo cosa
+  // offre: il "Ripristina da file" c'e' sempre, la lista delle aste live su Supabase
+  // appare solo se il backup su Supabase e' attivo E ci sono davvero aste attive.
+  const liveWrap = document.getElementById('mie-aste-live-wrap');
   const lista = document.getElementById('lista-mie-aste');
-  if (!card || !lista) return;
+  if (!liveWrap || !lista) return;
+  liveWrap.style.display = 'none';
   try {
     const { data: sessData } = await supa.auth.getSession();
     const accessToken = sessData && sessData.session ? sessData.session.access_token : null;
-    if (!accessToken) { card.style.display = 'none'; return; }
+    if (!accessToken) return;
+
+    const resStatus = await fetch('/api/admin/backup-status', { headers: { 'Authorization': 'Bearer ' + accessToken } });
+    if (!resStatus.ok) return; // backup Supabase disattivato (o stato sconosciuto): solo "Ripristina da file"
+    const statusData = await resStatus.json();
+    if (!statusData.backupSupabaseAttivo) return;
+
     const res = await fetch('/api/mie-aste', { headers: { 'Authorization': 'Bearer ' + accessToken } });
-    if (!res.ok) { card.style.display = 'none'; return; }
+    if (!res.ok) return;
     const aste = await res.json();
-    if (!Array.isArray(aste) || aste.length === 0) { card.style.display = 'none'; return; }
-    card.style.display = 'block';
+    if (!Array.isArray(aste) || aste.length === 0) return;
+    liveWrap.style.display = 'block';
     lista.innerHTML = aste.map(a => {
       const nomeEsc = _escHtml(a.nome || 'Asta senza nome');
       const statoLabel = a.stato === 'attesa' ? 'In attesa' : a.stato === 'in_corso' ? 'In corso' : a.stato;
@@ -606,7 +616,7 @@ async function caricaMieAste() {
         '</div>' +
       '</div>';
     }).join('');
-  } catch (e) { card.style.display = 'none'; }
+  } catch (e) { liveWrap.style.display = 'none'; }
 }
 
 window.riprendiAsta = async function(astaId) {
