@@ -221,6 +221,7 @@ html.theme-light .chiamata-card{
 .cc-tipo-badge{font-size:.65rem;font-weight:800;text-transform:uppercase;padding:2px 7px;border-radius:5px}
 .tipo-RIC{background:rgba(139,92,246,.15);color:var(--primary-bright);border:1px solid rgba(139,92,246,.3)}
 .tipo-PLUS{background:rgba(255,184,0,.15);color:var(--gold);border:1px solid rgba(255,184,0,.3)}
+.tipo-U21{background:rgba(0,224,160,.15);color:var(--success);border:1px solid rgba(0,224,160,.3)}
 .timer-ring-container{position:relative;width:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(170deg,var(--bg-main) 0%,var(--bg-card) 100%);border:1px solid rgba(139,92,246,.15);border-top:none;border-radius:0 0 20px 20px;padding:14px 0 18px;box-shadow:0 20px 40px rgba(0,0,0,.3);overflow:hidden}
 .timer-ring{width:90px;height:90px;filter:drop-shadow(0 0 10px rgba(139,92,246,.2));position:relative;z-index:1}
 .timer-progress{transition:stroke-dashoffset .9s linear}

@@ -2385,6 +2385,8 @@ function renderChiamata(chiamata) {
   _chiamataAvatarVersion++;
   const _myAvatarVersion = _chiamataAvatarVersion;
   const tipoBadge = g.tipo && g.tipo !== 'NN' ? '<span class="cc-tipo-badge tipo-' + g.tipo + '">' + g.tipo + '</span>' : '';
+  const u21Badge = g.u21 === true ? '<span class="cc-tipo-badge tipo-U21">U21</span>' : '';
+  const etaTxt = g.under != null ? '<small class="text-muted cc-eta">' + g.under + ' anni</small>' : '';
   const origTxt = g.squadraOriginale && g.tipo !== 'NN' ? '<small class="text-muted">ex: ' + _escHtml(g.squadraOriginale) + '</small>' : '';
   const clubTxt = g.squadra ? '<span class="cc-club">' + _escHtml(g.squadra) + '</span>' : '';
   const offerenteTxt = chiamata.squadraOfferente
@@ -2406,7 +2408,7 @@ function renderChiamata(chiamata) {
         '<div class="cc-avatar-utente-col"><div class="cc-avatar">' + _avatarSvg + '</div>' + manualeBadge + '</div>' +
         '<div class="cc-info">' +
           '<div class="cc-nome-row">' + ruoloBadge + '<p class="cc-nome">' + _escHtml(g.nome) + '</p></div>' +
-          '<div class="cc-meta">' + clubTxt + tipoBadge + origTxt + '</div>' +
+          '<div class="cc-meta">' + clubTxt + tipoBadge + u21Badge + etaTxt + origTxt + '</div>' +
         '</div>' +
       '</div>'
     : manualeBadge +
@@ -2414,7 +2416,7 @@ function renderChiamata(chiamata) {
         '<div class="cc-avatar">' + _avatarSvg + '</div>' +
         '<div class="cc-info">' +
           '<div class="cc-nome-row">' + ruoloBadge + '<p class="cc-nome">' + _escHtml(g.nome) + '</p></div>' +
-          '<div class="cc-meta">' + clubTxt + tipoBadge + origTxt + '</div>' +
+          '<div class="cc-meta">' + clubTxt + tipoBadge + u21Badge + etaTxt + origTxt + '</div>' +
         '</div>' +
       '</div>';
   card.innerHTML =

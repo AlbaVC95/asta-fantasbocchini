@@ -463,7 +463,8 @@ app.post('/api/asta', async (req, res) => {
             squadra: g.squadra || null,
             pgv: g.pgv ?? null, mv: g.mv ?? null, fm: g.fm ?? null,
             fvmp600: g.fvmp600 ?? null, qam: g.qam ?? null,
-            idFantaleghe: g.idFantaleghe ?? null
+            idFantaleghe: g.idFantaleghe ?? null,
+            under: g.under ?? null, u21: !!g.u21
           });
         });
       }
@@ -480,7 +481,8 @@ app.post('/api/asta', async (req, res) => {
         squadra: g.squadra || null,
         pgv: g.pgv ?? null, mv: g.mv ?? null, fm: g.fm ?? null,
         fvmp600: g.fvmp600 ?? null, qam: g.qam ?? null,
-        idFantaleghe: g.idFantaleghe ?? null
+        idFantaleghe: g.idFantaleghe ?? null,
+        under: g.under ?? null, u21: !!g.u21
       });
     });
   }
