@@ -982,6 +982,15 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .gk-lvl-Discreto{background:rgba(255,179,0,.18);color:var(--gold-bright)}
 .gk-lvl-Rischioso{background:rgba(255,56,96,.18);color:var(--danger)}
 .gk-rank-conf{font-size:.65rem;color:var(--text-muted);margin-top:2px}
+.gk-rank-costo{font-size:.68rem;font-weight:700;padding:1px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:3px}
+.gk-rank-costo-target{font-weight:500;opacity:.75}
+.gk-rank-costo.gk-costo-ok{background:rgba(0,224,160,.14);color:var(--success)}
+.gk-rank-costo.gk-costo-over{background:rgba(255,56,96,.14);color:var(--danger)}
+.gk-costo-atteso{margin-top:10px;padding:8px 12px;border-radius:10px;background:var(--bg-elevated);border:1px solid var(--border);display:flex;flex-direction:column;gap:2px;font-size:.78rem}
+.gk-costo-atteso.gk-costo-ok{border-color:rgba(0,224,160,.35)}
+.gk-costo-atteso.gk-costo-over{border-color:rgba(255,56,96,.35)}
+.gk-costo-detail{font-size:.68rem;color:var(--text-muted)}
+.gk-compare-costo-row{display:flex;justify-content:space-between;gap:10px;margin-top:10px;font-size:.72rem;color:var(--text-muted)}
 
 /* ── Selettori coppia ── */
 .gk-pair-picker,.gk-round-picker{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}

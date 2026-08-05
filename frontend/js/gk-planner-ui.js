@@ -9,7 +9,8 @@
     config: null,
     calendarioInfo: null,
     mode: 'portieri',
-    rankCache: {}
+    rankCache: {},
+    listino: []
   };
 
   const STORAGE_KEY = 'gkPlannerConfig_v1';
@@ -17,6 +18,19 @@
 
   function teamSlug(t) { return t.toLowerCase(); }
   function teamBadge(t) { return '<img src="img/teams/' + teamSlug(t) + '.png" alt="" onerror="this.style.display=\'none\'">'; }
+
+  // Mostra il costo atteso (% del budget) e come ha modificato lo score sportivo,
+  // solo se il Listino Ufficiale e' disponibile (altrimenti d.costoAttesoPct e' null
+  // e il ranking resta puramente sportivo, come prima di questa funzionalita').
+  function renderCostoAttesoHTML(d) {
+    if (d.costoAttesoPct == null) return '';
+    const over = d.costoAttesoPct > d.budgetTargetPct;
+    const cls = over ? 'gk-costo-over' : 'gk-costo-ok';
+    return '<div class="gk-costo-atteso ' + cls + '">' +
+      '<span>&#128176; Costo atteso: <strong>' + d.costoAttesoPct + '%</strong> del budget (obiettivo ' + d.budgetTargetPct + '%)</span>' +
+      '<span class="gk-costo-detail">Score sportivo ' + d.scoreSportivo + ' &rarr; ' + d.score + ' con il fattore costo (&times;' + d.moltiplicatoreCosto + ')</span>' +
+    '</div>';
+  }
 
   function renderScoreGauge(score, colorVar) {
     const r = 52, circ = 2 * Math.PI * r, pct = Math.max(0, Math.min(100, score)) / 100;
@@ -81,10 +95,26 @@
     });
   }
 
+  // Listino Ufficiale (squadra_reale/ruolo/fvm1000): serve al fattore costo atteso
+  // del ranking. Se non c'e' ancora un listino caricato (o l'utente non e' loggato)
+  // resta vuoto e il ranking rimane puramente sportivo, invariato come prima.
+  function loadListino() {
+    try {
+      if (typeof supa !== 'undefined') {
+        return supa.from('listino_giocatori').select('squadra_reale,ruolo,fvm1000')
+          .then(function (res) { return (res && res.data) || []; })
+          .catch(function () { return []; });
+      }
+    } catch (e) {}
+    return Promise.resolve([]);
+  }
+
   function ensureData() {
     GKUI.mode = loadMode();
     if (GKUI.fixtures) return Promise.resolve();
-    return loadFixtures().then(function () { return loadConfig(); }).then(function (cfg) { GKUI.config = cfg; });
+    return loadFixtures()
+      .then(function () { return loadConfig(); }).then(function (cfg) { GKUI.config = cfg; })
+      .then(function () { return loadListino(); }).then(function (listino) { GKUI.listino = listino; });
   }
 
   function recompute() { GKUI.rankCache = {}; }
@@ -92,7 +122,7 @@
   function getRanking(groupSize) {
     const key = GKUI.mode + '-' + groupSize;
     if (!GKUI.rankCache[key]) {
-      GKUI.rankCache[key] = GKPlanner.rankingGruppi(GKUI.fixtures, GKUI.config, groupSize, GKUI.mode);
+      GKUI.rankCache[key] = GKPlanner.rankingGruppi(GKUI.fixtures, GKUI.config, groupSize, GKUI.mode, null, GKUI.listino);
     }
     return GKUI.rankCache[key];
   }
@@ -238,9 +268,12 @@
       const pos = i + 1;
       const posClass = pos === 1 ? 'top1' : (pos === 2 ? 'top2' : (pos === 3 ? 'top3' : ''));
       const teamsHtml = p.teams.map(function (t) { return '<span class="gk-rank-team-badge">' + teamBadge(t) + t + '</span>'; }).join('<span class="gk-rank-plus">+</span>');
+      const costoHtml = p.costoAttesoPct != null
+        ? '<div class="gk-rank-costo' + (p.costoAttesoPct > p.budgetTargetPct ? ' gk-costo-over' : ' gk-costo-ok') + '">&#128176; ' + p.costoAttesoPct + '% <span class="gk-rank-costo-target">/ ' + p.budgetTargetPct + '%</span></div>'
+        : '';
       html += '<div class="gk-rank-card" data-teams="' + p.teams.join('|') + '">' +
         '<div class="gk-rank-pos ' + posClass + '">' + pos + '</div>' +
-        '<div class="gk-rank-teams">' + teamsHtml + '</div>' +
+        '<div class="gk-rank-teams">' + teamsHtml + costoHtml + '</div>' +
         '<div class="gk-rank-score"><div class="gk-rank-score-num">' + p.score + '</div>' +
         '<div class="gk-rank-score-lvl gk-lvl-' + p.livello + '">' + p.livello + '</div>' +
         '<div class="gk-rank-conf">Confidenza: ' + p.confidenza + '</div></div></div>';
@@ -337,11 +370,12 @@
       el.innerHTML = '<p class="gk-view-intro">Scegli squadre diverse tra loro e premi "Analizza".</p>';
       return;
     }
-    const d = GKPlanner.analizzaGruppo(filled, GKUI.fixtures, GKUI.config, GKUI.mode);
+    const d = GKPlanner.analizzaGruppo(filled, GKUI.fixtures, GKUI.config, GKUI.mode, GKUI.listino);
     const scoreColor = d.livello === 'Ottimo' ? 'var(--success)' : d.livello === 'Buono' ? 'var(--primary-bright)' : d.livello === 'Discreto' ? 'var(--gold-bright)' : 'var(--danger)';
 
     let html = '<div class="gk-summary-card gk-summary-fancy">' +
       '<div class="gk-summary-fancy-gauge">' + renderScoreGauge(d.score, scoreColor) + '</div>' +
+      renderCostoAttesoHTML(d) +
       '<div class="gk-mini-stats-grid">' +
         '<div class="gk-mini-row">' +
           '<div class="gk-mini-stat gk-mini-stat-facile"><span class="gk-mini-stat-num">' + d.facili + '</span><span class="gk-mini-stat-lbl">facili</span></div>' +
@@ -420,8 +454,8 @@
       el.innerHTML = '<p class="gk-view-intro">Ogni gruppo deve avere almeno 2 squadre diverse tra loro.</p>';
       return;
     }
-    const dA = GKPlanner.analizzaGruppo(teamsA, GKUI.fixtures, GKUI.config, GKUI.mode);
-    const dB = GKPlanner.analizzaGruppo(teamsB, GKUI.fixtures, GKUI.config, GKUI.mode);
+    const dA = GKPlanner.analizzaGruppo(teamsA, GKUI.fixtures, GKUI.config, GKUI.mode, GKUI.listino);
+    const dB = GKPlanner.analizzaGruppo(teamsB, GKUI.fixtures, GKUI.config, GKUI.mode, GKUI.listino);
     const cmp = GKPlanner.confrontaGruppi(dA, dB);
     const winnerLabel = cmp.vincitore === 'A' ? teamsA.join('+') : (cmp.vincitore === 'B' ? teamsB.join('+') : 'Parita');
     function bar(lbl, vA, vB, maxV) {
@@ -430,6 +464,12 @@
         '<div class="gk-compare-bar-track"><div class="gk-compare-bar-fill side-a" style="width:' + wA + '%"></div>' +
         '<div class="gk-compare-bar-fill side-b" style="width:' + wB + '%"></div></div></div>';
     }
+    const costoRow = (dA.costoAttesoPct != null) ? (
+      '<div class="gk-compare-costo-row">' +
+        '<span>' + teamsA.join('+') + ': ' + dA.costoAttesoPct + '% (sportivo ' + dA.scoreSportivo + ')</span>' +
+        '<span>' + teamsB.join('+') + ': ' + dB.costoAttesoPct + '% (sportivo ' + dB.scoreSportivo + ')</span>' +
+      '</div>'
+    ) : '';
     el.innerHTML = '<div class="gk-compare-result"><div class="gk-summary-card">' +
       '<p style="text-align:center;font-weight:700;color:var(--gold-bright)">&#127942; Vince: ' + winnerLabel + '</p>' +
       '<div class="gk-compare-bars">' +
@@ -437,7 +477,7 @@
         bar('Giornate coperte', dA.copertura, dB.copertura, dA.giornateTotali) +
         bar('Giornate critiche (inv.)', dA.giornateTotali - dA.giornateCritiche, dB.giornateTotali - dB.giornateCritiche, dA.giornateTotali) +
         bar('Doppia trasferta (inv.)', dA.giornateTotali - dA.tuttiFuoriCasa, dB.giornateTotali - dB.tuttiFuoriCasa, dA.giornateTotali) +
-      '</div></div></div>';
+      '</div>' + costoRow + '</div></div>';
   }
 
   // ── IMPOSTAZIONI ──
@@ -479,8 +519,14 @@
           '<span class="gk-config-val">' + s.difesa + '</span></div></div>';
     });
     document.getElementById('gk-config-strength').innerHTML = sHtml;
+    document.getElementById('gk-config-budget').innerHTML =
+      '<div class="gk-config-row"><label>&#129508; Budget Portieri (% del totale)</label><input type="range" min="0" max="40" step="1" value="' + cfg.params.budgetPortieriPct + '" id="gk-cfg-budget-por"><span class="gk-config-val">' + cfg.params.budgetPortieriPct + '%</span></div>' +
+      '<div class="gk-config-row"><label>&#9917; Budget Reparto Offensivo (% del totale)</label><input type="range" min="0" max="80" step="1" value="' + cfg.params.budgetAttaccoPct + '" id="gk-cfg-budget-att"><span class="gk-config-val">' + cfg.params.budgetAttaccoPct + '%</span></div>';
     document.querySelectorAll('#gk-config-weights input[type=range],#gk-config-home input[type=range]').forEach(function (inp) {
       inp.addEventListener('input', function () { inp.nextElementSibling.textContent = inp.value; });
+    });
+    document.querySelectorAll('#gk-config-budget input[type=range]').forEach(function (inp) {
+      inp.addEventListener('input', function () { inp.nextElementSibling.textContent = inp.value + '%'; });
     });
     document.querySelectorAll('#gk-config-strength input[type=range]').forEach(function (inp) {
       inp.addEventListener('input', function () { inp.parentElement.querySelector('.gk-config-val').textContent = inp.value; });
@@ -509,6 +555,8 @@
     document.querySelectorAll('#gk-config-weights input[type=range]').forEach(function (inp) { cfg.params[inp.getAttribute('data-param')] = parseInt(inp.value, 10); });
     cfg.params.homeBonus = parseInt(document.getElementById('gk-cfg-home').value, 10);
     cfg.params.awayPenalty = parseInt(document.getElementById('gk-cfg-away').value, 10);
+    cfg.params.budgetPortieriPct = parseInt(document.getElementById('gk-cfg-budget-por').value, 10);
+    cfg.params.budgetAttaccoPct = parseInt(document.getElementById('gk-cfg-budget-att').value, 10);
     document.querySelectorAll('#gk-config-strength input[type=range]').forEach(function (inp) {
       const team = inp.getAttribute('data-team'), stat = inp.getAttribute('data-stat');
       if (!cfg.teamStats[team]) cfg.teamStats[team] = { attacco: 5, difesa: 5 };

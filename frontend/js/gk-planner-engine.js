@@ -52,7 +52,9 @@
     malusDifficile: 4,         // punti persi per ogni giornata "difficile" del gruppo
     malusMoltoDifficile: 7,    // punti persi per ogni giornata "molto difficile" del gruppo
     malusCriticaComune: 5,     // punti persi extra se TUTTI i membri hanno partita difficile/molto difficile la stessa giornata
-    ballottaggioDelta: 1       // differenza massima fra i due migliori per considerarla "ballottaggio"
+    ballottaggioDelta: 1,      // differenza massima fra i due migliori per considerarla "ballottaggio"
+    budgetPortieriPct: 12,     // % massima del budget totale che l'utente e' disposto a investire sui portieri
+    budgetAttaccoPct: 40       // % massima del budget totale che l'utente e' disposto a investire sul reparto offensivo
   };
 
   const DEFAULT_CONFIG = {
@@ -269,17 +271,70 @@
     return result;
   }
 
+  // ── Costo atteso (coste esperado) ────────────────────────────────
+  // Somma il FVM/1000 (dal listino ufficiale) dei giocatori rilevanti di una
+  // squadra: tutti i "Por" per la modalita' portieri, i ruoli W/T/A/Pc per la
+  // modalita' attaccanti (reparto offensivo). FVM/1000 e' gia' calibrato su un
+  // budget di riferimento di 1000 crediti, quindi /10 lo converte direttamente
+  // in una percentuale di QUALSIASI budget di lega (500, 600, 1000...).
+  const RUOLI_ATTACCO = ['w', 't', 'a', 'pc'];
+  function ruoliDi(ruolo) {
+    return String(ruolo || '').split('/').map(function (r) { return r.trim().toLowerCase(); });
+  }
+  function costoAttesoSquadra(team, listino, mode) {
+    if (!listino || !listino.length) return 0;
+    const m = mode === 'attaccanti' ? 'attaccanti' : 'portieri';
+    return listino.reduce(function (sum, g) {
+      if (!sameTeam(g.squadra_reale, team)) return sum;
+      const ruoli = ruoliDi(g.ruolo);
+      const match = (m === 'attaccanti')
+        ? ruoli.some(function (r) { return RUOLI_ATTACCO.indexOf(r) !== -1; })
+        : ruoli.indexOf('por') !== -1;
+      return match ? sum + (Number(g.fvm1000) || 0) : sum;
+    }, 0);
+  }
+  function costoAttesoGruppo(teams, listino, mode) {
+    return teams.reduce(function (sum, t) { return sum + costoAttesoSquadra(t, listino, mode); }, 0);
+  }
+
+  // ── Moltiplicatore di penalita'/premio in base allo scostamento dal budget
+  //    obiettivo dell'utente. d = quanto il costo atteso supera (o sta sotto)
+  //    il target, in proporzione (d=0.3 => 30% oltre il target). Sotto il
+  //    target il premio e' piccolo e limitato (+3% al massimo); sopra il
+  //    target la penalita' cresce in modo progressivo (non lineare) e arriva
+  //    quasi ad azzerare lo score per scostamenti molto grandi. ──
+  function round3(v) { return Math.round(v * 1000) / 1000; }
+  function moltiplicatoreCosto(costoAttesoPct, budgetTargetPct) {
+    if (!budgetTargetPct || budgetTargetPct <= 0) return 1;
+    const d = costoAttesoPct / budgetTargetPct - 1;
+    if (d <= 0) return round3(1 + 0.03 * clamp(-d / 0.5, 0, 1));
+    const penalita = 0.97 * Math.pow(d, 1.08);
+    return round3(clamp(1 - penalita, 0.03, 1.03));
+  }
+
   // ── Analisi completa di un gruppo di 2 o 3 squadre ──
-  function analizzaGruppo(teams, fixtures, config, mode) {
+  // listino (opzionale): array di giocatori dal Listino Ufficiale (con
+  // squadra_reale, ruolo, fvm1000), usato per il fattore costo atteso. Se
+  // omesso lo score resta puramente sportivo, come prima di questa funzione.
+  function analizzaGruppo(teams, fixtures, config, mode, listino) {
     const cfg = mergeConfig(config);
     const m = mode === 'attaccanti' ? 'attaccanti' : 'portieri';
     const raw = computeRawForGroup(teams, fixtures, cfg, m);
     const range = getUniverseRawRange(fixtures, cfg, teams.length, m);
 
-    let score;
-    if (range.max === range.min) score = 50;
-    else score = 1 + (raw.rawScore - range.min) * 99 / (range.max - range.min);
-    score = round1(clamp(score, 1, 100));
+    let scoreSportivo;
+    if (range.max === range.min) scoreSportivo = 50;
+    else scoreSportivo = 1 + (raw.rawScore - range.min) * 99 / (range.max - range.min);
+    scoreSportivo = round1(clamp(scoreSportivo, 1, 100));
+
+    let score = scoreSportivo, costoAtteso = null, costoAttesoPct = null, budgetTargetPct = null, moltiplicatore = 1;
+    if (listino && listino.length) {
+      costoAtteso = costoAttesoGruppo(teams, listino, m);
+      costoAttesoPct = round1(costoAtteso / 10);
+      budgetTargetPct = (m === 'attaccanti') ? cfg.params.budgetAttaccoPct : cfg.params.budgetPortieriPct;
+      moltiplicatore = moltiplicatoreCosto(costoAttesoPct, budgetTargetPct);
+      score = round1(clamp(scoreSportivo * moltiplicatore, 1, 100));
+    }
 
     let livello;
     if (score >= 85) livello = 'Ottimo';
@@ -308,8 +363,9 @@
       (raw.tuttiFuori > 0 ? ' Coincide con tutti in trasferta in ' + raw.tuttiFuori + ' occasion' + (raw.tuttiFuori > 1 ? 'i' : 'e') + '.' : ' Non capita mai che tutti giochino in trasferta nella stessa giornata.');
 
     return {
-      teams: teams, score: score, livello: livello, confidenza: confidenza,
+      teams: teams, score: score, scoreSportivo: scoreSportivo, livello: livello, confidenza: confidenza,
       confidenzaScore: confidenzaScore,
+      costoAtteso: costoAtteso, costoAttesoPct: costoAttesoPct, budgetTargetPct: budgetTargetPct, moltiplicatoreCosto: moltiplicatore,
       breakdown: breakdown, params: cfg.params,
       copertura: raw.facili, giornateTotali: n, giornateCritiche: raw.critiche, tuttiFuoriCasa: raw.tuttiFuori,
       recoConteggio: raw.recoConteggio,
@@ -322,24 +378,26 @@
   }
 
   // ── Retrocompatibilita': analisi di una coppia (wrapper di analizzaGruppo) ──
-  function analizzaCoppia(teamA, teamB, fixtures, config, mode) {
-    return analizzaGruppo([teamA, teamB], fixtures, config, mode);
+  function analizzaCoppia(teamA, teamB, fixtures, config, mode, listino) {
+    return analizzaGruppo([teamA, teamB], fixtures, config, mode, listino);
   }
 
   // ── Ranking di tutti i gruppi possibili di dimensione groupSize (2 o 3) ──
-  function rankingGruppi(fixtures, config, groupSize, mode, teamsSubset) {
+  // listino (opzionale): vedi analizzaGruppo — se presente il ranking tiene conto
+  // anche del costo atteso, non solo della qualita' sportiva.
+  function rankingGruppi(fixtures, config, groupSize, mode, teamsSubset, listino) {
     const cfg = mergeConfig(config);
     const teams = teamsSubset && teamsSubset.length ? teamsSubset : Object.keys(cfg.teamStats);
     const size = (groupSize === 3) ? 3 : 2;
     const gruppi = combinazioni(teams, size);
-    const risultati = gruppi.map(function (g) { return analizzaGruppo(g, fixtures, cfg, mode); });
+    const risultati = gruppi.map(function (g) { return analizzaGruppo(g, fixtures, cfg, mode, listino); });
     risultati.sort(function (a, b) { return b.score - a.score; });
     return risultati;
   }
 
   // ── Retrocompatibilita': ranking di coppie ──
-  function rankingCoppie(fixtures, config, teamsSubset, mode) {
-    return rankingGruppi(fixtures, config, 2, mode, teamsSubset);
+  function rankingCoppie(fixtures, config, teamsSubset, mode, listino) {
+    return rankingGruppi(fixtures, config, 2, mode, teamsSubset, listino);
   }
 
   // ── Confronto diretto fra due gruppi gia' analizzati (dimensioni anche diverse) ──
@@ -369,6 +427,9 @@
     rankingGruppi: rankingGruppi,
     rankingCoppie: rankingCoppie,
     confrontaGruppi: confrontaGruppi,
-    confrontaCoppie: confrontaCoppie
+    confrontaCoppie: confrontaCoppie,
+    costoAttesoSquadra: costoAttesoSquadra,
+    costoAttesoGruppo: costoAttesoGruppo,
+    moltiplicatoreCosto: moltiplicatoreCosto
   };
 })(typeof window !== 'undefined' ? window : global);
