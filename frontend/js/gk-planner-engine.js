@@ -351,26 +351,23 @@
     else scoreSportivo = 1 + (raw.rawScore - range.min) * 99 / (range.max - range.min);
     scoreSportivo = round1(clamp(scoreSportivo, 1, 100));
 
-    // Portieri: invariato, un moltiplicatore scala direttamente lo score sportivo.
-    // Attaccanti: due punteggi INDIPENDENTI (Quality = qualita' sportiva pura, Price =
-    // quanto e' ragionevole il costo) combinati con pesi fissi (60% Quality, 40% Price)
-    // — cosi' una combinazione fortissima ma carissima (es. Inter+Juventus) non crolla
-    // quasi a zero come con un moltiplicatore, ma viene comunque penalizzata in modo
-    // significativo e prevedibile, invece di far vincere sempre le squadre piu' economiche.
-    let score = scoreSportivo, costoAtteso = null, costoAttesoPct = null, budgetTargetPct = null, moltiplicatore = 1;
+    // Stessa valutazione economica per Portieri e Attaccanti: due punteggi INDIPENDENTI
+    // (Quality = qualita' sportiva pura, Price = quanto e' ragionevole il costo, curva
+    // continua) combinati con pesi fissi (60% Quality, 40% Price) — cosi' una
+    // combinazione fortissima ma carissima non crolla quasi a zero come con un
+    // moltiplicatore, ma viene comunque penalizzata in modo significativo e
+    // prevedibile, invece di far vincere sempre le squadre piu' economiche. Cambia
+    // SOLO come si calcola il costo atteso (costoAttesoSquadra sopra): Portieri somma
+    // tutti i portieri, Attaccanti pesa solo i due big-name piu' costosi.
+    let score = scoreSportivo, costoAtteso = null, costoAttesoPct = null, budgetTargetPct = null;
     let qualityScore = null, priceScore = null;
     if (listino && listino.length) {
       costoAtteso = costoAttesoGruppo(teams, listino, m);
       costoAttesoPct = round1(costoAtteso / 10);
       budgetTargetPct = (m === 'attaccanti') ? cfg.params.budgetAttaccoPct : cfg.params.budgetPortieriPct;
-      if (m === 'attaccanti') {
-        qualityScore = scoreSportivo;
-        priceScore = priceScoreCurve(costoAttesoPct, budgetTargetPct);
-        score = round1(clamp(qualityScore * 0.6 + priceScore * 0.4, 1, 100));
-      } else {
-        moltiplicatore = moltiplicatoreCosto(costoAttesoPct, budgetTargetPct);
-        score = round1(clamp(scoreSportivo * moltiplicatore, 1, 100));
-      }
+      qualityScore = scoreSportivo;
+      priceScore = priceScoreCurve(costoAttesoPct, budgetTargetPct);
+      score = round1(clamp(qualityScore * 0.6 + priceScore * 0.4, 1, 100));
     }
 
     let livello;
@@ -402,7 +399,7 @@
     return {
       teams: teams, score: score, scoreSportivo: scoreSportivo, livello: livello, confidenza: confidenza,
       confidenzaScore: confidenzaScore,
-      costoAtteso: costoAtteso, costoAttesoPct: costoAttesoPct, budgetTargetPct: budgetTargetPct, moltiplicatoreCosto: moltiplicatore,
+      costoAtteso: costoAtteso, costoAttesoPct: costoAttesoPct, budgetTargetPct: budgetTargetPct,
       qualityScore: qualityScore, priceScore: priceScore,
       breakdown: breakdown, params: cfg.params,
       copertura: raw.facili, giornateTotali: n, giornateCritiche: raw.critiche, tuttiFuoriCasa: raw.tuttiFuori,

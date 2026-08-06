@@ -26,12 +26,10 @@
     if (d.costoAttesoPct == null) return '';
     const over = d.costoAttesoPct > d.budgetTargetPct;
     const cls = over ? 'gk-costo-over' : 'gk-costo-ok';
-    // Attaccanti: Quality e Price sono due punteggi indipendenti combinati con pesi
-    // (60/40) — mostriamo entrambi. Portieri: invariato, un moltiplicatore scala
-    // direttamente lo score sportivo.
-    const dettaglio = (d.qualityScore != null)
-      ? 'Quality ' + d.qualityScore + ' &times; 60% + Price ' + d.priceScore + ' &times; 40% = ' + d.score
-      : 'Score sportivo ' + d.scoreSportivo + ' &rarr; ' + d.score + ' con il fattore costo (&times;' + d.moltiplicatoreCosto + ')';
+    // Quality (qualita' sportiva pura) e Price (quanto e' ragionevole il costo) sono
+    // due punteggi indipendenti combinati con pesi fissi (60/40) — stessa logica per
+    // Portieri e Attaccanti, cambia solo come si calcola il costo atteso a monte.
+    const dettaglio = 'Quality ' + d.qualityScore + ' &times; 60% + Price ' + d.priceScore + ' &times; 40% = ' + d.score;
     return '<div class="gk-costo-atteso ' + cls + '">' +
       '<span>&#128176; Costo atteso: <strong>' + d.costoAttesoPct + '%</strong> del budget (obiettivo ' + d.budgetTargetPct + '%)</span>' +
       '<span class="gk-costo-detail">' + dettaglio + '</span>' +
