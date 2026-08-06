@@ -999,6 +999,16 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+// Torna alla Home con un refresh completo della pagina (non una semplice showScreen).
+// Motivo: c'e' stato reale che oggi non si resetta mai tornando al menu (es.
+// window._jsonData dell'ultima asta creata/importata, usato per popolare lo
+// dropdown "La tua squadra" e il payload di creazione di UNA PROSSIMA asta) — dopo
+// aver finito un'asta e crearne una nuova senza ricaricare, restavano visibili nomi
+// squadra dell'asta precedente. Un reload vero riparte a stato zero, garantito.
+function tornaAllaHome() {
+  window.location.href = window.location.origin + '/';
+}
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -1084,7 +1094,7 @@ function setupHome() {
   if (btnUsaListino) btnUsaListino.addEventListener('click', usaListinoUfficialePerNuovaAsta);
   if (inpExcelChoice) inpExcelChoice.addEventListener('change', () => handleExcelFile(inpExcelChoice.files[0]));
   if (btnBackHome) btnBackHome.addEventListener('click', () => showScreen('screen-home'));
-  if (btnBackHomeMenu) btnBackHomeMenu.addEventListener('click', () => showScreen('screen-menu-principale'));
+  if (btnBackHomeMenu) btnBackHomeMenu.addEventListener('click', tornaAllaHome);
   const inpTipo = document.getElementById('inp-tipo-asta');
   inpTipo.addEventListener('change', () => {
     document.getElementById('row-sottotipo').style.display = inpTipo.value === 'riparazione' ? 'flex' : 'none';
@@ -1446,7 +1456,7 @@ function setupAsta() {
     } catch(e) { toast('Errore export', 'error'); }
   });
   const btnFineAstaHome = document.getElementById('btn-fine-asta-home');
-  if (btnFineAstaHome) btnFineAstaHome.addEventListener('click', () => showScreen('screen-menu-principale'));
+  if (btnFineAstaHome) btnFineAstaHome.addEventListener('click', tornaAllaHome);
 }
 
 
@@ -3787,7 +3797,7 @@ function setupStrategie() {
   const btnBackFormLista = document.getElementById('btn-back-form-lista');
   const btnCreaStrategia = document.getElementById('btn-crea-strategia');
 
-  if (btnBackListaMenu) btnBackListaMenu.addEventListener('click', () => showScreen('screen-menu-principale'));
+  if (btnBackListaMenu) btnBackListaMenu.addEventListener('click', tornaAllaHome);
 
   if (btnNuovaStrategia) btnNuovaStrategia.addEventListener('click', () => {
     document.getElementById('strategia-form-nome').value = '';
