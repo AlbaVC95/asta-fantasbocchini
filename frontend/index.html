@@ -139,6 +139,10 @@
       <p id="editor-strategia-info" class="home-subtitle"></p>
     </header>
     <div class="card">
+      <button type="button" id="btn-aggiungi-fascia" class="btn btn-secondary" style="width:100%">+ Aggiungi fascia</button>
+    </div>
+    <div id="editor-fasce-container"></div>
+    <div class="card mt-16">
       <div class="rose-search-row" style="position:static;margin:0 0 8px 0;max-width:none">
         <input type="text" id="editor-cerca" class="rose-inp" placeholder="🔍 Cerca giocatore...">
       </div>
@@ -158,9 +162,17 @@
         <button class="filtro-btn" data-ruolo="A">A</button>
         <button class="filtro-btn" data-ruolo="Pc">Pc</button>
       </div>
-      <button type="button" id="btn-aggiungi-fascia" class="btn btn-secondary" style="margin-top:8px">+ Aggiungi fascia</button>
+      <div id="editor-ordina-row" class="editor-ordina-row">
+        <span class="hint-text">Ordina per:</span>
+        <select id="editor-ordina-campo" class="gk-select">
+          <option value="prezzo">Prezzo</option>
+          <option value="fvm1000">FVM/1000</option>
+          <option value="quotazione">QUOT.</option>
+        </select>
+        <button type="button" id="editor-ordina-dir" class="btn btn-secondary btn-small" data-dir="desc">↓ Decrescente</button>
+      </div>
     </div>
-    <div id="editor-fasce-container"></div>
+    <div id="editor-non-assegnati-container"></div>
     <div class="card mt-16" style="position:sticky;bottom:8px;z-index:10">
       <button type="button" id="btn-salva-strategia" class="btn btn-primary btn-lg" style="width:100%">💾 Salva strategia</button>
       <button type="button" id="btn-elimina-strategia" class="btn btn-secondary" style="width:100%;margin-top:8px;color:var(--danger,#ff4d4d)">🗑️ Elimina strategia</button>

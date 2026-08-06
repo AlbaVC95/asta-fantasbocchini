@@ -3890,10 +3890,16 @@ async function apriEditorStrategia(strategiaId) {
 
   S.editorFiltroRuolo = 'tutti';
   S.editorCercaText = '';
+  S.editorSortCampo = 'prezzo';
+  S.editorSortDir = 'desc';
   document.getElementById('editor-cerca').value = '';
   document.querySelectorAll('#editor-filtro-ruolo .filtro-btn').forEach(b => b.classList.remove('active'));
   const tuttiBtn = document.querySelector('#editor-filtro-ruolo .filtro-btn[data-ruolo="tutti"]');
   if (tuttiBtn) tuttiBtn.classList.add('active');
+  const ordinaCampoSel = document.getElementById('editor-ordina-campo');
+  if (ordinaCampoSel) ordinaCampoSel.value = 'prezzo';
+  const ordinaDirBtn = document.getElementById('editor-ordina-dir');
+  if (ordinaDirBtn) { ordinaDirBtn.dataset.dir = 'desc'; ordinaDirBtn.textContent = '↓ Decrescente'; }
 
   const tipoLabel = { iniziale: 'Asta iniziale', riparazione1: 'Riparazione 1', riparazione2: 'Riparazione 2' };
   document.getElementById('editor-strategia-nome').textContent = strategia.nome;
@@ -3927,10 +3933,14 @@ function sincronizzaPrezzoPercentuale(giocatoreId, campo, valore) {
 
 function renderEditorFasce() {
   const container = document.getElementById('editor-fasce-container');
+  const nonAssegnatiContainer = document.getElementById('editor-non-assegnati-container');
   const listino = S.listinoCache || [];
   const cerca = (S.editorCercaText || '').trim().toLowerCase();
   const ruoloFiltro = S.editorFiltroRuolo || 'tutti';
 
+  // Cerca/filtro ruolo si applicano SOLO ai Non assegnati (e' li' che si cerca un
+  // giocatore da piazzare) — le Fasce gia' composte restano sempre visibili per
+  // intero, cosi' non "spariscono" giocatori assegnati mentre si cerca qualcun altro.
   const passaFiltro = (g) => {
     if (cerca && !g.nome.toLowerCase().includes(cerca)) return false;
     if (ruoloFiltro !== 'tutti') {
@@ -3946,26 +3956,33 @@ function renderEditorFasce() {
   const fasceIds = new Set(fasceOrdinate.map(f => f.id));
 
   listino.forEach(g => {
-    if (!passaFiltro(g)) return;
     const cfg = S.configGiocatori.get(g.id);
     const fasciaId = cfg ? cfg.fascia_id : null;
     if (fasciaId && fasceIds.has(fasciaId)) {
       gruppi.find(gr => gr.fascia.id === fasciaId).giocatori.push(g);
-    } else {
+    } else if (passaFiltro(g)) {
       nonAssegnati.giocatori.push(g);
     }
   });
 
-  const cmpPrezzo = (a, b) => {
-    const pa = (S.configGiocatori.get(a.id) || {}).prezzo;
-    const pb = (S.configGiocatori.get(b.id) || {}).prezzo;
-    if (pa == null && pb == null) return 0;
-    if (pa == null) return 1;
-    if (pb == null) return -1;
-    return pb - pa;
+  // Ordinamento scelto dall'utente (Prezzo/FVM1000/QUOT, crescente o decrescente),
+  // applicato uniformemente a tutti i gruppi (Fasce comprese).
+  const sortCampo = S.editorSortCampo || 'prezzo';
+  const sortDir = S.editorSortDir === 'asc' ? 1 : -1; // asc: crescente, desc (default): decrescente
+  const valoreOrdinamento = (g) => {
+    if (sortCampo === 'fvm1000') return g.fvm1000;
+    if (sortCampo === 'quotazione') return g.quotazione;
+    return (S.configGiocatori.get(g.id) || {}).prezzo;
   };
-  gruppi.forEach(gr => gr.giocatori.sort(cmpPrezzo));
-  nonAssegnati.giocatori.sort(cmpPrezzo);
+  const cmp = (a, b) => {
+    const va = valoreOrdinamento(a), vb = valoreOrdinamento(b);
+    if (va == null && vb == null) return 0;
+    if (va == null) return 1;   // i valori mancanti vanno sempre in fondo
+    if (vb == null) return -1;
+    return (va - vb) * sortDir;
+  };
+  gruppi.forEach(gr => gr.giocatori.sort(cmp));
+  nonAssegnati.giocatori.sort(cmp);
 
   const opzioniFascia = fasceOrdinate.map(f => '<option value="' + f.id + '">' + escapeHTML(f.nome) + '</option>').join('')
     + '<option value="">Non assegnati</option>';
@@ -4012,11 +4029,15 @@ function renderEditorFasce() {
     );
   };
 
-  container.innerHTML = gruppi.map(gr => renderGruppo(gr.fascia, gr.giocatori)).join('')
-    + renderGruppo(null, nonAssegnati.giocatori);
+  container.innerHTML = gruppi.map(gr => renderGruppo(gr.fascia, gr.giocatori)).join('');
+  if (nonAssegnatiContainer) nonAssegnatiContainer.innerHTML = renderGruppo(null, nonAssegnati.giocatori);
 
   wireEditorEventiRiga(container);
   _loadEditorAvatars(container);
+  if (nonAssegnatiContainer) {
+    wireEditorEventiRiga(nonAssegnatiContainer);
+    _loadEditorAvatars(nonAssegnatiContainer);
+  }
 }
 
 function _loadEditorAvatars(container) {
@@ -4135,6 +4156,20 @@ function setupEditor() {
       S.editorFiltroRuolo = btn.dataset.ruolo;
       renderEditorFasce();
     });
+  });
+
+  const ordinaCampoSel = document.getElementById('editor-ordina-campo');
+  if (ordinaCampoSel) ordinaCampoSel.addEventListener('change', () => {
+    S.editorSortCampo = ordinaCampoSel.value;
+    renderEditorFasce();
+  });
+  const ordinaDirBtn = document.getElementById('editor-ordina-dir');
+  if (ordinaDirBtn) ordinaDirBtn.addEventListener('click', () => {
+    const nuovaDir = ordinaDirBtn.dataset.dir === 'asc' ? 'desc' : 'asc';
+    ordinaDirBtn.dataset.dir = nuovaDir;
+    ordinaDirBtn.textContent = nuovaDir === 'asc' ? '↑ Crescente' : '↓ Decrescente';
+    S.editorSortDir = nuovaDir;
+    renderEditorFasce();
   });
 
   if (btnSalva) btnSalva.addEventListener('click', salvaStrategia);

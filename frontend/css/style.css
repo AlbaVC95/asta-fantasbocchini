@@ -919,10 +919,19 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .editor-player-nome{font-weight:600;color:var(--text-primary);min-width:110px}
 .editor-player-squadra{color:var(--text-muted);min-width:60px}
 .editor-player-quot,.editor-player-fvm{color:var(--text-secondary);min-width:48px;white-space:nowrap;text-align:left}
-.editor-preferito-btn{background:none;border:none;font-size:1rem;cursor:pointer;color:var(--text-muted);padding:0 2px}
+.editor-preferito-btn{background:none;border:none;font-size:1rem;cursor:pointer;color:var(--text-muted);padding:0 2px;flex-shrink:0}
 .editor-preferito-btn.active{color:var(--gold)}
 .editor-fascia-select{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);border-radius:6px;padding:3px 6px;font-size:.72rem;max-width:120px}
 .giocatore-prezzo,.giocatore-percentuale{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);border-radius:6px;padding:3px 6px;font-size:.75rem;width:56px}
+/* Su schermi stretti la riga andava in scroll orizzontale (flex-wrap:nowrap sopra):
+   FVM/1000 e la stella Preferiti finivano sempre fuori dalla parte visibile insieme,
+   uno "copriva" l'altro nel senso che non si vedevano mai contemporaneamente senza
+   scrollare la singola riga. Andando a capo invece restano sempre entrambi visibili. */
+@media (max-width:640px){
+  .editor-player-row{flex-wrap:wrap;overflow-x:visible;row-gap:6px}
+}
+.editor-ordina-row{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.editor-ordina-row .gk-select{flex:0 1 140px;min-width:110px}
 /* == FASE 3 == STRATEGIE NELL'ASTA == */
 .liberi-strategia-bar{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;flex-shrink:0;margin-left:10px;padding:0}
 .liberi-strategia-btn{white-space:nowrap;padding:4px 8px;font-size:.7rem;flex-shrink:0}
