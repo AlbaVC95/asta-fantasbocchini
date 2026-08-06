@@ -932,6 +932,18 @@ body.layout-admin .asta-row-puja .rilancio-box{
 }
 .editor-ordina-row{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
 .editor-ordina-row .gk-select{flex:0 1 140px;min-width:110px}
+.editor-player-check{width:17px;height:17px;flex-shrink:0;cursor:pointer;accent-color:var(--primary)}
+.editor-player-row.selezionato{background:var(--primary-subtle);box-shadow:inset 0 0 0 1px var(--primary)}
+/* Barra azioni in blocco: sticky in cima cosi' resta raggiungibile selezionando
+   giocatori sia dentro le Fasce (sopra) sia nei Non assegnati (sotto), senza dover
+   scorrere avanti e indietro fino in fondo alla pagina ogni volta. */
+.editor-bulk-bar{position:sticky;top:8px;z-index:20;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--bg-elevated);border:1px solid var(--primary);border-radius:12px;padding:10px 12px;margin-bottom:12px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.editor-bulk-bar.hidden{display:none}
+.editor-bulk-count{font-weight:700;color:var(--primary-bright);white-space:nowrap}
+.editor-bulk-sep{width:1px;height:22px;background:var(--border);flex-shrink:0}
+.editor-bulk-valore-inp{background:var(--bg-main);border:1px solid var(--border);color:var(--text-primary);border-radius:6px;padding:6px 8px;font-size:.8rem;width:80px}
+#editor-bulk-fascia{flex:0 1 140px;min-width:110px}
+#editor-bulk-campo{flex:0 1 70px;min-width:60px}
 /* == FASE 3 == STRATEGIE NELL'ASTA == */
 .liberi-strategia-bar{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;flex-shrink:0;margin-left:10px;padding:0}
 .liberi-strategia-btn{white-space:nowrap;padding:4px 8px;font-size:.7rem;flex-shrink:0}

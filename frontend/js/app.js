@@ -67,7 +67,7 @@ const S = {
   attesaConferma: false, timerTotal: 30,
   userRole: null, userId: null,
   strategiaAttuale: null, fasceAttuali: [], configGiocatori: new Map(),
-  listinoCache: null, editorFiltroRuolo: 'tutti', editorCercaText: '',
+  listinoCache: null, editorFiltroRuolo: 'tutti', editorCercaText: '', editorSelezionati: new Set(),
   strategiaAsta: null, liberiNascondiEstratti: false, liberiSoloPreferiti: false, _promptStrategiaAstaId: null
 };
 
@@ -3892,6 +3892,7 @@ async function apriEditorStrategia(strategiaId) {
   S.editorCercaText = '';
   S.editorSortCampo = 'prezzo';
   S.editorSortDir = 'desc';
+  S.editorSelezionati.clear();
   document.getElementById('editor-cerca').value = '';
   document.querySelectorAll('#editor-filtro-ruolo .filtro-btn').forEach(b => b.classList.remove('active'));
   const tuttiBtn = document.querySelector('#editor-filtro-ruolo .filtro-btn[data-ruolo="tutti"]');
@@ -3989,8 +3990,10 @@ function renderEditorFasce() {
 
   const renderRigaGiocatore = (g) => {
     const cfg = S.configGiocatori.get(g.id) || { fascia_id: null, prezzo: null, percentuale: null, preferito: false };
+    const selezionato = S.editorSelezionati.has(g.id);
     return (
-      '<div class="editor-player-row" data-giocatore="' + g.id + '">' +
+      '<div class="editor-player-row' + (selezionato ? ' selezionato' : '') + '" data-giocatore="' + g.id + '">' +
+        '<input type="checkbox" class="editor-player-check" data-giocatore="' + g.id + '"' + (selezionato ? ' checked' : '') + '>' +
         '<img class="editor-player-avatar" data-photo-nome="' + _escAttr(g.nome) + '" data-photo-squadra="' + _escAttr(g.squadra_reale || '') + '" src="img/players/unknown_anime.jpg" alt="">' +
         _getRuoloBadgeHTML(g.ruolo) +
         '<span class="editor-player-nome">' + escapeHTML(g.nome) + '</span>' +
@@ -4038,6 +4041,7 @@ function renderEditorFasce() {
     wireEditorEventiRiga(nonAssegnatiContainer);
     _loadEditorAvatars(nonAssegnatiContainer);
   }
+  aggiornaBulkBar();
 }
 
 function _loadEditorAvatars(container) {
@@ -4055,6 +4059,16 @@ function _loadEditorAvatars(container) {
 }
 
 function wireEditorEventiRiga(container) {
+  container.querySelectorAll('.editor-player-check').forEach(chk => {
+    chk.addEventListener('change', () => {
+      const gid = Number(chk.dataset.giocatore);
+      if (chk.checked) S.editorSelezionati.add(gid); else S.editorSelezionati.delete(gid);
+      const row = chk.closest('.editor-player-row');
+      if (row) row.classList.toggle('selezionato', chk.checked);
+      aggiornaBulkBar();
+    });
+  });
+
   container.querySelectorAll('.editor-preferito-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const gid = Number(btn.dataset.giocatore);
@@ -4104,6 +4118,67 @@ function wireEditorEventiRiga(container) {
   container.querySelectorAll('.fascia-del-btn').forEach(btn => {
     btn.addEventListener('click', () => eliminaFasciaLocale(btn.dataset.fascia));
   });
+}
+
+// ── Azioni in blocco sui giocatori selezionati (checkbox su ogni riga, sia nelle
+//    Fasce che nei Non assegnati) — pensate per essere veloci: seleziona N giocatori
+//    (anche cercandoli per nome) e spostali tutti in una fascia o dai loro tutti lo
+//    stesso prezzo/percentuale in un colpo solo, invece di riga per riga. ──
+function aggiornaBulkBar() {
+  const bar = document.getElementById('editor-bulk-bar');
+  const countEl = document.getElementById('editor-bulk-count');
+  const fasciaSel = document.getElementById('editor-bulk-fascia');
+  if (!bar || !countEl || !fasciaSel) return;
+  const n = S.editorSelezionati.size;
+  bar.classList.toggle('hidden', n === 0);
+  countEl.textContent = n + (n === 1 ? ' selezionato' : ' selezionati');
+  const fasceOrdinate = (S.fasceAttuali || []).slice().sort((a, b) => a.ordine - b.ordine);
+  const valorePrecedente = fasciaSel.value;
+  fasciaSel.innerHTML = fasceOrdinate.map(f => '<option value="' + f.id + '">' + escapeHTML(f.nome) + '</option>').join('')
+    + '<option value="">Non assegnati</option>';
+  if ([...fasciaSel.options].some(o => o.value === valorePrecedente)) fasciaSel.value = valorePrecedente;
+}
+
+function applicaBulkFascia() {
+  const fasciaSel = document.getElementById('editor-bulk-fascia');
+  if (!fasciaSel || !S.editorSelezionati.size) return;
+  const fasciaId = fasciaSel.value || null;
+  S.editorSelezionati.forEach(gid => {
+    let cfg = S.configGiocatori.get(gid);
+    if (!cfg) { cfg = { fascia_id: null, prezzo: null, percentuale: null, preferito: false }; S.configGiocatori.set(gid, cfg); }
+    cfg.fascia_id = fasciaId;
+  });
+  const n = S.editorSelezionati.size;
+  S.editorSelezionati.clear();
+  renderEditorFasce();
+  toast(n + ' giocatori spostati', 'success');
+}
+
+function applicaBulkValore() {
+  const campoSel = document.getElementById('editor-bulk-campo');
+  const valoreInp = document.getElementById('editor-bulk-valore');
+  if (!campoSel || !valoreInp || !S.editorSelezionati.size) return;
+  if (valoreInp.value === '') return toast('Inserisci un valore', 'error');
+  const campo = campoSel.value;
+  S.editorSelezionati.forEach(gid => sincronizzaPrezzoPercentuale(gid, campo, valoreInp.value));
+  const n = S.editorSelezionati.size;
+  valoreInp.value = '';
+  renderEditorFasce();
+  toast('Valore applicato a ' + n + ' giocatori', 'success');
+}
+
+function bulkSelezionaTuttiRisultati() {
+  const container = document.getElementById('editor-non-assegnati-container');
+  if (!container) return;
+  container.querySelectorAll('.editor-player-check').forEach(chk => {
+    S.editorSelezionati.add(Number(chk.dataset.giocatore));
+  });
+  renderEditorFasce();
+}
+
+function bulkDeselezionaTutti() {
+  S.editorSelezionati.clear();
+  renderEditorFasce();
 }
 
 function spostaFascia(fasciaId, direzione) {
@@ -4171,6 +4246,15 @@ function setupEditor() {
     S.editorSortDir = nuovaDir;
     renderEditorFasce();
   });
+
+  const btnSelezionaTutti = document.getElementById('editor-seleziona-tutti-risultati');
+  if (btnSelezionaTutti) btnSelezionaTutti.addEventListener('click', bulkSelezionaTuttiRisultati);
+  const btnBulkSposta = document.getElementById('editor-bulk-sposta');
+  if (btnBulkSposta) btnBulkSposta.addEventListener('click', applicaBulkFascia);
+  const btnBulkApplicaValore = document.getElementById('editor-bulk-applica-valore');
+  if (btnBulkApplicaValore) btnBulkApplicaValore.addEventListener('click', applicaBulkValore);
+  const btnBulkDeseleziona = document.getElementById('editor-bulk-deseleziona');
+  if (btnBulkDeseleziona) btnBulkDeseleziona.addEventListener('click', bulkDeselezionaTutti);
 
   if (btnSalva) btnSalva.addEventListener('click', salvaStrategia);
   if (btnElimina) btnElimina.addEventListener('click', eliminaStrategia);
