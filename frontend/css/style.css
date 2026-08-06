@@ -914,7 +914,12 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .fascia-count{margin-left:auto;font-size:.75rem;color:var(--text-muted);background:var(--bg-elevated);border-radius:8px;padding:3px 9px}
 .fascia-nome-fissa{font-weight:700;font-size:.9rem;color:var(--text-secondary)}
 .fascia-players{display:flex;flex-direction:column;gap:6px}
-.editor-player-row{display:flex;align-items:center;gap:8px;padding:7px 8px;background:var(--bg-main);border-radius:8px;flex-wrap:nowrap;overflow-x:auto;overflow-y:visible;flex-shrink:0;font-size:.78rem}
+/* flex-wrap:wrap SEMPRE (non solo sotto un breakpoint mobile): con nowrap+scroll
+   orizzontale, a QUALSIASI larghezza in cui la riga non ci stava tutta su una riga
+   (anche su tablet/finestre medie, non solo telefono) il testo di FVM/1000 veniva
+   tagliato/sovrapposto dalla stella Preferiti appena fuori dall'area visibile senza
+   scroll. Andando a capo invece tutto resta sempre leggibile, a qualunque larghezza. */
+.editor-player-row{display:flex;align-items:center;gap:8px;padding:7px 8px;background:var(--bg-main);border-radius:8px;flex-wrap:wrap;row-gap:6px;overflow-x:visible;overflow-y:visible;flex-shrink:0;font-size:.78rem}
 .editor-player-avatar{width:32px;height:32px;min-width:32px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--bg-elevated)}
 .editor-player-nome{font-weight:600;color:var(--text-primary);min-width:110px}
 .editor-player-squadra{color:var(--text-muted);min-width:60px}
@@ -923,13 +928,6 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .editor-preferito-btn.active{color:var(--gold)}
 .editor-fascia-select{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);border-radius:6px;padding:3px 6px;font-size:.72rem;max-width:120px}
 .giocatore-prezzo,.giocatore-percentuale{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);border-radius:6px;padding:3px 6px;font-size:.75rem;width:56px}
-/* Su schermi stretti la riga andava in scroll orizzontale (flex-wrap:nowrap sopra):
-   FVM/1000 e la stella Preferiti finivano sempre fuori dalla parte visibile insieme,
-   uno "copriva" l'altro nel senso che non si vedevano mai contemporaneamente senza
-   scrollare la singola riga. Andando a capo invece restano sempre entrambi visibili. */
-@media (max-width:640px){
-  .editor-player-row{flex-wrap:wrap;overflow-x:visible;row-gap:6px}
-}
 .editor-ordina-row{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
 .editor-ordina-row .gk-select{flex:0 1 140px;min-width:110px}
 .editor-player-check{width:17px;height:17px;flex-shrink:0;cursor:pointer;accent-color:var(--primary)}
