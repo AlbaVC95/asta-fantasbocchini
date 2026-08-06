@@ -69,6 +69,30 @@ client connessi per bloccarli/sbloccarli in tempo reale senza reload, endpoint d
 tocca i singoli handler socket (`join-asta`, `rilancio`, ecc.) per non introdurre rischi nell'area più
 delicata del progetto (timer d'asta, vedi sotto).
 
+## Griglia P/A: qualità sportiva come filtro+ordinamento, budget come filtro secco (non più blend continuo)
+
+Il vecchio approccio (`score = qualityScore*0.6 + priceScore*0.4`, sia per Portieri che Attaccanti)
+faceva salire in classifica combinazioni sportivamente mediocri solo perché economiche — il prezzo
+"schiacciava" la qualità anche dopo lo stretch min-max introdotto in precedenza (vedi sopra). Sostituito
+con una logica in tre fasi dentro `applyRankingQualitaBudget()`
+([gk-planner-engine.js](frontend/js/gk-planner-engine.js)): (1) filtro qualità minima dinamica (soglia
+80/100, si abbassa a scaglioni di 5 se troppo poche combinazioni la superano, mai sotto 50); (2) filtro
+budget secco (scarta chi supera il target configurato di oltre il 15%, senza premiare chi costa meno);
+(3) ordinamento finale SOLO per qualità, con il prezzo usato come spareggio solo fra combinazioni a
+qualità quasi identica (differenza ≤3 punti). Applicata sia a Portieri che Attaccanti (stesse funzioni
+condivise). Se nessuna combinazione rientra nel budget dopo il filtro qualità, si ripiega comunque sulle
+migliori per qualità invece di restituire una Griglia vuota.
+
+## Export/Import Strategia: fasce riferite per indice, non per id Supabase
+
+L'id di una fascia (`fasce.id`) è generato da Supabase ed è specifico dell'installazione/database in cui
+è stata creata — non ha senso portarlo in un file esportato da un'altra istanza dell'app. L'export
+usa quindi l'indice della fascia nell'array esportato (`fascia_index`) come riferimento stabile;
+l'import ricrea le fasce nello stesso ordine e riassocia i giocatori tramite quell'indice. L'unico id
+portato tale e quale è `giocatore_id`, perché è l'id ufficiale del listino Mantra (colonna `#` del file
+Excel), condiviso fra tutte le installazioni che usano lo stesso listino — è anche il criterio con cui
+l'import scarta silenziosamente i giocatori non più presenti nel Listino Ufficiale corrente.
+
 ## Timer d'asta autoritativo lato server, stato sempre broadcastato per intero
 
 Il timer non viene mai calcolato o fidato lato client: è gestito interamente in `server.js`

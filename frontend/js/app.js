@@ -3875,8 +3875,19 @@ function setupStrategie() {
   const btnNuovaStrategia = document.getElementById('btn-nuova-strategia');
   const btnBackFormLista = document.getElementById('btn-back-form-lista');
   const btnCreaStrategia = document.getElementById('btn-crea-strategia');
+  const btnImportaStrategia = document.getElementById('btn-importa-strategia');
+  const inpImportaStrategia = document.getElementById('inp-importa-strategia');
 
   if (btnBackListaMenu) btnBackListaMenu.addEventListener('click', tornaAllaHome);
+
+  if (btnImportaStrategia && inpImportaStrategia) {
+    btnImportaStrategia.addEventListener('click', () => inpImportaStrategia.click());
+    inpImportaStrategia.addEventListener('change', () => {
+      const file = inpImportaStrategia.files[0];
+      inpImportaStrategia.value = '';
+      if (file) importaStrategiaDaFile(file);
+    });
+  }
 
   if (btnNuovaStrategia) btnNuovaStrategia.addEventListener('click', () => {
     document.getElementById('strategia-form-nome').value = '';
@@ -4072,21 +4083,23 @@ function renderEditorFasce() {
   const renderRigaGiocatore = (g) => {
     const cfg = S.configGiocatori.get(g.id) || { fascia_id: null, prezzo: null, percentuale: null, preferito: false };
     const selezionato = S.editorSelezionati.has(g.id);
+    const u21Badge = g.u21 === true ? '<span class="cc-tipo-badge tipo-U21">U21</span>' : '';
     return (
       '<div class="editor-player-row' + (selezionato ? ' selezionato' : '') + '" data-giocatore="' + g.id + '">' +
         '<input type="checkbox" class="editor-player-check" data-giocatore="' + g.id + '"' + (selezionato ? ' checked' : '') + '>' +
         '<img class="editor-player-avatar" data-photo-nome="' + _escAttr(g.nome) + '" data-photo-squadra="' + _escAttr(g.squadra_reale || '') + '" src="img/players/unknown_anime.jpg" alt="">' +
         _getRuoloBadgeHTML(g.ruolo) +
-        '<span class="editor-player-nome">' + escapeHTML(g.nome) + '</span>' +
-        '<span class="editor-player-squadra">' + escapeHTML(g.squadra_reale || '') + '</span>' +
-        '<span class="editor-player-quot">Q: ' + (g.quotazione != null ? g.quotazione : '-') + '</span>' +
-        '<span class="editor-player-fvm">FVM/1000: ' + (g.fvm1000 != null ? g.fvm1000 : '-') + '</span>' +
+        '<span class="editor-player-nome" title="' + _escAttr(g.nome) + '">' + escapeHTML(g.nome) + '</span>' +
+        '<span class="editor-player-squadra" title="' + _escAttr(g.squadra_reale || '') + '">' + escapeHTML(g.squadra_reale || '') + '</span>' +
+        '<span class="editor-player-fvm">FVM ' + (g.fvm1000 != null ? g.fvm1000 : '-') + '</span>' +
+        '<span class="editor-player-quot">Q ' + (g.quotazione != null ? g.quotazione : '-') + '</span>' +
+        '<input type="number" class="giocatore-prezzo" data-giocatore="' + g.id + '" placeholder="Prezzo" min="0" value="' + (cfg.prezzo != null ? cfg.prezzo : '') + '">' +
+        '<input type="number" class="giocatore-percentuale" data-giocatore="' + g.id + '" placeholder="%" min="0" step="0.1" value="' + (cfg.percentuale != null ? cfg.percentuale : '') + '">' +
         '<button type="button" class="editor-preferito-btn ' + (cfg.preferito ? 'active' : '') + '" data-giocatore="' + g.id + '">' + (cfg.preferito ? '★' : '☆') + '</button>' +
+        u21Badge +
         '<select class="editor-fascia-select" data-giocatore="' + g.id + '">' + opzioniFascia.replace(
           'value="' + (cfg.fascia_id || '') + '"', 'value="' + (cfg.fascia_id || '') + '" selected'
         ) + '</select>' +
-        '<input type="number" class="giocatore-prezzo" data-giocatore="' + g.id + '" placeholder="Prezzo" min="0" value="' + (cfg.prezzo != null ? cfg.prezzo : '') + '">' +
-        '<input type="number" class="giocatore-percentuale" data-giocatore="' + g.id + '" placeholder="%" min="0" step="0.1" value="' + (cfg.percentuale != null ? cfg.percentuale : '') + '">' +
       '</div>'
     );
   };
@@ -4314,6 +4327,7 @@ function setupEditor() {
   const btnBack = document.getElementById('btn-back-editor-lista');
   const btnAggiungiFascia = document.getElementById('btn-aggiungi-fascia');
   const btnSalva = document.getElementById('btn-salva-strategia');
+  const btnEsporta = document.getElementById('btn-esporta-strategia');
   const btnElimina = document.getElementById('btn-elimina-strategia');
   const cercaInput = document.getElementById('editor-cerca');
 
@@ -4366,6 +4380,7 @@ function setupEditor() {
   if (btnBulkDeseleziona) btnBulkDeseleziona.addEventListener('click', bulkDeselezionaTutti);
 
   if (btnSalva) btnSalva.addEventListener('click', salvaStrategia);
+  if (btnEsporta) btnEsporta.addEventListener('click', esportaStrategia);
   if (btnElimina) btnElimina.addEventListener('click', eliminaStrategia);
 }
 
@@ -4434,6 +4449,107 @@ async function eliminaStrategia() {
   toast('Strategia eliminata', 'success');
   showScreen('screen-strategie-lista');
   caricaStrategie();
+}
+
+// ══ ESPORTA / IMPORTA STRATEGIA (JSON, per ricostruirla su un'altra installazione) ══
+// L'export usa lo stato in memoria (S.fasceAttuali/S.configGiocatori), lo stesso che
+// userebbe "Salva strategia" — non serve aver salvato prima. Le fasce vengono
+// riferite per INDICE (non per id Supabase, specifico di questa installazione) cosi'
+// l'import puo' ricrearle e riassociare i giocatori corretti in un database diverso.
+function esportaStrategia() {
+  const strategia = S.strategiaAttuale;
+  if (!strategia) return;
+  const fasceOrdinate = S.fasceAttuali.slice().sort((a, b) => a.ordine - b.ordine);
+  const indiceFascia = new Map(fasceOrdinate.map((f, i) => [f.id, i]));
+  const listinoPerId = new Map((S.listinoCache || []).map(g => [g.id, g]));
+
+  const giocatori = [];
+  S.configGiocatori.forEach((cfg, giocatoreId) => {
+    const haValore = cfg.fascia_id || cfg.prezzo != null || cfg.percentuale != null || cfg.preferito;
+    if (!haValore) return;
+    const g = listinoPerId.get(giocatoreId);
+    giocatori.push({
+      giocatore_id: giocatoreId,
+      nome: g ? g.nome : null, // solo per leggibilita' del file, non usato in fase di import
+      fascia_index: (cfg.fascia_id != null && indiceFascia.has(cfg.fascia_id)) ? indiceFascia.get(cfg.fascia_id) : null,
+      prezzo: cfg.prezzo, percentuale: cfg.percentuale, preferito: !!cfg.preferito
+    });
+  });
+
+  const data = {
+    formato: 'strategia-fantasbocchini', versione: 1, timestamp: new Date().toISOString(),
+    strategia: { nome: strategia.nome, tipo_asta: strategia.tipo_asta, crediti_totali: strategia.crediti_totali },
+    fasce: fasceOrdinate.map(f => ({ nome: f.nome, colore: f.colore })),
+    giocatori
+  };
+  const nomeFile = strategia.nome.trim().replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '') || 'strategia';
+  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  _triggerBlobDownload(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), 'strategia-' + nomeFile + '-' + ts + '.json');
+  toast('Strategia esportata', 'success');
+}
+
+// Crea una NUOVA strategia dal JSON esportato — non tocca mai strategie esistenti.
+// I giocatori il cui giocatore_id non esiste piu' nel Listino Ufficiale attuale
+// vengono semplicemente ignorati (listino aggiornato/diverso da un'altra lega).
+async function importaStrategiaDaFile(file) {
+  const statusEl = document.getElementById('importa-strategia-status');
+  const mostraStato = (msg, isError) => {
+    if (!statusEl) return;
+    statusEl.style.display = 'block';
+    statusEl.textContent = msg;
+    statusEl.style.color = isError ? 'var(--danger,#ff4d4d)' : '';
+  };
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    let data;
+    try { data = JSON.parse(e.target.result); } catch (err) { mostraStato('❌ File non valido', true); return; }
+    if (!data || !data.strategia || !Array.isArray(data.fasce)) { mostraStato('❌ File non valido: formato strategia non riconosciuto', true); return; }
+
+    mostraStato('Importazione in corso...');
+    try {
+      const { data: strategia, error: errStrategia } = await supa.from('strategie').insert({
+        user_id: S.userId, nome: data.strategia.nome, crediti_totali: data.strategia.crediti_totali, tipo_asta: data.strategia.tipo_asta
+      }).select().single();
+      if (errStrategia) throw errStrategia;
+
+      const fasceInsert = data.fasce.map((f, i) => ({
+        strategia_id: strategia.id, nome: f.nome, colore: f.colore, ordine: i
+      }));
+      let fasceCreate = [];
+      if (fasceInsert.length) {
+        const { data: fc, error: errFasce } = await supa.from('fasce').insert(fasceInsert).select();
+        if (errFasce) throw errFasce;
+        fasceCreate = fc;
+      }
+      // L'indice nell'array esportato deve corrispondere alla fascia con lo stesso
+      // "ordine" appena assegnato (0, 1, 2, ...), non all'ordine di ritorno di Supabase.
+      const fasceOrdinate = fasceCreate.slice().sort((a, b) => a.ordine - b.ordine);
+
+      await caricaListinoCache();
+      const listinoIds = new Set((S.listinoCache || []).map(g => g.id));
+
+      const righe = [];
+      (data.giocatori || []).forEach(gi => {
+        if (gi.giocatore_id == null || !listinoIds.has(gi.giocatore_id)) return;
+        const fascia = (gi.fascia_index != null) ? fasceOrdinate[gi.fascia_index] : null;
+        righe.push({
+          strategia_id: strategia.id, giocatore_id: gi.giocatore_id,
+          fascia_id: fascia ? fascia.id : null, prezzo: gi.prezzo, percentuale: gi.percentuale,
+          preferito: !!gi.preferito
+        });
+      });
+      if (righe.length) await supa.from('strategia_giocatori').insert(righe);
+
+      mostraStato('✅ Strategia importata');
+      toast('Strategia importata correttamente', 'success');
+      await apriEditorStrategia(strategia.id);
+    } catch (err) {
+      mostraStato('❌ Errore nell\'importazione: ' + (err.message || err), true);
+      toast('Errore nell\'importazione della strategia', 'error');
+    }
+  };
+  reader.readAsText(file);
 }
 
 // ══════════════════════════════════════════════════════════

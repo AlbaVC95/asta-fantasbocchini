@@ -395,12 +395,8 @@
 
     // Stessa valutazione economica per Portieri e Attaccanti: due punteggi INDIPENDENTI
     // (Quality = qualita' sportiva pura, Price = quanto e' ragionevole il costo, curva
-    // continua) combinati con pesi fissi (60% Quality, 40% Price) — cosi' una
-    // combinazione fortissima ma carissima non crolla quasi a zero come con un
-    // moltiplicatore, ma viene comunque penalizzata in modo significativo e
-    // prevedibile, invece di far vincere sempre le squadre piu' economiche. Cambia
-    // SOLO come si calcola il costo atteso (costoAttesoSquadra sopra): Portieri somma
-    // tutti i portieri, Attaccanti pesa solo i due big-name piu' costosi.
+    // continua). Cambia SOLO come si calcola il costo atteso (costoAttesoSquadra sopra):
+    // Portieri somma tutti i portieri, Attaccanti pesa solo i due big-name piu' costosi.
     let score = scoreSportivo, costoAtteso = null, costoAttesoPct = null, budgetTargetPct = null;
     let qualityScore = null, priceScore = null;
     if (listino && listino.length) {
@@ -409,7 +405,11 @@
       budgetTargetPct = (m === 'attaccanti') ? cfg.params.budgetAttaccoPct : cfg.params.budgetPortieriPct;
       qualityScore = scoreSportivo;
       priceScore = priceScoreRelativo(costoAttesoPct, budgetTargetPct, listino, cfg, teams.length, m);
-      score = round1(clamp(qualityScore * 0.6 + priceScore * 0.4, 1, 100));
+      // Il ranking finale (applyRankingQualitaBudget, sotto) ordina SOLO per
+      // qualityScore, per Portieri e Attaccanti — il prezzo fa da filtro/spareggio,
+      // non da peso continuo — quindi anche "score" (usato per il badge
+      // Ottimo/Buono/Discreto/Rischioso) rispecchia solo la qualita'.
+      score = qualityScore;
     }
 
     let livello;
@@ -459,6 +459,52 @@
     return analizzaGruppo([teamA, teamB], fixtures, config, mode, listino);
   }
 
+  // ── Ranking "a budget" (Portieri E Attaccanti): qualita' sportiva prima, prezzo
+  //    solo come filtro secco + spareggio finale, MAI come bonus continuo per
+  //    l'economicita'. Sostituisce il blend 60/40 (che faceva salire in classifica
+  //    combinazioni mediocri solo perche' economiche) rispondendo a "qual e' la
+  //    MIGLIORE combinazione che posso permettermi", non "qual e' la piu' economica". ──
+  const SOGLIA_QUALITA_BASE = 80;
+  const SOGLIA_QUALITA_MIN = 50;
+  const MIN_RISULTATI_QUALITA = 10;
+  const TOLLERANZA_BUDGET = 1.15; // 15% di margine oltre il target prima di scartare
+  const DELTA_PAREGGIO_QUALITA = 3;
+
+  function applyRankingQualitaBudget(risultati, budgetTargetPct) {
+    // Filtro qualita' minima, dinamico: se la soglia base lascia troppo poche
+    // combinazioni (lega con giocatori tutti mediocri), si abbassa a scaglioni di
+    // 5 punti finche' non ce ne sono abbastanza, cosi' la Griglia non resta mai vuota.
+    let soglia = SOGLIA_QUALITA_BASE;
+    let perQualita = risultati.filter(function (r) { return r.qualityScore >= soglia; });
+    while (perQualita.length < MIN_RISULTATI_QUALITA && soglia > SOGLIA_QUALITA_MIN) {
+      soglia -= 5;
+      perQualita = risultati.filter(function (r) { return r.qualityScore >= soglia; });
+    }
+    if (!perQualita.length) perQualita = risultati.slice();
+
+    // Filtro budget secco: scarta chi supera CHIARAMENTE il target (oltre la
+    // tolleranza), senza premiare chi costa meno del target. Se nessuna
+    // combinazione di qualita' sufficiente rientra nel budget, si ripiega sulle
+    // migliori per qualita' comunque (meglio segnalarle come fuori budget che
+    // restituire una Griglia vuota senza spiegazione).
+    const entroBudget = perQualita.filter(function (r) {
+      return !budgetTargetPct || r.costoAttesoPct == null || r.costoAttesoPct <= budgetTargetPct * TOLLERANZA_BUDGET;
+    });
+    const fuoriBudget = entroBudget.length === 0;
+    const finali = entroBudget.length ? entroBudget : perQualita;
+
+    // Ordina SOLO per qualita' sportiva; il prezzo decide solo a parita' (quasi) di
+    // qualita' — differenza <= DELTA_PAREGGIO_QUALITA punti.
+    finali.sort(function (a, b) {
+      const diff = b.qualityScore - a.qualityScore;
+      if (Math.abs(diff) <= DELTA_PAREGGIO_QUALITA) return (a.costoAttesoPct || 0) - (b.costoAttesoPct || 0);
+      return diff;
+    });
+
+    finali.forEach(function (r) { r.fuoriBudget = fuoriBudget; r.sogliaQualitaUsata = soglia; });
+    return finali;
+  }
+
   // ── Ranking di tutti i gruppi possibili di dimensione groupSize (2 o 3) ──
   // listino (opzionale): vedi analizzaGruppo — se presente il ranking tiene conto
   // anche del costo atteso, non solo della qualita' sportiva.
@@ -468,6 +514,11 @@
     const size = (groupSize === 3) ? 3 : 2;
     const gruppi = combinazioni(teams, size);
     const risultati = gruppi.map(function (g) { return analizzaGruppo(g, fixtures, cfg, mode, listino); });
+    const m = mode === 'attaccanti' ? 'attaccanti' : 'portieri';
+    if (listino && listino.length) {
+      const budgetTargetPct = (m === 'attaccanti') ? cfg.params.budgetAttaccoPct : cfg.params.budgetPortieriPct;
+      return applyRankingQualitaBudget(risultati, budgetTargetPct);
+    }
     risultati.sort(function (a, b) { return b.score - a.score; });
     return risultati;
   }

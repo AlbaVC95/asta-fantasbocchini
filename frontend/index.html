@@ -101,6 +101,9 @@
     </header>
     <div class="card">
       <button type="button" id="btn-nuova-strategia" class="btn btn-primary btn-lg" style="width:100%">+ Nuova strategia</button>
+      <input type="file" id="inp-importa-strategia" accept=".json" style="display:none">
+      <button type="button" id="btn-importa-strategia" class="btn btn-secondary" style="width:100%;margin-top:8px">📥 Importa strategia</button>
+      <p id="importa-strategia-status" class="hint-text" style="display:none"></p>
     </div>
     <div id="lista-strategie" class="card mt-16"></div>
   </section>
@@ -192,6 +195,7 @@
     <div id="editor-non-assegnati-container"></div>
     <div class="card mt-16" style="position:sticky;bottom:8px;z-index:10">
       <button type="button" id="btn-salva-strategia" class="btn btn-primary btn-lg" style="width:100%">💾 Salva strategia</button>
+      <button type="button" id="btn-esporta-strategia" class="btn btn-secondary" style="width:100%;margin-top:8px">📤 Esporta strategia</button>
       <button type="button" id="btn-elimina-strategia" class="btn btn-secondary" style="width:100%;margin-top:8px;color:var(--danger,#ff4d4d)">🗑️ Elimina strategia</button>
       <p id="editor-save-status" class="hint-text" style="display:none"></p>
     </div>
