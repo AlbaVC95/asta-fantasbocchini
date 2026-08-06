@@ -40,6 +40,12 @@
     Udinese:    { attacco: 6,  difesa: 6  }, Venezia:   { attacco: 5,  difesa: 4  }
   };
 
+  // Premio di mercato per Forza Squadre (indice 0 = Forza 1 ... indice 9 = Forza
+  // 10), usato SOLO per l'Auction Value della Griglia P/A (vedi sotto): rappresenta
+  // quanto in piu' del FVM paga tipicamente il mercato d'asta per le squadre piu'
+  // forti. Configurabile da Config Admin ("Moltiplicatori Auction Value").
+  const DEFAULT_MOLTIPLICATORI_AUCTION_VALUE = [1.00, 1.00, 1.00, 1.00, 1.00, 1.05, 1.12, 1.22, 1.35, 1.50];
+
   // ── Parametri configurabili del nuovo algoritmo ──
   const DEFAULT_PARAMS = {
     sogliaFacile: 3,           // diff > questa soglia => "facile"
@@ -54,7 +60,8 @@
     malusCriticaComune: 5,     // punti persi extra se TUTTI i membri hanno partita difficile/molto difficile la stessa giornata
     ballottaggioDelta: 1,      // differenza massima fra i due migliori per considerarla "ballottaggio"
     budgetPortieriPct: 12,     // % massima del budget totale che l'utente e' disposto a investire sui portieri
-    budgetAttaccoPct: 40       // % massima del budget totale che l'utente e' disposto a investire sul reparto offensivo
+    budgetAttaccoPct: 40,      // % massima del budget totale che l'utente e' disposto a investire sul reparto offensivo
+    moltiplicatoriAuctionValue: DEFAULT_MOLTIPLICATORI_AUCTION_VALUE.slice()
   };
 
   const DEFAULT_CONFIG = {
@@ -97,6 +104,13 @@
       Object.keys(DEFAULT_PARAMS).forEach(function (k) {
         if (typeof uc.params[k] === 'number' && !isNaN(uc.params[k])) cfg.params[k] = uc.params[k];
       });
+      // moltiplicatoriAuctionValue e' un array, non un numero: gestito a parte,
+      // con validazione della forma (10 numeri positivi) per non far esplodere
+      // l'algoritmo con una config salvata corrotta o di un formato precedente.
+      const mav = uc.params.moltiplicatoriAuctionValue;
+      if (Array.isArray(mav) && mav.length === 10 && mav.every(function (v) { return typeof v === 'number' && isFinite(v) && v > 0; })) {
+        cfg.params.moltiplicatoriAuctionValue = mav.slice();
+      }
     }
     return cfg;
   }
@@ -307,6 +321,32 @@
     return teams.reduce(function (sum, t) { return sum + costoAttesoSquadra(t, listino, mode); }, 0);
   }
 
+  // ── Auction Value: stima di quanto costa REALMENTE una combinazione in
+  //    un'asta (non il FVM "di listino"), usata SOLO dalla Griglia P/A per
+  //    stimare il costo atteso — non sostituisce mai il FVM ufficiale nel
+  //    resto dell'app (Listino, Strategia, Asta, Scambi, Comparazioni
+  //    continuano a leggere fvm1000 cosi' come oggi). Riusa esattamente la
+  //    stessa aggregazione FVM di costoAttesoSquadra sopra (Portieri: somma
+  //    di tutti i portieri della squadra; Attaccanti: migliore*100% +
+  //    secondo*40%, logica INVARIATA), poi applica il "premio" di mercato
+  //    configurato in Config Admin per la Forza Squadre della squadra
+  //    (Difesa per i Portieri — si compra un reparto, non il singolo
+  //    portiere — Attacco per gli Attaccanti). ──
+  function moltiplicatoreAuctionValue(cfg, forzaValue) {
+    const arr = (cfg.params && cfg.params.moltiplicatoriAuctionValue) || DEFAULT_MOLTIPLICATORI_AUCTION_VALUE;
+    const idx = clamp(Math.round(forzaValue), 1, 10) - 1;
+    return (typeof arr[idx] === 'number') ? arr[idx] : 1;
+  }
+  function auctionValueSquadra(team, listino, mode, cfg) {
+    const m = mode === 'attaccanti' ? 'attaccanti' : 'portieri';
+    const fvmBase = costoAttesoSquadra(team, listino, m);
+    const forzaValue = getStat(team, (m === 'attaccanti') ? 'attacco' : 'difesa', cfg);
+    return fvmBase * moltiplicatoreAuctionValue(cfg, forzaValue);
+  }
+  function auctionValueGruppo(teams, listino, mode, cfg) {
+    return teams.reduce(function (sum, t) { return sum + auctionValueSquadra(t, listino, mode, cfg); }, 0);
+  }
+
   // ── Moltiplicatore di penalita'/premio in base allo scostamento dal budget
   //    obiettivo dell'utente. d = quanto il costo atteso supera (o sta sotto)
   //    il target, in proporzione (d=0.3 => 30% oltre il target). Sotto il
@@ -349,9 +389,12 @@
   //    indipendentemente da quanto il target configurato sia tarato bene o male. ──
   const universeCostCache = new Map();
   function universeCostCacheKey(listino, cfg, size, mode) {
+    // JSON.stringify di params/teamStats (stesso approccio di universeCacheKey
+    // sopra, per lo score sportivo) invece di un fingerprint parziale: cosi'
+    // la cache si invalida correttamente anche quando cambia SOLO un valore di
+    // Forza Squadre o un moltiplicatore Auction Value, non solo l'elenco squadre.
     const fingerprint = listino.length + ':' + listino.reduce(function (s, g) { return s + (Number(g.fvm1000) || 0); }, 0);
-    const budgetTargetPct = mode === 'attaccanti' ? cfg.params.budgetAttaccoPct : cfg.params.budgetPortieriPct;
-    return size + '|' + mode + '|' + budgetTargetPct + '|' + fingerprint + '|' + Object.keys(cfg.teamStats).sort().join(',');
+    return JSON.stringify({ size: size, mode: mode, params: cfg.params, teamStats: cfg.teamStats, fingerprint: fingerprint });
   }
   function getUniverseCostoRange(listino, cfg, size, mode) {
     const key = universeCostCacheKey(listino, cfg, size, mode);
@@ -361,7 +404,7 @@
     const budgetTargetPct = mode === 'attaccanti' ? cfg.params.budgetAttaccoPct : cfg.params.budgetPortieriPct;
     let min = Infinity, max = -Infinity;
     combos.forEach(function (g) {
-      const costoPct = costoAttesoGruppo(g, listino, mode) / 10;
+      const costoPct = auctionValueGruppo(g, listino, mode, cfg) / 10;
       const raw = priceScoreCurve(costoPct, budgetTargetPct);
       if (raw < min) min = raw;
       if (raw > max) max = raw;
@@ -394,22 +437,23 @@
     scoreSportivo = round1(clamp(scoreSportivo, 1, 100));
 
     // Stessa valutazione economica per Portieri e Attaccanti: due punteggi INDIPENDENTI
-    // (Quality = qualita' sportiva pura, Price = quanto e' ragionevole il costo, curva
-    // continua). Cambia SOLO come si calcola il costo atteso (costoAttesoSquadra sopra):
-    // Portieri somma tutti i portieri, Attaccanti pesa solo i due big-name piu' costosi.
+    // (Quality = qualita' sportiva pura, Price = quanto e' ragionevole l'Auction Value,
+    // curva continua) combinati con pesi fissi (60% Quality, 40% Price) — la qualita'
+    // sportiva resta l'elemento con il peso maggiore, ma una combinazione fortissima e
+    // molto piu' cara di un'alternativa quasi equivalente non deve vincere sempre e
+    // comunque: il prezzo pesa, non e' solo un filtro. Il costo atteso usa l'Auction
+    // Value (costoAttesoSquadra/auctionValueSquadra sopra), MAI il FVM ufficiale
+    // grezzo: rappresenta quanto costa davvero una combinazione in un'asta, non il suo
+    // valore di listino.
     let score = scoreSportivo, costoAtteso = null, costoAttesoPct = null, budgetTargetPct = null;
     let qualityScore = null, priceScore = null;
     if (listino && listino.length) {
-      costoAtteso = costoAttesoGruppo(teams, listino, m);
+      costoAtteso = auctionValueGruppo(teams, listino, m, cfg);
       costoAttesoPct = round1(costoAtteso / 10);
       budgetTargetPct = (m === 'attaccanti') ? cfg.params.budgetAttaccoPct : cfg.params.budgetPortieriPct;
       qualityScore = scoreSportivo;
       priceScore = priceScoreRelativo(costoAttesoPct, budgetTargetPct, listino, cfg, teams.length, m);
-      // Il ranking finale (applyRankingQualitaBudget, sotto) ordina SOLO per
-      // qualityScore, per Portieri e Attaccanti — il prezzo fa da filtro/spareggio,
-      // non da peso continuo — quindi anche "score" (usato per il badge
-      // Ottimo/Buono/Discreto/Rischioso) rispecchia solo la qualita'.
-      score = qualityScore;
+      score = round1(clamp(qualityScore * 0.6 + priceScore * 0.4, 1, 100));
     }
 
     let livello;
@@ -459,66 +503,19 @@
     return analizzaGruppo([teamA, teamB], fixtures, config, mode, listino);
   }
 
-  // ── Ranking "a budget" (Portieri E Attaccanti): qualita' sportiva prima, prezzo
-  //    solo come filtro secco + spareggio finale, MAI come bonus continuo per
-  //    l'economicita'. Sostituisce il blend 60/40 (che faceva salire in classifica
-  //    combinazioni mediocri solo perche' economiche) rispondendo a "qual e' la
-  //    MIGLIORE combinazione che posso permettermi", non "qual e' la piu' economica". ──
-  const SOGLIA_QUALITA_BASE = 80;
-  const SOGLIA_QUALITA_MIN = 50;
-  const MIN_RISULTATI_QUALITA = 10;
-  const TOLLERANZA_BUDGET = 1.15; // 15% di margine oltre il target prima di scartare
-  const DELTA_PAREGGIO_QUALITA = 3;
-
-  function applyRankingQualitaBudget(risultati, budgetTargetPct) {
-    // Filtro qualita' minima, dinamico: se la soglia base lascia troppo poche
-    // combinazioni (lega con giocatori tutti mediocri), si abbassa a scaglioni di
-    // 5 punti finche' non ce ne sono abbastanza, cosi' la Griglia non resta mai vuota.
-    let soglia = SOGLIA_QUALITA_BASE;
-    let perQualita = risultati.filter(function (r) { return r.qualityScore >= soglia; });
-    while (perQualita.length < MIN_RISULTATI_QUALITA && soglia > SOGLIA_QUALITA_MIN) {
-      soglia -= 5;
-      perQualita = risultati.filter(function (r) { return r.qualityScore >= soglia; });
-    }
-    if (!perQualita.length) perQualita = risultati.slice();
-
-    // Filtro budget secco: scarta chi supera CHIARAMENTE il target (oltre la
-    // tolleranza), senza premiare chi costa meno del target. Se nessuna
-    // combinazione di qualita' sufficiente rientra nel budget, si ripiega sulle
-    // migliori per qualita' comunque (meglio segnalarle come fuori budget che
-    // restituire una Griglia vuota senza spiegazione).
-    const entroBudget = perQualita.filter(function (r) {
-      return !budgetTargetPct || r.costoAttesoPct == null || r.costoAttesoPct <= budgetTargetPct * TOLLERANZA_BUDGET;
-    });
-    const fuoriBudget = entroBudget.length === 0;
-    const finali = entroBudget.length ? entroBudget : perQualita;
-
-    // Ordina SOLO per qualita' sportiva; il prezzo decide solo a parita' (quasi) di
-    // qualita' — differenza <= DELTA_PAREGGIO_QUALITA punti.
-    finali.sort(function (a, b) {
-      const diff = b.qualityScore - a.qualityScore;
-      if (Math.abs(diff) <= DELTA_PAREGGIO_QUALITA) return (a.costoAttesoPct || 0) - (b.costoAttesoPct || 0);
-      return diff;
-    });
-
-    finali.forEach(function (r) { r.fuoriBudget = fuoriBudget; r.sogliaQualitaUsata = soglia; });
-    return finali;
-  }
-
   // ── Ranking di tutti i gruppi possibili di dimensione groupSize (2 o 3) ──
   // listino (opzionale): vedi analizzaGruppo — se presente il ranking tiene conto
-  // anche del costo atteso, non solo della qualita' sportiva.
+  // anche del costo atteso (Auction Value), non solo della qualita' sportiva.
+  // NESSUNA combinazione viene mai esclusa dal ranking per motivi di budget: il
+  // presupuesto configurato dall'utente influenza solo il Price Score (quindi
+  // l'ordine e il colore/livello mostrati), mai la visibilita' di una
+  // combinazione — l'utente deve poter vedere sempre tutte le opzioni.
   function rankingGruppi(fixtures, config, groupSize, mode, teamsSubset, listino) {
     const cfg = mergeConfig(config);
     const teams = teamsSubset && teamsSubset.length ? teamsSubset : Object.keys(cfg.teamStats);
     const size = (groupSize === 3) ? 3 : 2;
     const gruppi = combinazioni(teams, size);
     const risultati = gruppi.map(function (g) { return analizzaGruppo(g, fixtures, cfg, mode, listino); });
-    const m = mode === 'attaccanti' ? 'attaccanti' : 'portieri';
-    if (listino && listino.length) {
-      const budgetTargetPct = (m === 'attaccanti') ? cfg.params.budgetAttaccoPct : cfg.params.budgetPortieriPct;
-      return applyRankingQualitaBudget(risultati, budgetTargetPct);
-    }
     risultati.sort(function (a, b) { return b.score - a.score; });
     return risultati;
   }
@@ -558,6 +555,9 @@
     confrontaCoppie: confrontaCoppie,
     costoAttesoSquadra: costoAttesoSquadra,
     costoAttesoGruppo: costoAttesoGruppo,
+    auctionValueSquadra: auctionValueSquadra,
+    auctionValueGruppo: auctionValueGruppo,
+    moltiplicatoreAuctionValue: moltiplicatoreAuctionValue,
     moltiplicatoreCosto: moltiplicatoreCosto,
     priceScoreCurve: priceScoreCurve,
     priceScoreRelativo: priceScoreRelativo,

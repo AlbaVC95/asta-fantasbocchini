@@ -93,6 +93,28 @@ portato tale e quale è `giocatore_id`, perché è l'id ufficiale del listino Ma
 Excel), condiviso fra tutte le installazioni che usano lo stesso listino — è anche il criterio con cui
 l'import scarta silenziosamente i giocatori non più presenti nel Listino Ufficiale corrente.
 
+## Auction Value: nuova stima del costo SOLO per la Griglia P/A, il FVM resta invariato ovunque
+
+Il FVM ufficiale rappresenta bene il valore di un giocatore, ma non il prezzo che una combinazione
+raggiunge realmente in un'asta: le squadre forti finivano sistematicamente sottostimate come costo, e
+quindi sovra-raccomandate. Introdotto un `auctionValueSquadra`/`auctionValueGruppo` in
+[gk-planner-engine.js](frontend/js/gk-planner-engine.js), usato ESCLUSIVAMENTE per il costo atteso
+della Griglia P/A — Listino, Strategia, Asta, Scambi e Comparazioni continuano a leggere `fvm1000`
+direttamente, invariati. Formula: riusa la stessa aggregazione FVM di `costoAttesoSquadra` (Portieri:
+somma di tutti i portieri; Attaccanti: migliore*100% + secondo*40%, logica NON toccata), poi applica un
+moltiplicatore di "premio di mercato" in base alla Forza Squadre (Difesa per i Portieri, Attacco per gli
+Attaccanti). Moltiplicatori configurabili in Config Admin ("Moltiplicatori Auction Value", sezione
+`gk-admin-only`), default 1.00 per Forza 1-5 salendo fino a 1.50 per Forza 10 — nessuna penalizzazione
+alle squadre piccole, solo un premio crescente per quelle forti.
+
+Contestualmente si è ripristinato il comportamento pre-esistente (poi reintrodotto per richiesta
+esplicita dell'utente dopo un primo tentativo con filtro budget secco, vedi commit precedente): il
+ranking finale torna a un blend pesato `qualityScore*0.6 + priceScore*0.4` per Portieri E Attaccanti, e
+**nessuna combinazione viene mai esclusa dal ranking per motivi di budget** — il budget configurato
+dall'utente influenza solo l'ordinamento e il colore (over/entro budget), mai la visibilità. Il tentativo
+precedente (filtro qualità minima + esclusione secca sopra budget + ordinamento solo per qualità) è
+stato abbandonato perché nascondeva combinazioni che l'utente vuole invece vedere sempre.
+
 ## Timer d'asta autoritativo lato server, stato sempre broadcastato per intero
 
 Il timer non viene mai calcolato o fidato lato client: è gestito interamente in `server.js`

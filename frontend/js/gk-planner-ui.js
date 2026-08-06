@@ -523,6 +523,11 @@
           '<span class="gk-config-val">' + s.difesa + '</span></div></div>';
     });
     document.getElementById('gk-config-strength').innerHTML = sHtml;
+    let mavHtml = '';
+    (cfg.params.moltiplicatoriAuctionValue || []).forEach(function (v, i) {
+      mavHtml += '<div class="gk-config-row"><label>Forza ' + (i + 1) + '</label><input type="range" min="0.5" max="3" step="0.01" value="' + v + '" data-forza="' + (i + 1) + '"><span class="gk-config-val">' + v.toFixed(2) + '&times;</span></div>';
+    });
+    document.getElementById('gk-config-auction-value').innerHTML = mavHtml;
     document.getElementById('gk-config-budget').innerHTML =
       '<div class="gk-config-row"><label>&#129508; Budget Portieri (% del totale)</label><input type="range" min="0" max="40" step="1" value="' + cfg.params.budgetPortieriPct + '" id="gk-cfg-budget-por"><span class="gk-config-val">' + cfg.params.budgetPortieriPct + '%</span></div>' +
       '<div class="gk-config-row"><label>&#9917; Budget Reparto Offensivo (% del totale)</label><input type="range" min="0" max="80" step="1" value="' + cfg.params.budgetAttaccoPct + '" id="gk-cfg-budget-att"><span class="gk-config-val">' + cfg.params.budgetAttaccoPct + '%</span></div>';
@@ -534,6 +539,9 @@
     });
     document.querySelectorAll('#gk-config-strength input[type=range]').forEach(function (inp) {
       inp.addEventListener('input', function () { inp.parentElement.querySelector('.gk-config-val').textContent = inp.value; });
+    });
+    document.querySelectorAll('#gk-config-auction-value input[type=range]').forEach(function (inp) {
+      inp.addEventListener('input', function () { inp.nextElementSibling.textContent = parseFloat(inp.value).toFixed(2) + '×'; });
     });
   }
 
@@ -566,6 +574,12 @@
       if (!cfg.teamStats[team]) cfg.teamStats[team] = { attacco: 5, difesa: 5 };
       cfg.teamStats[team][stat] = parseInt(inp.value, 10);
     });
+    const mavInputs = document.querySelectorAll('#gk-config-auction-value input[type=range]');
+    if (mavInputs.length === 10) {
+      const mav = new Array(10);
+      mavInputs.forEach(function (inp) { mav[parseInt(inp.getAttribute('data-forza'), 10) - 1] = parseFloat(inp.value); });
+      cfg.params.moltiplicatoriAuctionValue = mav;
+    }
     GKUI.config = GKPlanner.mergeConfig(cfg);
     saveConfig(GKUI.config);
     recompute();
