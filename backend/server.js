@@ -696,6 +696,19 @@ app.get('/api/asta/:id/info', (req, res) => {
   });
 });
 
+// Campi extra (squadra reale, statistiche, idFantaleghe, under/u21) presenti sui
+// giocatori del pool fin dall'import iniziale (Excel/JSON/Listino Ufficiale) — vanno
+// riportati anche nell'export, altrimenti si perdono ad ogni "giro" di reimport
+// (es. asta di riparazione della stagione dopo), rompendo l'export Fantaleghe
+// successivo (richiede idFantaleghe) e tutte le statistiche mostrate nell'asta.
+function campiExtraGiocatorePerExport(g) {
+  return {
+    squadra: g.squadra || null, pgv: g.pgv ?? null, mv: g.mv ?? null, fm: g.fm ?? null,
+    fvmp600: g.fvmp600 ?? null, qam: g.qam ?? null, idFantaleghe: g.idFantaleghe ?? null,
+    under: g.under ?? null, u21: !!g.u21
+  };
+}
+
 app.get('/api/asta/:id/export', (req, res) => {
   const asta = aste.get(req.params.id);
   if (!asta) return res.status(404).json({ error: 'Asta non trovata' });
@@ -706,8 +719,23 @@ app.get('/api/asta/:id/export', (req, res) => {
       nome: s.nome, crediti: s.crediti,
       slotRiconferme: Math.max(0, s.slotsRIC - s.slotsRICUsati),
       slotPlusvalenze: Math.max(0, s.slotsPLUS - s.slotsPLUSUsati),
+      // Come slotRiconferme/slotPlusvalenze: si riporta quanto RESTA, non il totale
+      // configurato, cosi' al reimport si riparte esattamente da dove si era rimasti.
+      recompra: Math.max(0, (s.recompra != null ? s.recompra : 1) - (s.recompraUsati || 0)),
       svincoliUsati: s.svincoliUsati || 0,
-      giocatori: s.rosa.map(g => ({ nome: g.nome, ruolo: g.ruolo || '', tipo: g.tipo || 'NN', costo: g.prezzo }))
+      giocatori: s.rosa.map(g => ({
+        nome: g.nome, ruolo: g.ruolo || '', tipo: g.tipo || 'NN', costo: g.prezzo, valore: g.valore ?? null,
+        ...campiExtraGiocatorePerExport(g)
+      }))
+    })),
+    // I giocatori mai assegnati (liberi, anche se "scartati" in QUESTA asta — scartato
+    // e' uno stato specifico dell'asta che finisce qui, non deve seguirli) vanno
+    // esportati come svincolati: altrimenti reimportando per una nuova asta si perde
+    // interamente il pool di giocatori disponibili, e bisognerebbe ricaricare da zero
+    // il Listino Ufficiale o un Excel per riaverli.
+    svincolati: asta.poolGiocatori.filter(g => !g.assegnato).map(g => ({
+      nome: g.nome, ruolo: g.ruolo || '', tipo: 'NN', costo: g.valore || 1, valore: g.valore ?? null,
+      ...campiExtraGiocatorePerExport(g)
     }))
   };
   res.setHeader('Content-Disposition', `attachment; filename="asta-export-${asta.id.slice(0,8)}.json"`);
