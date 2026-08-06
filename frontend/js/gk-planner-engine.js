@@ -284,14 +284,24 @@
   function costoAttesoSquadra(team, listino, mode) {
     if (!listino || !listino.length) return 0;
     const m = mode === 'attaccanti' ? 'attaccanti' : 'portieri';
-    return listino.reduce(function (sum, g) {
-      if (!sameTeam(g.squadra_reale, team)) return sum;
+    const giocatoriRuolo = listino.filter(function (g) {
+      if (!sameTeam(g.squadra_reale, team)) return false;
       const ruoli = ruoliDi(g.ruolo);
-      const match = (m === 'attaccanti')
+      return (m === 'attaccanti')
         ? ruoli.some(function (r) { return RUOLI_ATTACCO.indexOf(r) !== -1; })
         : ruoli.indexOf('por') !== -1;
-      return match ? sum + (Number(g.fvm1000) || 0) : sum;
-    }, 0);
+    });
+    if (m === 'portieri') {
+      // Portieri: logica invariata — somma del FVM/1000 di TUTTI i portieri della squadra.
+      return giocatoriRuolo.reduce(function (sum, g) { return sum + (Number(g.fvm1000) || 0); }, 0);
+    }
+    // Attaccanti: solo i due giocatori (ruolo W/T/A/Pc) piu' costosi contano, pesati
+    // 100% il primo + 40% il secondo — il resto della rosa offensiva non incide. Questo
+    // rappresenta il costo dei "big name" che una squadra impone, non un totale di
+    // reparto: sommare TUTTI gli attaccanti penalizzava troppo le squadre forti (con
+    // tanti buoni attaccanti) rispetto a squadre deboli con pochi giocatori costosi.
+    const valori = giocatoriRuolo.map(function (g) { return Number(g.fvm1000) || 0; }).sort(function (a, b) { return b - a; });
+    return (valori[0] || 0) * 1 + (valori[1] || 0) * 0.4;
   }
   function costoAttesoGruppo(teams, listino, mode) {
     return teams.reduce(function (sum, t) { return sum + costoAttesoSquadra(t, listino, mode); }, 0);
@@ -312,6 +322,20 @@
     return round3(clamp(1 - penalita, 0.03, 1.03));
   }
 
+  // ── Price Score (0-100, SOLO Attaccanti) — curva continua esponenziale, senza
+  //    scalini: d = quanto il costo atteso supera il target, in proporzione (d=0.3
+  //    => 30% oltre il target). Entro budget resta a 100 piatto; oltre il target
+  //    scende con una progressione che accelera man mano che l'eccesso cresce,
+  //    fino a schiacciarsi vicino a 0 per combinazioni molto costose. A differenza
+  //    del moltiplicatoreCosto dei Portieri (che scala uno score gia' calcolato),
+  //    questo e' un punteggio indipendente combinato dopo con la Quality via pesi. ──
+  function priceScoreCurve(costoAttesoPct, budgetTargetPct) {
+    if (!budgetTargetPct || budgetTargetPct <= 0) return 100;
+    const d = (costoAttesoPct - budgetTargetPct) / budgetTargetPct;
+    if (d <= 0) return 100;
+    return round1(clamp(100 * Math.exp(-1.5 * Math.pow(d, 1.5)), 0, 100));
+  }
+
   // ── Analisi completa di un gruppo di 2 o 3 squadre ──
   // listino (opzionale): array di giocatori dal Listino Ufficiale (con
   // squadra_reale, ruolo, fvm1000), usato per il fattore costo atteso. Se
@@ -327,13 +351,26 @@
     else scoreSportivo = 1 + (raw.rawScore - range.min) * 99 / (range.max - range.min);
     scoreSportivo = round1(clamp(scoreSportivo, 1, 100));
 
+    // Portieri: invariato, un moltiplicatore scala direttamente lo score sportivo.
+    // Attaccanti: due punteggi INDIPENDENTI (Quality = qualita' sportiva pura, Price =
+    // quanto e' ragionevole il costo) combinati con pesi fissi (60% Quality, 40% Price)
+    // — cosi' una combinazione fortissima ma carissima (es. Inter+Juventus) non crolla
+    // quasi a zero come con un moltiplicatore, ma viene comunque penalizzata in modo
+    // significativo e prevedibile, invece di far vincere sempre le squadre piu' economiche.
     let score = scoreSportivo, costoAtteso = null, costoAttesoPct = null, budgetTargetPct = null, moltiplicatore = 1;
+    let qualityScore = null, priceScore = null;
     if (listino && listino.length) {
       costoAtteso = costoAttesoGruppo(teams, listino, m);
       costoAttesoPct = round1(costoAtteso / 10);
       budgetTargetPct = (m === 'attaccanti') ? cfg.params.budgetAttaccoPct : cfg.params.budgetPortieriPct;
-      moltiplicatore = moltiplicatoreCosto(costoAttesoPct, budgetTargetPct);
-      score = round1(clamp(scoreSportivo * moltiplicatore, 1, 100));
+      if (m === 'attaccanti') {
+        qualityScore = scoreSportivo;
+        priceScore = priceScoreCurve(costoAttesoPct, budgetTargetPct);
+        score = round1(clamp(qualityScore * 0.6 + priceScore * 0.4, 1, 100));
+      } else {
+        moltiplicatore = moltiplicatoreCosto(costoAttesoPct, budgetTargetPct);
+        score = round1(clamp(scoreSportivo * moltiplicatore, 1, 100));
+      }
     }
 
     let livello;
@@ -366,6 +403,7 @@
       teams: teams, score: score, scoreSportivo: scoreSportivo, livello: livello, confidenza: confidenza,
       confidenzaScore: confidenzaScore,
       costoAtteso: costoAtteso, costoAttesoPct: costoAttesoPct, budgetTargetPct: budgetTargetPct, moltiplicatoreCosto: moltiplicatore,
+      qualityScore: qualityScore, priceScore: priceScore,
       breakdown: breakdown, params: cfg.params,
       copertura: raw.facili, giornateTotali: n, giornateCritiche: raw.critiche, tuttiFuoriCasa: raw.tuttiFuori,
       recoConteggio: raw.recoConteggio,
@@ -430,6 +468,7 @@
     confrontaCoppie: confrontaCoppie,
     costoAttesoSquadra: costoAttesoSquadra,
     costoAttesoGruppo: costoAttesoGruppo,
-    moltiplicatoreCosto: moltiplicatoreCosto
+    moltiplicatoreCosto: moltiplicatoreCosto,
+    priceScoreCurve: priceScoreCurve
   };
 })(typeof window !== 'undefined' ? window : global);
