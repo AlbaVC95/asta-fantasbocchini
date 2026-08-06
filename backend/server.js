@@ -180,6 +180,19 @@ async function loadBackups() {
 }
 
 // ============ HELPERS ============
+// Costruisce i campi legati ai crediti di una squadra al momento della creazione (asta
+// o join in lobby). "creditiImportati" e' la base fissa (crediti gia' posseduti da un
+// import Excel/JSON, es. riporto stagione precedente) e non cambia mai dopo la
+// creazione. "creditiConfigurati" e' la parte "a manopola" (di norma = asta.crediti),
+// modificabile in seguito dall'Admin per QUESTA squadra via "admin-update-crediti".
+// "creditiIniziali" = creditiImportati + creditiConfigurati e' il budget di riferimento
+// STABILE (non scende con gli acquisti, a differenza di "crediti") usato per calcolare
+// i prezzi percentuali di una Strategia applicata durante l'asta.
+function campiCrediti(creditiImportati, creditiConfigurati) {
+  const iniziali = (creditiImportati || 0) + (creditiConfigurati || 0);
+  return { crediti: iniziali, creditiImportati: creditiImportati || 0, creditiConfigurati: creditiConfigurati || 0, creditiIniziali: iniziali };
+}
+
 function getSquadra(asta, nome) { return asta.squadre.find(s => s.nome === nome); }
 function getSquadraBySocket(asta, socketId) { return asta.squadre.find(s => s.utenti.includes(socketId)); }
 function isAdmin(asta, socketId) { return asta.adminSocketIds.includes(socketId); }
@@ -440,9 +453,17 @@ app.post('/api/asta', async (req, res) => {
           else if (g.tipo === 'PLUS') giocatoriPLUSTotali++;
         });
       }
+      // "iniziale": la base importata (sq.crediti, es. riporto stagione precedente) si
+      // somma sempre ai crediti configurati per l'asta. "riparazione": se sq.crediti e'
+      // definito rappresenta gia' il totale (non c'e' una base separata da sommare) —
+      // stesso comportamento di prima, solo espresso tramite creditiImportati/Configurati
+      // cosi' campiCrediti() puo' calcolare anche creditiIniziali in entrambi i casi.
+      const cc = asta.tipoAsta === 'iniziale'
+        ? campiCrediti(sq.crediti !== undefined ? sq.crediti : 0, asta.crediti)
+        : campiCrediti(0, sq.crediti !== undefined ? sq.crediti : asta.crediti);
       const squadra = {
         nome: sq.nome,
-        crediti: asta.tipoAsta === 'iniziale' ? (sq.crediti !== undefined ? sq.crediti : 0) + asta.crediti : (sq.crediti !== undefined ? sq.crediti : asta.crediti),
+        ...cc,
         slotsRIC: sq.slotRiconferme || 0,       // CORRETTO: slotRiconferme
         slotsRICUsati: 0,
         slotsPLUS: sq.slotPlusvalenze || 0,     // CORRETTO: slotPlusvalenze
@@ -829,7 +850,7 @@ io.on('connection', (socket) => {
         return socket.emit('errore', { msg: `Partecipanti al massimo (${asta.numeroPartecipanti})` });
       }
       squadra = {
-        nome: nomeSquadra, crediti: asta.crediti,
+        nome: nomeSquadra, ...campiCrediti(0, asta.crediti),
         slotsRIC: 0, slotsRICUsati: 0, slotsPLUS: 0, slotsPLUSUsati: 0,
         recompra: 1, recompraUsati: 0, svincoliUsati: 0,
         giocatoriRICTotali: 0, giocatoriPLUSTotali: 0, rosa: [], utenti: []
@@ -1102,7 +1123,17 @@ io.on('connection', (socket) => {
     if (!asta || !isAdmin(asta, socket.id)) return;
     const sq = getSquadra(asta, squadraNome);
     if (!sq) return socket.emit('errore', { msg: 'Squadra non trovata' });
-    sq.crediti = Math.max(0, parseInt(crediti) || 0);
+    // Il valore inserito dall'Admin e' la parte "configurata" per questa squadra (vedi
+    // campiCrediti sopra), NON il saldo in tempo reale: si somma sempre alla base
+    // importata fissa (creditiImportati), e la differenza rispetto al vecchio totale
+    // viene applicata al saldo corrente per preservare quanto gia' speso, invece di
+    // sovrascriverlo — cosi' un ritocco a meta' asta non azzera gli acquisti fatti.
+    const nuovoConfigurati = Math.max(0, parseInt(crediti) || 0);
+    const nuovoTotale = (sq.creditiImportati || 0) + nuovoConfigurati;
+    const delta = nuovoTotale - (sq.creditiIniziali != null ? sq.creditiIniziali : nuovoTotale);
+    sq.creditiConfigurati = nuovoConfigurati;
+    sq.creditiIniziali = nuovoTotale;
+    sq.crediti = Math.max(0, sq.crediti + delta);
     broadcastStato(astaId);
   });
 

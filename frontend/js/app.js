@@ -1993,9 +1993,14 @@ socket.on('popup-svincolo-admin', function(popup) {
 
 // ════ RENDER FUNCTIONS ════════════════════════
 function renderBudgetBar(squadre) {
-  const creditiIniziali = S.asta ? (S.asta.creditiPerSquadra || 500) : 500;
+  // Prima usava un unico creditiIniziali globale letto da un campo (creditiPerSquadra)
+  // che il backend non ha mai inviato — la barra calcolava sempre la % su 500 fisso,
+  // sbagliato per qualunque asta con un budget diverso. Ogni squadra ha ora il suo
+  // creditiIniziali reale (vedi campiCrediti lato server), diverso se ha importato
+  // crediti extra o se l'Admin l'ha corretto.
   const squadreOrdinate = squadre.slice().sort((a, b) => b.crediti - a.crediti);
   document.getElementById('budget-bar').innerHTML = squadreOrdinate.map(sq => {
+    const creditiIniziali = sq.creditiIniziali || (S.asta && S.asta.crediti) || 500;
     const pct = Math.round(Math.max(0, sq.crediti / creditiIniziali * 100));
     const isOff = S.asta && S.asta.chiamataAttuale && S.asta.chiamataAttuale.squadraOfferente === sq.nome;
     const cls = ['sidebar-squadra',
@@ -2449,7 +2454,8 @@ function _getChiamataStrategiaInfoHTML(g) {
     return '<p class="cc-strategia-info cc-strategia-vuota">📊 Nessuna fascia assegnata</p>';
   }
   const f = strat.fasceInfo.get(cfg.fascia_id);
-  const prezzoTxt = cfg.prezzo != null ? (cfg.prezzo + ' cr') : '—';
+  const prezzoReale = prezzoRealeStrategia(cfg);
+  const prezzoTxt = prezzoReale != null ? (prezzoReale + ' cr') : '—';
   const pctTxt = cfg.percentuale != null ? (' (' + cfg.percentuale + '%)') : '';
   const preferitoTxt = cfg.preferito ? ' ⭐ Preferito' : '';
   return '<p class="cc-strategia-info" style="border-color:' + f.colore + '">📊 <strong style="color:' + f.colore + '">' + escapeHTML(f.nome) + '</strong> · ' + prezzoTxt + pctTxt + preferitoTxt + '</p>';
@@ -3202,8 +3208,8 @@ function renderGiocatoriLiberi(pool) {
     const oa = (ca && ca.fascia_id && strat.fasceOrdine.has(ca.fascia_id)) ? strat.fasceOrdine.get(ca.fascia_id) : 9999;
     const ob = (cb && cb.fascia_id && strat.fasceOrdine.has(cb.fascia_id)) ? strat.fasceOrdine.get(cb.fascia_id) : 9999;
     if (oa !== ob) return oa - ob;
-    const pa = (ca && ca.prezzo != null) ? ca.prezzo : -1;
-    const pb = (cb && cb.prezzo != null) ? cb.prezzo : -1;
+    const pa = ca ? (prezzoRealeStrategia(ca) ?? -1) : -1;
+    const pb = cb ? (prezzoRealeStrategia(cb) ?? -1) : -1;
     if (pb !== pa) return pb - pa;
     return byValore(a, b);
   };
@@ -3244,7 +3250,8 @@ function _getLiberiStrategiaBadgeHTML(g) {
   if (!cfg || !cfg.fascia_id || !strat.fasceInfo.has(cfg.fascia_id)) return '';
   const f = strat.fasceInfo.get(cfg.fascia_id);
   const preferitoStar = cfg.preferito ? ' ⭐' : '';
-  const prezzoTxt = cfg.prezzo != null ? (' \u00b7 ' + cfg.prezzo + 'cr') : '';
+  const prezzoReale = prezzoRealeStrategia(cfg);
+  const prezzoTxt = prezzoReale != null ? (' \u00b7 ' + prezzoReale + 'cr') : '';
   return '<span class="l-strategia-badge" style="border-color:' + f.colore + ';color:' + f.colore + '">' + escapeHTML(f.nome) + prezzoTxt + preferitoStar + '</span>';
 }
 
@@ -3574,11 +3581,18 @@ window.apriModalAdminConfig = function() {
   const lista = document.getElementById('ac-crediti-lista');
   lista.innerHTML = (S.asta.squadre || []).map(sq => {
     const nomeEsc = _escJsAttr(sq.nome);
+    // Il campo mostra/modifica i crediti CONFIGURATI dalla lega per questa squadra
+    // (non il saldo attuale, che scende con gli acquisti): si somma sempre alla base
+    // importata fissa (creditiImportati, es. riporto stagione precedente) per dare il
+    // budget totale reale. Se la squadra viene da un import con crediti gia' propri,
+    // lo si vede accanto tra parentesi come promemoria.
+    const configuratiVal = sq.creditiConfigurati != null ? sq.creditiConfigurati : sq.crediti;
+    const importatiHint = sq.creditiImportati ? (' <span class="hint-text">(+' + sq.creditiImportati + ' importati = ' + (sq.creditiIniziali != null ? sq.creditiIniziali : sq.crediti) + ' tot.)</span>') : '';
     return '<div class="settings-team-card">' +
       '<div class="settings-team-nome">' + _escHtml(sq.nome) + '</div>' +
       '<div class="settings-team-fields">' +
-        '<div class="settings-field"><label>Crediti</label>' +
-        '<input type="number" min="0" value="' + sq.crediti + '" onblur="confermaAdminCrediti(\'' + nomeEsc + '\', this.value)"></div>' +
+        '<div class="settings-field"><label>Crediti configurati' + importatiHint + '</label>' +
+        '<input type="number" min="0" value="' + configuratiVal + '" onblur="confermaAdminCrediti(\'' + nomeEsc + '\', this.value)"></div>' +
         '<div class="settings-field"><label>Slot RIC</label>' +
         '<input type="number" min="0" value="' + (sq.slotsRIC || 0) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', this.value, null, null)"></div>' +
         '<div class="settings-field"><label>Slot PLUS</label>' +
@@ -3646,6 +3660,29 @@ function renderMiaRosa(sq) {
 function getMiaSquadra() {
   if (!S.asta || !S.miaSquadra) return null;
   return S.asta.squadre.find(s => s.nome === S.miaSquadra) || null;
+}
+
+// Budget di riferimento STABILE della mia squadra (non scende con gli acquisti, a
+// differenza di sq.crediti): creditiImportati (base fissa) + creditiConfigurati
+// (modificabile dall'Admin). Usato per ricalcolare i prezzi percentuali di una
+// Strategia sempre aggiornati al budget vero, anche se l'Admin lo corregge a meta' asta.
+function budgetRealeSquadra() {
+  const sq = getMiaSquadra();
+  if (sq && sq.creditiIniziali != null) return sq.creditiIniziali;
+  if (S.asta && S.asta.crediti) return S.asta.crediti;
+  return (S.strategiaAsta && S.strategiaAsta.crediti_totali) || 0;
+}
+
+// Prezzo reale di un giocatore secondo la Strategia applicata, ricalcolato al volo sul
+// budget corrente (vedi budgetRealeSquadra). Fallback al prezzo assoluto salvato solo
+// se la riga non ha una percentuale (dato storico/legacy).
+function prezzoRealeStrategia(cfg) {
+  if (!cfg) return null;
+  if (cfg.percentuale != null) {
+    const budget = budgetRealeSquadra();
+    return budget ? Math.max(1, Math.round(cfg.percentuale / 100 * budget)) : cfg.prezzo;
+  }
+  return cfg.prezzo;
 }
 
 function getMaxOfferta() {
@@ -4239,20 +4276,15 @@ async function selezionaStrategiaAsta(strategiaId, silent) {
   const fasceOrdine = new Map();
   (fasce || []).forEach(f => { fasceInfo.set(f.id, { nome: f.nome, colore: f.colore, ordine: f.ordine }); fasceOrdine.set(f.id, f.ordine); });
 
-  // La strategia salva sempre la percentuale rispetto al SUO budget originale
-  // (crediti_totali, impostato quando è stata creata). Ma la squadra che la applica
-  // durante l'asta può avere un budget reale diverso — quindi il prezzo mostrato va
-  // ricalcolato sulla percentuale * budget reale dell'asta corrente, non riusato così
-  // com'è. "Budget reale" = crediti per squadra configurati per QUESTA asta (S.asta.crediti,
-  // fisso), non i crediti residui della squadra (che scendono man mano che compra).
-  const budgetReale = (S.asta && S.asta.crediti) ? S.asta.crediti : strategia.crediti_totali;
+  // Il prezzo NON si ricalcola qui una volta sola: si tiene solo la percentuale, e il
+  // prezzo reale si calcola al volo ad ogni render (vedi prezzoRealeStrategia()) usando
+  // il budget corrente della squadra. Così, se l'Admin corregge i crediti di una squadra
+  // a meta' asta, i prezzi mostrati si aggiornano da soli al prossimo "stato-asta",
+  // senza dover riapplicare la strategia.
   const configByListinoId = new Map();
   (sg || []).forEach(row => {
-    const prezzoReale = row.percentuale != null
-      ? Math.max(1, Math.round(row.percentuale / 100 * budgetReale))
-      : row.prezzo;
     configByListinoId.set(row.giocatore_id, {
-      fascia_id: row.fascia_id, prezzo: prezzoReale, percentuale: row.percentuale, preferito: row.preferito
+      fascia_id: row.fascia_id, prezzo: row.prezzo, percentuale: row.percentuale, preferito: row.preferito
     });
   });
 
