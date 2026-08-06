@@ -4124,47 +4124,77 @@ function wireEditorEventiRiga(container) {
 //    Fasce che nei Non assegnati) — pensate per essere veloci: seleziona N giocatori
 //    (anche cercandoli per nome) e spostali tutti in una fascia o dai loro tutti lo
 //    stesso prezzo/percentuale in un colpo solo, invece di riga per riga. ──
+const BULK_FASCIA_NON_MODIFICARE = '__non_modificare__';
+const BULK_FASCIA_NON_ASSEGNATI = '__non_assegnati__';
+
 function aggiornaBulkBar() {
   const bar = document.getElementById('editor-bulk-bar');
   const countEl = document.getElementById('editor-bulk-count');
   const fasciaSel = document.getElementById('editor-bulk-fascia');
-  if (!bar || !countEl || !fasciaSel) return;
+  const chipsEl = document.getElementById('editor-bulk-chips');
+  if (!bar || !countEl || !fasciaSel || !chipsEl) return;
   const n = S.editorSelezionati.size;
   bar.classList.toggle('hidden', n === 0);
+  if (n === 0) return;
   countEl.textContent = n + (n === 1 ? ' selezionato' : ' selezionati');
+
   const fasceOrdinate = (S.fasceAttuali || []).slice().sort((a, b) => a.ordine - b.ordine);
   const valorePrecedente = fasciaSel.value;
-  fasciaSel.innerHTML = fasceOrdinate.map(f => '<option value="' + f.id + '">' + escapeHTML(f.nome) + '</option>').join('')
-    + '<option value="">Non assegnati</option>';
-  if ([...fasciaSel.options].some(o => o.value === valorePrecedente)) fasciaSel.value = valorePrecedente;
-}
+  fasciaSel.innerHTML = '<option value="' + BULK_FASCIA_NON_MODIFICARE + '">— Non modificare fascia —</option>'
+    + fasceOrdinate.map(f => '<option value="' + f.id + '">' + escapeHTML(f.nome) + '</option>').join('')
+    + '<option value="' + BULK_FASCIA_NON_ASSEGNATI + '">Non assegnati</option>';
+  if (valorePrecedente && [...fasciaSel.options].some(o => o.value === valorePrecedente)) fasciaSel.value = valorePrecedente;
 
-function applicaBulkFascia() {
-  const fasciaSel = document.getElementById('editor-bulk-fascia');
-  if (!fasciaSel || !S.editorSelezionati.size) return;
-  const fasciaId = fasciaSel.value || null;
-  S.editorSelezionati.forEach(gid => {
-    let cfg = S.configGiocatori.get(gid);
-    if (!cfg) { cfg = { fascia_id: null, prezzo: null, percentuale: null, preferito: false }; S.configGiocatori.set(gid, cfg); }
-    cfg.fascia_id = fasciaId;
+  // Lista dei giocatori selezionati (per nome, con la X per togliere singolarmente
+  // una selezione sbagliata senza dover deselezionare tutto e ricominciare).
+  const listino = S.listinoCache || [];
+  const nomiPerId = new Map(listino.map(g => [g.id, g.nome]));
+  chipsEl.innerHTML = [...S.editorSelezionati].map(gid =>
+    '<span class="editor-bulk-chip">' + escapeHTML(nomiPerId.get(gid) || ('#' + gid)) +
+      '<button type="button" class="editor-bulk-chip-rm" data-giocatore="' + gid + '" title="Togli dalla selezione">×</button>' +
+    '</span>'
+  ).join('');
+  chipsEl.querySelectorAll('.editor-bulk-chip-rm').forEach(btn => {
+    btn.addEventListener('click', () => {
+      S.editorSelezionati.delete(Number(btn.dataset.giocatore));
+      const row = document.querySelector('.editor-player-check[data-giocatore="' + btn.dataset.giocatore + '"]');
+      if (row) { row.checked = false; const r = row.closest('.editor-player-row'); if (r) r.classList.remove('selezionato'); }
+      aggiornaBulkBar();
+    });
   });
-  const n = S.editorSelezionati.size;
-  S.editorSelezionati.clear();
-  renderEditorFasce();
-  toast(n + ' giocatori spostati', 'success');
 }
 
-function applicaBulkValore() {
+// Un solo bottone applica insieme fascia (se scelta) e prezzo/percentuale (se
+// compilato) a tutti i selezionati, invece di due azioni separate — meno click.
+function applicaBulkAzione() {
+  const fasciaSel = document.getElementById('editor-bulk-fascia');
   const campoSel = document.getElementById('editor-bulk-campo');
   const valoreInp = document.getElementById('editor-bulk-valore');
-  if (!campoSel || !valoreInp || !S.editorSelezionati.size) return;
-  if (valoreInp.value === '') return toast('Inserisci un valore', 'error');
+  if (!fasciaSel || !campoSel || !valoreInp || !S.editorSelezionati.size) return;
+
+  const cambiaFascia = fasciaSel.value !== BULK_FASCIA_NON_MODIFICARE;
+  const cambiaValore = valoreInp.value !== '';
+  if (!cambiaFascia && !cambiaValore) {
+    return toast('Scegli una fascia e/o inserisci un valore da applicare', 'error');
+  }
+
+  const fasciaId = fasciaSel.value === BULK_FASCIA_NON_ASSEGNATI ? null : fasciaSel.value;
   const campo = campoSel.value;
-  S.editorSelezionati.forEach(gid => sincronizzaPrezzoPercentuale(gid, campo, valoreInp.value));
+  S.editorSelezionati.forEach(gid => {
+    if (cambiaFascia) {
+      let cfg = S.configGiocatori.get(gid);
+      if (!cfg) { cfg = { fascia_id: null, prezzo: null, percentuale: null, preferito: false }; S.configGiocatori.set(gid, cfg); }
+      cfg.fascia_id = fasciaId;
+    }
+    if (cambiaValore) sincronizzaPrezzoPercentuale(gid, campo, valoreInp.value);
+  });
+
   const n = S.editorSelezionati.size;
+  S.editorSelezionati.clear();
+  fasciaSel.value = BULK_FASCIA_NON_MODIFICARE;
   valoreInp.value = '';
   renderEditorFasce();
-  toast('Valore applicato a ' + n + ' giocatori', 'success');
+  toast('Modifiche applicate a ' + n + ' giocatori', 'success');
 }
 
 function bulkSelezionaTuttiRisultati() {
@@ -4249,10 +4279,8 @@ function setupEditor() {
 
   const btnSelezionaTutti = document.getElementById('editor-seleziona-tutti-risultati');
   if (btnSelezionaTutti) btnSelezionaTutti.addEventListener('click', bulkSelezionaTuttiRisultati);
-  const btnBulkSposta = document.getElementById('editor-bulk-sposta');
-  if (btnBulkSposta) btnBulkSposta.addEventListener('click', applicaBulkFascia);
-  const btnBulkApplicaValore = document.getElementById('editor-bulk-applica-valore');
-  if (btnBulkApplicaValore) btnBulkApplicaValore.addEventListener('click', applicaBulkValore);
+  const btnBulkApplica = document.getElementById('editor-bulk-applica');
+  if (btnBulkApplica) btnBulkApplica.addEventListener('click', applicaBulkAzione);
   const btnBulkDeseleziona = document.getElementById('editor-bulk-deseleziona');
   if (btnBulkDeseleziona) btnBulkDeseleziona.addEventListener('click', bulkDeselezionaTutti);
 

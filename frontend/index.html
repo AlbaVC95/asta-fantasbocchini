@@ -138,20 +138,6 @@
       <h1 id="editor-strategia-nome" class="home-title">Strategia</h1>
       <p id="editor-strategia-info" class="home-subtitle"></p>
     </header>
-    <div id="editor-bulk-bar" class="editor-bulk-bar hidden">
-      <span id="editor-bulk-count" class="editor-bulk-count">0 selezionati</span>
-      <select id="editor-bulk-fascia" class="gk-select"></select>
-      <button type="button" id="editor-bulk-sposta" class="btn btn-secondary btn-small">Sposta qui</button>
-      <span class="editor-bulk-sep"></span>
-      <select id="editor-bulk-campo" class="gk-select">
-        <option value="percentuale">%</option>
-        <option value="prezzo">Prezzo</option>
-      </select>
-      <input type="number" id="editor-bulk-valore" class="editor-bulk-valore-inp" placeholder="Valore" min="0">
-      <button type="button" id="editor-bulk-applica-valore" class="btn btn-secondary btn-small">Applica</button>
-      <span class="editor-bulk-sep"></span>
-      <button type="button" id="editor-bulk-deseleziona" class="btn btn-secondary btn-small">Deseleziona tutti</button>
-    </div>
     <div class="card">
       <button type="button" id="btn-aggiungi-fascia" class="btn btn-secondary" style="width:100%">+ Aggiungi fascia</button>
     </div>
@@ -186,6 +172,23 @@
         <button type="button" id="editor-ordina-dir" class="btn btn-secondary btn-small" data-dir="desc">↓ Decrescente</button>
       </div>
       <button type="button" id="editor-seleziona-tutti-risultati" class="btn btn-secondary btn-small" style="margin-top:8px">☑️ Seleziona tutti i risultati qui sotto</button>
+    </div>
+    <div id="editor-bulk-bar" class="card editor-bulk-bar hidden">
+      <div class="editor-bulk-header">
+        <span id="editor-bulk-count" class="editor-bulk-count">0 selezionati</span>
+        <button type="button" id="editor-bulk-deseleziona" class="btn btn-secondary btn-small">Deseleziona tutti</button>
+      </div>
+      <div id="editor-bulk-chips" class="editor-bulk-chips"></div>
+      <div class="editor-bulk-azione-row">
+        <select id="editor-bulk-fascia" class="gk-select"></select>
+        <select id="editor-bulk-campo" class="gk-select">
+          <option value="percentuale">%</option>
+          <option value="prezzo">Prezzo</option>
+        </select>
+        <input type="number" id="editor-bulk-valore" class="editor-bulk-valore-inp" placeholder="Valore" min="0">
+        <button type="button" id="editor-bulk-applica" class="btn btn-primary btn-small">✔ Applica</button>
+      </div>
+      <p class="hint-text">Lascia "— Non modificare —" se non vuoi cambiare fascia, o il campo Valore vuoto se non vuoi cambiare il prezzo/percentuale. Un solo click applica tutto quello che hai compilato.</p>
     </div>
     <div id="editor-non-assegnati-container"></div>
     <div class="card mt-16" style="position:sticky;bottom:8px;z-index:10">

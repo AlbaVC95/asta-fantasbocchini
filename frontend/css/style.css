@@ -937,12 +937,17 @@ body.layout-admin .asta-row-puja .rilancio-box{
 /* Barra azioni in blocco: sticky in cima cosi' resta raggiungibile selezionando
    giocatori sia dentro le Fasce (sopra) sia nei Non assegnati (sotto), senza dover
    scorrere avanti e indietro fino in fondo alla pagina ogni volta. */
-.editor-bulk-bar{position:sticky;top:8px;z-index:20;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--bg-elevated);border:1px solid var(--primary);border-radius:12px;padding:10px 12px;margin-bottom:12px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.editor-bulk-bar{border-color:var(--primary)}
 .editor-bulk-bar.hidden{display:none}
+.editor-bulk-header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .editor-bulk-count{font-weight:700;color:var(--primary-bright);white-space:nowrap}
-.editor-bulk-sep{width:1px;height:22px;background:var(--border);flex-shrink:0}
+.editor-bulk-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.editor-bulk-chip{display:inline-flex;align-items:center;gap:5px;background:var(--primary-subtle);border:1px solid var(--primary);color:var(--text-primary);border-radius:20px;padding:3px 6px 3px 10px;font-size:.72rem;white-space:nowrap}
+.editor-bulk-chip-rm{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.9rem;line-height:1;padding:2px}
+.editor-bulk-chip-rm:hover{color:var(--danger)}
+.editor-bulk-azione-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
 .editor-bulk-valore-inp{background:var(--bg-main);border:1px solid var(--border);color:var(--text-primary);border-radius:6px;padding:6px 8px;font-size:.8rem;width:80px}
-#editor-bulk-fascia{flex:0 1 140px;min-width:110px}
+#editor-bulk-fascia{flex:0 1 170px;min-width:140px}
 #editor-bulk-campo{flex:0 1 70px;min-width:60px}
 /* == FASE 3 == STRATEGIE NELL'ASTA == */
 .liberi-strategia-bar{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;flex-shrink:0;margin-left:10px;padding:0}
