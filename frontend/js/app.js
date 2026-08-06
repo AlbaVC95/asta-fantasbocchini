@@ -71,6 +71,18 @@ const S = {
   strategiaAsta: null, liberiNascondiEstratti: false, liberiSoloPreferiti: false, _promptStrategiaAstaId: null
 };
 
+// ══ MODALITA' MANUTENZIONE ══════════════════════════════
+// Stato letto dal server all'avvio e tenuto sincronizzato via socket ('manutenzione-changed').
+// Quando attiva, blocca l'uso dell'app a chiunque non abbia ruolo 'admin' mostrando l'overlay
+// #screen-manutenzione (sempre sopra a tutto, stesso pattern di #screen-emergenza).
+let _manutenzioneAttiva = false;
+function _aggiornaOverlayManutenzione() {
+  const overlay = document.getElementById('screen-manutenzione');
+  if (!overlay) return;
+  const bloccare = _manutenzioneAttiva && S.userRole !== 'admin';
+  overlay.classList.toggle('hidden', !bloccare);
+}
+
 // ══ SUPABASE (utenti + listino ufficiale) ════════════════
 const SUPABASE_URL = 'https://boupigtvlowxajvwkuwr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvdXBpZ3R2bG93eGFqdndrdXdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NTA3MDYsImV4cCI6MjEwMDMyNjcwNn0.3GkbaKaJu7_6mZYkavDLAx7cW8qgraSyVKizMPYbXAA';
@@ -491,6 +503,16 @@ function entraConLinkInvito(id) {
 let _urlAdminId = null, _urlAdminToken = null;
 document.addEventListener('DOMContentLoaded', async () => {
   richiediPermessoNotifiche();
+  try {
+    const res = await fetch('/api/admin/manutenzione-status');
+    if (res.ok) { const data = await res.json(); _manutenzioneAttiva = !!data.manutenzioneAttiva; }
+  } catch (e) { /* non-fatale: l'app resta usabile */ }
+  _aggiornaOverlayManutenzione();
+  const linkAccessoAdmin = document.getElementById('link-accesso-admin-manutenzione');
+  if (linkAccessoAdmin) linkAccessoAdmin.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('screen-manutenzione').classList.add('hidden');
+  });
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
   const adminParam = params.get('admin');
@@ -568,7 +590,9 @@ async function applicaUtenteLoggato(user) {
   if (adminCard) adminCard.style.display = isAdmin ? 'block' : 'none';
   const superAdminCard = document.getElementById('card-super-admin');
   if (superAdminCard) superAdminCard.style.display = isAdmin ? 'block' : 'none';
-  if (isAdmin) caricaStatoBackupSuperAdmin();
+  if (isAdmin) { caricaStatoBackupSuperAdmin(); caricaStatoManutenzioneSuperAdmin(); }
+  _aggiornaOverlayManutenzione();
+  if (_manutenzioneAttiva && !isAdmin) return; // resta bloccato dall'overlay, non entra nel menu
   caricaMieAste();
   if (S._invitoAstaId) {
     const invitoId = S._invitoAstaId;
@@ -801,6 +825,11 @@ function setupLogin() {
   if (chkSuperAdminBackupToggle) {
     chkSuperAdminBackupToggle.addEventListener('change', (e) => handleToggleBackupSuperAdmin(e.target.checked));
   }
+
+  const chkSuperAdminManutenzioneToggle = document.getElementById('chk-super-admin-manutenzione-toggle');
+  if (chkSuperAdminManutenzioneToggle) {
+    chkSuperAdminManutenzioneToggle.addEventListener('change', (e) => handleToggleManutenzioneSuperAdmin(e.target.checked));
+  }
 }
 
 // Carica lo stato attuale del toggle "backup su Supabase" e aggiorna il checkbox di
@@ -853,12 +882,62 @@ async function handleToggleBackupSuperAdmin(attivo) {
   }
 }
 
+// Carica lo stato attuale del toggle "manutenzione" e aggiorna il checkbox di conseguenza
+// (stesso motivo del backup: puo' essere stato attivato da un altro dispositivo/sessione).
+async function caricaStatoManutenzioneSuperAdmin() {
+  const chk = document.getElementById('chk-super-admin-manutenzione-toggle');
+  if (!chk) return;
+  chk.checked = _manutenzioneAttiva;
+}
+
+async function handleToggleManutenzioneSuperAdmin(attiva) {
+  const chk = document.getElementById('chk-super-admin-manutenzione-toggle');
+  const statusEl = document.getElementById('super-admin-manutenzione-status');
+  const { data: sessionData } = await supa.auth.getSession();
+  const accessToken = sessionData && sessionData.session ? sessionData.session.access_token : null;
+  if (!accessToken) { toast('Devi accedere per eseguire questa azione', 'error'); if (chk) chk.checked = !attiva; return; }
+  try {
+    const res = await fetch('/api/admin/toggle-manutenzione', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ attiva })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      toast(data.error || 'Errore durante il cambio di stato', 'error');
+      if (chk) chk.checked = !attiva;
+      return;
+    }
+    _manutenzioneAttiva = !!data.manutenzioneAttiva;
+    _aggiornaOverlayManutenzione();
+    if (statusEl) {
+      statusEl.style.display = 'block';
+      statusEl.textContent = _manutenzioneAttiva
+        ? 'Manutenzione attiva: solo gli Admin possono usare l\'app.'
+        : 'Manutenzione disattivata: l\'app e\' di nuovo accessibile a tutti.';
+    }
+    toast(_manutenzioneAttiva ? 'Modalita\' manutenzione attivata' : 'Modalita\' manutenzione disattivata', 'success');
+  } catch (e) {
+    toast('Errore di rete durante il cambio di stato', 'error');
+    if (chk) chk.checked = !attiva;
+  }
+}
+
 // Tiene sincronizzato il checkbox su TUTTI i dispositivi/sessioni Admin connessi quando
 // uno di loro cambia il toggle (es. Admin A lo disattiva dal telefono, Admin B lo vede
 // aggiornarsi da solo sul portatile, senza dover ricaricare la pagina).
 socket.on('backup-toggle-changed', ({ backupSupabaseAttivo }) => {
   const chk = document.getElementById('chk-super-admin-backup-toggle');
   if (chk) chk.checked = !!backupSupabaseAttivo;
+});
+
+// Applica in tempo reale l'attivazione/disattivazione della manutenzione a TUTTI i
+// client connessi (blocca/sblocca subito chi sta gia' usando l'app, senza reload).
+socket.on('manutenzione-changed', ({ manutenzioneAttiva }) => {
+  _manutenzioneAttiva = !!manutenzioneAttiva;
+  _aggiornaOverlayManutenzione();
+  const chk = document.getElementById('chk-super-admin-manutenzione-toggle');
+  if (chk) chk.checked = _manutenzioneAttiva;
 });
 
 async function handleSuperAdminChiudiTutteLeAste() {
@@ -3939,9 +4018,10 @@ function renderEditorFasce() {
   const cerca = (S.editorCercaText || '').trim().toLowerCase();
   const ruoloFiltro = S.editorFiltroRuolo || 'tutti';
 
-  // Cerca/filtro ruolo si applicano SOLO ai Non assegnati (e' li' che si cerca un
-  // giocatore da piazzare) — le Fasce gia' composte restano sempre visibili per
-  // intero, cosi' non "spariscono" giocatori assegnati mentre si cerca qualcun altro.
+  // Cerca/filtro ruolo si applicano a TUTTI i giocatori, sia nelle Fasce che nei Non
+  // assegnati: un giocatore che non soddisfa il filtro selezionato sparisce ovunque,
+  // cosi' cercare/filtrare mostra sempre solo i giocatori pertinenti indipendentemente
+  // da dove si trovano.
   const passaFiltro = (g) => {
     if (cerca && !g.nome.toLowerCase().includes(cerca)) return false;
     if (ruoloFiltro !== 'tutti') {
@@ -3957,11 +4037,12 @@ function renderEditorFasce() {
   const fasceIds = new Set(fasceOrdinate.map(f => f.id));
 
   listino.forEach(g => {
+    if (!passaFiltro(g)) return;
     const cfg = S.configGiocatori.get(g.id);
     const fasciaId = cfg ? cfg.fascia_id : null;
     if (fasciaId && fasceIds.has(fasciaId)) {
       gruppi.find(gr => gr.fascia.id === fasciaId).giocatori.push(g);
-    } else if (passaFiltro(g)) {
+    } else {
       nonAssegnati.giocatori.push(g);
     }
   });

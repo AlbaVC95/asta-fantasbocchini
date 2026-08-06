@@ -83,6 +83,26 @@ async function persistBackupSupabaseAttivo(valore) {
   } catch (e) { console.error('[persistBackupSupabaseAttivo] errore (non-fatale):', e.message); }
 }
 
+// Toggle globale (Admin) per mostrare a TUTTI gli utenti non-Admin una schermata di
+// "app in manutenzione" che blocca l'uso dell'app, utile mentre si fanno modifiche in
+// produzione senza che qualcuno inizi/continui un'asta nel frattempo. Persistito in
+// "app_settings" come il toggle backup, cosi' sopravvive a riavvii/deploy. Di default
+// disattivo.
+let manutenzioneAttiva = false;
+async function loadManutenzioneAttiva() {
+  if (!supabaseAdmin) return;
+  try {
+    const { data, error } = await supabaseAdmin.from('app_settings').select('value').eq('id', 'manutenzione_attiva').maybeSingle();
+    if (!error && data && typeof data.value === 'boolean') manutenzioneAttiva = data.value;
+  } catch (e) { /* non-fatale: resta il default (false) */ }
+}
+async function persistManutenzioneAttiva(valore) {
+  if (!supabaseAdmin) return;
+  try {
+    await supabaseAdmin.from('app_settings').upsert({ id: 'manutenzione_attiva', value: valore, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+  } catch (e) { console.error('[persistManutenzioneAttiva] errore (non-fatale):', e.message); }
+}
+
 function saveBackup(asta) {
   if (!asta || !asta.id) return;
   try {
@@ -863,6 +883,24 @@ app.post('/api/admin/toggle-backup', async (req, res) => {
   res.json({ ok: true, backupSupabaseAttivo });
 });
 
+// Lettura dello stato "manutenzione": volutamente APERTA a chiunque, senza login,
+// perche' deve poter bloccare la schermata di login stessa per gli utenti non-Admin,
+// prima ancora che si autentichino. Non e' un dato sensibile, e' solo un feature flag.
+app.get('/api/admin/manutenzione-status', (req, res) => {
+  res.json({ manutenzioneAttiva });
+});
+app.post('/api/admin/toggle-manutenzione', async (req, res) => {
+  const auth = await getRuoloUtente(req);
+  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  if (auth.role !== 'admin') return res.status(403).json({ error: 'Solo un Admin puo\' modificare lo stato di manutenzione' });
+  manutenzioneAttiva = !!(req.body && req.body.attiva);
+  await persistManutenzioneAttiva(manutenzioneAttiva);
+  // Notifica in tempo reale tutti i client connessi, cosi' chi sta gia' usando l'app
+  // viene bloccato subito (o sbloccato) senza dover ricaricare la pagina.
+  io.emit('manutenzione-changed', { manutenzioneAttiva });
+  res.json({ ok: true, manutenzioneAttiva });
+});
+
 // ============ WEBSOCKET ============
 io.on('connection', (socket) => {
   console.log(`[WS] Connesso: ${socket.id}`);
@@ -1492,6 +1530,7 @@ async function puliziaBackupFantasma() {
 // Load backups at startup
 loadBackups().catch(e => console.error('[loadBackups] fatale (non-fatale per il server, l\'asta parte comunque vuota):', e.message));
 loadBackupSupabaseAttivo().catch(e => console.error('[loadBackupSupabaseAttivo] fatale (non-fatale, resta il default true):', e.message));
+loadManutenzioneAttiva().catch(e => console.error('[loadManutenzioneAttiva] fatale (non-fatale, resta il default false):', e.message));
 puliziaBackupFantasma().catch(e => console.error('[puliziaBackupFantasma] fatale (non-fatale):', e.message));
 
 const PORT = process.env.PORT || 3000;
