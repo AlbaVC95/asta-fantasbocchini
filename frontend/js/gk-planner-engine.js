@@ -336,6 +336,48 @@
     return round1(clamp(100 * Math.exp(-1.5 * Math.pow(d, 1.5)), 0, 100));
   }
 
+  // ── Il valore "assoluto" di priceScoreCurve confronta solo col target configurato,
+  //    non con cosa e' REALMENTE raggiungibile in questa lega. Se quasi tutte le
+  //    combinazioni superano il target (es. target 40% ma i reparti offensivi buoni
+  //    costano tipicamente il 60-100%), quasi tutte finiscono schiacciate in basso e
+  //    l'unica squadra anomale-mente economica vince sempre, qualunque sia il
+  //    calendario — il Price finisce per schiacciare completamente il Quality.
+  //    Come gia' si fa per lo score sportivo (getUniverseRawRange), ristendiamo il
+  //    Price Score sull'intera scala 1-100 in base al costo MINIMO e MASSIMO
+  //    davvero raggiungibile fra tutte le combinazioni di questa dimensione — cosi'
+  //    il fattore prezzo pesa sempre in modo comparabile al fattore qualita',
+  //    indipendentemente da quanto il target configurato sia tarato bene o male. ──
+  const universeCostCache = new Map();
+  function universeCostCacheKey(listino, cfg, size, mode) {
+    const fingerprint = listino.length + ':' + listino.reduce(function (s, g) { return s + (Number(g.fvm1000) || 0); }, 0);
+    const budgetTargetPct = mode === 'attaccanti' ? cfg.params.budgetAttaccoPct : cfg.params.budgetPortieriPct;
+    return size + '|' + mode + '|' + budgetTargetPct + '|' + fingerprint + '|' + Object.keys(cfg.teamStats).sort().join(',');
+  }
+  function getUniverseCostoRange(listino, cfg, size, mode) {
+    const key = universeCostCacheKey(listino, cfg, size, mode);
+    if (universeCostCache.has(key)) return universeCostCache.get(key);
+    const allTeams = Object.keys(cfg.teamStats);
+    const combos = combinazioni(allTeams, size);
+    const budgetTargetPct = mode === 'attaccanti' ? cfg.params.budgetAttaccoPct : cfg.params.budgetPortieriPct;
+    let min = Infinity, max = -Infinity;
+    combos.forEach(function (g) {
+      const costoPct = costoAttesoGruppo(g, listino, mode) / 10;
+      const raw = priceScoreCurve(costoPct, budgetTargetPct);
+      if (raw < min) min = raw;
+      if (raw > max) max = raw;
+    });
+    if (!isFinite(min) || !isFinite(max)) { min = 0; max = 1; }
+    const result = { min: min, max: max };
+    universeCostCache.set(key, result);
+    return result;
+  }
+  function priceScoreRelativo(costoAttesoPct, budgetTargetPct, listino, cfg, size, mode) {
+    const raw = priceScoreCurve(costoAttesoPct, budgetTargetPct);
+    const range = getUniverseCostoRange(listino, cfg, size, mode);
+    if (range.max === range.min) return 100;
+    return round1(clamp(1 + (raw - range.min) * 99 / (range.max - range.min), 1, 100));
+  }
+
   // ── Analisi completa di un gruppo di 2 o 3 squadre ──
   // listino (opzionale): array di giocatori dal Listino Ufficiale (con
   // squadra_reale, ruolo, fvm1000), usato per il fattore costo atteso. Se
@@ -366,7 +408,7 @@
       costoAttesoPct = round1(costoAtteso / 10);
       budgetTargetPct = (m === 'attaccanti') ? cfg.params.budgetAttaccoPct : cfg.params.budgetPortieriPct;
       qualityScore = scoreSportivo;
-      priceScore = priceScoreCurve(costoAttesoPct, budgetTargetPct);
+      priceScore = priceScoreRelativo(costoAttesoPct, budgetTargetPct, listino, cfg, teams.length, m);
       score = round1(clamp(qualityScore * 0.6 + priceScore * 0.4, 1, 100));
     }
 
@@ -466,6 +508,8 @@
     costoAttesoSquadra: costoAttesoSquadra,
     costoAttesoGruppo: costoAttesoGruppo,
     moltiplicatoreCosto: moltiplicatoreCosto,
-    priceScoreCurve: priceScoreCurve
+    priceScoreCurve: priceScoreCurve,
+    priceScoreRelativo: priceScoreRelativo,
+    getUniverseCostoRange: getUniverseCostoRange
   };
 })(typeof window !== 'undefined' ? window : global);
