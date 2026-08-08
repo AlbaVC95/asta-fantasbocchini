@@ -37,7 +37,12 @@ async function getRuoloUtente(req) {
 const CONDIZIONI_BETA_VERSIONE = '2026-08-08';
 const ANNI_MAX_ETA = 120; // limite tecnico di buon senso, non una regola di policy
 
-async function getUtenteDaToken(req) {
+// NB: nome diverso da getUtenteDaToken (definita più sotto, usata da /api/mie-aste e affini) —
+// quella ritorna solo { userId, email } o null, questa ritorna l'oggetto utente completo
+// (serve user_metadata per leggere nome/cognome/dataNascita/termsAccepted). Stesso nome avrebbe
+// fatto vincere silenziosamente l'ultima dichiarazione in ordine nel file per ENTRAMBI i punti di
+// chiamata, con una TypeError a runtime — successo esattamente questo in un deploy precedente.
+async function getUtenteCompletoDaToken(req) {
   if (!supabaseAdmin) return { error: 'Supabase non configurato sul server', status: 500 };
   const authHeader = req.headers.authorization || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
@@ -72,45 +77,60 @@ app.use(express.static(path.join(__dirname, '..', 'frontend'), {
 app.use(express.json({ limit: '10mb' }));
 
 app.post('/api/auth/completa-registrazione', async (req, res) => {
-  const { user, error, status } = await getUtenteDaToken(req);
-  if (error) return res.status(status).json({ error });
+  // Try/catch esplicito: senza, un'eccezione qui dentro lascerebbe la richiesta del client
+  // in attesa per sempre (Express 4 non intercetta automaticamente i reject di una route
+  // async), invece di rispondere con un errore visibile.
+  try {
+    console.log('[completa-registrazione] richiesta ricevuta');
+    const { user, error, status } = await getUtenteCompletoDaToken(req);
+    if (error) { console.log('[completa-registrazione] getUtenteCompletoDaToken fallito:', error); return res.status(status).json({ error }); }
+    console.log('[completa-registrazione] utente verificato:', user.id);
 
-  const { data: profiloEsistente } = await supabaseAdmin
-    .from('profiles').select('terms_accepted').eq('id', user.id).single();
-  if (profiloEsistente && profiloEsistente.terms_accepted === true) {
-    return res.json({ done: true }); // gia' completato in precedenza, non riscrivere terms_accepted_at
+    const { data: profiloEsistente, error: selectErr } = await supabaseAdmin
+      .from('profiles').select('terms_accepted').eq('id', user.id).single();
+    if (selectErr) console.log('[completa-registrazione] select profilo esistente errore (puo essere normale se 0 righe):', selectErr.message);
+    if (profiloEsistente && profiloEsistente.terms_accepted === true) {
+      console.log('[completa-registrazione] gia completato in precedenza');
+      return res.json({ done: true }); // gia' completato in precedenza, non riscrivere terms_accepted_at
+    }
+
+    const meta = user.user_metadata || {};
+    if (meta.nome === undefined) {
+      console.log('[completa-registrazione] nessun user_metadata.nome, skip (utente vecchio flusso)');
+      return res.json({ skipped: true }); // utente registrato col vecchio flusso: nessun dato da sincronizzare
+    }
+
+    const nome = typeof meta.nome === 'string' ? meta.nome.trim() : '';
+    const cognome = typeof meta.cognome === 'string' ? meta.cognome.trim() : '';
+    const dataNascita = typeof meta.dataNascita === 'string' ? new Date(meta.dataNascita + 'T00:00:00Z') : null;
+    const termsAccepted = meta.termsAccepted;
+
+    const oggi = new Date(); oggi.setUTCHours(0, 0, 0, 0);
+    const limiteMinimo = new Date(oggi); limiteMinimo.setUTCFullYear(oggi.getUTCFullYear() - ANNI_MAX_ETA);
+
+    if (!nome || nome.length > 80) return res.status(400).json({ error: 'Nome non valido' });
+    if (!cognome || cognome.length > 80) return res.status(400).json({ error: 'Cognome non valido' });
+    if (!dataNascita || isNaN(dataNascita.getTime()) || dataNascita > oggi || dataNascita < limiteMinimo) {
+      return res.status(400).json({ error: 'Data di nascita non valida' });
+    }
+    if (termsAccepted !== true) return res.status(400).json({ error: 'Condizioni di partecipazione alla Closed Beta non accettate' });
+
+    console.log('[completa-registrazione] validazione ok, scrivo su profiles per', user.id);
+    const { error: upsertErr } = await supabaseAdmin.from('profiles').upsert({
+      id: user.id,
+      nome, cognome, data_nascita: meta.dataNascita,
+      terms_accepted: true,
+      terms_accepted_at: new Date().toISOString(),
+      terms_version: CONDIZIONI_BETA_VERSIONE
+    }, { onConflict: 'id' });
+    if (upsertErr) { console.error('[completa-registrazione] upsert fallito:', upsertErr); return res.status(500).json({ error: 'Errore nel salvataggio del profilo' }); }
+
+    console.log('[completa-registrazione] completato con successo per', user.id);
+    res.json({ done: true });
+  } catch (e) {
+    console.error('[completa-registrazione] eccezione non gestita:', e && e.stack || e);
+    res.status(500).json({ error: 'Errore interno' });
   }
-
-  const meta = user.user_metadata || {};
-  if (meta.nome === undefined) {
-    return res.json({ skipped: true }); // utente registrato col vecchio flusso: nessun dato da sincronizzare
-  }
-
-  const nome = typeof meta.nome === 'string' ? meta.nome.trim() : '';
-  const cognome = typeof meta.cognome === 'string' ? meta.cognome.trim() : '';
-  const dataNascita = typeof meta.dataNascita === 'string' ? new Date(meta.dataNascita + 'T00:00:00Z') : null;
-  const termsAccepted = meta.termsAccepted;
-
-  const oggi = new Date(); oggi.setUTCHours(0, 0, 0, 0);
-  const limiteMinimo = new Date(oggi); limiteMinimo.setUTCFullYear(oggi.getUTCFullYear() - ANNI_MAX_ETA);
-
-  if (!nome || nome.length > 80) return res.status(400).json({ error: 'Nome non valido' });
-  if (!cognome || cognome.length > 80) return res.status(400).json({ error: 'Cognome non valido' });
-  if (!dataNascita || isNaN(dataNascita.getTime()) || dataNascita > oggi || dataNascita < limiteMinimo) {
-    return res.status(400).json({ error: 'Data di nascita non valida' });
-  }
-  if (termsAccepted !== true) return res.status(400).json({ error: 'Condizioni di partecipazione alla Closed Beta non accettate' });
-
-  const { error: upsertErr } = await supabaseAdmin.from('profiles').upsert({
-    id: user.id,
-    nome, cognome, data_nascita: meta.dataNascita,
-    terms_accepted: true,
-    terms_accepted_at: new Date().toISOString(),
-    terms_version: CONDIZIONI_BETA_VERSIONE
-  }, { onConflict: 'id' });
-  if (upsertErr) return res.status(500).json({ error: 'Errore nel salvataggio del profilo' });
-
-  res.json({ done: true });
 });
 
 const aste = new Map();
