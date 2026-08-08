@@ -49,6 +49,18 @@
     <div class="card mt-16">
       <h2 class="card-title">Non hai un account?</h2>
       <div class="form-group">
+        <label>Nome</label>
+        <input type="text" id="signup-nome" placeholder="Il tuo nome" maxlength="80">
+      </div>
+      <div class="form-group">
+        <label>Cognome</label>
+        <input type="text" id="signup-cognome" placeholder="Il tuo cognome" maxlength="80">
+      </div>
+      <div class="form-group">
+        <label>Età</label>
+        <input type="number" id="signup-eta" placeholder="Es. 30" min="1" max="120" step="1">
+      </div>
+      <div class="form-group">
         <label>Email</label>
         <input type="email" id="signup-email" placeholder="tuo@email.com">
       </div>
@@ -56,7 +68,12 @@
         <label>Password</label>
         <input type="password" id="signup-password" placeholder="Minimo 6 caratteri">
       </div>
-      <button id="btn-signup" class="btn btn-secondary btn-lg">Registrati</button>
+      <p class="hint-text">📋 Prima di registrarti leggi le <a href="#" id="link-condizioni-beta" style="text-decoration:underline;cursor:pointer">Condizioni di partecipazione alla Closed Beta</a>.</p>
+      <div class="form-group" style="display:flex;flex-direction:row;align-items:flex-start;gap:10px">
+        <input type="checkbox" id="signup-terms-checkbox" style="margin-top:3px;flex-shrink:0">
+        <label for="signup-terms-checkbox" style="margin:0;text-transform:none;font-size:.9rem;font-weight:400;letter-spacing:normal">Ho letto e accetto le Condizioni di partecipazione alla Closed Beta</label>
+      </div>
+      <button id="btn-signup" class="btn btn-secondary btn-lg" disabled>Accetta le condizioni per registrarti</button>
       <p id="signup-error" class="hint-text" style="display:none;color:var(--danger,#ff4d4d)"></p>
       <p id="signup-success" class="hint-text" style="display:none;color:var(--success,#2ecc71)"></p>
     </div>
@@ -912,6 +929,87 @@
       <button id="btn-salva-nuova-password" class="btn btn-primary btn-lg" style="width:100%">Salva nuova password</button>
       <p id="nuova-password-error" class="hint-text" style="display:none;color:var(--danger,#ff4d4d)"></p>
       <p id="nuova-password-success" class="hint-text" style="display:none;color:var(--success,#2ecc71)"></p>
+    </div>
+  </div>
+  <!-- Modal: Condizioni di partecipazione alla Closed Beta -->
+  <div id="modal-condizioni-beta" class="modal modal-lg hidden">
+    <h2 class="modal-title">📋 Condizioni di partecipazione alla Closed Beta</h2>
+    <div class="modal-body">
+      <p class="hint-text">Ultimo aggiornamento: 8 agosto 2026</p>
+      <p class="hint-text">Proprietari del progetto: Giuseppe Di Benedetto e Pietro Laudani.</p>
+      <p>Benvenuto nella Closed Beta del tool Asta.</p>
+      <p>L'accesso a questa versione dell'app è riservato esclusivamente agli utenti invitati a partecipare alla fase di test. Registrandoti e utilizzando l'app, dichiari di aver letto, compreso e accettato le presenti condizioni.</p>
+
+      <h3>1. Natura della Closed Beta</h3>
+      <p>La presente versione dell'app è ancora in fase di sviluppo e test. Alcune funzionalità potrebbero essere incomplete, modificate, temporaneamente non disponibili o presentare errori.</p>
+      <p>L'accesso alla Closed Beta viene concesso esclusivamente a fini di prova e raccolta di feedback. La partecipazione non comporta alcuna garanzia sulla disponibilità continuativa dell'app, delle sue funzionalità o dei dati inseriti.</p>
+      <p>Giuseppe Di Benedetto e Pietro Laudani si riservano il diritto di modificare, sospendere o interrompere la Closed Beta in qualsiasi momento.</p>
+
+      <h3>2. Accesso personale e non trasferibile</h3>
+      <p>L'account creato per la Closed Beta è personale e non può essere ceduto, condiviso o utilizzato da persone diverse dall'utente invitato.</p>
+      <p>L'utente si impegna a non condividere le proprie credenziali di accesso e a non consentire a soggetti non autorizzati di accedere all'app o alle funzionalità della Closed Beta.</p>
+
+      <h3>3. Obbligo di riservatezza</h3>
+      <p>Considerato che l'app e le relative funzionalità sono ancora in fase di sviluppo, tutte le informazioni relative alla Closed Beta devono essere considerate confidenziali, salvo quelle che siano già state rese pubbliche dai proprietari del progetto.</p>
+      <p>L'utente si impegna pertanto a non divulgare, pubblicare, distribuire o rendere accessibili a terzi, senza preventiva autorizzazione, informazioni relative alla Closed Beta, inclusi, a titolo esemplificativo:</p>
+      <ul>
+        <li>funzionalità presenti o future dell'app;</li>
+        <li>modalità di funzionamento dell'asta e degli strumenti collegati;</li>
+        <li>interfaccia grafica, schermate e struttura dell'app;</li>
+        <li>algoritmi, formule, sistemi di calcolo, valutazioni o logiche proprietarie;</li>
+        <li>regolamenti, meccaniche e sistemi di gioco non ancora pubblici;</li>
+        <li>informazioni relative a test, esperimenti, risultati, bug o problemi riscontrati;</li>
+        <li>informazioni relative agli account, alle aste, alle leghe o agli altri partecipanti;</li>
+        <li>qualsiasi altra informazione che, per sua natura o per le circostanze in cui viene comunicata, possa ragionevolmente essere considerata riservata.</li>
+      </ul>
+
+      <h3>4. Screenshot, fotografie, video e registrazioni</h3>
+      <p>Durante la partecipazione alla Closed Beta non è consentito, senza preventiva autorizzazione dei proprietari del progetto:</p>
+      <ul>
+        <li>effettuare e condividere screenshot dell'app;</li>
+        <li>registrare video o lo schermo durante l'utilizzo;</li>
+        <li>fotografare schermate o contenuti dell'app;</li>
+        <li>pubblicare immagini, video o registrazioni sui social network, gruppi WhatsApp, Telegram, Discord, forum o altri canali;</li>
+        <li>condividere con persone esterne alla Closed Beta materiale visivo o audiovisivo relativo all'app;</li>
+        <li>realizzare contenuti pubblici che mostrino o descrivano dettagli non ancora resi pubblici dell'app.</li>
+      </ul>
+      <p>La condivisione di materiale con i proprietari del progetto ai fini di segnalazione di bug, feedback o miglioramento del prodotto è invece consentita.</p>
+
+      <h3>5. Divieto di condivisione e divulgazione</h3>
+      <p>L'utente non può condividere con persone esterne alla Closed Beta link di accesso riservati, inviti, credenziali o altri strumenti che consentano di accedere all'app senza autorizzazione.</p>
+      <p>Non è inoltre consentito utilizzare le informazioni ottenute durante la Closed Beta per creare, sviluppare o favorire prodotti o servizi che riproducano in modo sostanziale funzionalità, sistemi o soluzioni proprietarie dell'app, nei limiti consentiti dalla legge.</p>
+
+      <h3>6. Utilizzo dei dati e delle informazioni dell'asta</h3>
+      <p>Le informazioni relative alle leghe, alle squadre, ai partecipanti, alle aste e alle strategie inserite o generate durante i test devono essere utilizzate esclusivamente nell'ambito della Closed Beta.</p>
+      <p>L'utente si impegna a non utilizzare, estrarre, raccogliere o distribuire tali informazioni al di fuori delle finalità per cui l'accesso è stato concesso.</p>
+
+      <h3>7. Feedback e segnalazioni</h3>
+      <p>Il feedback degli utenti è parte fondamentale della Closed Beta.</p>
+      <p>L'utente è incoraggiato a segnalare bug, malfunzionamenti, suggerimenti e proposte di miglioramento attraverso i canali messi a disposizione dai proprietari del progetto.</p>
+      <p>La segnalazione di problemi o la condivisione di materiale con i proprietari del progetto non costituisce una violazione della riservatezza prevista dalle presenti condizioni.</p>
+
+      <h3>8. Proprietà dell'app e dei contenuti</h3>
+      <p>L'applicazione, il relativo software, il design, la grafica, i sistemi, gli algoritmi, le funzionalità, i testi e gli altri elementi sviluppati nell'ambito del progetto sono di proprietà di Giuseppe Di Benedetto e Pietro Laudani, salvo eventuali elementi di terze parti o diritti appartenenti ad altri soggetti.</p>
+      <p>L'accesso alla Closed Beta non concede all'utente alcun diritto di proprietà o licenza sui suddetti elementi al di là del semplice utilizzo dell'app per le finalità di test previste.</p>
+
+      <h3>9. Violazione delle condizioni</h3>
+      <p>In caso di violazione delle presenti condizioni, i proprietari del progetto potranno, a propria discrezione e nei limiti consentiti dalla legge, revocare immediatamente l'accesso alla Closed Beta e all'account dell'utente.</p>
+      <p>Nei casi più gravi, potranno inoltre essere intraprese le ulteriori azioni previste dalla normativa applicabile.</p>
+
+      <h3>10. Accettazione</h3>
+      <p>Registrandosi alla Closed Beta e selezionando la casella di accettazione, l'utente dichiara di:</p>
+      <ul>
+        <li>aver letto e compreso le presenti condizioni;</li>
+        <li>accettare che l'app sia attualmente in fase di Closed Beta;</li>
+        <li>comprendere che alcune funzionalità possono essere modificate o rimosse;</li>
+        <li>impegnarsi a mantenere riservate le informazioni relative alla Closed Beta;</li>
+        <li>non condividere screenshot, fotografie, video, registrazioni o altre informazioni riservate senza autorizzazione;</li>
+        <li>utilizzare l'accesso esclusivamente per le finalità di test per cui è stato invitato.</li>
+      </ul>
+      <p>La registrazione e l'utilizzo dell'app costituiscono accettazione delle presenti Condizioni di partecipazione alla Closed Beta.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeModal()">Chiudi</button>
     </div>
   </div>
   <!-- Modal: GK Planner - Come funziona -->

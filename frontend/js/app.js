@@ -576,10 +576,28 @@ function _aggiornaUserEmailBadge(email) {
   }
 }
 
+// Completa lato server il profilo (nome/cognome/eta/accettazione Condizioni Closed Beta) se
+// l'utente si e' registrato col nuovo flusso: e' un no-op per gli utenti esistenti (che non hanno
+// questi dati in user_metadata) e per chi ha gia' completato la sincronizzazione in precedenza —
+// vedi POST /api/auth/completa-registrazione in server.js per la logica di validazione/scrittura.
+// Non deve mai bloccare il login: eventuali errori vengono solo loggati in console.
+async function _completaRegistrazioneSeServe() {
+  try {
+    const { data: sessData } = await supa.auth.getSession();
+    const accessToken = sessData && sessData.session ? sessData.session.access_token : null;
+    if (!accessToken) return;
+    await fetch('/api/auth/completa-registrazione', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + accessToken }
+    });
+  } catch (e) { console.warn('Sincronizzazione profilo registrazione fallita (non bloccante):', e); }
+}
+
 async function applicaUtenteLoggato(user) {
   S.userId = user.id;
   S.userEmail = user.email || null;
   _aggiornaUserEmailBadge(S.userEmail);
+  _completaRegistrazioneSeServe();
   const { data: profile } = await supa.from('profiles').select('role').eq('id', user.id).single();
   S.userRole = (profile && profile.role) || 'utente';
   document.body.classList.toggle('app-role-admin', S.userRole === 'admin');
@@ -725,14 +743,36 @@ function setupLogin() {
     await applicaUtenteLoggato(data.user);
   });
 
+  const chkTerms = document.getElementById('signup-terms-checkbox');
+  if (chkTerms && btnSignup) chkTerms.addEventListener('change', () => {
+    btnSignup.disabled = !chkTerms.checked;
+    btnSignup.textContent = chkTerms.checked ? 'Registrati' : 'Accetta le condizioni per registrarti';
+  });
+
+  const linkCondizioniBeta = document.getElementById('link-condizioni-beta');
+  if (linkCondizioniBeta) linkCondizioniBeta.addEventListener('click', (e) => {
+    e.preventDefault();
+    openModal('modal-condizioni-beta');
+  });
+
   if (btnSignup) btnSignup.addEventListener('click', async () => {
+    const nome = document.getElementById('signup-nome').value.trim();
+    const cognome = document.getElementById('signup-cognome').value.trim();
+    const etaRaw = document.getElementById('signup-eta').value;
+    const eta = etaRaw === '' ? NaN : Number(etaRaw);
     const email = document.getElementById('signup-email').value.trim();
     const password = document.getElementById('signup-password').value;
+    const termsAccepted = !!(chkTerms && chkTerms.checked);
     const errEl = document.getElementById('signup-error');
     const okEl = document.getElementById('signup-success');
     errEl.style.display = 'none'; okEl.style.display = 'none';
-    if (!email || !password) { errEl.textContent = 'Compila tutti i campi'; errEl.style.display = 'block'; return; }
-    const { data, error } = await supa.auth.signUp({ email, password });
+    if (!nome || !cognome || !email || !password) { errEl.textContent = 'Compila tutti i campi'; errEl.style.display = 'block'; return; }
+    if (!Number.isInteger(eta) || eta < 1 || eta > 120) { errEl.textContent = 'Inserisci un\'età valida'; errEl.style.display = 'block'; return; }
+    if (!termsAccepted) { errEl.textContent = 'Devi accettare le Condizioni di partecipazione alla Closed Beta per registrarti'; errEl.style.display = 'block'; return; }
+    const { data, error } = await supa.auth.signUp({
+      email, password,
+      options: { data: { nome, cognome, eta, termsAccepted: true, termsVersion: '2026-08-08' } }
+    });
     if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
     if (data.session) {
       await applicaUtenteLoggato(data.user);

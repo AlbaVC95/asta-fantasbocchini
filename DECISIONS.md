@@ -115,6 +115,28 @@ dall'utente influenza solo l'ordinamento e il colore (over/entro budget), mai la
 precedente (filtro qualità minima + esclusione secca sopra budget + ordinamento solo per qualità) è
 stato abbandonato perché nascondeva combinazioni che l'utente vuole invece vedere sempre.
 
+## Registrazione: signUp resta lato client, ma l'accettazione delle Condizioni Closed Beta è validata e scritta solo dal backend
+
+Per il nuovo flusso di registrazione (Nome/Cognome/Età + accettazione obbligatoria delle Condizioni di
+partecipazione alla Closed Beta) si è valutato di spostare la creazione dell'utente Supabase stesso nel
+backend (service role, `admin.createUser`), per poter rifiutare la creazione dell'account se
+`termsAccepted` non è `true`. Scartato di proposito: `supa.auth.signUp()` chiama comunque l'API
+pubblica di Supabase con la chiave anon (per natura pubblica), quindi un bypass diretto della UI
+dell'app resterebbe comunque possibile chiamando quell'API con altri strumenti — un limite intrinseco
+della piattaforma non chiudibile da codice applicativo senza disabilitare la registrazione pubblica su
+Supabase (azione da dashboard, fuori scope, non richiesta). Spostare la creazione utente lato backend
+avrebbe inoltre richiesto rinunciare alla mail di conferma già gestita da Supabase (nessuna
+infrastruttura di invio email esiste nel progetto) — un cambio di UX più invasivo del necessario.
+
+Approccio scelto: `signUp` resta invariato lato client (nessun cambio alla UX di conferma email
+esistente), con nome/cognome/età/accettazione passati come `user_metadata` (`options.data`). Un nuovo
+endpoint `POST /api/auth/completa-registrazione` (`backend/server.js`) — chiamato in modo non
+bloccante ad ogni login/restore sessione da `applicaUtenteLoggato()` in `app.js` — legge questi dati
+**da Supabase stesso** (mai dal body della richiesta), li valida indipendentemente lato server, e solo
+se validi scrive su `profiles` con timestamp (`terms_accepted_at`) e versione (`terms_version`)
+generati/decisi **sempre dal server**, mai dal client. Per gli utenti registrati prima di questo cambio
+(nessun `user_metadata.nome`) l'endpoint è un no-op esplicito: restano intoccati.
+
 ## Timer d'asta autoritativo lato server, stato sempre broadcastato per intero
 
 Il timer non viene mai calcolato o fidato lato client: è gestito interamente in `server.js`

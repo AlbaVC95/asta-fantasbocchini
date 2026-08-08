@@ -5,52 +5,51 @@ Stato attuale del progetto. Questo file va sovrascritto ad ogni task importante 
 
 ## Stato attuale
 
-- Branch `main`, modifiche pendenti non ancora committate (vedi `git status`), nessun task in corso.
+- Branch `main`, commit `c76c506` come base. Modifiche non ancora committate in questa sessione: nuovo
+  flusso di registrazione (vedi sotto). **Prima del deploy va eseguita manualmente** la migration SQL
+  `backend/sql/2026-08-08_registrazione_closed_beta.sql` nell'SQL editor di Supabase (nessuna
+  credenziale Supabase disponibile in questo ambiente per eseguirla automaticamente).
 
 ## Cambi recenti importanti (questa sessione)
 
-- **Esporta/Importa Strategia**: nuovi bottoni "📤 Esporta strategia" (nell'editor) e "📥 Importa
-  strategia" (nella lista strategie) in [frontend/js/app.js](../frontend/js/app.js)
-  (`esportaStrategia`/`importaStrategiaDaFile`). Genera/legge un JSON con nome, tipo asta, crediti,
-  fasce e config giocatori (fascia/prezzo/percentuale/preferito). L'import crea sempre una NUOVA
-  strategia, ignora silenziosamente i giocatori il cui `giocatore_id` non esiste più nel Listino
-  Ufficiale corrente. Vedi [DECISIONS.md](../DECISIONS.md) per la scelta di riferire le fasce per
-  indice invece che per id Supabase. Non testabile end-to-end in locale (serve Supabase configurato,
-  assente in questo ambiente) — verificato export interattivamente, import solo via lettura codice.
-- **Griglia P/A — Auction Value** (Portieri e Attaccanti): il costo atteso usato dal ranking non è più
-  il FVM ufficiale grezzo ma un "Auction Value" calcolato solo internamente alla Griglia P/A (FVM
-  aggregato per squadra × moltiplicatore di Forza Squadre, configurabile in Config Admin → sezione
-  admin-only "Moltiplicatori Auction Value"). Il FVM ufficiale resta invariato ovunque altrove
-  (Listino, Strategia, Asta, Scambi, Comparazioni). Il ranking finale è tornato al blend
-  `qualityScore*0.6 + priceScore*0.4` **senza mai escludere combinazioni per budget** (il budget
-  influenza solo ordine/colore) — questo sostituisce il tentativo della sessione precedente (filtro
-  qualità minima + esclusione secca sopra budget + ordinamento solo qualità), abbandonato su richiesta
-  esplicita dell'utente perché nascondeva combinazioni. Vedi [DECISIONS.md](../DECISIONS.md) per i
-  dettagli.
-- **Editor Strategia — riga giocatore compatta**: ogni giocatore ora sta su una sola riga (prima ne
-  occupava 2-3), ordine: nome, squadra, ruolo, FVM, QUOT, prezzo, percentuale, ★ preferito, badge U21,
-  fascia. Su schermi molto stretti la riga scorre in orizzontale invece di andare a capo. Nel farlo si
-  sono scoperti e corretti un bug di specificità CSS preesistente (`input[type=number]{width:100%}`
-  batteva `.giocatore-prezzo`/`.giocatore-percentuale` per specificità, non per ordine) e un
-  comportamento flexbox non ovvio (`overflow:hidden` su un elemento flex implica `min-width:0`
-  automatico, quindi senza un `min-width` esplicito nome/squadra collassavano a larghezza zero).
-
-## Nota tecnica: errore console pre-esistente nell'ambiente di sviluppo locale
-
-Durante la verifica in browser di questa sessione è emerso un errore console ("Cannot read properties
-of null (reading 'params')") cliccando su "Griglia Portieri/Attaccanti" in locale. Verificato con `git
-stash` che si riproduce IDENTICO anche sul codice precedente a questa sessione — non è stato introdotto
-da questi cambi. Probabilmente legato alla mancanza di Supabase configurato in locale (nessun `.env`),
-non riproducibile con certezza in produzione. Non approfondito oltre (fuori scope), la Griglia P/A
-funziona comunque correttamente nonostante l'errore (verificato via screenshot).
+- **Nuovo flusso di registrazione (Nome/Cognome/Età + accettazione Condizioni Closed Beta)**:
+  - `frontend/index.html`: card di signup ampliata con Nome, Cognome, Età, link "Condizioni di
+    partecipazione alla Closed Beta" (apre `modal-condizioni-beta`, testo integrale fornito
+    dall'utente) e checkbox obbligatoria. Il bottone "Registrati" parte `disabled` e si abilita solo
+    alla spunta del checkbox.
+  - `frontend/js/app.js` (`setupLogin()`): validazione client di nome/cognome/età (intero 1-120) e
+    checkbox prima di chiamare `supa.auth.signUp` — se manca qualcosa l'account non viene nemmeno
+    richiesto a Supabase. I dati vengono passati come `options.data` (user_metadata) al signUp.
+    `applicaUtenteLoggato()` chiama ora (non bloccante) `_completaRegistrazioneSeServe()` ad ogni
+    login/restore sessione.
+  - `backend/server.js`: nuovo endpoint `POST /api/auth/completa-registrazione` — legge
+    `user_metadata` dal token verificato (mai dal body della richiesta), valida server-side
+    nome/cognome/età/`termsAccepted === true`, e solo se valido scrive su `profiles` (`nome`,
+    `cognome`, `eta`, `terms_accepted`, `terms_accepted_at` generato da `new Date()` server-side,
+    `terms_version` dalla costante `CONDIZIONI_BETA_VERSIONE = '2026-08-08'`, mai da input client).
+    Utenti esistenti (senza `user_metadata.nome`) → risposta `{skipped:true}`, nessuna scrittura.
+  - **Perché il signUp resta lato client**: `supa.auth.signUp` chiama comunque l'API pubblica Supabase
+    (anon key) — un bypass diretto della UI è un limite intrinseco della piattaforma, non chiudibile
+    da codice applicativo senza disabilitare la registrazione pubblica su Supabase (fuori scope,
+    concordato esplicitamente con l'utente). Il backend garantisce invece che nessun dato di
+    accettazione condizioni venga scritto in `profiles` senza una validazione server-side indipendente.
+    Vedi [DECISIONS.md](../DECISIONS.md).
+  - Verificato in locale (senza Supabase configurato, stessa limitazione già nota in questo ambiente):
+    UI completa, apertura/chiusura modal condizioni, abilitazione bottone alla spunta checkbox,
+    validazioni "Compila tutti i campi" ed "Inserisci un'età valida" (confermato via
+    `read_network_requests` che nessuna chiamata a Supabase parte finché la validazione fallisce),
+    responsive mobile. **Non verificato**: il giro reale signUp→`completa-registrazione`→scrittura su
+    `profiles` (richiede un vero progetto Supabase; deliberatamente non testato contro il progetto di
+    produzione per non creare un account reale/inviare email di conferma reali).
 
 ## Tasks pendenti
 
-Nessuno noto al momento.
+- Eseguire manualmente `backend/sql/2026-08-08_registrazione_closed_beta.sql` su Supabase prima del
+  deploy.
+- Dopo il deploy, verificare end-to-end con un account reale: registrazione → riga `profiles` con
+  `nome`/`cognome`/`eta`/`terms_accepted=true`/`terms_accepted_at`/`terms_version='2026-08-08'` —
+  e verificare che un utente già esistente prima di questo cambio continui ad accedere normalmente.
 
 ## Prossimo passo consigliato
 
-Verificare in produzione (login reale + listino caricato) che: (1) l'import di una Strategia funzioni
-end-to-end, (2) i valori di Auction Value nella Griglia P/A Portieri/Attaccanti diano ranking sensati
-con i moltiplicatori di default. Se necessario, l'admin può affinare i "Moltiplicatori Auction Value"
-da Config Admin senza bisogno di ulteriori modifiche al codice.
+Eseguire la migration SQL, deployare, e fare il test end-to-end reale descritto sopra.

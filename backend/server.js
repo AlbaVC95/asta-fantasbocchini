@@ -27,6 +27,26 @@ async function getRuoloUtente(req) {
   return { role: profile.role, userId: userData.user.id };
 }
 
+// ══ REGISTRAZIONE — completamento profilo Closed Beta ══════════════
+// Il signUp vero e proprio resta lato client (supa.auth.signUp in app.js), perche' l'API pubblica
+// di Supabase e' comunque raggiungibile direttamente con la chiave anon: nessun controllo qui
+// potrebbe impedire una chiamata diretta a quell'API. Quello che QUESTO endpoint garantisce e' che
+// nome/cognome/eta/accettazione condizioni vengano scritti in `profiles` solo dopo una validazione
+// server-side indipendente, con timestamp e versione generati sempre dal server, mai fidandosi del
+// client. Vedi DECISIONS.md per il ragionamento completo.
+const CONDIZIONI_BETA_VERSIONE = '2026-08-08';
+const ETA_MIN = 1, ETA_MAX = 120;
+
+async function getUtenteDaToken(req) {
+  if (!supabaseAdmin) return { error: 'Supabase non configurato sul server', status: 500 };
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token) return { error: 'Token mancante', status: 401 };
+  const { data, error } = await supabaseAdmin.auth.getUser(token);
+  if (error || !data || !data.user) return { error: 'Token non valido', status: 401 };
+  return { user: data.user };
+}
+
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
@@ -50,6 +70,43 @@ app.use(express.static(path.join(__dirname, '..', 'frontend'), {
   }
 }));
 app.use(express.json({ limit: '10mb' }));
+
+app.post('/api/auth/completa-registrazione', async (req, res) => {
+  const { user, error, status } = await getUtenteDaToken(req);
+  if (error) return res.status(status).json({ error });
+
+  const { data: profiloEsistente } = await supabaseAdmin
+    .from('profiles').select('terms_accepted').eq('id', user.id).single();
+  if (profiloEsistente && profiloEsistente.terms_accepted === true) {
+    return res.json({ done: true }); // gia' completato in precedenza, non riscrivere terms_accepted_at
+  }
+
+  const meta = user.user_metadata || {};
+  if (meta.nome === undefined) {
+    return res.json({ skipped: true }); // utente registrato col vecchio flusso: nessun dato da sincronizzare
+  }
+
+  const nome = typeof meta.nome === 'string' ? meta.nome.trim() : '';
+  const cognome = typeof meta.cognome === 'string' ? meta.cognome.trim() : '';
+  const eta = Number(meta.eta);
+  const termsAccepted = meta.termsAccepted;
+
+  if (!nome || nome.length > 80) return res.status(400).json({ error: 'Nome non valido' });
+  if (!cognome || cognome.length > 80) return res.status(400).json({ error: 'Cognome non valido' });
+  if (!Number.isInteger(eta) || eta < ETA_MIN || eta > ETA_MAX) return res.status(400).json({ error: 'Età non valida' });
+  if (termsAccepted !== true) return res.status(400).json({ error: 'Condizioni di partecipazione alla Closed Beta non accettate' });
+
+  const { error: upsertErr } = await supabaseAdmin.from('profiles').upsert({
+    id: user.id,
+    nome, cognome, eta,
+    terms_accepted: true,
+    terms_accepted_at: new Date().toISOString(),
+    terms_version: CONDIZIONI_BETA_VERSIONE
+  }, { onConflict: 'id' });
+  if (upsertErr) return res.status(500).json({ error: 'Errore nel salvataggio del profilo' });
+
+  res.json({ done: true });
+});
 
 const aste = new Map();
 const timers = new Map();
