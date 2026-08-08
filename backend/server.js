@@ -31,11 +31,11 @@ async function getRuoloUtente(req) {
 // Il signUp vero e proprio resta lato client (supa.auth.signUp in app.js), perche' l'API pubblica
 // di Supabase e' comunque raggiungibile direttamente con la chiave anon: nessun controllo qui
 // potrebbe impedire una chiamata diretta a quell'API. Quello che QUESTO endpoint garantisce e' che
-// nome/cognome/eta/accettazione condizioni vengano scritti in `profiles` solo dopo una validazione
-// server-side indipendente, con timestamp e versione generati sempre dal server, mai fidandosi del
-// client. Vedi DECISIONS.md per il ragionamento completo.
+// nome/cognome/data di nascita/accettazione condizioni vengano scritti in `profiles` solo dopo una
+// validazione server-side indipendente, con timestamp e versione generati sempre dal server, mai
+// fidandosi del client. Vedi DECISIONS.md per il ragionamento completo.
 const CONDIZIONI_BETA_VERSIONE = '2026-08-08';
-const ETA_MIN = 1, ETA_MAX = 120;
+const ANNI_MAX_ETA = 120; // limite tecnico di buon senso, non una regola di policy
 
 async function getUtenteDaToken(req) {
   if (!supabaseAdmin) return { error: 'Supabase non configurato sul server', status: 500 };
@@ -88,17 +88,22 @@ app.post('/api/auth/completa-registrazione', async (req, res) => {
 
   const nome = typeof meta.nome === 'string' ? meta.nome.trim() : '';
   const cognome = typeof meta.cognome === 'string' ? meta.cognome.trim() : '';
-  const eta = Number(meta.eta);
+  const dataNascita = typeof meta.dataNascita === 'string' ? new Date(meta.dataNascita + 'T00:00:00Z') : null;
   const termsAccepted = meta.termsAccepted;
+
+  const oggi = new Date(); oggi.setUTCHours(0, 0, 0, 0);
+  const limiteMinimo = new Date(oggi); limiteMinimo.setUTCFullYear(oggi.getUTCFullYear() - ANNI_MAX_ETA);
 
   if (!nome || nome.length > 80) return res.status(400).json({ error: 'Nome non valido' });
   if (!cognome || cognome.length > 80) return res.status(400).json({ error: 'Cognome non valido' });
-  if (!Number.isInteger(eta) || eta < ETA_MIN || eta > ETA_MAX) return res.status(400).json({ error: 'Età non valida' });
+  if (!dataNascita || isNaN(dataNascita.getTime()) || dataNascita > oggi || dataNascita < limiteMinimo) {
+    return res.status(400).json({ error: 'Data di nascita non valida' });
+  }
   if (termsAccepted !== true) return res.status(400).json({ error: 'Condizioni di partecipazione alla Closed Beta non accettate' });
 
   const { error: upsertErr } = await supabaseAdmin.from('profiles').upsert({
     id: user.id,
-    nome, cognome, eta,
+    nome, cognome, data_nascita: meta.dataNascita,
     terms_accepted: true,
     terms_accepted_at: new Date().toISOString(),
     terms_version: CONDIZIONI_BETA_VERSIONE

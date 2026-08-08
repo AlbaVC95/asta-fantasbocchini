@@ -758,20 +758,22 @@ function setupLogin() {
   if (btnSignup) btnSignup.addEventListener('click', async () => {
     const nome = document.getElementById('signup-nome').value.trim();
     const cognome = document.getElementById('signup-cognome').value.trim();
-    const etaRaw = document.getElementById('signup-eta').value;
-    const eta = etaRaw === '' ? NaN : Number(etaRaw);
+    const dataNascita = document.getElementById('signup-data-nascita').value; // 'YYYY-MM-DD' o ''
     const email = document.getElementById('signup-email').value.trim();
     const password = document.getElementById('signup-password').value;
     const termsAccepted = !!(chkTerms && chkTerms.checked);
     const errEl = document.getElementById('signup-error');
     const okEl = document.getElementById('signup-success');
     errEl.style.display = 'none'; okEl.style.display = 'none';
-    if (!nome || !cognome || !email || !password) { errEl.textContent = 'Compila tutti i campi'; errEl.style.display = 'block'; return; }
-    if (!Number.isInteger(eta) || eta < 1 || eta > 120) { errEl.textContent = 'Inserisci un\'età valida'; errEl.style.display = 'block'; return; }
+    if (!nome || !cognome || !email || !password || !dataNascita) { errEl.textContent = 'Compila tutti i campi'; errEl.style.display = 'block'; return; }
+    const oggi = new Date(); oggi.setHours(0, 0, 0, 0);
+    const nascita = new Date(dataNascita + 'T00:00:00');
+    const centoVentAnniFa = new Date(oggi); centoVentAnniFa.setFullYear(oggi.getFullYear() - 120);
+    if (isNaN(nascita.getTime()) || nascita > oggi || nascita < centoVentAnniFa) { errEl.textContent = 'Inserisci una data di nascita valida'; errEl.style.display = 'block'; return; }
     if (!termsAccepted) { errEl.textContent = 'Devi accettare le Condizioni di partecipazione alla Closed Beta per registrarti'; errEl.style.display = 'block'; return; }
     const { data, error } = await supa.auth.signUp({
       email, password,
-      options: { data: { nome, cognome, eta, termsAccepted: true, termsVersion: '2026-08-08' } }
+      options: { data: { nome, cognome, dataNascita, termsAccepted: true, termsVersion: '2026-08-08' } }
     });
     if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
     if (data.session) {
