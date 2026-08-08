@@ -586,10 +586,16 @@ async function _completaRegistrazioneSeServe() {
     const { data: sessData } = await supa.auth.getSession();
     const accessToken = sessData && sessData.session ? sessData.session.access_token : null;
     if (!accessToken) return;
-    await fetch('/api/auth/completa-registrazione', {
+    const res = await fetch('/api/auth/completa-registrazione', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + accessToken }
     });
+    const body = await res.json().catch(() => null);
+    if (!res.ok) {
+      console.warn('completa-registrazione ha risposto con errore:', res.status, body);
+    } else {
+      console.log('completa-registrazione:', res.status, body);
+    }
   } catch (e) { console.warn('Sincronizzazione profilo registrazione fallita (non bloccante):', e); }
 }
 
