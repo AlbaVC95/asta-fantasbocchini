@@ -5,59 +5,62 @@ Stato attuale del progetto. Questo file va sovrascritto ad ogni task importante 
 
 ## Stato attuale
 
-- Branch `main`, commit `9604cd7` pushato (nuovo flusso di registrazione, migration
-  `2026-08-08_registrazione_closed_beta.sql` già eseguita dall'utente su Supabase). Modifiche non
-  ancora committate in questa sessione: sostituito il campo Età con Data di nascita (vedi sotto).
-  **Prima del prossimo deploy va eseguita manualmente** anche la migration
-  `backend/sql/2026-08-08b_registrazione_data_nascita.sql` nell'SQL editor di Supabase (aggiunge
-  `data_nascita date`, rimuove `eta` — sicuro, nessuna registrazione reale l'ha ancora popolata).
+- Branch `main`, commit `a3bf630` pushato. Entrambe le migration già eseguite dall'utente su Supabase
+  (`2026-08-08_registrazione_closed_beta.sql` e `2026-08-08b_registrazione_data_nascita.sql`).
+  **Non ancora confermato via test reale** che la scrittura su `profiles` funzioni end-to-end in
+  produzione dopo l'ultimo fix — prossimo passo di questa sessione/futura: ripetere il login con
+  `albavicenteca+test1@gmail.com` e controllare che compaiano `nome`/`cognome`/`data_nascita`/
+  `terms_accepted=true` nella riga corrispondente.
 
 ## Cambi recenti importanti (questa sessione)
 
 - **Nuovo flusso di registrazione (Nome/Cognome/Data di nascita + accettazione Condizioni Closed
-  Beta)**:
-  - `frontend/index.html`: card di signup ampliata con Nome, Cognome, Data di nascita
-    (`<input type="date">`), link "Condizioni di partecipazione alla Closed Beta" (apre
-    `modal-condizioni-beta`, testo integrale fornito dall'utente) e checkbox obbligatoria. Il bottone
-    "Registrati" parte `disabled` e si abilita solo alla spunta del checkbox.
-  - `frontend/js/app.js` (`setupLogin()`): validazione client di nome/cognome/data di nascita (data
-    reale, non futura, non più vecchia di 120 anni) e checkbox prima di chiamare `supa.auth.signUp` —
-    se manca qualcosa l'account non viene nemmeno richiesto a Supabase. I dati vengono passati come
-    `options.data` (user_metadata) al signUp. `applicaUtenteLoggato()` chiama ora (non bloccante)
-    `_completaRegistrazioneSeServe()` ad ogni login/restore sessione.
-  - `backend/server.js`: nuovo endpoint `POST /api/auth/completa-registrazione` — legge
-    `user_metadata` dal token verificato (mai dal body della richiesta), valida server-side
-    nome/cognome/data di nascita/`termsAccepted === true`, e solo se valido scrive su `profiles`
-    (`nome`, `cognome`, `data_nascita`, `terms_accepted`, `terms_accepted_at` generato da `new Date()`
-    server-side, `terms_version` dalla costante `CONDIZIONI_BETA_VERSIONE = '2026-08-08'`, mai da input
-    client). Utenti esistenti (senza `user_metadata.nome`) → risposta `{skipped:true}`, nessuna
-    scrittura.
-  - Il campo era inizialmente "Età" (intero); cambiato su richiesta esplicita dell'utente in "Data di
-    nascita" subito dopo il primo deploy — la migration `eta` era stata appena eseguita e senza dati
-    reali, quindi la migration successiva la rimuove direttamente invece di mantenerla in parallelo.
-  - **Perché il signUp resta lato client**: `supa.auth.signUp` chiama comunque l'API pubblica Supabase
-    (anon key) — un bypass diretto della UI è un limite intrinseco della piattaforma, non chiudibile
-    da codice applicativo senza disabilitare la registrazione pubblica su Supabase (fuori scope,
-    concordato esplicitamente con l'utente). Il backend garantisce invece che nessun dato di
-    accettazione condizioni venga scritto in `profiles` senza una validazione server-side indipendente.
-    Vedi [DECISIONS.md](../DECISIONS.md).
-  - Verificato in locale (senza Supabase configurato, stessa limitazione già nota in questo ambiente):
-    UI completa, apertura/chiusura modal condizioni, abilitazione bottone alla spunta checkbox,
-    validazioni "Compila tutti i campi" ed "Inserisci una data di nascita valida" (confermato via
-    `read_network_requests` che nessuna chiamata a Supabase parte finché la validazione fallisce),
-    responsive mobile. **Non verificato**: il giro reale signUp→`completa-registrazione`→scrittura su
-    `profiles` (richiede un vero progetto Supabase; deliberatamente non testato contro il progetto di
-    produzione per non creare un account reale/inviare email di conferma reali).
+  Beta)**: form di signup ampliato, modal con testo integrale delle Condizioni, checkbox obbligatoria
+  che sblocca il bottone "Registrati", nuovo endpoint `POST /api/auth/completa-registrazione` che
+  valida server-side (mai fidandosi del client) e scrive su `profiles` con timestamp/versione generati
+  dal server. Dettagli architetturali completi in [DECISIONS.md](../DECISIONS.md). Utenti esistenti
+  non toccati (endpoint no-op se `user_metadata.nome` è assente).
+
+- **Bug reale trovato e corretto durante la verifica in produzione**: la nuova funzione
+  `getUtenteDaToken()` che avevo scritto per il nuovo endpoint aveva lo **stesso nome** di una
+  funzione già esistente nel file (usata da `/api/mie-aste`, `/api/asta/:id/riprendi`, `/mio-backup`,
+  `/ripristina-da-file`, `/api/admin/backup-status`), con un contratto di ritorno diverso. In
+  JavaScript, due `function` omonime nello stesso scope si sovrascrivono silenziosamente (vince
+  l'ultima dichiarata nel file) — il nuovo endpoint riceveva quindi l'oggetto sbagliato e falliva con
+  `TypeError: Cannot read properties of undefined (reading 'id')`, lasciando la richiesta del client
+  appesa per sempre (Express 4 non risponde automaticamente se una route async rifiuta senza
+  try/catch). Rinominata in `getUtenteCompletoDaToken`; l'endpoint ora ha anche un try/catch completo
+  che garantisce sempre una risposta al client, più log `[completa-registrazione]` a ogni passo per
+  future diagnosi. Le 5 funzioni preesistenti non sono mai state toccate e non hanno mai smesso di
+  funzionare (usavano già, senza saperlo, la versione "vecchia" per via dell'ordine di dichiarazione).
+  **Lezione per il futuro**: prima di aggiungere un helper con un nome "ovvio" tipo
+  `getUtenteDaToken`, cercare nel file se esiste già (`grep -n "function <nome>"`).
+
+- **Percorso di debug seguito** (utile se il problema si ripresenta): messaggio di successo lato
+  client ma nessuna riga aggiornata in `profiles` → verificato che non fosse confusione fra
+  `Authentication → Users` (Supabase Auth, dove l'account esiste sempre) e la tabella `profiles`
+  (popolata solo al primo login reale) → verificato che l'email di conferma arrivasse davvero (era
+  un'altra causa distinta, non un bug: `Site URL` in Supabase puntava a `localhost:3000` invece della
+  URL reale di produzione, va corretto in **Supabase → Authentication → URL Configuration**, non è
+  stato ancora confermato se l'utente l'ha corretto) → trovato via Network tab del browser che la
+  richiesta a `/api/auth/completa-registrazione` restava sospesa senza risposta → confermato via log
+  di Render (non di Supabase — sono due pannelli distinti) il vero errore (`unhandledRejection` con
+  `Cannot read properties of undefined (reading 'id')`) → causa radice trovata per lettura diretta del
+  codice.
 
 ## Tasks pendenti
 
-- Eseguire manualmente `backend/sql/2026-08-08b_registrazione_data_nascita.sql` su Supabase prima del
-  prossimo deploy (dopo aver già eseguito la migration precedente).
-- Dopo il deploy, verificare end-to-end con un account reale: registrazione → riga `profiles` con
-  `nome`/`cognome`/`data_nascita`/`terms_accepted=true`/`terms_accepted_at`/`terms_version='2026-08-08'`
-  — e verificare che un utente già esistente prima di questo cambio continui ad accedere normalmente.
+- **Verificare che il fix funzioni davvero**: far ripetere il login a
+  `albavicenteca+test1@gmail.com` (già confermato, già usato prima del fix) e controllare `profiles`.
+- Verificare/correggere **Supabase → Authentication → URL Configuration → Site URL**: risultava
+  impostato su `http://localhost:3000` invece della URL reale di produzione (Render) — impedisce ai
+  link di conferma email di aprire l'app dopo la conferma. Non è stato confermato se già sistemato.
+  Non è un problema introdotto da questa sessione, preesisteva.
+- Verificare che un utente già esistente prima di questo cambio continui ad accedere normalmente
+  (non ancora testato esplicitamente in questa sessione).
 
 ## Prossimo passo consigliato
 
-Eseguire la migration SQL `2026-08-08b`, committare/pushare le modifiche di questa sessione (campo
-Data di nascita al posto di Età), deployare, e fare il test end-to-end reale descritto sopra.
+Ripetere il test di login con l'account già confermato per verificare che `profiles` si popoli
+correttamente ora che il bug di collisione dei nomi è risolto. Se funziona, correggere anche il Site
+URL su Supabase per non lasciare rotto il flusso di conferma email per i prossimi utenti reali.
