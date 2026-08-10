@@ -5,57 +5,60 @@ Stato attuale del progetto. Questo file va sovrascritto ad ogni task importante 
 
 ## Stato attuale
 
-- Branch `main`. 4 miglioramenti a Strategia/Asta implementati in questa sessione, **non ancora
-  committati né pushati**, e **la migration SQL non è ancora stata eseguita dall'utente su
-  Supabase** — il codice che legge/scrive `titolarita`/`commento` fallirà finché la migration
-  non viene applicata (vedi sotto).
-- Verifica fatta solo lato client (funzioni pure, DOM, sync tra controlli duplicati) tramite
-  browser di sviluppo con dati finti iniettati in `S`, **senza login reale** (non ho credenziali
-  e non posso inserire/inviare password per policy di sicurezza dell'agente). Non ancora
-  verificato end-to-end con Supabase reale (salvataggio/caricamento strategia, applicazione in
-  un'asta vera).
+- Branch `main`, commit `8e5c3d3` **pushato e in produzione** (Render, deploy automatico su push
+  confermato). Migration `backend/sql/2026-08-10_strategia_titolarita_commento.sql` **già eseguita
+  dall'utente** su Supabase.
+- Verificato in produzione che il codice aggiornato è servito correttamente (fetch diretto di
+  `app.js` con i marcatori delle nuove funzionalità). Il problema iniziale di "non vedo i cambi"
+  segnalato dall'utente era **cache del browser (Safari)**, non un problema di deploy — risolto
+  con reload/finestra privata.
+- **Ancora da confermare dall'utente**: test funzionale end-to-end con login reale (salvare
+  titolarità/commento su un giocatore, ricaricare e verificare persistenza, applicare la strategia
+  in un'asta di test e vedere stelle/commento in sola lettura alla chiamata).
+- Aggiunto un documento di studio/design per un **futuro** (non iniziato) redesign 3D del tab
+  Anteprima in Asta — vedi sotto, nessun file dell'app reale è stato toccato per questo.
 
 ## Cambi di questa sessione
 
-1. **Filtri/ricerca/ordinamento duplicati in cima alla pagina Strategia**
-   ([frontend/index.html](../frontend/index.html), [frontend/js/app.js](../frontend/js/app.js)):
-   stessa ricerca/filtro ruolo/ordinamento già esistenti sopra "Non assegnati", ora anche subito
-   sotto l'header. Le due copie condividono classi (`editor-cerca-input`,
-   `editor-filtro-ruolo-group`, `editor-ordina-campo-select`, `editor-ordina-dir-btn`) e restano
-   sempre sincronizzate (vedi [DECISIONS.md](../DECISIONS.md)).
+1. **Filtri/ricerca/ordinamento duplicati in cima alla pagina Strategia**, sincronizzati con la
+   copia esistente sopra "Non assegnati" (classi condivise `editor-cerca-input`,
+   `editor-filtro-ruolo-group`, `editor-ordina-campo-select`, `editor-ordina-dir-btn`).
 
 2. **Titolarità (1-5 stelle) e Commento libero per giocatore**, dati personali per Strategia
-   (stesso pattern di `prezzo`/`percentuale`/`preferito`):
-   - Nuova migration **da eseguire manualmente su Supabase**:
-     [backend/sql/2026-08-10_strategia_titolarita_commento.sql](../backend/sql/2026-08-10_strategia_titolarita_commento.sql)
-     (aggiunge `titolarita smallint` e `commento text` a `strategia_giocatori`, con CHECK 1-5).
-   - Editor Strategia: bottone titolarità (modal a 5 stelle cliccabili + "Rimuovi valutazione")
-     e icona commento (modal con textarea) su ogni riga giocatore.
-   - Salvataggio/caricamento/export/import della strategia aggiornati per includere i due campi.
-   - In Asta: mostrati in **sola lettura** nella card di chiamata giocatore e nella lista
-     Svincolati (nessuna scrittura durante l'asta live, per motivazione vedi
-     [DECISIONS.md](../DECISIONS.md)).
+   (stesso pattern di `prezzo`/`percentuale`/`preferito`): bottone/modal stelle + icona/modal
+   commento nell'editor, sola lettura in Asta (card di chiamata + lista Svincolati). Dettagli
+   completi in [DECISIONS.md](../DECISIONS.md).
 
-3. **Fix badge U21 mancante nella lista Svincolati durante l'Asta**
-   ([frontend/js/app.js](../frontend/js/app.js), `renderGiocatoriLiberi()`): il dato `g.u21` era
-   già presente sui giocatori del pool ma non veniva renderizzato in questa lista (lo era già
-   nella card di chiamata e nell'editor Strategia). Un solo badge aggiunto, nessun cambio CSS
-   necessario (la regola `.tipo-U21` non è legata a una classe base specifica).
+3. **Fix badge U21 mancante nella lista Svincolati durante l'Asta** (`renderGiocatoriLiberi()` in
+   `frontend/js/app.js`): il dato c'era già, mancava solo il render.
+
+4. **Studio di fattibilità + design salvato** per un redesign 3D del tab Anteprima in Asta (campo
+   isometrico, carte 3D, drawer, animazione di assegnazione visibile a tutti via socket già
+   esistente). Nessuna implementazione, solo pianificazione:
+   - Documento completo: [docs/REDESIGN_ASTA_3D.md](REDESIGN_ASTA_3D.md) — mappa dell'architettura
+     attuale (`_ruoliCompatibili`, `renderAnteprimaPitch`, evento `giocatore-assegnato`, ecc.),
+     decisione di scope (fondere planner locale + rosa reale), design system, rischi, checklist QA,
+     fasi di implementazione, strategia di test sicura (branch git + eventuale servizio Render di
+     preview separato dalla produzione).
+   - Prototipo visivo interattivo pubblicato come Artifact (non nel repo, solo per revisione
+     dell'utente) con campo 3D CSS, carte, drawer e animazione di assegnazione funzionante,
+     verificato in locale prima della pubblicazione.
+   - Scoperta importante emersa dallo studio: il tab "Anteprima" oggi è **locale per browser**
+     (`localStorage`, non sincronizzato), concettualmente diverso dalla rosa realmente vinta in
+     asta (già sincronizzata, mostrata altrove) — il mockup dell'utente in realtà fonde i due
+     concetti, decisione confermata con l'utente.
 
 ## Tasks pendenti
 
-- **Eseguire la migration** `backend/sql/2026-08-10_strategia_titolarita_commento.sql`
-  sull'SQL editor di Supabase prima di deployare/usare questo codice in produzione.
-- **Verificare end-to-end con login reale**: aprire una strategia, impostare titolarità/commento
-  su un giocatore, salvare, ricaricare la pagina e riaprire l'editor (persistenza), esportare e
-  reimportare la strategia (i due campi devono sopravvivere), applicare la strategia in un'asta
-  di test e chiamare quel giocatore (stelle/commento devono comparire in sola lettura nella card
-  di chiamata e nella lista Svincolati).
-- Verificare visivamente su schermo stretto (mobile reale, non solo resize browser) che i due
-  nuovi bottoni per riga (titolarità + commento) non rompano lo scroll orizzontale già esistente
-  di `.editor-player-row`.
+- **Verificare end-to-end con login reale** (titolarità/commento): salvare, ricaricare, esportare/
+  reimportare, applicare la strategia in un'asta di test e controllare la resa in sola lettura.
+- Verificare su mobile reale (non solo resize browser) che i due nuovi bottoni per riga
+  (titolarità + commento) non rompano lo scroll orizzontale di `.editor-player-row`.
+- Redesign 3D Anteprima: **non iniziato**, resta come documento di design finché l'utente non
+  decide di procedere — vedi fasi in [docs/REDESIGN_ASTA_3D.md](REDESIGN_ASTA_3D.md).
 
 ## Prossimo passo consigliato
 
-Eseguire la migration su Supabase, poi fare login reale e ripetere il test end-to-end descritto
-sopra prima di considerare il task chiuso.
+Completare il test end-to-end di titolarità/commento con login reale. Per il redesign 3D, quando
+si deciderà di procedere: creare il branch dedicato indicato nel documento prima di scrivere
+qualunque codice.
