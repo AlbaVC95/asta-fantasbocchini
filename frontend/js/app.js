@@ -2853,13 +2853,21 @@ const ANTEPRIMA_FORMAZIONI = {
   '4-2-3-1': [['P'],['DD','DC','DC','DS'],['M','M/C'],['W/T','T','W/A'],['A/PC']]
 };
 
-const ANT_LS_KEY = 'ftb_anteprima_v1';
+const ANT_LS_KEY_BASE = 'ftb_anteprima_v1';
+
+// Chiave per-asta (non solo per-squadra): senza S.astaId, entrando in un'asta nuova con una
+// squadra dallo stesso nome si erediterebbe la formazione salvata dall'asta precedente, che
+// puo' avere una rosa completamente diversa. Il planner resta "locale, per-browser" com'era,
+// ma ora riparte vuoto ad ogni asta nuova invece di trascinarsi lo stato della precedente.
+function _antLsKey() {
+  return ANT_LS_KEY_BASE + '_' + (S.astaId || 'nessuna-asta');
+}
 
 function _antLoadAll() {
-  try { return JSON.parse(localStorage.getItem(ANT_LS_KEY)) || {}; } catch(e) { return {}; }
+  try { return JSON.parse(localStorage.getItem(_antLsKey())) || {}; } catch(e) { return {}; }
 }
 function _antSaveAll(data) {
-  try { localStorage.setItem(ANT_LS_KEY, JSON.stringify(data)); } catch(e) {}
+  try { localStorage.setItem(_antLsKey(), JSON.stringify(data)); } catch(e) {}
 }
 function _antGetSquadraState(nome) {
   const all = _antLoadAll();

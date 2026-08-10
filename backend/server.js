@@ -363,7 +363,7 @@ function avviaChiamata(astaId, giocatore, manuale) {
       asta.chiamataAttuale = {
         giocatore, offertaAttuale: giocatore.costoOriginale, squadraOfferente: null,
         proprietarioPrecedente: giocatore.squadraOriginale, aspettandoConferma: true,
-        proprietarioPrecedenteHaPuntato: false, fase: 'conferma', timer: 0, manuale: !!manuale
+        fase: 'conferma', timer: 0, manuale: !!manuale
       };
       broadcastStato(astaId);
       const popupData = { giocatore, costoConferma: giocatore.costoOriginale, proprietario: giocatore.squadraOriginale };
@@ -380,7 +380,7 @@ function avviaChiamata(astaId, giocatore, manuale) {
   asta.chiamataAttuale = {
     giocatore, offertaAttuale: 0, squadraOfferente: null,
     proprietarioPrecedente: giocatore.squadraOriginale || null,
-    aspettandoConferma: false, proprietarioPrecedenteHaPuntato: false,
+    aspettandoConferma: false,
     fase: 'prima', timer: asta.timerPrimaChiamata, manuale: !!manuale
   };
   broadcastStato(astaId);
@@ -407,7 +407,11 @@ function chiudiAsta(astaId) {
   // RIC/PLUS post-auction (solo asta iniziale)
   if (asta.tipoAsta === 'iniziale' && giocatore.squadraOriginale && squadraOfferente && squadraOfferente !== giocatore.squadraOriginale) {
     const sqPrec = getSquadra(asta, giocatore.squadraOriginale);
-    const prevBid = chiamata.proprietarioPrecedenteHaPuntato;
+    // Persistente su giocatore (non sulla chiamata, che viene ricreata ad ogni ri-chiamata/
+    // riapertura): una volta che il proprietario precedente ha punteggiato su questo giocatore,
+    // il diritto a plusvalenza/recompra resta perso per tutta l'asta, a prescindere da timer
+    // scaduti, riaperture, annullamenti o nuove estrazioni dello stesso giocatore.
+    const prevBid = !!giocatore.dirittoRiacquistoPerso;
     if (!prevBid && sqPrec && giocatore.tipo === 'RIC') {
       const hasPLUS = (sqPrec.slotsPLUS - sqPrec.slotsPLUSUsati) > 0;
       const hasRecompra = (sqPrec.recompra - sqPrec.recompraUsati) > 0;
@@ -1113,7 +1117,7 @@ io.on('connection', (socket) => {
     const maxOff = calcolaMaxOfferta(asta, sq);
     if (offerta > maxOff) return socket.emit('errore', { msg: `Massimo consentito: ${maxOff} crediti` });
     if (asta.tipoAsta === 'iniziale' && offerta > sq.crediti) return socket.emit('errore', { msg: `Crediti insufficienti (hai ${sq.crediti})` });
-    if (sq.nome === chiamata.proprietarioPrecedente) chiamata.proprietarioPrecedenteHaPuntato = true;
+    if (sq.nome === chiamata.proprietarioPrecedente) chiamata.giocatore.dirittoRiacquistoPerso = true;
     chiamata.offertaAttuale = offerta; chiamata.squadraOfferente = sq.nome;
     io.to(astaId).emit('aggiorna-offerta', chiamata);
     resetTimer(astaId, 'rilancio');
@@ -1136,7 +1140,9 @@ io.on('connection', (socket) => {
     if (tipo === 'da-uno') {
       asta.chiamataAttuale.offertaAttuale = 0;
       asta.chiamataAttuale.squadraOfferente = null;
-      asta.chiamataAttuale.proprietarioPrecedenteHaPuntato = false;
+      // NB: il diritto a plusvalenza/recompra eventualmente gia' perso (giocatore.
+      // dirittoRiacquistoPerso) NON va resettato qui: riaprire l'asta azzera solo l'offerta
+      // corrente, non "cancella" il fatto che il proprietario precedente avesse gia' punteggiato.
       io.to(astaId).emit('nuova-chiamata', asta.chiamataAttuale);
       startTimer(astaId, 'prima');
     } else {

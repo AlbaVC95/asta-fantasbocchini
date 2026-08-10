@@ -162,6 +162,29 @@ stato condiviso in `S` e rispecchia il nuovo valore su **tutte** le copie via
 `querySelectorAll`, cosi' le due istanze non vanno mai fuori sincrono indipendentemente da
 quale l'utente usa.
 
+## Diritto plusvalenza/recompra perso: persistito sul giocatore, non sulla chiamata
+
+Bug reale: il flag che segna "il proprietario precedente ha già punteggiato su questo giocatore
+in questa asta" (quindi ha perso il diritto a plusvalenza/recompra) viveva su
+`chiamata.proprietarioPrecedenteHaPuntato`, dentro l'oggetto `chiamataAttuale` che viene
+ricreato da zero ad ogni ri-chiamata dello stesso giocatore (timer scaduto e riaperto, asta
+annullata e ripetuta, richiamata manuale) — il diritto perso veniva quindi "resuscitato" come
+effetto collaterale del reset, mai per scelta esplicita. Spostato su `giocatore.
+dirittoRiacquistoPerso` (persistente, vive sull'oggetto in `asta.poolGiocatori`, sopravvive a
+qualunque ricreazione di `chiamataAttuale` e viene salvato/ripristinato dal backup esistente
+come tutti gli altri campi del giocatore). Impostato una sola volta al primo rilancio del
+proprietario precedente, mai resettato automaticamente da nessun punto del codice.
+
+## Anteprima: chiave `localStorage` per-asta, non solo per-squadra
+
+Bug reale: `Anteprima` (planner di formazione locale, vedi sopra "Redesign 3D") salvava tutto
+sotto un'unica chiave fissa (`ftb_anteprima_v1`) indicizzata solo per nome squadra — entrando in
+un'asta nuova con una squadra dallo stesso nome di una precedente, si ereditava la formazione
+salvata nell'asta finita, con giocatori che magari non fanno più parte della rosa attuale. La
+chiave ora include `S.astaId` (`_antLsKey()`), cosi' ogni asta parte con uno stato pulito senza
+bisogno di reset manuali; lo stato resta comunque locale al browser (nessun cambio a questa
+scelta architetturale, vedi sopra).
+
 ## Timer d'asta autoritativo lato server, stato sempre broadcastato per intero
 
 Il timer non viene mai calcolato o fidato lato client: è gestito interamente in `server.js`
