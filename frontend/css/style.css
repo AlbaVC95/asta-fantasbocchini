@@ -931,6 +931,14 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .editor-player-quot,.editor-player-fvm{color:var(--text-secondary);white-space:nowrap;text-align:left;flex-shrink:0}
 .editor-preferito-btn{background:none;border:none;font-size:1rem;cursor:pointer;color:var(--text-muted);padding:0 2px;flex-shrink:0}
 .editor-preferito-btn.active{color:var(--gold)}
+.editor-titolarita-btn{background:none;border:none;font-size:.78rem;font-weight:700;cursor:pointer;color:var(--text-muted);padding:0 3px;flex-shrink:0;white-space:nowrap}
+.editor-titolarita-btn.active{color:var(--gold)}
+.editor-commento-btn{background:none;border:none;font-size:.9rem;cursor:pointer;color:var(--text-muted);opacity:.45;padding:0 2px;flex-shrink:0}
+.editor-commento-btn.active{opacity:1;color:var(--primary)}
+.titolarita-stars{display:flex;justify-content:center;gap:8px;margin:16px 0}
+.titolarita-star-btn{background:none;border:none;font-size:2rem;line-height:1;cursor:pointer;color:var(--text-muted);padding:0}
+.titolarita-star-btn.active{color:var(--gold)}
+.mc-textarea{width:100%;background:var(--bg-main);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-family:var(--font-main);font-size:15px;padding:10px 14px;resize:vertical;min-height:90px}
 .editor-fascia-select{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);border-radius:6px;padding:3px 4px;font-size:.7rem;max-width:90px;flex-shrink:0}
 input.giocatore-prezzo,input.giocatore-percentuale{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);border-radius:6px;padding:3px 4px;font-size:.72rem;width:46px;flex-shrink:0}
 .editor-ordina-row{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}

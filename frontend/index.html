@@ -158,15 +158,47 @@
       <h1 id="editor-strategia-nome" class="home-title">Strategia</h1>
       <p id="editor-strategia-info" class="home-subtitle"></p>
     </header>
+    <!-- Copia in cima dei filtri/ricerca/ordinamento (identici e sincronizzati con quelli
+         sotto, vicino a "Non assegnati"): evita di dover scorrere tutta la lista di fasce
+         ogni volta che servono, subito dopo aver aperto una strategia. -->
+    <div class="card">
+      <div class="rose-search-row" style="position:static;margin:0 0 8px 0;max-width:none">
+        <input type="text" id="editor-cerca-top" class="rose-inp editor-cerca-input" placeholder="🔍 Cerca giocatore...">
+      </div>
+      <div id="editor-filtro-ruolo-top" class="filtro-ruolo editor-filtro-ruolo-group">
+        <button class="filtro-btn active" data-ruolo="tutti">Tutti</button>
+        <button class="filtro-btn" data-ruolo="Por">Por</button>
+        <button class="filtro-btn" data-ruolo="Dd">Dd</button>
+        <button class="filtro-btn" data-ruolo="Ds">Ds</button>
+        <button class="filtro-btn" data-ruolo="Dc">Dc</button>
+        <button class="filtro-btn" data-ruolo="B">B</button>
+        <button class="filtro-btn" data-ruolo="M">M</button>
+        <button class="filtro-btn" data-ruolo="E">E</button>
+        <button class="filtro-btn" data-ruolo="C">C</button>
+        <button class="filtro-btn" data-ruolo="T">T</button>
+        <button class="filtro-btn" data-ruolo="W">W</button>
+        <button class="filtro-btn" data-ruolo="A">A</button>
+        <button class="filtro-btn" data-ruolo="Pc">Pc</button>
+      </div>
+      <div class="editor-ordina-row">
+        <span class="hint-text">Ordina per:</span>
+        <select id="editor-ordina-campo-top" class="gk-select editor-ordina-campo-select">
+          <option value="prezzo">Prezzo</option>
+          <option value="fvm1000">FVM/1000</option>
+          <option value="quotazione">QUOT.</option>
+        </select>
+        <button type="button" id="editor-ordina-dir-top" class="btn btn-secondary btn-small editor-ordina-dir-btn" data-dir="desc">↓ Decrescente</button>
+      </div>
+    </div>
     <div class="card">
       <button type="button" id="btn-aggiungi-fascia" class="btn btn-secondary" style="width:100%">+ Aggiungi fascia</button>
     </div>
     <div id="editor-fasce-container"></div>
     <div class="card mt-16">
       <div class="rose-search-row" style="position:static;margin:0 0 8px 0;max-width:none">
-        <input type="text" id="editor-cerca" class="rose-inp" placeholder="🔍 Cerca giocatore...">
+        <input type="text" id="editor-cerca" class="rose-inp editor-cerca-input" placeholder="🔍 Cerca giocatore...">
       </div>
-      <div id="editor-filtro-ruolo" class="filtro-ruolo">
+      <div id="editor-filtro-ruolo" class="filtro-ruolo editor-filtro-ruolo-group">
         <button class="filtro-btn active" data-ruolo="tutti">Tutti</button>
         <button class="filtro-btn" data-ruolo="Por">Por</button>
         <button class="filtro-btn" data-ruolo="Dd">Dd</button>
@@ -183,12 +215,12 @@
       </div>
       <div id="editor-ordina-row" class="editor-ordina-row">
         <span class="hint-text">Ordina per:</span>
-        <select id="editor-ordina-campo" class="gk-select">
+        <select id="editor-ordina-campo" class="gk-select editor-ordina-campo-select">
           <option value="prezzo">Prezzo</option>
           <option value="fvm1000">FVM/1000</option>
           <option value="quotazione">QUOT.</option>
         </select>
-        <button type="button" id="editor-ordina-dir" class="btn btn-secondary btn-small" data-dir="desc">↓ Decrescente</button>
+        <button type="button" id="editor-ordina-dir" class="btn btn-secondary btn-small editor-ordina-dir-btn" data-dir="desc">↓ Decrescente</button>
       </div>
       <button type="button" id="editor-seleziona-tutti-risultati" class="btn btn-secondary btn-small" style="margin-top:8px">☑️ Seleziona tutti i risultati qui sotto</button>
     </div>
@@ -1240,6 +1272,26 @@
     <div class="modal-body" id="mao-info"></div>
     <div class="modal-actions" id="mao-actions"></div>
     <button class="btn btn-secondary mt-16" onclick="closeModal()" style="width:100%">Chiudi</button>
+  </div>
+  <!-- Modal: Titolarità (valutazione 1-5 a stelle, personale per Strategia) -->
+  <div id="modal-titolarita" class="modal hidden">
+    <h2 class="modal-title">⭐ Titolarità</h2>
+    <p class="modal-subtitle" id="mt-nome-giocatore"></p>
+    <div class="titolarita-stars" id="mt-stars"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" onclick="rimuoviTitolarita()">🗑️ Rimuovi valutazione</button>
+      <button type="button" class="btn btn-primary" onclick="closeModal()">Chiudi</button>
+    </div>
+  </div>
+  <!-- Modal: Commento giocatore (nota libera, personale per Strategia) -->
+  <div id="modal-commento" class="modal hidden">
+    <h2 class="modal-title">💬 Commento</h2>
+    <p class="modal-subtitle" id="mc-nome-giocatore"></p>
+    <textarea id="mc-testo" class="mc-textarea" rows="4" placeholder="Scrivi una nota su questo giocatore..." maxlength="500"></textarea>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+      <button type="button" class="btn btn-primary" onclick="salvaCommentoModal()">✔ Salva</button>
+    </div>
   </div>
 </div>
 <div id="toast-container" class="toast-container"></div>

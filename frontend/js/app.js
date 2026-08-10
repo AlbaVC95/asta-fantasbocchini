@@ -2587,15 +2587,29 @@ function _applyPlayerPhoto(url, version) {
 function _getChiamataStrategiaInfoHTML(g) {
   const strat = S.strategiaAsta;
   const cfg = strat ? strat.configByListinoId.get(g.idFantaleghe) : null;
-  if (!cfg || !cfg.fascia_id || !strat.fasceInfo.has(cfg.fascia_id)) {
+  const haFascia = !!(cfg && cfg.fascia_id && strat.fasceInfo.has(cfg.fascia_id));
+  const haTitolarita = !!(cfg && cfg.titolarita);
+  const haCommento = !!(cfg && cfg.commento && cfg.commento.trim());
+  if (!haFascia && !haTitolarita && !haCommento) {
     return '<p class="cc-strategia-info cc-strategia-vuota">📊 Nessuna fascia assegnata</p>';
   }
-  const f = strat.fasceInfo.get(cfg.fascia_id);
-  const prezzoReale = prezzoRealeStrategia(cfg);
-  const prezzoTxt = prezzoReale != null ? (prezzoReale + ' cr') : '—';
-  const pctTxt = cfg.percentuale != null ? (' (' + cfg.percentuale + '%)') : '';
-  const preferitoTxt = cfg.preferito ? ' ⭐ Preferito' : '';
-  return '<p class="cc-strategia-info" style="border-color:' + f.colore + '">📊 <strong style="color:' + f.colore + '">' + escapeHTML(f.nome) + '</strong> · ' + prezzoTxt + pctTxt + preferitoTxt + '</p>';
+  let fasciaHTML = '';
+  if (haFascia) {
+    const f = strat.fasceInfo.get(cfg.fascia_id);
+    const prezzoReale = prezzoRealeStrategia(cfg);
+    const prezzoTxt = prezzoReale != null ? (prezzoReale + ' cr') : '—';
+    const pctTxt = cfg.percentuale != null ? (' (' + cfg.percentuale + '%)') : '';
+    const preferitoTxt = cfg.preferito ? ' ⭐ Preferito' : '';
+    fasciaHTML = '<p class="cc-strategia-info" style="border-color:' + f.colore + '">📊 <strong style="color:' + f.colore + '">' + escapeHTML(f.nome) + '</strong> · ' + prezzoTxt + pctTxt + preferitoTxt + '</p>';
+  }
+  // Titolarità e commento sono di sola lettura qui: si editano solo nell'editor Strategia.
+  const titolaritaHTML = haTitolarita
+    ? '<p class="cc-strategia-info">' + '★'.repeat(cfg.titolarita) + '☆'.repeat(5 - cfg.titolarita) + ' Titolarità</p>'
+    : '';
+  const commentoHTML = haCommento
+    ? '<p class="cc-strategia-info" title="' + _escAttr(cfg.commento) + '">💬 ' + escapeHTML(cfg.commento) + '</p>'
+    : '';
+  return fasciaHTML + titolaritaHTML + commentoHTML;
 }
 
 function renderChiamata(chiamata) {
@@ -3365,6 +3379,7 @@ function renderGiocatoriLiberi(pool) {
     const sc = g.scartato ? ' scartato' : '';
     const tipoLabel = g.tipo || 'NN';
     const tb = '<span class="l-tipo-badge tipo-' + tipoLabel + '">' + tipoLabel + '</span>';
+    const u21Badge = g.u21 === true ? '<span class="l-tipo-badge tipo-U21">U21</span>' : '';
     const orig = g.squadraOriginale ? '<span class="l-orig">ex ' + _escHtml(g.squadraOriginale) + '</span>' : '';
     const club = g.squadra ? '<span class="l-orig">' + _escHtml(g.squadra) + '</span>' : '';
     const click = (!g.scartato && S.isAdmin) ? ' onclick="chiamaLibero(\'' + g.id + '\')"' : '';
@@ -3374,7 +3389,7 @@ function renderGiocatoriLiberi(pool) {
       : '';
     const stratHTML = _getLiberiStrategiaBadgeHTML(g);
     return '<li class="' + sc + '"' + click + '>' + _getRuoloBadgeHTML(g.ruolo) +
-      '<span class="l-nome">' + _escHtml(g.nome) + '</span>' + tb + club + orig + valoreHTML + stratHTML +
+      '<span class="l-nome">' + _escHtml(g.nome) + '</span>' + tb + u21Badge + club + orig + valoreHTML + stratHTML +
       (g.scartato ? '<span class="l-scartato-tag">Scartato</span>' : '') +
       '<span class="l-costo">' + g.costoOriginale + 'cr' + (g.scartato ? ' \u2717' : '') + '</span></li>';
   }).join('') || '<li class="text-muted" style="padding:8px">Nessun giocatore</li>';
@@ -3384,12 +3399,19 @@ function _getLiberiStrategiaBadgeHTML(g) {
   const strat = S.strategiaAsta;
   if (!strat) return '';
   const cfg = strat.configByListinoId.get(g.idFantaleghe);
-  if (!cfg || !cfg.fascia_id || !strat.fasceInfo.has(cfg.fascia_id)) return '';
+  if (!cfg) return '';
+  const titolaritaTxt = cfg.titolarita ? ('★'.repeat(cfg.titolarita)) : '';
+  if (!cfg.fascia_id || !strat.fasceInfo.has(cfg.fascia_id)) {
+    // Nessuna fascia assegnata: mostra comunque la titolarità, se impostata, senza il
+    // badge fascia (che ha bisogno del colore/nome fascia per esistere).
+    return titolaritaTxt ? '<span class="l-strategia-badge">' + titolaritaTxt + '</span>' : '';
+  }
   const f = strat.fasceInfo.get(cfg.fascia_id);
   const preferitoStar = cfg.preferito ? ' ⭐' : '';
   const prezzoReale = prezzoRealeStrategia(cfg);
   const prezzoTxt = prezzoReale != null ? (' \u00b7 ' + prezzoReale + 'cr') : '';
-  return '<span class="l-strategia-badge" style="border-color:' + f.colore + ';color:' + f.colore + '">' + escapeHTML(f.nome) + prezzoTxt + preferitoStar + '</span>';
+  const titolaritaSuffix = titolaritaTxt ? (' ' + titolaritaTxt) : '';
+  return '<span class="l-strategia-badge" style="border-color:' + f.colore + ';color:' + f.colore + '">' + escapeHTML(f.nome) + prezzoTxt + preferitoStar + titolaritaSuffix + '</span>';
 }
 
 window.chiamaLibero = function(id) {
@@ -4020,7 +4042,8 @@ async function apriEditorStrategia(strategiaId) {
   S.configGiocatori = new Map();
   (sg || []).forEach(row => {
     S.configGiocatori.set(row.giocatore_id, {
-      fascia_id: row.fascia_id, prezzo: row.prezzo, percentuale: row.percentuale, preferito: row.preferito
+      fascia_id: row.fascia_id, prezzo: row.prezzo, percentuale: row.percentuale, preferito: row.preferito,
+      titolarita: row.titolarita, commento: row.commento
     });
   });
 
@@ -4031,14 +4054,14 @@ async function apriEditorStrategia(strategiaId) {
   S.editorSortCampo = 'prezzo';
   S.editorSortDir = 'desc';
   S.editorSelezionati.clear();
-  document.getElementById('editor-cerca').value = '';
-  document.querySelectorAll('#editor-filtro-ruolo .filtro-btn').forEach(b => b.classList.remove('active'));
-  const tuttiBtn = document.querySelector('#editor-filtro-ruolo .filtro-btn[data-ruolo="tutti"]');
-  if (tuttiBtn) tuttiBtn.classList.add('active');
-  const ordinaCampoSel = document.getElementById('editor-ordina-campo');
-  if (ordinaCampoSel) ordinaCampoSel.value = 'prezzo';
-  const ordinaDirBtn = document.getElementById('editor-ordina-dir');
-  if (ordinaDirBtn) { ordinaDirBtn.dataset.dir = 'desc'; ordinaDirBtn.textContent = '↓ Decrescente'; }
+  // Reset di entrambe le copie (in cima alla pagina e sopra "Non assegnati"): sono
+  // sincronizzate tra loro, vedi wireEditorFiltriTop() in setupEditor().
+  document.querySelectorAll('.editor-cerca-input').forEach(i => { i.value = ''; });
+  document.querySelectorAll('.editor-filtro-ruolo-group .filtro-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.ruolo === 'tutti');
+  });
+  document.querySelectorAll('.editor-ordina-campo-select').forEach(s => { s.value = 'prezzo'; });
+  document.querySelectorAll('.editor-ordina-dir-btn').forEach(b => { b.dataset.dir = 'desc'; b.textContent = '↓ Decrescente'; });
 
   const tipoLabel = { iniziale: 'Asta iniziale', riparazione1: 'Riparazione 1', riparazione2: 'Riparazione 2' };
   document.getElementById('editor-strategia-nome').textContent = strategia.nome;
@@ -4052,7 +4075,7 @@ async function apriEditorStrategia(strategiaId) {
 function sincronizzaPrezzoPercentuale(giocatoreId, campo, valore) {
   const crediti = S.strategiaAttuale ? S.strategiaAttuale.crediti_totali : 0;
   let cfg = S.configGiocatori.get(giocatoreId);
-  if (!cfg) { cfg = { fascia_id: null, prezzo: null, percentuale: null, preferito: false }; S.configGiocatori.set(giocatoreId, cfg); }
+  if (!cfg) { cfg = { fascia_id: null, prezzo: null, percentuale: null, preferito: false, titolarita: null, commento: null }; S.configGiocatori.set(giocatoreId, cfg); }
 
   if (campo === 'prezzo') {
     const prezzo = valore === '' ? null : Math.max(0, Math.round(Number(valore)));
@@ -4129,9 +4152,11 @@ function renderEditorFasce() {
     + '<option value="">Non assegnati</option>';
 
   const renderRigaGiocatore = (g) => {
-    const cfg = S.configGiocatori.get(g.id) || { fascia_id: null, prezzo: null, percentuale: null, preferito: false };
+    const cfg = S.configGiocatori.get(g.id) || { fascia_id: null, prezzo: null, percentuale: null, preferito: false, titolarita: null, commento: null };
     const selezionato = S.editorSelezionati.has(g.id);
     const u21Badge = g.u21 === true ? '<span class="cc-tipo-badge tipo-U21">U21</span>' : '';
+    const titolaritaLabel = cfg.titolarita ? ('⭐' + cfg.titolarita) : '☆';
+    const haCommento = !!(cfg.commento && cfg.commento.trim());
     return (
       '<div class="editor-player-row' + (selezionato ? ' selezionato' : '') + '" data-giocatore="' + g.id + '">' +
         '<input type="checkbox" class="editor-player-check" data-giocatore="' + g.id + '"' + (selezionato ? ' checked' : '') + '>' +
@@ -4144,6 +4169,8 @@ function renderEditorFasce() {
         '<input type="number" class="giocatore-prezzo" data-giocatore="' + g.id + '" placeholder="Prezzo" min="0" value="' + (cfg.prezzo != null ? cfg.prezzo : '') + '">' +
         '<input type="number" class="giocatore-percentuale" data-giocatore="' + g.id + '" placeholder="%" min="0" step="0.1" value="' + (cfg.percentuale != null ? cfg.percentuale : '') + '">' +
         '<button type="button" class="editor-preferito-btn ' + (cfg.preferito ? 'active' : '') + '" data-giocatore="' + g.id + '">' + (cfg.preferito ? '★' : '☆') + '</button>' +
+        '<button type="button" class="editor-titolarita-btn' + (cfg.titolarita ? ' active' : '') + '" data-giocatore="' + g.id + '" title="Titolarità">' + titolaritaLabel + '</button>' +
+        '<button type="button" class="editor-commento-btn' + (haCommento ? ' active' : '') + '" data-giocatore="' + g.id + '" title="' + (haCommento ? _escAttr(cfg.commento) : 'Aggiungi commento') + '">💬</button>' +
         u21Badge +
         '<select class="editor-fascia-select" data-giocatore="' + g.id + '">' + opzioniFascia.replace(
           'value="' + (cfg.fascia_id || '') + '"', 'value="' + (cfg.fascia_id || '') + '" selected'
@@ -4215,18 +4242,26 @@ function wireEditorEventiRiga(container) {
     btn.addEventListener('click', () => {
       const gid = Number(btn.dataset.giocatore);
       let cfg = S.configGiocatori.get(gid);
-      if (!cfg) { cfg = { fascia_id: null, prezzo: null, percentuale: null, preferito: false }; S.configGiocatori.set(gid, cfg); }
+      if (!cfg) { cfg = { fascia_id: null, prezzo: null, percentuale: null, preferito: false, titolarita: null, commento: null }; S.configGiocatori.set(gid, cfg); }
       cfg.preferito = !cfg.preferito;
       btn.classList.toggle('active', cfg.preferito);
       btn.textContent = cfg.preferito ? '★' : '☆';
     });
   });
 
+  container.querySelectorAll('.editor-titolarita-btn').forEach(btn => {
+    btn.addEventListener('click', () => apriModalTitolarita(Number(btn.dataset.giocatore)));
+  });
+
+  container.querySelectorAll('.editor-commento-btn').forEach(btn => {
+    btn.addEventListener('click', () => apriModalCommento(Number(btn.dataset.giocatore)));
+  });
+
   container.querySelectorAll('.editor-fascia-select').forEach(sel => {
     sel.addEventListener('change', () => {
       const gid = Number(sel.dataset.giocatore);
       let cfg = S.configGiocatori.get(gid);
-      if (!cfg) { cfg = { fascia_id: null, prezzo: null, percentuale: null, preferito: false }; S.configGiocatori.set(gid, cfg); }
+      if (!cfg) { cfg = { fascia_id: null, prezzo: null, percentuale: null, preferito: false, titolarita: null, commento: null }; S.configGiocatori.set(gid, cfg); }
       cfg.fascia_id = sel.value || null;
       renderEditorFasce();
     });
@@ -4261,6 +4296,78 @@ function wireEditorEventiRiga(container) {
     btn.addEventListener('click', () => eliminaFasciaLocale(btn.dataset.fascia));
   });
 }
+
+// ── Titolarità (1-5 stelle) e Commento libero per giocatore — dati personali della
+// Strategia dell'utente (stesso pattern/tabella di preferito/prezzo/percentuale), editabili
+// solo qui nell'editor; in Asta vengono mostrati in sola lettura (vedi
+// _getChiamataStrategiaInfoHTML e _getLiberiStrategiaBadgeHTML). ──
+let _modalGiocatoreId = null;
+
+function _nomeGiocatorePerId(gid) {
+  const g = (S.listinoCache || []).find(x => x.id === gid);
+  return g ? g.nome : ('#' + gid);
+}
+
+function _aggiornaRigaTitolarita(gid, valore) {
+  document.querySelectorAll('.editor-titolarita-btn[data-giocatore="' + gid + '"]').forEach(btn => {
+    btn.classList.toggle('active', !!valore);
+    btn.textContent = valore ? ('⭐' + valore) : '☆';
+  });
+}
+
+function renderTitolaritaStars(valore) {
+  const wrap = document.getElementById('mt-stars');
+  wrap.innerHTML = [1, 2, 3, 4, 5].map(n =>
+    '<button type="button" class="titolarita-star-btn' + (n <= valore ? ' active' : '') + '" data-n="' + n + '">' + (n <= valore ? '★' : '☆') + '</button>'
+  ).join('');
+  wrap.querySelectorAll('.titolarita-star-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const n = Number(btn.dataset.n);
+      let cfg = S.configGiocatori.get(_modalGiocatoreId);
+      if (!cfg) { cfg = { fascia_id: null, prezzo: null, percentuale: null, preferito: false, titolarita: null, commento: null }; S.configGiocatori.set(_modalGiocatoreId, cfg); }
+      cfg.titolarita = n;
+      renderTitolaritaStars(n);
+      _aggiornaRigaTitolarita(_modalGiocatoreId, n);
+    });
+  });
+}
+
+function apriModalTitolarita(gid) {
+  _modalGiocatoreId = gid;
+  const cfg = S.configGiocatori.get(gid) || {};
+  document.getElementById('mt-nome-giocatore').textContent = _nomeGiocatorePerId(gid);
+  renderTitolaritaStars(cfg.titolarita || 0);
+  openModal('modal-titolarita');
+}
+
+window.rimuoviTitolarita = function() {
+  if (_modalGiocatoreId == null) return;
+  const cfg = S.configGiocatori.get(_modalGiocatoreId);
+  if (cfg) cfg.titolarita = null;
+  renderTitolaritaStars(0);
+  _aggiornaRigaTitolarita(_modalGiocatoreId, 0);
+};
+
+function apriModalCommento(gid) {
+  _modalGiocatoreId = gid;
+  const cfg = S.configGiocatori.get(gid) || {};
+  document.getElementById('mc-nome-giocatore').textContent = _nomeGiocatorePerId(gid);
+  document.getElementById('mc-testo').value = cfg.commento || '';
+  openModal('modal-commento');
+}
+
+window.salvaCommentoModal = function() {
+  if (_modalGiocatoreId == null) return;
+  const testo = document.getElementById('mc-testo').value.trim();
+  let cfg = S.configGiocatori.get(_modalGiocatoreId);
+  if (!cfg) { cfg = { fascia_id: null, prezzo: null, percentuale: null, preferito: false, titolarita: null, commento: null }; S.configGiocatori.set(_modalGiocatoreId, cfg); }
+  cfg.commento = testo || null;
+  document.querySelectorAll('.editor-commento-btn[data-giocatore="' + _modalGiocatoreId + '"]').forEach(btn => {
+    btn.classList.toggle('active', !!cfg.commento);
+    btn.title = cfg.commento || 'Aggiungi commento';
+  });
+  closeModal();
+};
 
 // ── Azioni in blocco sui giocatori selezionati (checkbox su ogni riga, sia nelle
 //    Fasce che nei Non assegnati) — pensate per essere veloci: seleziona N giocatori
@@ -4325,7 +4432,7 @@ function applicaBulkAzione() {
   S.editorSelezionati.forEach(gid => {
     if (cambiaFascia) {
       let cfg = S.configGiocatori.get(gid);
-      if (!cfg) { cfg = { fascia_id: null, prezzo: null, percentuale: null, preferito: false }; S.configGiocatori.set(gid, cfg); }
+      if (!cfg) { cfg = { fascia_id: null, prezzo: null, percentuale: null, preferito: false, titolarita: null, commento: null }; S.configGiocatori.set(gid, cfg); }
       cfg.fascia_id = fasciaId;
     }
     if (cambiaValore) sincronizzaPrezzoPercentuale(gid, campo, valoreInp.value);
@@ -4377,7 +4484,6 @@ function setupEditor() {
   const btnSalva = document.getElementById('btn-salva-strategia');
   const btnEsporta = document.getElementById('btn-esporta-strategia');
   const btnElimina = document.getElementById('btn-elimina-strategia');
-  const cercaInput = document.getElementById('editor-cerca');
 
   if (btnBack) btnBack.addEventListener('click', () => showScreen('screen-strategie-lista'));
 
@@ -4392,32 +4498,46 @@ function setupEditor() {
     renderEditorFasce();
   });
 
-  if (cercaInput) cercaInput.addEventListener('input', () => {
-    S.editorCercaText = cercaInput.value;
-    renderEditorFasce();
-  });
-
-  document.querySelectorAll('#editor-filtro-ruolo .filtro-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#editor-filtro-ruolo .filtro-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      S.editorFiltroRuolo = btn.dataset.ruolo;
+  // Ricerca/filtro ruolo/ordinamento esistono in due copie identiche nella pagina (in
+  // cima e sopra "Non assegnati", vedi index.html): ogni handler aggiorna lo stato
+  // condiviso in S e poi rispecchia il nuovo valore su TUTTE le copie, cosi' restano
+  // sempre sincronizzate indipendentemente da quale l'utente ha usato.
+  document.querySelectorAll('.editor-cerca-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      S.editorCercaText = inp.value;
+      document.querySelectorAll('.editor-cerca-input').forEach(i => { if (i !== inp) i.value = inp.value; });
       renderEditorFasce();
     });
   });
 
-  const ordinaCampoSel = document.getElementById('editor-ordina-campo');
-  if (ordinaCampoSel) ordinaCampoSel.addEventListener('change', () => {
-    S.editorSortCampo = ordinaCampoSel.value;
-    renderEditorFasce();
+  document.querySelectorAll('.editor-filtro-ruolo-group .filtro-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ruolo = btn.dataset.ruolo;
+      document.querySelectorAll('.editor-filtro-ruolo-group .filtro-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.ruolo === ruolo);
+      });
+      S.editorFiltroRuolo = ruolo;
+      renderEditorFasce();
+    });
   });
-  const ordinaDirBtn = document.getElementById('editor-ordina-dir');
-  if (ordinaDirBtn) ordinaDirBtn.addEventListener('click', () => {
-    const nuovaDir = ordinaDirBtn.dataset.dir === 'asc' ? 'desc' : 'asc';
-    ordinaDirBtn.dataset.dir = nuovaDir;
-    ordinaDirBtn.textContent = nuovaDir === 'asc' ? '↑ Crescente' : '↓ Decrescente';
-    S.editorSortDir = nuovaDir;
-    renderEditorFasce();
+
+  document.querySelectorAll('.editor-ordina-campo-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      S.editorSortCampo = sel.value;
+      document.querySelectorAll('.editor-ordina-campo-select').forEach(s => { s.value = sel.value; });
+      renderEditorFasce();
+    });
+  });
+  document.querySelectorAll('.editor-ordina-dir-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const nuovaDir = S.editorSortDir === 'asc' ? 'desc' : 'asc';
+      S.editorSortDir = nuovaDir;
+      document.querySelectorAll('.editor-ordina-dir-btn').forEach(b => {
+        b.dataset.dir = nuovaDir;
+        b.textContent = nuovaDir === 'asc' ? '↑ Crescente' : '↓ Decrescente';
+      });
+      renderEditorFasce();
+    });
   });
 
   const btnSelezionaTutti = document.getElementById('editor-seleziona-tutti-risultati');
@@ -4467,12 +4587,13 @@ async function salvaStrategia() {
     await supa.from('strategia_giocatori').delete().eq('strategia_id', strategia.id);
     const righe = [];
     S.configGiocatori.forEach((cfg, giocatoreId) => {
-      const haValore = cfg.fascia_id || cfg.prezzo != null || cfg.percentuale != null || cfg.preferito;
+      const haValore = cfg.fascia_id || cfg.prezzo != null || cfg.percentuale != null || cfg.preferito
+        || cfg.titolarita != null || (cfg.commento && cfg.commento.trim());
       if (haValore) {
         righe.push({
           strategia_id: strategia.id, giocatore_id: giocatoreId,
           fascia_id: cfg.fascia_id || null, prezzo: cfg.prezzo, percentuale: cfg.percentuale,
-          preferito: !!cfg.preferito
+          preferito: !!cfg.preferito, titolarita: cfg.titolarita || null, commento: cfg.commento || null
         });
       }
     });
@@ -4513,14 +4634,16 @@ function esportaStrategia() {
 
   const giocatori = [];
   S.configGiocatori.forEach((cfg, giocatoreId) => {
-    const haValore = cfg.fascia_id || cfg.prezzo != null || cfg.percentuale != null || cfg.preferito;
+    const haValore = cfg.fascia_id || cfg.prezzo != null || cfg.percentuale != null || cfg.preferito
+      || cfg.titolarita != null || (cfg.commento && cfg.commento.trim());
     if (!haValore) return;
     const g = listinoPerId.get(giocatoreId);
     giocatori.push({
       giocatore_id: giocatoreId,
       nome: g ? g.nome : null, // solo per leggibilita' del file, non usato in fase di import
       fascia_index: (cfg.fascia_id != null && indiceFascia.has(cfg.fascia_id)) ? indiceFascia.get(cfg.fascia_id) : null,
-      prezzo: cfg.prezzo, percentuale: cfg.percentuale, preferito: !!cfg.preferito
+      prezzo: cfg.prezzo, percentuale: cfg.percentuale, preferito: !!cfg.preferito,
+      titolarita: cfg.titolarita || null, commento: cfg.commento || null
     });
   });
 
@@ -4584,7 +4707,7 @@ async function importaStrategiaDaFile(file) {
         righe.push({
           strategia_id: strategia.id, giocatore_id: gi.giocatore_id,
           fascia_id: fascia ? fascia.id : null, prezzo: gi.prezzo, percentuale: gi.percentuale,
-          preferito: !!gi.preferito
+          preferito: !!gi.preferito, titolarita: gi.titolarita || null, commento: gi.commento || null
         });
       });
       if (righe.length) await supa.from('strategia_giocatori').insert(righe);
@@ -4686,7 +4809,8 @@ async function selezionaStrategiaAsta(strategiaId, silent) {
   const configByListinoId = new Map();
   (sg || []).forEach(row => {
     configByListinoId.set(row.giocatore_id, {
-      fascia_id: row.fascia_id, prezzo: row.prezzo, percentuale: row.percentuale, preferito: row.preferito
+      fascia_id: row.fascia_id, prezzo: row.prezzo, percentuale: row.percentuale, preferito: row.preferito,
+      titolarita: row.titolarita, commento: row.commento
     });
   });
 

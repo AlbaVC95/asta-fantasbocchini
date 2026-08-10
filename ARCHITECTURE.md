@@ -83,8 +83,8 @@ Sezioni principali del file (individuabili dai commenti `══` che le separano
 - Ricerca foto giocatori con fallback a cascata (foto locale → SportsDB → Wikidata → Wikipedia →
   API-Football → iniziali colorate)
 - "Anteprima formazioni" (campo virtuale drag&drop per organizzare la rosa per ruolo)
-- "Strategie" ed "Editor Fasce" (pre-pianificazione pre-asta: assegnare prezzo/percentuale/preferito
-  ai giocatori del listino ufficiale, salvata per utente su Supabase)
+- "Strategie" ed "Editor Fasce" (pre-pianificazione pre-asta: assegnare prezzo/percentuale/preferito/
+  titolarità/commento ai giocatori del listino ufficiale, salvata per utente su Supabase)
 
 Gli eventi Socket.io lato client sono tutti registrati a livello top del file (non dentro funzioni),
 sezione `SOCKET EVENTS`: ogni evento server (`stato-asta`, `nuova-chiamata`, `giocatore-assegnato`,

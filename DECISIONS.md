@@ -137,6 +137,31 @@ se validi scrive su `profiles` con timestamp (`terms_accepted_at`) e versione (`
 generati/decisi **sempre dal server**, mai dal client. Per gli utenti registrati prima di questo cambio
 (nessun `user_metadata.nome`) l'endpoint è un no-op esplicito: restano intoccati.
 
+## Titolarità e Commento: dati personali per Strategia, sola lettura in Asta
+
+Aggiunte due colonne a `strategia_giocatori` (`titolarita` smallint 1-5, `commento` text),
+stesso pattern di `prezzo`/`percentuale`/`preferito` già presenti sulla tabella: sono dati
+della Strategia dell'utente, non condivisi tra i partecipanti della lega, e non richiedono
+una tabella o un livello di permessi separati. Editabili solo nell'editor Strategia (bottone
+titolarità con modal a 5 stelle, icona commento con modal a textarea); in Asta, alla chiamata
+del giocatore e nella lista Svincolati, sono mostrati in **sola lettura** — nessun salvataggio
+avviene durante l'asta live, per non introdurre scritture concorrenti su Supabase nell'area
+più delicata del progetto (timer/rilanci). Motivazione: sono note di preparazione pre-asta,
+non c'è un caso d'uso reale per modificarle sotto il timer di un rilancio.
+
+## Filtri/ricerca/ordinamento Strategia: due copie DOM sincronizzate, non spostate
+
+La pagina Editor Strategia può avere una lista di fasce/giocatori molto lunga tra l'header e i
+controlli di ricerca/filtro ruolo/ordinamento (che stavano solo sopra "Non assegnati"),
+costringendo a molto scroll. Invece di spostarli in cima (perderebbe comodità quando si è già
+scrollati in fondo) o di usare una barra sticky (comportamento diverso, mai usato altrove
+nell'app), si sono duplicati gli stessi controlli in cima alla pagina, con classi condivise
+(`editor-cerca-input`, `editor-filtro-ruolo-group`, `editor-ordina-campo-select`,
+`editor-ordina-dir-btn`) invece di id univoci: ogni handler in `setupEditor()` aggiorna lo
+stato condiviso in `S` e rispecchia il nuovo valore su **tutte** le copie via
+`querySelectorAll`, cosi' le due istanze non vanno mai fuori sincrono indipendentemente da
+quale l'utente usa.
+
 ## Timer d'asta autoritativo lato server, stato sempre broadcastato per intero
 
 Il timer non viene mai calcolato o fidato lato client: è gestito interamente in `server.js`
