@@ -8,6 +8,40 @@ Anteprima come drawer laterale, animazione di assegnazione visibile a tutti i pa
 Riferimento visivo: mockup fornito dall'utente (stile "carte da collezione" + campo 3D con
 formazione, pannello destro con dropdown "Tutte le squadre").
 
+## Mockup visivo di riferimento (direzione finale raggiunta)
+
+**[docs/redesign-asta-3d/anteprima-3d-mockup.html](redesign-asta-3d/anteprima-3d-mockup.html)** —
+file HTML autonomo (apribile direttamente in un browser, nessuna dipendenza esterna, foto
+giocatore incluse come base64) che mostra la direzione visiva concordata con l'utente dopo 6
+iterazioni di feedback nella sessione del 2026-08-11. Non è codice dell'app, solo un prototipo
+statico per referenza — vedi "Fasi di implementazione" sotto per come si collegherà ai dati reali.
+
+Storia delle iterazioni (ognuna verificata in locale prima di essere mostrata all'utente):
+1. Prima resa "stile FIFA": foto reali (illustrazioni "anime" già in `frontend/img/players/`),
+   campo con luci da stadio.
+2. Tolta la fascia colorata/rating in cima alla carta; ruolo/nome/squadra impilati in basso;
+   carte sul campo rimpicciolite (nella v2 "affondavano" nel prato); stadio con torri faro e
+   cielo notturno.
+3. Foto meno ritagliata; ruolo spostato in un badge in alto a sinistra sopra la foto, che mostra
+   la stringa intera anche con più ruoli (es. "DC/B", "M/C", "A/PC") — importante perché molti
+   giocatori reali hanno più ruoli Mantra compatibili.
+4. Foto a piena carta da bordo a bordo, zero margini laterali (`background-size:cover` su tutta
+   l'altezza — le foto sorgente, 260×334px, hanno proporzioni molto vicine a quelle della carta).
+5. Meno zoom mantenendo la piena larghezza (`background-size:100% auto` invece di `cover`): si
+   vede l'immagine per intero (spalle comprese), il piccolo spazio residuo in basso si perde
+   nell'overlay scuro del nome — **questa è la versione salvata nel file sopra.**
+
+Decisioni di design confermate da portare nell'implementazione reale:
+- Colore/tier della carta per **ruolo** (non per titolarità): riusa 1:1 la palette già esistente
+  di `.badge-ruolo` in `style.css` (giallo Por, verde Dd/Ds/Dc/D/B, azzurro M/C/E, viola T/W,
+  rosso A/Pc) — nessuna palette nuova da inventare.
+- Badge ruolo in alto a sinistra sopra la foto, testo libero (mai troncare una stringa con più
+  ruoli).
+- Nessuna fascia/banner colorato pieno in cima alla carta: la foto domina, il colore di ruolo
+  vive nel bordo/badge, non in uno sfondo pieno.
+- Foto a piena larghezza carta, `background-size:100% auto` (non `cover`), per zero margini
+  laterali e zero ritaglio verticale eccessivo.
+
 ## Decisione di scope (confermata con l'utente)
 
 Il pannello "Anteprima" **fonde due concetti oggi separati**:
@@ -66,9 +100,12 @@ campo/area in CSS. Gli slot mantengono le stesse coordinate `ANT_LAYOUT` esisten
 nello spazio 3D.
 
 **Carta giocatore 3D** — `transform-style: preserve-3d`, leggero tilt su hover/drag, ombra
-proiettata che si stacca dal campo per dare sensazione di profondità. Stessi dati di sempre
-(foto, nome, ruolo, squadra); aggiunta di titolarità (⭐, vedi feature del 2026-08-10) come badge
-sulla carta, visto che il dato ora esiste per giocatore.
+proiettata che si stacca dal campo per dare sensazione di profondità. Vedi mockup sopra per la
+resa finale: foto a piena carta (`background-size:100% auto`, niente margini laterali), badge
+ruolo in alto a sinistra (stringa intera, supporta più ruoli), nome+squadra in overlay in basso,
+colore per ruolo riusando `.badge-ruolo` esistente. Aggiunta di titolarità (⭐, vedi feature del
+2026-08-10) come badge sulla carta, visto che il dato ora esiste per giocatore — non ancora
+inserita nel mockup visivo, da aggiungere in fase di implementazione.
 
 **Drawer Anteprima** — pannello che scivola da destra, dropdown "Tutte le squadre" (propria +
 sola lettura delle altrui), stesso campo 3D dentro, le altre 3 sotto-tab (Lista giocatori,
