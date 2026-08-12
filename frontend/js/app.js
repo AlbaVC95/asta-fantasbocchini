@@ -3348,7 +3348,12 @@ window.aggiornaFiltroRose = function() {
 
 function renderGiocatoriLiberi(pool) {
   const list = document.getElementById('liberi-list');
-  if (!pool) { list.innerHTML = ''; return; }
+  const counter = document.getElementById('liberi-counter');
+  if (!pool) { list.innerHTML = ''; if (counter) counter.textContent = ''; return; }
+  if (counter) {
+    const chiamati = pool.filter(g => g.estratto).length;
+    counter.textContent = chiamati + ' / ' + pool.length + ' giocatori chiamati';
+  }
   const cercaTesto = ((document.getElementById('liberi-cerca') || {}).value || '').toLowerCase().trim();
   const disp = pool.filter(g => !g.estratto && !g.assegnato && !g.scartato);
   const scar = pool.filter(g => g.scartato);

@@ -16,6 +16,8 @@ Stato attuale del progetto. Questo file va sovrascritto ad ogni task importante 
   (segnalato dall'utente con un caso reale): pushato, **non ancora verificato dal vivo con una
   puja reale** (solo verifica logica sull'esempio esatto dell'utente + sintassi/avvio server).
   Vedi sezione dedicata sotto.
+- **Nuovo — Contatore "chiamati/totale" nel tab Svincolati**: pushato, verificato via console
+  browser con dati finti (nessuna asta live disponibile in sessione per un test reale).
 - **3 vulnerabilità di sicurezza Supabase corrette in questa sessione** (segnalate via email di
   alert automatico Supabase + Security Advisors), applicate dall'utente via SQL Editor. Vedi
   sezione dedicata sotto.
@@ -84,6 +86,16 @@ massimo 2, non più 4). Sintassi OK, server riavviato senza errori, app caricata
 crash. **Non verificato con una puja reale in un'asta live** (richiederebbe una sessione
 multi-utente non simulabile in questo ambiente, stesso limite del Bug 1 sopra) — da confermare
 alla prossima asta di test.
+
+## Nuovo — Contatore "chiamati/totale" nel tab Svincolati
+
+Richiesta dell'utente: mostrare quanti giocatori del listino sono già stati chiamati (estratti,
+a prescindere dall'esito — assegnati o scartati) sul totale del pool dell'asta. Aggiunto
+`<p id="liberi-counter">` in `frontend/index.html` (tab Svincolati, sopra la lista), popolato in
+`renderGiocatoriLiberi()` (`frontend/js/app.js`) con `pool.filter(g => g.estratto).length + ' / '
++ pool.length`. Verificato via `javascript_tool` nel browser (nessuna asta live in sessione per
+un test end-to-end): con un pool finto di 3 giocatori (2 estratti) mostra correttamente
+"2 / 3 giocatori chiamati".
 
 ## Sicurezza Supabase — 3 fix applicati (email di alert + Security Advisors)
 
