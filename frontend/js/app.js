@@ -3934,6 +3934,35 @@ function toast(msg, tipo) {
 
 const FASCIA_COLORI_DEFAULT = ['#8b5cf6', '#22c55e', '#f59e0b', '#ef4444', '#0ea5e9'];
 
+// ══ Import/Export formato FantaLab (tool esterno di preparazione asta) ══
+// Ordine dei fogli nel file Excel FantaLab: uno per ruolo Mantra.
+const FANTALAB_RUOLI_SHEET = ['Por', 'Dc', 'B', 'Ds', 'Dd', 'E', 'M', 'C', 'W', 'T', 'A', 'Pc'];
+// Gerarchia delle fasce FantaLab osservata nel file di riferimento (dalla migliore alla
+// peggiore): usata per ordinare le fasce create in import. "Non Impostata" non è una fascia
+// vera, indica solo "nessuna fascia assegnata in questo ruolo" (vedi gestione multi-ruolo sotto).
+const FANTALAB_FASCIA_ORDINE = [
+  'SUPER TOP', 'TOP', 'SEMITOP', 'SOTTO AI SEMITOP', 'FASCIA ALTA', 'JOLLY 1ª FASCIA',
+  'POSSIBILI SORPRESE', 'FASCIA MEDIA', 'INFORTUNATI', 'SCOMMESSE', 'SOPRA AI LOW COST',
+  'JOLLY 2ª FASCIA', 'LOW COST 1ª FASCIA', 'LOW COST 2ª FASCIA', 'LEGHE NUMEROSE',
+  'JOLLY 3ª FASCIA', 'JOLLY 4ª FASCIA', 'A RISCHIO', 'DA EVITARE', 'MERCATO'
+];
+// Mappa codice squadra (colonna "Team" di FantaLab) -> nome squadra_reale del Listino Ufficiale,
+// derivata incrociando il file FantaLab di riferimento con il Listino attuale (match nome+ruolo).
+const FANTALAB_TEAM_CODE_TO_SQUADRA = {
+  ATA: 'Atalanta', BOL: 'Bologna', CAG: 'Cagliari', COM: 'Como', FIO: 'Fiorentina',
+  FRO: 'Frosinone', GEN: 'Genoa', INT: 'Inter', JUV: 'Juventus', LAZ: 'Lazio',
+  LEC: 'Lecce', MIL: 'Milan', MON: 'Monza', NAP: 'Napoli', PAR: 'Parma',
+  ROM: 'Roma', SAS: 'Sassuolo', TOR: 'Torino', UDI: 'Udinese', VEN: 'Venezia'
+};
+const FANTALAB_SQUADRA_TO_TEAM_CODE = Object.fromEntries(
+  Object.entries(FANTALAB_TEAM_CODE_TO_SQUADRA).map(([code, sq]) => [sq, code])
+);
+function _normNomeFantaLab(s) {
+  return (s || '').toString().trim().toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+let _pendingImportFantaLabFile = null;
+
 function setupMenu() {
   const btnStrategie = document.getElementById('btn-menu-strategie');
   const btnAsta = document.getElementById('btn-menu-asta');
@@ -3955,6 +3984,8 @@ function setupStrategie() {
   const btnCreaStrategia = document.getElementById('btn-crea-strategia');
   const btnImportaStrategia = document.getElementById('btn-importa-strategia');
   const inpImportaStrategia = document.getElementById('inp-importa-strategia');
+  const btnImportaStrategiaFantaLab = document.getElementById('btn-importa-strategia-fantalab');
+  const inpImportaStrategiaFantaLab = document.getElementById('inp-importa-strategia-fantalab');
 
   if (btnBackListaMenu) btnBackListaMenu.addEventListener('click', tornaAllaHome);
 
@@ -3967,15 +3998,36 @@ function setupStrategie() {
     });
   }
 
+  if (btnImportaStrategiaFantaLab && inpImportaStrategiaFantaLab) {
+    btnImportaStrategiaFantaLab.addEventListener('click', () => inpImportaStrategiaFantaLab.click());
+    inpImportaStrategiaFantaLab.addEventListener('change', () => {
+      const file = inpImportaStrategiaFantaLab.files[0];
+      inpImportaStrategiaFantaLab.value = '';
+      if (!file) return;
+      _pendingImportFantaLabFile = file;
+      document.getElementById('strategia-form-nome').value = file.name.replace(/\.(xlsx|xls)$/i, '');
+      document.getElementById('strategia-form-crediti').value = '';
+      document.getElementById('strategia-form-tipo').value = 'iniziale';
+      document.getElementById('strategia-form-error').style.display = 'none';
+      document.querySelector('#screen-strategia-form .home-title').textContent = 'Nuova strategia da FantaLab';
+      showScreen('screen-strategia-form');
+    });
+  }
+
   if (btnNuovaStrategia) btnNuovaStrategia.addEventListener('click', () => {
+    _pendingImportFantaLabFile = null;
     document.getElementById('strategia-form-nome').value = '';
     document.getElementById('strategia-form-crediti').value = '';
     document.getElementById('strategia-form-tipo').value = 'iniziale';
     document.getElementById('strategia-form-error').style.display = 'none';
+    document.querySelector('#screen-strategia-form .home-title').textContent = 'Nuova strategia';
     showScreen('screen-strategia-form');
   });
 
-  if (btnBackFormLista) btnBackFormLista.addEventListener('click', () => showScreen('screen-strategie-lista'));
+  if (btnBackFormLista) btnBackFormLista.addEventListener('click', () => {
+    _pendingImportFantaLabFile = null;
+    showScreen('screen-strategie-lista');
+  });
 
   if (btnCreaStrategia) btnCreaStrategia.addEventListener('click', async () => {
     const nome = document.getElementById('strategia-form-nome').value.trim();
@@ -3991,10 +4043,21 @@ function setupStrategie() {
     }).select().single();
     if (error) { errEl.textContent = 'Errore: ' + error.message; errEl.style.display = 'block'; return; }
 
-    const fasceDefault = ['Fascia 1', 'Fascia 2', 'Fascia 3', 'Fascia 4', 'Fascia 5'].map((n, i) => ({
-      strategia_id: strategia.id, nome: n, colore: FASCIA_COLORI_DEFAULT[i], ordine: i
-    }));
-    await supa.from('fasce').insert(fasceDefault);
+    if (_pendingImportFantaLabFile) {
+      const file = _pendingImportFantaLabFile;
+      _pendingImportFantaLabFile = null;
+      try {
+        const esito = await _importaGiocatoriFantaLabInStrategia(file, strategia);
+        toast('Strategia importata da FantaLab: ' + esito.importati + ' giocatori (' + esito.scartati + ' non trovati nel Listino)', 'success');
+      } catch (err) {
+        toast('Errore nell\'importazione da FantaLab: ' + (err.message || err), 'error');
+      }
+    } else {
+      const fasceDefault = ['Fascia 1', 'Fascia 2', 'Fascia 3', 'Fascia 4', 'Fascia 5'].map((n, i) => ({
+        strategia_id: strategia.id, nome: n, colore: FASCIA_COLORI_DEFAULT[i], ordine: i
+      }));
+      await supa.from('fasce').insert(fasceDefault);
+    }
 
     await apriEditorStrategia(strategia.id);
   });
@@ -4491,6 +4554,7 @@ function setupEditor() {
   const btnAggiungiFascia = document.getElementById('btn-aggiungi-fascia');
   const btnSalva = document.getElementById('btn-salva-strategia');
   const btnEsporta = document.getElementById('btn-esporta-strategia');
+  const btnEsportaFantaLab = document.getElementById('btn-esporta-strategia-fantalab');
   const btnElimina = document.getElementById('btn-elimina-strategia');
 
   if (btnBack) btnBack.addEventListener('click', () => showScreen('screen-strategie-lista'));
@@ -4557,6 +4621,7 @@ function setupEditor() {
 
   if (btnSalva) btnSalva.addEventListener('click', salvaStrategia);
   if (btnEsporta) btnEsporta.addEventListener('click', esportaStrategia);
+  if (btnEsportaFantaLab) btnEsportaFantaLab.addEventListener('click', esportaStrategiaFantaLab);
   if (btnElimina) btnElimina.addEventListener('click', eliminaStrategia);
 }
 
@@ -4729,6 +4794,157 @@ async function importaStrategiaDaFile(file) {
     }
   };
   reader.readAsText(file);
+}
+
+// ══ IMPORT/EXPORT STRATEGIA — formato FantaLab (tool esterno) ══
+// FantaLab esporta un file Excel con un foglio per ruolo Mantra (vedi FANTALAB_RUOLI_SHEET).
+// Nome+Ruolo bastano per matchare in modo affidabile contro il Listino Ufficiale (verificato
+// sul file di riferimento: nessuna riga orfana), quindi non serve fuzzy matching sul nome.
+// Un giocatore multi-ruolo appare su più fogli: FantaLab assegna la fascia vera solo al PRIMO
+// ruolo del giocatore, "Non Impostata" agli altri — in import non replichiamo quella distinzione
+// (non abbiamo un concetto di "ruolo primario" per la fascia), quindi prendiamo semplicemente la
+// prima fascia reale trovata tra tutti i fogli in cui compare, indipendentemente dal foglio.
+async function _importaGiocatoriFantaLabInStrategia(file, strategia) {
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, { type: 'array' });
+  await caricaListinoCache();
+  const listino = S.listinoCache || [];
+  const byNomeRuolo = new Map();
+  listino.forEach(g => {
+    (g.ruolo || '').split('/').forEach(r => {
+      byNomeRuolo.set(_normNomeFantaLab(g.nome) + '|' + r, g);
+    });
+  });
+
+  const norm = s => (s || '').toString().trim().toLowerCase();
+  const merged = new Map(); // giocatore_id -> { fascia, prezzo, titolarita, commento }
+  let scartati = 0;
+
+  FANTALAB_RUOLI_SHEET.forEach(ruolo => {
+    const sheet = wb.Sheets[ruolo];
+    if (!sheet) return;
+    const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+    if (!rows.length) return;
+    const headers = Object.keys(rows[0]);
+    const findCol = (...names) => headers.find(h => names.some(n => norm(h) === norm(n)));
+    const colNome = findCol('Nome');
+    const colFascia = findCol('Fascia');
+    const colPrezzo = findCol('Prezzo');
+    const colTitolarita = findCol('Titolarità', 'Titolarita');
+    const colCommento = findCol('Commento');
+    if (!colNome) return;
+
+    rows.forEach(r => {
+      const nome = r[colNome];
+      if (!nome) return;
+      const g = byNomeRuolo.get(_normNomeFantaLab(nome) + '|' + ruolo);
+      if (!g) { scartati++; return; }
+
+      const fasciaGrezza = colFascia ? String(r[colFascia] || '').trim() : '';
+      const fasciaReale = (fasciaGrezza && fasciaGrezza !== 'Non Impostata') ? fasciaGrezza : null;
+      const prezzoVal = colPrezzo && r[colPrezzo] !== '' ? Number(r[colPrezzo]) : null;
+      const titolaritaVal = colTitolarita && r[colTitolarita] !== '' ? Math.max(1, Math.min(5, Number(r[colTitolarita]))) : null;
+      const commentoVal = colCommento && String(r[colCommento]).trim() ? String(r[colCommento]).trim() : null;
+
+      const existing = merged.get(g.id);
+      if (!existing) {
+        merged.set(g.id, { fascia: fasciaReale, prezzo: prezzoVal, titolarita: titolaritaVal, commento: commentoVal });
+      } else if (!existing.fascia && fasciaReale) {
+        existing.fascia = fasciaReale;
+      }
+    });
+  });
+
+  // Crea le fasce nell'ordine gerarchico noto di FantaLab; fasce non riconosciute (nomi
+  // personalizzati dall'utente in FantaLab) vengono aggiunte in coda, in ordine di comparsa.
+  const fasceUsate = new Set();
+  merged.forEach(v => { if (v.fascia) fasceUsate.add(v.fascia); });
+  const fasceOrdinate = FANTALAB_FASCIA_ORDINE.filter(f => fasceUsate.has(f));
+  fasceUsate.forEach(f => { if (!fasceOrdinate.includes(f)) fasceOrdinate.push(f); });
+
+  let fasceCreate = [];
+  if (fasceOrdinate.length) {
+    const fasceInsert = fasceOrdinate.map((nome, i) => ({
+      strategia_id: strategia.id, nome, colore: FASCIA_COLORI_DEFAULT[i % FASCIA_COLORI_DEFAULT.length], ordine: i
+    }));
+    const { data: fc, error } = await supa.from('fasce').insert(fasceInsert).select();
+    if (error) throw error;
+    fasceCreate = fc;
+  }
+  const fasciaIdByNome = new Map(fasceCreate.map(f => [f.nome, f.id]));
+
+  const righe = [];
+  merged.forEach((v, giocatoreId) => {
+    righe.push({
+      strategia_id: strategia.id, giocatore_id: giocatoreId,
+      fascia_id: v.fascia ? (fasciaIdByNome.get(v.fascia) || null) : null,
+      prezzo: v.prezzo, percentuale: null, preferito: false,
+      titolarita: v.titolarita, commento: v.commento
+    });
+  });
+  if (righe.length) {
+    const { error } = await supa.from('strategia_giocatori').insert(righe);
+    if (error) throw error;
+  }
+
+  return { importati: righe.length, scartati };
+}
+
+// Esporta la strategia corrente (S.strategiaAttuale/S.fasceAttuali/S.configGiocatori, lo stesso
+// stato che userebbe "Salva strategia") in un file Excel nel formato FantaLab, cosi' puo' essere
+// re-importato in quello strumento. Un giocatore multi-ruolo compare su ogni foglio di ruolo che
+// gli compete (stesso comportamento del file FantaLab originale): la fascia viene scritta solo
+// sul foglio del suo PRIMO ruolo (l'ordine in cui compare in listino_giocatori.ruolo), sugli
+// altri fogli risulta "Non Impostata" — replica esattamente quanto osservato nel file di
+// riferimento (es. Di Lorenzo Dd/E: fascia reale solo su Dd, "Non Impostata" su E).
+function esportaStrategiaFantaLab() {
+  const strategia = S.strategiaAttuale;
+  if (!strategia) return;
+  const fasciaNomeById = new Map((S.fasceAttuali || []).map(f => [f.id, f.nome]));
+  const listinoPerId = new Map((S.listinoCache || []).map(g => [g.id, g]));
+
+  const righePerRuolo = new Map(FANTALAB_RUOLI_SHEET.map(r => [r, []]));
+  S.configGiocatori.forEach((cfg, giocatoreId) => {
+    const haValore = cfg.fascia_id || cfg.prezzo != null || cfg.percentuale != null || cfg.preferito
+      || cfg.titolarita != null || (cfg.commento && cfg.commento.trim());
+    if (!haValore) return;
+    const g = listinoPerId.get(giocatoreId);
+    if (!g) return;
+
+    const ruoli = (g.ruolo || '').split('/').filter(r => righePerRuolo.has(r));
+    if (!ruoli.length) return;
+    const fasciaReale = cfg.fascia_id ? (fasciaNomeById.get(cfg.fascia_id) || null) : null;
+    const teamCode = FANTALAB_SQUADRA_TO_TEAM_CODE[g.squadra_reale] || '';
+    const ruoloColonna = ruoli.join(', ');
+
+    ruoli.forEach((ruolo, i) => {
+      righePerRuolo.get(ruolo).push({
+        'Obiett.': '', 'Fascia': (i === 0 && fasciaReale) ? fasciaReale : 'Non Impostata',
+        'Ruolo': ruoloColonna, 'Team': teamCode, 'Nome': g.nome,
+        'Prezzo': cfg.prezzo != null ? cfg.prezzo : '', 'PMA': '',
+        'Quo': g.quotazione != null ? g.quotazione : '',
+        'Titolarità': cfg.titolarita != null ? cfg.titolarita : '',
+        'Affidabilità': '', 'Integrità': '', 'Commento': cfg.commento || '',
+        'Nota 1': '', 'Nota 2': '', 'Nota 3': '', 'Nota 4': '', 'Nota 5': '',
+        'MV': g.mv != null ? g.mv : '', 'FMV': g.fm != null ? g.fm : ''
+      });
+    });
+  });
+
+  const wb = XLSX.utils.book_new();
+  FANTALAB_RUOLI_SHEET.forEach(ruolo => {
+    const righe = righePerRuolo.get(ruolo).sort((a, b) => (Number(b.Prezzo) || 0) - (Number(a.Prezzo) || 0));
+    const ws = XLSX.utils.json_to_sheet(righe, {
+      header: ['Obiett.', 'Fascia', 'Ruolo', 'Team', 'Nome', 'Prezzo', 'PMA', 'Quo', 'Titolarità',
+        'Affidabilità', 'Integrità', 'Commento', 'Nota 1', 'Nota 2', 'Nota 3', 'Nota 4', 'Nota 5', 'MV', 'FMV']
+    });
+    XLSX.utils.book_append_sheet(wb, ws, ruolo);
+  });
+
+  const nomeFile = strategia.nome.trim().replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '') || 'strategia';
+  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  XLSX.writeFile(wb, 'strategia-' + nomeFile + '-fantalab-' + ts + '.xlsx');
+  toast('Strategia esportata in formato FantaLab', 'success');
 }
 
 // ══════════════════════════════════════════════════════════
