@@ -1,9 +1,15 @@
-# Redesign 3D del tool Asta — piano salvato, non ancora implementato
+# Redesign 3D del tool Asta — IMPLEMENTATO su branch `redesign/asta-3d`, non in produzione
 
-Documento di progettazione per una futura sessione. **Nessun file dell'app è stato toccato per
-produrlo.** Nasce dallo studio di fattibilità richiesto dall'utente (agosto 2026) su un redesign
-visivo del tab "Anteprima" durante l'Asta: campo 3D isometrico, carte giocatore 3D, pannello
-Anteprima come drawer laterale, animazione di assegnazione visibile a tutti i partecipanti.
+**Stato: implementato e verificato in locale sul branch `redesign/asta-3d` (non mergiato su
+`main`, non in produzione).** Branch di backup del punto di partenza:
+`backup/pre-redesign-asta-3d`. Vedi [docs/SESSION_SUMMARY.md](SESSION_SUMMARY.md) per lo stato
+sessione-per-sessione e cosa manca ancora prima di un eventuale merge.
+
+Nasce dallo studio di fattibilità richiesto dall'utente (agosto 2026) su un redesign visivo del
+tab "Anteprima" durante l'Asta: campo 3D isometrico, carte giocatore 3D, pannello Anteprima come
+drawer laterale, animazione di assegnazione visibile a tutti i partecipanti. Il piano di
+implementazione dettagliato (file critici, architettura, checklist QA) resta in
+`/Users/alba/.claude/plans/bright-swimming-parnas.md`.
 
 Riferimento visivo: mockup fornito dall'utente (stile "carte da collezione" + campo 3D con
 formazione, pannello destro con dropdown "Tutte le squadre").
@@ -139,24 +145,46 @@ Il progetto si deploya via `git push` su un repo collegato a Render (non FTP/car
 3. Merge su `main` solo dopo checklist QA completa (sotto) — mai forzare in produzione un redesign
    non testato durante un'asta reale.
 
-## Checklist QA (da compilare quando si implementa, non ora)
+## Checklist QA — stato dopo l'implementazione (branch `redesign/asta-3d`)
 
-- [ ] Campo 3D: leggibile su mobile piccolo, tablet, desktop
-- [ ] Carte: foto/nome/ruolo/squadra/titolarità tutti visibili e leggibili
-- [ ] Picker (click su slot): stesso comportamento di oggi, filtro R.Mantra invariato
-- [ ] Drawer: apertura/chiusura non blocca il resto dell'Asta (rilanci, timer)
-- [ ] Dropdown "Tutte le squadre": lettura corretta delle rose altrui, nessuna scrittura permessa
-- [ ] Animazione assegnazione: visibile a tutti i partecipanti connessi, non solo a chi ha vinto
-- [ ] Animazione: non rallenta/blocca il prossimo giro di chiamata (timer server-autoritativo)
-- [ ] `prefers-reduced-motion`: animazione ridotta/disattivata per chi lo richiede
-- [ ] Nessuna regressione nelle altre tab/sotto-tab esistenti dell'Asta
+Verificato in locale (browser automatizzato, dati simulati — nessuna asta live reale
+disponibile in sessione):
 
-## Fasi di implementazione (quando si deciderà di procedere)
+- [x] Campo 3D: leggibile su mobile (bottom-sheet) e desktop (drawer laterale), verificato a
+  375px e 1280px
+- [x] Carte: foto/nome/ruolo/squadra visibili e leggibili (foto reale caricata correttamente
+  dalla stessa pipeline di `.cc-avatar`); titolarità **non ancora aggiunta alla carta** (nota
+  già presente nel mockup originale, resta un miglioramento futuro, fuori dai 7 requisiti
+  espliciti dell'utente per questo giro)
+- [x] Picker (click su slot): stesso comportamento di oggi, filtro `_ruoliCompatibili` invariato
+  — verificato che uno slot "C" mostra solo giocatori compatibili
+- [x] Drawer: apertura/chiusura non nasconde le altre tab (Rose resta attiva dietro, verificato)
+- [x] Animazione assegnazione: verificata la meccanica (posizione di partenza corretta, cleanup,
+  tetto di 3 cloni simultanei, skip con `prefers-reduced-motion`) — **non verificata visivamente
+  a schermo intero ne' in multiplayer reale**, limite dell'ambiente di test automatizzato
+- [ ] Animazione: non rallenta/blocca il prossimo giro di chiamata — da confermare dal vivo
+- [x] `prefers-reduced-motion`: verificato che disattiva la creazione del clone
+- [x] Nessuna regressione nelle altre tab/sotto-tab esistenti (Storico/Rose/Svincolati/Griglia
+  P/A testate una per una dopo le modifiche a `setupTabs()`)
+- [ ] Dropdown "Tutte le squadre": **nota** — il comportamento non è cambiato rispetto a prima
+  del redesign (si può scegliere/modificare qualunque squadra dal planner locale, non solo la
+  propria); non era una restrizione già esistente nell'app originale, quindi non è stata
+  aggiunta ora per non introdurre logica nuova non richiesta esplicitamente
+- [ ] Test su device Android reale fascia media/bassa — non eseguibile in questo ambiente
+- [ ] Multiplayer reale (2+ utenti, 2+ dispositivi) — non eseguibile in questo ambiente
 
-1. Branch + eventuale servizio Render di preview (vedi sopra)
-2. Design system CSS (token già esistenti, nuovi component-level: campo, carta, drawer)
-3. Campo 3D + carte, dati statici di prova, nessun collegamento a stato reale ancora
-4. Collegamento a `ANT_LAYOUT`/`_ruoliCompatibili`/picker esistenti (dati reali, planner locale)
-5. Collegamento alla rosa reale (dropdown "Tutte le squadre", sola lettura)
-6. Animazione di assegnazione agganciata a `giocatore-assegnato`
-7. QA completa su device reali, poi merge su `main`
+## Fasi di implementazione — tutte completate sul branch `redesign/asta-3d`
+
+1. ~~Branch + eventuale servizio Render di preview~~ → branch `redesign/asta-3d` creato da
+   `main`, più `backup/pre-redesign-asta-3d` come rete di sicurezza. Nessun servizio di preview
+   separato creato (il progetto è ora su Hostinger, non Render — vedi sessione migrazione):
+   test fatto in locale con `npm run dev`.
+2. Design system CSS — fatto (`frontend/css/style.css`, nuovo blocco "REDESIGN 3D — ANTEPRIMA")
+3. Campo 3D + carte collegati ai dati reali direttamente (saltato lo stadio intermedio "dati
+   statici di prova": il rischio era basso avendo verificato `ANT_LAYOUT` già corretto)
+4. `ANT_LAYOUT`/`_ruoliCompatibili`/picker esistenti — riusati senza modifiche, verificato
+5. Rosa reale collegata (dropdown "Tutte le squadre", stesso comportamento di prima — vedi nota
+   sopra)
+6. Animazione di assegnazione agganciata a `giocatore-assegnato` — fatto
+7. QA in locale completata dove possibile in questo ambiente (vedi checklist sopra); **QA su
+   device reali e merge su `main` restano da fare, con l'utente**

@@ -891,19 +891,37 @@
             <div class="gk-grid-legend"><span id="gki-grid-legend-range"></span></div>
           </div>
         </div>
-        <div id="tab-anteprima" class="tab-content">
-          <div class="ant-controls">
-            <select id="ant-squadra-select" class="ant-select"></select>
-            <select id="ant-modulo-select" class="ant-select"><option value="3-4-3">3-4-3</option><option value="3-4-1-2">3-4-1-2</option><option value="3-4-2-1">3-4-2-1</option><option value="3-5-2">3-5-2</option><option value="3-5-1-1">3-5-1-1</option><option value="4-3-3">4-3-3</option><option value="4-3-1-2">4-3-1-2</option><option value="4-4-2">4-4-2</option><option value="4-1-4-1">4-1-4-1</option><option value="4-4-1-1">4-4-1-1</option><option value="4-2-3-1">4-2-3-1</option></select>
-            <button type="button" id="ant-reset-btn" class="btn btn-secondary btn-small">🔄 Reset</button>
-            <div class="ant-zoom-controls">
-              <button type="button" id="ant-zoom-out" class="ant-zoom-btn" aria-label="Rimpicciolisci campo">➖</button>
-              <span class="ant-zoom-icon">🔍</span>
-              <button type="button" id="ant-zoom-in" class="ant-zoom-btn" aria-label="Allarga campo">➕</button>
-            </div>
+        <div id="tab-anteprima" class="tab-content ant-drawer">
+          <div class="ant-drawer-hdr">
+            <span class="ant-drawer-title">🎮 Anteprima</span>
+            <button type="button" id="ant-drawer-close" class="ant-drawer-close" aria-label="Chiudi Anteprima">✕</button>
           </div>
-          <div id="ant-pitch" class="ant-pitch"></div>
-          <div id="ant-picker" class="ant-picker hidden"></div>
+          <div class="ant-drawer-body">
+            <div class="ant-controls">
+              <select id="ant-squadra-select" class="ant-select"></select>
+              <select id="ant-modulo-select" class="ant-select"><option value="3-4-3">3-4-3</option><option value="3-4-1-2">3-4-1-2</option><option value="3-4-2-1">3-4-2-1</option><option value="3-5-2">3-5-2</option><option value="3-5-1-1">3-5-1-1</option><option value="4-3-3">4-3-3</option><option value="4-3-1-2">4-3-1-2</option><option value="4-4-2">4-4-2</option><option value="4-1-4-1">4-1-4-1</option><option value="4-4-1-1">4-4-1-1</option><option value="4-2-3-1">4-2-3-1</option></select>
+              <button type="button" id="ant-reset-btn" class="btn btn-secondary btn-small">🔄 Reset</button>
+              <div class="ant-zoom-controls">
+                <button type="button" id="ant-zoom-out" class="ant-zoom-btn" aria-label="Rimpicciolisci campo">➖</button>
+                <span class="ant-zoom-icon">🔍</span>
+                <button type="button" id="ant-zoom-in" class="ant-zoom-btn" aria-label="Allarga campo">➕</button>
+              </div>
+            </div>
+            <div class="ant-subtabs">
+              <button type="button" class="ant-subtab active" data-antview="campo">🏟️ Vista campo 3D</button>
+              <button type="button" class="ant-subtab" data-antview="lista">📋 Vista lista</button>
+            </div>
+            <div id="ant-view-campo" class="ant-subview active">
+              <div class="ant-pitch-stage">
+                <div id="ant-pitch" class="ant-pitch"></div>
+              </div>
+              <div id="ant-panchina" class="ant-panchina"></div>
+            </div>
+            <div id="ant-view-lista" class="ant-subview">
+              <ul id="ant-lista-giocatori" class="ant-lista"></ul>
+            </div>
+            <div id="ant-picker" class="ant-picker hidden"></div>
+          </div>
         </div>
       </div><!-- /.tabs-panel -->
     </div><!-- /.asta-row-tabs -->
@@ -1299,6 +1317,10 @@
   </div>
 </div>
 <div id="toast-container" class="toast-container"></div>
+<!-- Layer per l'animazione di assegnazione (carta volante) — fuori da .tabs-panel apposta:
+     .tabs-panel usa backdrop-filter, che crea un containing block diverso per gli elementi
+     position:fixed (stesso bug gia' documentato/aggirato in _antOpenPicker() in app.js). -->
+<div id="assegnazione-fx-layer"></div>
 <!-- ══════════ SCHERMATA EMERGENZA ══════════ -->
 <div id="screen-emergenza" class="screen-emergenza hidden">
   <div class="emerg-card">
