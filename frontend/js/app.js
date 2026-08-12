@@ -3852,30 +3852,26 @@ function prezzoRealeStrategia(cfg) {
   return cfg.prezzo;
 }
 
-function getMaxOfferta() {
-  const sq = getMiaSquadra();
-  if (!sq || !S.asta) return 0;
-  if (S.asta.tipoAsta === 'iniziale') {
-    const minTot = (S.asta.minimoPortieri || 0) + (S.asta.minimoMovimento || 0);
-    const slotVuoti = Math.max(0, minTot - sq.rosa.length - 1);
-    return Math.max(1, sq.crediti - slotVuoti);
-  }
-  const fattore = S.asta.fattoreSvincolo || 0.5;
-  const svinR = S.asta.svincoliTotali - (sq.svincoliUsati || 0);
-  if (svinR <= 0) return sq.crediti;
-  const sorted = [...sq.rosa].sort((a, b) => Math.floor(b.prezzo * fattore) - Math.floor(a.prezzo * fattore));
-  let recup = 0;
-  for (let i = 0; i < Math.min(svinR, sorted.length); i++) recup += Math.floor(sorted[i].prezzo * fattore);
-  const minTot = (S.asta.minimoPortieri || 0) + (S.asta.minimoMovimento || 0);
-  return Math.max(1, sq.crediti + recup - Math.max(0, minTot - sq.rosa.length - 1));
-}
-
+// I minimi Portieri/Movimento sono due vincoli SEPARATI, non un totale unico (stessa
+// motivazione e stessa formula di calcolaMaxOfferta() in backend/server.js — deve restare
+// sincronizzata, e' solo un hint UI, la validazione autoritativa e' lato server). Il
+// giocatore della chiamata attuale (se c'e') conta verso la SUA categoria; se non c'e' nessuna
+// chiamata attiva si riservano comunque entrambi i minimi per intero (caso conservativo).
 function calcolaMaxOffertaSquadra(sq) {
   if (!sq || !S.asta) return 0;
+  const chiamata = S.asta.chiamataAttuale;
+  const giocatore = chiamata ? chiamata.giocatore : null;
+  const minimoPortieri = S.asta.minimoPortieri || 0;
+  const minimoMovimento = S.asta.minimoMovimento || 0;
+  const portieriAttuali = sq.rosa.filter(g => _isPortiere(g.ruolo)).length;
+  const movimentoAttuali = sq.rosa.length - portieriAttuali;
+  const ePortiere = giocatore ? _isPortiere(giocatore.ruolo) : null;
+  const portieriDopo = portieriAttuali + (ePortiere === true ? 1 : 0);
+  const movimentoDopo = movimentoAttuali + (ePortiere === false ? 1 : 0);
+  const creditiRiservati = Math.max(0, minimoPortieri - portieriDopo) + Math.max(0, minimoMovimento - movimentoDopo);
+
   if (S.asta.tipoAsta === 'iniziale') {
-    const minTot = (S.asta.minimoPortieri || 0) + (S.asta.minimoMovimento || 0);
-    const slotVuoti = Math.max(0, minTot - sq.rosa.length - 1);
-    return Math.max(1, sq.crediti - slotVuoti);
+    return Math.max(1, sq.crediti - creditiRiservati);
   }
   const fattore = S.asta.fattoreSvincolo || 0.5;
   const svinR = S.asta.svincoliTotali - (sq.svincoliUsati || 0);
@@ -3883,8 +3879,11 @@ function calcolaMaxOffertaSquadra(sq) {
   const sorted = [...sq.rosa].sort((a, b) => Math.floor(b.prezzo * fattore) - Math.floor(a.prezzo * fattore));
   let recup = 0;
   for (let i = 0; i < Math.min(svinR, sorted.length); i++) recup += Math.floor(sorted[i].prezzo * fattore);
-  const minTot = (S.asta.minimoPortieri || 0) + (S.asta.minimoMovimento || 0);
-  return Math.max(1, sq.crediti + recup - Math.max(0, minTot - sq.rosa.length - 1));
+  return Math.max(1, sq.crediti + recup - creditiRiservati);
+}
+
+function getMaxOfferta() {
+  return calcolaMaxOffertaSquadra(getMiaSquadra());
 }
 
 function openModal(id) {

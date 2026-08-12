@@ -295,6 +295,7 @@ function campiCrediti(creditiImportati, creditiConfigurati) {
   return { crediti: iniziali, creditiImportati: creditiImportati || 0, creditiConfigurati: creditiConfigurati || 0, creditiIniziali: iniziali };
 }
 
+function isPortiere(ruolo) { return ruolo === 'Por' || ruolo === 'P'; }
 function getSquadra(asta, nome) { return asta.squadre.find(s => s.nome === nome); }
 function getSquadraBySocket(asta, socketId) { return asta.squadre.find(s => s.utenti.includes(socketId)); }
 function isAdmin(asta, socketId) { return asta.adminSocketIds.includes(socketId); }
@@ -322,20 +323,29 @@ function broadcastStato(astaId, doBackup) {
 }
 
 // ============ GAME MECHANICS ============
-function calcolaMaxOfferta(asta, squadra) {
+// I minimi Portieri/Movimento sono due vincoli SEPARATI, non un totale unico: riservare
+// crediti solo in base al totale (minimoPortieri + minimoMovimento - rosa.length) permette
+// di svuotare una delle due categorie se l'altra e' gia' oltre il suo minimo (es. squadra con
+// tanti giocatori di movimento ma un solo portiere continuava a poter offrire tutti i crediti
+// residui, restando poi bloccata a fine asta senza poter completare i portieri minimi). Il
+// "giocatore" attualmente chiamato conta verso la SUA categoria (Por o movimento), le altre
+// categorie restano comunque riservate per il loro minimo.
+function calcolaMaxOfferta(asta, squadra, giocatore) {
+  const minimoPortieri = asta.minimoPortieri || 0;
+  const minimoMovimento = asta.minimoMovimento || 0;
+  const portieriAttuali = squadra.rosa.filter(g => isPortiere(g.ruolo)).length;
+  const movimentoAttuali = squadra.rosa.length - portieriAttuali;
+  const ePortiere = giocatore ? isPortiere(giocatore.ruolo) : null;
+  const portieriDopo = portieriAttuali + (ePortiere === true ? 1 : 0);
+  const movimentoDopo = movimentoAttuali + (ePortiere === false ? 1 : 0);
+  const creditiRiservati = Math.max(0, minimoPortieri - portieriDopo) + Math.max(0, minimoMovimento - movimentoDopo);
+
   if (asta.tipoAsta === 'iniziale') {
-    const minimoTotale = (asta.minimoPortieri || 0) + (asta.minimoMovimento || 0);
-    const slotVuoti = Math.max(0, minimoTotale - squadra.rosa.length - 1);
-    const creditiRiservati = slotVuoti;
     return Math.max(1, squadra.crediti - creditiRiservati);
   }
   const fattore = asta.fattoreSvincolo || 0.5;
   const svincoliRimanenti = asta.svincoliTotali - (squadra.svincoliUsati || 0);
   if (svincoliRimanenti <= 0) return squadra.crediti;
-  const rosaAttuale = squadra.rosa.length;
-  const minimoTotale = (asta.minimoPortieri || 0) + (asta.minimoMovimento || 0);
-  const slotVuoti = Math.max(0, minimoTotale - rosaAttuale - 1);
-  const creditiRiservati = Math.max(0, slotVuoti);
   const sorted = [...squadra.rosa].sort((a, b) => Math.floor(b.prezzo * fattore) - Math.floor(a.prezzo * fattore));
   let creditiRecuperabili = 0;
   const maxSvinc = Math.min(svincoliRimanenti, sorted.length);
@@ -1114,7 +1124,7 @@ io.on('connection', (socket) => {
     offerta = parseInt(offerta);
     const minOfferta = Math.max(1, chiamata.offertaAttuale + (chiamata.offertaAttuale === 0 ? 1 : 1));
     if (offerta < minOfferta) return socket.emit('errore', { msg: `Offerta minima: ${minOfferta} crediti` });
-    const maxOff = calcolaMaxOfferta(asta, sq);
+    const maxOff = calcolaMaxOfferta(asta, sq, chiamata.giocatore);
     if (offerta > maxOff) return socket.emit('errore', { msg: `Massimo consentito: ${maxOff} crediti` });
     if (asta.tipoAsta === 'iniziale' && offerta > sq.crediti) return socket.emit('errore', { msg: `Crediti insufficienti (hai ${sq.crediti})` });
     if (sq.nome === chiamata.proprietarioPrecedente) chiamata.giocatore.dirittoRiacquistoPerso = true;
