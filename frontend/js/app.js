@@ -1344,7 +1344,8 @@ async function usaListinoUfficialePerNuovaAsta() {
       fvmp600: r.fvm1000,
       costo: r.quotazione, valore: r.quotazione,
       idFantaleghe: r.id,
-      under: r.eta, u21: r.u21
+      under: r.eta, u21: r.u21,
+      quotazione: r.quotazione
     }));
     const data2 = { squadre: [], svincolati };
     window._jsonData = data2;
@@ -3400,9 +3401,12 @@ function renderGiocatoriLiberi(pool) {
     const valoreHTML = haValore
       ? '<div class="l-valore-wrap"><span class="l-valore">' + g.valore + '</span><span class="l-valore-label">Valore</span></div>'
       : '';
+    const quotHTML = g.quotazione != null
+      ? '<div class="l-valore-wrap"><span class="l-valore">' + g.quotazione + '</span><span class="l-valore-label">Quot.</span></div>'
+      : '';
     const stratHTML = _getLiberiStrategiaBadgeHTML(g);
     return '<li class="' + sc + '"' + click + '>' + _getRuoloBadgeHTML(g.ruolo) +
-      '<span class="l-nome">' + _escHtml(g.nome) + '</span>' + tb + u21Badge + club + orig + valoreHTML + stratHTML +
+      '<span class="l-nome">' + _escHtml(g.nome) + '</span>' + tb + u21Badge + club + orig + quotHTML + valoreHTML + stratHTML +
       (g.scartato ? '<span class="l-scartato-tag">Scartato</span>' : '') +
       '<span class="l-costo">' + g.costoOriginale + 'cr' + (g.scartato ? ' \u2717' : '') + '</span></li>';
   }).join('') || '<li class="text-muted" style="padding:8px">Nessun giocatore</li>';

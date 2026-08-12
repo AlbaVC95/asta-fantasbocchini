@@ -601,7 +601,8 @@ app.post('/api/asta', async (req, res) => {
             pgv: g.pgv ?? null, mv: g.mv ?? null, fm: g.fm ?? null,
             fvmp600: g.fvmp600 ?? null, qam: g.qam ?? null,
             idFantaleghe: g.idFantaleghe ?? null,
-            under: g.under ?? null, u21: !!g.u21
+            under: g.under ?? null, u21: !!g.u21,
+            quotazione: g.quotazione ?? null
           });
         });
       }
@@ -619,7 +620,8 @@ app.post('/api/asta', async (req, res) => {
         pgv: g.pgv ?? null, mv: g.mv ?? null, fm: g.fm ?? null,
         fvmp600: g.fvmp600 ?? null, qam: g.qam ?? null,
         idFantaleghe: g.idFantaleghe ?? null,
-        under: g.under ?? null, u21: !!g.u21
+        under: g.under ?? null, u21: !!g.u21,
+        quotazione: g.quotazione ?? null
       });
     });
   }
@@ -821,7 +823,7 @@ function campiExtraGiocatorePerExport(g) {
   return {
     squadra: g.squadra || null, pgv: g.pgv ?? null, mv: g.mv ?? null, fm: g.fm ?? null,
     fvmp600: g.fvmp600 ?? null, qam: g.qam ?? null, idFantaleghe: g.idFantaleghe ?? null,
-    under: g.under ?? null, u21: !!g.u21
+    under: g.under ?? null, u21: !!g.u21, quotazione: g.quotazione ?? null
   };
 }
 
@@ -1242,7 +1244,7 @@ io.on('connection', (socket) => {
       squadra.svincoliUsati = (squadra.svincoliUsati || 0) + 1;
       const gPool = asta.poolGiocatori.find(p => p.id === gId);
       if (gPool) { gPool.estratto = false; gPool.assegnato = false; gPool.scartato = false; }
-      else asta.poolGiocatori.push({ id: gId, nome: g.nome, ruolo: g.ruolo || '', tipo: 'NN', costoOriginale: g.prezzo, valore: g.valore || 0, squadraOriginale: null, estratto: false, assegnato: false, scartato: false });
+      else asta.poolGiocatori.push({ id: gId, nome: g.nome, ruolo: g.ruolo || '', tipo: 'NN', costoOriginale: g.prezzo, valore: g.valore || 0, squadraOriginale: null, estratto: false, assegnato: false, scartato: false, quotazione: g.quotazione ?? null });
     });
     squadra.crediti += creditiRecuperati;
     assegnaGiocatoreASquadra(asta, popup.giocatore, squadra, popup.prezzoFinale);

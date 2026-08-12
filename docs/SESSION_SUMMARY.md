@@ -18,6 +18,8 @@ Stato attuale del progetto. Questo file va sovrascritto ad ogni task importante 
   Vedi sezione dedicata sotto.
 - **Nuovo — Contatore "chiamati/totale" nel tab Svincolati**: pushato, verificato via console
   browser con dati finti (nessuna asta live disponibile in sessione per un test reale).
+- **Fix — Quotazione Ufficiale (Quot.) persa nel pool giocatori durante l'asta**: pushato,
+  verificato via console browser con dati finti. Vedi sezione dedicata sotto.
 - **3 vulnerabilità di sicurezza Supabase corrette in questa sessione** (segnalate via email di
   alert automatico Supabase + Security Advisors), applicate dall'utente via SQL Editor. Vedi
   sezione dedicata sotto.
@@ -96,6 +98,30 @@ a prescindere dall'esito — assegnati o scartati) sul totale del pool dell'asta
 + pool.length`. Verificato via `javascript_tool` nel browser (nessuna asta live in sessione per
 un test end-to-end): con un pool finto di 3 giocatori (2 estratti) mostra correttamente
 "2 / 3 giocatori chiamati".
+
+## Fix — Quotazione Ufficiale (Quot.) persa nel pool giocatori durante l'asta
+
+Richiesta/bug dell'utente: il valore "Quot." del Listino Ufficiale non era visibile né in
+Svincolati durante l'asta. In Strategia (fuori asta) era **già** implementato (visibile +
+ordinabile Crescente/Decrescente, invariato in questa sessione) perché legge direttamente
+`listino_giocatori` da Supabase. Il problema reale era nel pool `asta.poolGiocatori`
+(`backend/server.js`): il campo `quotazione` non veniva mai copiato quando si costruiva il pool,
+in 4 punti — creazione asta da rosa squadre, da svincolati, ripristino di un giocatore svincolato
+non più in pool, ed export/reimport JSON di un'asta (`campiExtraGiocatorePerExport`). Il dato
+esisteva correttamente su `listino_giocatori` (mai perso lì), ma si "smarriva" nel momento in cui
+un'asta veniva creata o esportata/reimportata.
+
+Fix, solo additivo (nessuna logica esistente toccata, come richiesto esplicitamente
+dall'utente): aggiunto `quotazione: g.quotazione ?? null` in tutti e 4 i punti di costruzione del
+pool in `backend/server.js`; `usaListinoUfficialePerNuovaAsta()` in `frontend/js/app.js` ora passa
+`quotazione` esplicitamente (prima veniva solo riusato per popolare `costo`/`valore`, senza un
+campo dedicato); `renderGiocatoriLiberi()` mostra un nuovo badge "Quot." nella lista Svincolati
+(stesso stile del badge "Valore" già esistente), visibile solo se il dato è presente.
+
+Verificato: sintassi OK, server senza errori, testato `renderGiocatoriLiberi()` in console browser
+con un pool finto (un giocatore con quotazione, uno senza) — il badge appare/scompare
+correttamente. **Non verificato end-to-end creando una vera asta dal Listino Ufficiale** (nessuna
+asta live disponibile in sessione).
 
 ## Sicurezza Supabase — 3 fix applicati (email di alert + Security Advisors)
 
