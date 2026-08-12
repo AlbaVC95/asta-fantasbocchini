@@ -1808,6 +1808,10 @@ function setupFilters() {
 function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      // Anteprima non e' piu' una tab del flusso normale ma un drawer laterale che puo'
+      // restare aperto sopra un'altra tab attiva (es. Rose) — non condivide .active con
+      // le altre, altrimenti aprirla nasconderebbe il contenuto della tab di sfondo.
+      if (btn.dataset.tab === 'tab-anteprima') { _antToggleDrawer(); return; }
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       btn.classList.add('active');
@@ -1987,6 +1991,10 @@ socket.on('timer-start', ({ secondi, fase }) => { S.timerTotal = secondi; update
 socket.on('timer-tick', ({ secondi, fase }) => updateTimer(secondi, fase));
 
 socket.on('giocatore-assegnato', ({ giocatore, prezzo, squadra, tipo, guadagno, plusvalenzaA }) => {
+  // Deve leggere la posizione di .cc-avatar PRIMA che il resto dell'handler la muti (sotto,
+  // card.className/innerHTML) — per questo e' la primissima riga. Puro effetto client-side,
+  // nessun evento socket nuovo: 'giocatore-assegnato' arriva gia' a tutti i partecipanti.
+  _playAssegnazioneCardFx(giocatore);
   S.attesaConferma = false;
   nascondiConfermaBox();
   document.getElementById('rilancio-box').classList.add('hidden');
@@ -2943,12 +2951,38 @@ function _antSetPitchSize(px) {
   _antApplyPitchSize(clamped);
 }
 
+// Apre/chiude il drawer Anteprima (classe .drawer-open su #tab-anteprima.ant-drawer, vedi
+// style.css) — sostituisce il vecchio meccanismo .active di setupTabs() SOLO per questa tab,
+// cosi' puo' restare aperto sopra Rose/Storico/altre tab senza nasconderle.
+function _antToggleDrawer() {
+  const drawer = document.getElementById('tab-anteprima');
+  if (!drawer) return;
+  drawer.classList.toggle('drawer-open');
+}
+
+// Sotto-tab interne "Vista campo 3D" / "Vista lista" — meccanismo indipendente da setupTabs()
+// (stesso pattern gia' usato nel progetto per le sotto-tab di Griglia P/A, .gki-subtabs).
+function _antSetupSubtabs() {
+  document.querySelectorAll('.ant-subtab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.ant-subtab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.ant-subview').forEach(v => v.classList.remove('active'));
+      btn.classList.add('active');
+      const view = document.getElementById('ant-view-' + btn.dataset.antview);
+      if (view) view.classList.add('active');
+    });
+  });
+}
+
 function setupAnteprima() {
   const selSquadra = document.getElementById('ant-squadra-select');
   const selModulo = document.getElementById('ant-modulo-select');
   const btnReset = document.getElementById('ant-reset-btn');
   const btnZoomIn = document.getElementById('ant-zoom-in');
   const btnZoomOut = document.getElementById('ant-zoom-out');
+  const btnDrawerClose = document.getElementById('ant-drawer-close');
+  if (btnDrawerClose) btnDrawerClose.addEventListener('click', _antToggleDrawer);
+  _antSetupSubtabs();
   if (!selSquadra || !selModulo) return;
 
   _antApplyPitchSize(_antGetPitchSize());
@@ -3093,18 +3127,167 @@ const ANT_LAYOUT = {
   ]
 };
 
+// Foto carta 3D: nuovo consumatore della STESSA cache/ricerca gia' usata per .cc-avatar in
+// Puja (_playerPhotoCache/_tryLocalPhoto, vedi sopra ~L2554) — non tocca quelle funzioni,
+// scrive/legge la stessa cache condivisa cosi' una foto gia' risolta in Puja e' istantanea
+// anche qui (e viceversa). _applyPlayerPhoto esistente non e' riusabile perche' e' agganciata
+// in modo fisso a #chiamata-card .cc-avatar (vedi commento li'), da qui un piccolo omologo.
+function _antApplyCardPhoto(el, nome, squadra) {
+  const cacheKey = nome + '|' + (squadra || '');
+  if (Object.prototype.hasOwnProperty.call(_playerPhotoCache, cacheKey)) {
+    el.style.backgroundImage = "url('" + _playerPhotoCache[cacheKey] + "')";
+    return;
+  }
+  _withTimeout(_tryLocalPhoto(nome, squadra), 4000, null).then(function(finalUrl) {
+    const url = finalUrl || 'img/players/unknown_anime.jpg';
+    _playerPhotoCache[cacheKey] = url;
+    if (document.body.contains(el)) el.style.backgroundImage = "url('" + url + "')";
+  }).catch(function() {
+    _playerPhotoCache[cacheKey] = 'img/players/unknown_anime.jpg';
+  });
+}
+
+// Carta 3D per un giocatore reale (panchina o campo) — riusa _getRuoloBadgeHTML() (badge per
+// ruolo, mai troncato, gia' usato altrove) e _roseRowRoleClass() (stesso raggruppamento a 5
+// colori gia' usato per le righe di Rose) per il colore d'accento, nessuna palette nuova.
+function _antCardHTML(g, size, onPitch) {
+  const accentClass = _roseRowRoleClass(g.ruolo);
+  const sizeClass = size === 'xl' ? 'size-xl' : (onPitch ? 'size-pitch' : 'size-bench');
+  const stato = onPitch ? 'on-pitch' : 'in-bench';
+  let html = '<div class="ant-card ' + stato + ' ' + sizeClass + ' ' + accentClass + '" data-nome="' + _escAttr(g.nome) + '">' +
+    '<div class="ant-card-photo"></div>' +
+    '<div class="ant-card-role">' + _getRuoloBadgeHTML(g.ruolo) + '</div>';
+  if (!onPitch) {
+    html += '<div class="ant-card-fade"></div><div class="ant-card-name">' + _escHtml(g.nome) + '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+// Animazione di assegnazione: carta che esce da .cc-avatar (Puja), zoom veloce al centro,
+// picco 3D, drop verso il basso, ~1-1.2s. Overlay puramente client-side (nessun evento socket
+// nuovo, 'giocatore-assegnato' arriva gia' a tutti — vedi handler sopra), non tocca il DOM
+// interno di #chiamata-card: legge solo la posizione di .cc-avatar con getBoundingClientRect()
+// e lavora su un clone separato dentro #assegnazione-fx-layer (fuori da .tabs-panel apposta,
+// vedi style.css). Tetto di 3 cloni simultanei: assegnazioni manuali rapide non devono accumulare.
+let _antFxCloniAttivi = 0;
+const ANT_FX_MAX_CLONI = 3;
+function _playAssegnazioneCardFx(giocatore) {
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const layer = document.getElementById('assegnazione-fx-layer');
+  const avatarEl = document.querySelector('#chiamata-card .cc-avatar');
+  if (!layer || !avatarEl || !giocatore) return;
+  if (_antFxCloniAttivi >= ANT_FX_MAX_CLONI) return;
+
+  const srcRect = avatarEl.getBoundingClientRect();
+  if (!srcRect.width || !srcRect.height) return;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'assegnazione-fx-card';
+  wrap.style.left = srcRect.left + 'px';
+  wrap.style.top = srcRect.top + 'px';
+  wrap.style.width = srcRect.width + 'px';
+  wrap.style.height = srcRect.height + 'px';
+  wrap.innerHTML = _antCardHTML(giocatore, 'xl', false);
+  const cardEl = wrap.firstElementChild;
+  if (cardEl) {
+    cardEl.style.width = '100%';
+    cardEl.style.height = '100%';
+    cardEl.style.boxShadow = '0 20px 50px rgba(0,0,0,.6), 0 0 40px var(--gold-glow,rgba(255,179,0,.5))';
+  }
+  layer.appendChild(wrap);
+  _antApplyCardPhoto(wrap.querySelector('.ant-card-photo'), giocatore.nome, giocatore.squadra);
+
+  const cx = window.innerWidth / 2, cy = window.innerHeight * 0.42;
+  const srcCx = srcRect.left + srcRect.width / 2, srcCy = srcRect.top + srcRect.height / 2;
+  const dx = cx - srcCx, dy = cy - srcCy;
+  const scalePeak = Math.max(2.2, 220 / srcRect.width);
+
+  _antFxCloniAttivi++;
+  const anim = wrap.animate([
+    { transform: 'translate(0,0) scale(1) rotate(0deg)', opacity: 1, offset: 0 },
+    { transform: 'translate(' + (dx * 0.6) + 'px,' + (dy * 0.6) + 'px) scale(' + (scalePeak * 0.8) + ') rotate(-3deg)', opacity: 1, offset: .35 },
+    { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + scalePeak + ') rotate(0deg)', opacity: 1, offset: .6 },
+    { transform: 'translate(' + dx + 'px,' + (dy + 30) + 'px) scale(' + (scalePeak * 0.92) + ') rotate(2deg)', opacity: 1, offset: .85 },
+    { transform: 'translate(' + dx + 'px,' + (dy + 160) + 'px) scale(' + (scalePeak * 0.6) + ') rotate(0deg)', opacity: 0, offset: 1 }
+  ], { duration: 1100, easing: 'cubic-bezier(.3,.7,.3,1)' });
+  const cleanup = () => { _antFxCloniAttivi = Math.max(0, _antFxCloniAttivi - 1); wrap.remove(); };
+  anim.onfinish = cleanup;
+  anim.oncancel = cleanup;
+}
+
+// Panchina: derivata al volo (rosa reale meno chi e' gia' piazzato nel planner locale) — zero
+// nuovo stato persistito, zero cambio allo schema salvato in localStorage da _antSetSquadraState.
+// Chiamata da renderAnteprimaPitch(), quindi si aggiorna automaticamente ad ogni giro gia'
+// esistente di populateAnteprimaSquadre() (a sua volta gia' chiamata dall'handler 'stato-asta'
+// dopo ogni giocatore-assegnato) — "compare in panchina appena vinto" senza nessun nuovo aggancio.
+function _antRenderPanchina(nomeSquadra) {
+  const panchina = document.getElementById('ant-panchina');
+  if (!panchina) return;
+  const squadra = ((S.asta && S.asta.squadre) || []).find(sq => sq.nome === nomeSquadra);
+  const rosa = (squadra && squadra.rosa) || [];
+  const state = _antGetSquadraState(nomeSquadra);
+  const assegnati = new Set(Object.keys(state.slots).map(k => state.slots[k]));
+  const disponibili = rosa.filter(g => !assegnati.has(g.nome));
+  let html = '<div class="ant-panchina-hdr"><span class="ant-panchina-title">🪑 Panchina</span><span class="ant-panchina-count">' + disponibili.length + '</span></div>';
+  if (!disponibili.length) {
+    html += '<div class="ant-panchina-empty">Nessun giocatore in panchina</div>';
+  } else {
+    html += '<div class="ant-panchina-grid">' + disponibili.map(g => _antCardHTML(g, null, false)).join('') + '</div>';
+  }
+  panchina.innerHTML = html;
+  panchina.querySelectorAll('.ant-card[data-nome]').forEach(el => {
+    const g = disponibili.find(x => x.nome === el.dataset.nome);
+    if (g) _antApplyCardPhoto(el.querySelector('.ant-card-photo'), g.nome, g.squadra);
+  });
+}
+
+// Sotto-tab "Vista lista" — stessi dati di rosa/state gia' usati per campo+panchina, solo una
+// resa piatta alternativa (utile su schermi piccoli o per scorrere l'intera rosa velocemente).
+function _antRenderLista(nomeSquadra) {
+  const lista = document.getElementById('ant-lista-giocatori');
+  if (!lista) return;
+  const squadra = ((S.asta && S.asta.squadre) || []).find(sq => sq.nome === nomeSquadra);
+  const rosa = (squadra && squadra.rosa) || [];
+  if (!nomeSquadra || !rosa.length) {
+    lista.innerHTML = '<li class="text-muted" style="padding:8px">Nessun giocatore</li>';
+    return;
+  }
+  const state = _antGetSquadraState(nomeSquadra);
+  const schierati = new Set(Object.keys(state.slots).map(k => state.slots[k]));
+  lista.innerHTML = rosa.map(g => {
+    const inCampo = schierati.has(g.nome);
+    return '<li>' + _getRuoloBadgeHTML(g.ruolo) +
+      '<span class="ant-lista-nome">' + _escHtml(g.nome) + '</span>' +
+      '<span class="ant-lista-slot">' + (inCampo ? '⚽ In campo' : '🪑 Panchina') + '</span>' +
+    '</li>';
+  }).join('');
+}
+
+function _antRenderVuoto() {
+  const pitch = document.getElementById('ant-pitch');
+  if (pitch) pitch.innerHTML = '';
+  const panchina = document.getElementById('ant-panchina');
+  if (panchina) panchina.innerHTML = '';
+  const lista = document.getElementById('ant-lista-giocatori');
+  if (lista) lista.innerHTML = '';
+}
+
 function renderAnteprimaPitch() {
   const pitch = document.getElementById('ant-pitch');
   const selSquadra = document.getElementById('ant-squadra-select');
   const selModulo = document.getElementById('ant-modulo-select');
   if (!pitch || !selSquadra || !selModulo) return;
+  pitch.classList.add('ant-pitch3d');
   const nomeSquadra = selSquadra.value;
-  if (!nomeSquadra) { pitch.innerHTML = ''; return; }
+  if (!nomeSquadra) { _antRenderVuoto(); return; }
   const modulo = selModulo.value;
   const rows = ANTEPRIMA_FORMAZIONI[modulo];
-  if (!rows) { pitch.innerHTML = ''; return; }
+  if (!rows) { _antRenderVuoto(); return; }
   const state = _antGetSquadraState(nomeSquadra);
   const layout = ANT_LAYOUT[modulo];
+  const squadra = ((S.asta && S.asta.squadre) || []).find(sq => sq.nome === nomeSquadra);
+  const rosa = (squadra && squadra.rosa) || [];
   let html = '';
   rows.forEach((row, ri) => {
     const nCols = row.length;
@@ -3115,16 +3298,33 @@ function renderAnteprimaPitch() {
       const slotKey = ri + '-' + ci;
       const nomeGiocatore = state.slots[slotKey];
       const filled = !!nomeGiocatore;
-      html += '<div class="ant-slot' + (filled ? ' filled' : '') + '" data-slotkey="' + slotKey + '" data-ruolo="' + _escAttr(ruolo) + '" style="top:' + top + '%;left:' + left + '%">' +
-        '<div class="ant-slot-role ' + _antRoleClass(ruolo) + '">' + _escHtml(ruolo) + '</div>' +
-        '<div class="ant-slot-player">' + (filled ? _escHtml(nomeGiocatore) : '+ scegli') + '</div>' +
-      '</div>';
+      const g = filled ? rosa.find(x => x.nome === nomeGiocatore) : null;
+      html += '<div class="ant-slot3d' + (filled ? ' filled' : '') + '" data-slotkey="' + slotKey + '" data-ruolo="' + _escAttr(ruolo) + '" style="top:' + top + '%;left:' + left + '%">';
+      if (g) {
+        // Ombra di contatto: elemento piatto sul piano del campo (NON contro-ruotato come la
+        // carta) — e' il segnale visivo che vende la sensazione "la carta sta in piedi sopra
+        // il prato", altrimenti anche con la matrice 3D corretta le foto piatte leggono come
+        // adagiate sul campo invece che ritte.
+        html += '<div class="ant-slot3d-shadow"></div>' + _antCardHTML(g, null, true) + '<div class="ant-slot3d-label">' + _escHtml(g.nome) + '</div>';
+      } else if (filled) {
+        // Giocatore assegnato allo slot ma non piu' in rosa (es. annullato dopo lo schieramento): fallback "fantasma", mai un crash.
+        html += '<div class="ant-slot3d-shadow"></div><div class="ant-card on-pitch size-pitch placeholder">?</div><div class="ant-slot3d-label">' + _escHtml(nomeGiocatore) + '</div>';
+      } else {
+        html += '<div class="ant-slot3d-empty">+</div><div class="ant-slot3d-label">' + _escHtml(ruolo) + '</div>';
+      }
+      html += '</div>';
     });
   });
   pitch.innerHTML = html;
-  pitch.querySelectorAll('.ant-slot').forEach(el => {
+  pitch.querySelectorAll('.ant-slot3d').forEach(el => {
     el.addEventListener('click', (e) => _antOpenPicker(e.currentTarget, nomeSquadra));
   });
+  pitch.querySelectorAll('.ant-card[data-nome]').forEach(el => {
+    const g = rosa.find(x => x.nome === el.dataset.nome);
+    if (g) _antApplyCardPhoto(el.querySelector('.ant-card-photo'), g.nome, g.squadra);
+  });
+  _antRenderPanchina(nomeSquadra);
+  _antRenderLista(nomeSquadra);
 }
 
 function _antOpenPicker(slotEl, nomeSquadra) {

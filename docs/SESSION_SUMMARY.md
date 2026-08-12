@@ -5,123 +5,104 @@ Stato attuale del progetto. Questo file va sovrascritto ad ogni task importante 
 
 ## Stato attuale
 
-- Branch `main` pulito, **tutto pushato e in produzione** (Render): ultimo commit il fix
-  Max Offerta Portieri/Movimento (vedi sotto), poi `b09fe12` (import/export FantaLab), `4b22006`
-  (mockup redesign 3D, tenuto in locale per un po' su richiesta dell'utente, pushato insieme al
-  resto in questa sessione), `a70f175`, `2a442d9`, `8e5c3d3`. Migration
+- **Deploy**: migrato da Render a **Hostinger** (dominio `asta.fantaplus.com`, deploy automatico
+  su push a `main`). Render resta attivo temporaneamente come backup dell'utente. Verificato:
+  nessun riferimento hardcoded a Render nel codice, le 3 uniche env var usate ovunque nel progetto
+  sono `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`/`PORT`, `npm start` basta (nessun build step).
+  Applicato un bind esplicito su `0.0.0.0` in `server.listen()` (`backend/server.js`) come misura
+  difensiva per hosting diversi da Render — pushato su `main`, commit `7d32099`.
+- Branch `main` pulito, **tutto pushato e in produzione**: ultimi commit `7d32099` (bind
+  0.0.0.0), `24475fc` (fix Quotazione Ufficiale), `643c7a7` (contatore Svincolati), `dfb7fd0`
+  (fix Max Offerta Portieri/Movimento), `b09fe12` (import/export FantaLab), `4b22006` (mockup
+  redesign 3D), `a70f175`, `2a442d9`, `8e5c3d3`. Migration
   `backend/sql/2026-08-10_strategia_titolarita_commento.sql` già eseguita dall'utente su Supabase.
-- **Import/export Strategia in formato Excel FantaLab: implementato, testato con successo in
-  produzione con login reale, e pushato.** Vedi sezione dedicata sotto.
-- **Fix — Max Offerta non rispettava il minimo Portieri separatamente dal minimo Movimento**
-  (segnalato dall'utente con un caso reale): pushato, **non ancora verificato dal vivo con una
-  puja reale** (solo verifica logica sull'esempio esatto dell'utente + sintassi/avvio server).
-  Vedi sezione dedicata sotto.
-- **Nuovo — Contatore "chiamati/totale" nel tab Svincolati**: pushato, verificato via console
-  browser con dati finti (nessuna asta live disponibile in sessione per un test reale).
-- **Fix — Quotazione Ufficiale (Quot.) persa nel pool giocatori durante l'asta**: pushato,
-  verificato via console browser con dati finti. Vedi sezione dedicata sotto.
-- **3 vulnerabilità di sicurezza Supabase corrette in questa sessione** (segnalate via email di
-  alert automatico Supabase + Security Advisors), applicate dall'utente via SQL Editor. Vedi
-  sezione dedicata sotto.
-- **2 bug reali corretti e già in produzione** (vedi sotto) — Bug 1 verificato con lettura statica
-  approfondita del codice (nessun modo pratico di simulare una sessione socket.io multi-utente in
-  questo ambiente), Bug 2 verificato con test funzionale reale in browser. **Nessuno dei due è
-  stato ancora confermato dall'utente dal vivo in un'asta reale.**
-- Redesign 3D Anteprima: **ancora nessuna implementazione**, solo iterazione visiva (v1 → v6),
-  mockup salvato nel repo (vedi sotto).
+- **Redesign 3D Anteprima: IMPLEMENTATO su branch separato `redesign/asta-3d`, NON in `main`, NON
+  in produzione.** Vedi sezione dedicata sotto — è il lavoro più recente e più corposo di questa
+  sessione, richiede QA dal vivo prima di un eventuale merge.
+- 3 vulnerabilità di sicurezza Supabase corrette (RLS `app_settings`, `search_path`/`EXECUTE` su
+  `handle_new_user`) — vedi dettagli in fondo, sezione "Sicurezza Supabase".
+- **Fix pushati in produzione, non ancora confermati dal vivo dall'utente**: Max Offerta
+  Portieri/Movimento separati, Quotazione Ufficiale persa nel pool asta, contatore Svincolati,
+  più i 2 bug di sessioni precedenti (plusvalenza/recompra, Anteprima non resettata) — vedi
+  "Tasks pendenti" per la lista di verifiche dal vivo ancora da fare.
 
-## Import/Export Strategia — formato FantaLab (implementato, testato in produzione, pushato)
+## Redesign 3D Anteprima — IMPLEMENTATO su branch `redesign/asta-3d` (non in produzione)
 
-Aggiunta la possibilità di importare/esportare una Strategia anche nel formato Excel del tool
-esterno "FantaLab" (12 fogli, uno per ruolo Mantra), oltre al JSON nativo che resta invariato.
+Richiesta dell'utente (7 requisiti precisi): animazione di assegnazione carta (Puja → centro
+schermo → drop, ~1-1.2s), pannello Anteprima come drawer laterale destro con campo 3D e carte
+giocatore 3D, panchina automatica, tutto senza toccare Puja/Rose/logica R.MANTRA esistente.
+Piano dettagliato in `/Users/alba/.claude/plans/bright-swimming-parnas.md` e in
+[docs/REDESIGN_ASTA_3D.md](REDESIGN_ASTA_3D.md) (quest'ultimo aggiornato con lo stato finale e la
+checklist QA).
 
-- **Import** (`frontend/index.html` bottone "📥 Importa da FantaLab (Excel)" nella lista strategie
-  + `_importaGiocatoriFantaLabInStrategia()` in `frontend/js/app.js`): riusa lo screen "Nuova
-  strategia" esistente per nome/crediti/tipo (il file Excel non li contiene), poi parsa i 12 fogli
-  con SheetJS. Matching giocatore per **nome+ruolo** contro `listino_giocatori` (nessun fuzzy
-  matching necessario). Le fasce vengono create automaticamente seguendo la gerarchia nota di
-  FantaLab (`FANTALAB_FASCIA_ORDINE` in `app.js`). Un giocatore multi-ruolo appare su più fogli con
-  la stessa fascia reale solo sul primo e "Non Impostata" sugli altri (comportamento originale di
-  FantaLab): in import si prende la fascia reale **indipendentemente dal foglio** in cui compare
-  (richiesta esplicita dell'utente — l'app non ha un concetto di "ruolo primario" per la fascia).
-- **Export** (`frontend/index.html` bottone "📤 Esporta (FantaLab)" nell'editor +
-  `esportaStrategiaFantaLab()` in `app.js`): ricrea i 12 fogli, popolando `Team` da una mappa
-  codice→squadra derivata e verificata contro il listino reale (`FANTALAB_TEAM_CODE_TO_SQUADRA`),
-  `Quo/MV/FMV` dal Listino Ufficiale. Replica **esattamente** il comportamento FantaLab per i
-  multi-ruolo: fascia scritta solo sul foglio del primo ruolo (ordine in
-  `listino_giocatori.ruolo`), "Non Impostata" sugli altri.
-- Colonne FantaLab senza equivalente nel nostro schema (`PMA, Affidabilità, Integrità, Nota 1-5`)
-  vengono ignorate in import e lasciate vuote in export — `strategia_giocatori` non ha campi per
-  quei dati.
-- **Verificato due volte in produzione con login reale dall'utente**: import del file FantaLab
-  reale dell'utente → 497/497 giocatori importati, 0 scartati, tutte le 20 fasce create
-  correttamente (confermato via query diretta su Supabase, non solo lato client). Export testato su
-  due strategie diverse (una con pochi giocatori configurati manualmente, una con i 497 importati
-  da FantaLab): in entrambi i casi il file generato è corretto, incluso il comportamento
-  multi-ruolo (verificato sui casi reali Addai e Aboukhlal, entrambi W/A: fascia sul foglio W,
-  "Non Impostata" sul foglio A).
-- Nota per il futuro: dopo due test dell'utente esistono in produzione due strategie duplicate
-  chiamate "Strategia SOS Fanta" (create durante il test) — puramente dati di test dell'utente, non
-  un problema del codice; l'utente può eliminarne una dall'editor se vuole.
+**Strategia di sicurezza applicata**: branch `backup/pre-redesign-asta-3d` (punto di partenza,
+identico a `main` prima di questo lavoro) + branch di lavoro `redesign/asta-3d`, entrambi locali,
+**non pushati su GitHub** (in attesa di conferma dell'utente, dato il redirect automatico
+Hostinger → `main` su ogni push — non si vuole rischiare un push accidentale sul branch sbagliato
+prima che l'utente abbia visto/approvato il risultato).
 
-## Fix — Max Offerta: minimo Portieri e minimo Movimento sono due vincoli separati
+**Cosa è cambiato** (solo `frontend/index.html`, `frontend/css/style.css`, `frontend/js/app.js`
+— nessun file backend toccato, nessun contratto socket nuovo):
+- Animazione (`_playAssegnazioneCardFx()`, agganciata come prima riga di
+  `socket.on('giocatore-assegnato', ...)`): clona la carta a partire dalla posizione reale di
+  `.cc-avatar` (misurata con `getBoundingClientRect()`, mai una dimensione fissa), la anima con
+  Web Animations API (stessa tecnica già prototipata nel mockup salvato) verso il centro schermo
+  e giù, poi la rimuove. Salta l'animazione se `prefers-reduced-motion: reduce`; tetto di 3 cloni
+  simultanei per non accumulare in caso di assegnazioni manuali rapide.
+- Drawer (`#tab-anteprima` guadagna la classe `ant-drawer`, controllata da `.drawer-open` invece
+  che dal vecchio `.active` di `setupTabs()` — un guard di una riga in `setupTabs()` smista solo
+  il click su "Anteprima" verso `_antToggleDrawer()`, il resto delle tab invariato): resta aperto
+  sopra un'altra tab attiva (es. Rose), verificato che non la nasconde.
+- Campo 3D (`renderAnteprimaPitch()` riscritta solo nella generazione dell'HTML per slot —
+  `ANT_LAYOUT`, il calcolo delle coordinate e il binding al picker restano identici) + carte 3D
+  (`.ant-card`, foto reale via nuovo `_antApplyCardPhoto()` che riusa la stessa cache/ricerca di
+  `.cc-avatar` senza toccarla, colore per ruolo riuso di `_roseRowRoleClass()`, badge ruolo riuso
+  di `_getRuoloBadgeHTML()` — nessuna palette nuova).
+- Panchina automatica (`_antRenderPanchina()`) e sotto-tab "Vista lista" (`_antRenderLista()`):
+  entrambe si aggiornano da sole perché agganciate alla fine di `renderAnteprimaPitch()`, già
+  richiamata dal flusso esistente `stato-asta` → `populateAnteprimaSquadre()` — zero nuovi hook
+  socket necessari.
 
-Bug reale segnalato dall'utente con un caso concreto: `calcolaMaxOfferta()`
-(`backend/server.js`, validazione autoritativa lato server) riservava crediti solo in base al
-**totale** `minimoPortieri + minimoMovimento` confrontato con la dimensione della rosa, non alle
-due categorie separatamente. Risultato: una squadra che aveva già superato il minimo Movimento ma
-non quello Portieri (es. 1 portiere/26 movimento con minimo 3/25) poteva comunque offrire tutti i
-crediti residui su un giocatore di movimento, restando poi bloccata a fine asta senza credito per
-completare i portieri minimi.
+**Verificato in locale** (browser automatizzato, dati simulati — nessuna asta live disponibile in
+sessione per un test reale): tutte le altre tab (Storico/Rose/Svincolati/Griglia P/A) restano
+identiche dopo le modifiche a `setupTabs()`; il drawer apre/chiude senza nascondere Rose dietro;
+il campo 3D renderizza tutti gli 11 moduli con le coordinate `ANT_LAYOUT` invariate; il picker
+filtra ancora correttamente per R.MANTRA (`_ruoliCompatibili` non toccata); assegnare un
+giocatore dal picker lo sposta correttamente da panchina a campo; foto giocatore caricate
+correttamente (stessa pipeline di Puja); meccanica dell'animazione verificata (posizione di
+partenza, cleanup, tetto cloni, skip con reduced-motion) ma **non vista a schermo intero né in
+multiplayer reale** — limite dell'ambiente di test. `git diff` confermato: zero righe toccate in
+`#chiamata-card`/`.cc-avatar` (CSS e HTML) e zero righe toccate in `renderRose()`.
 
-Fix: la funzione ora calcola quanti portieri e quanti giocatori di movimento mancano al minimo
-**separatamente**, considerando che il giocatore della chiamata attuale (se noto) riempie la SUA
-categoria. Stessa logica duplicata e corretta in `frontend/js/app.js`
-(`calcolaMaxOffertaSquadra()`, usata solo per l'hint "Max Xcr" mostrato in UI — la validazione
-vera resta lato server) — le due funzioni client duplicate (`getMaxOfferta`/
-`calcolaMaxOffertaSquadra`) sono state unificate in una sola per evitare che tornino a
-disallinearsi in futuro.
+**Non verificabile in questo ambiente, da fare con l'utente prima del merge**: test su device
+reale (specialmente Android fascia bassa, l'app è mobile-first), test multiplayer reale (2+
+dispositivi sulla stessa asta), verifica che il drawer aperto non copra `.rilancio-box`/timer
+durante una puja reale attiva, animazione vista dal vivo durante un'asta di prova.
 
-Verificato: il nuovo calcolo riproduce esattamente il numero atteso dall'utente sul suo esempio
-reale (1 portiere/26 movimento, minimo 3/25, 4 crediti, chiamata su un giocatore di movimento →
-massimo 2, non più 4). Sintassi OK, server riavviato senza errori, app caricata in browser senza
-crash. **Non verificato con una puja reale in un'asta live** (richiederebbe una sessione
-multi-utente non simulabile in questo ambiente, stesso limite del Bug 1 sopra) — da confermare
-alla prossima asta di test.
+## Tasks pendenti
 
-## Nuovo — Contatore "chiamati/totale" nel tab Svincolati
+- **Decidere se/quando pushare `redesign/asta-3d`** e fare la QA dal vivo elencata sopra prima di
+  un eventuale merge su `main`. Finché resta locale e non mergiato, zero rischio per la
+  produzione.
+- **Verificare dal vivo il fix Max Offerta Portieri/Movimento**: portare una squadra a un solo
+  portiere ma oltre il minimo di movimento, controllare che l'offerta massima sui giocatori di
+  movimento lasci crediti sufficienti per completare i portieri minimi.
+- **Verificare dal vivo la Quotazione Ufficiale in Svincolati**: creare un'asta dal Listino
+  Ufficiale, controllare che il badge "Quot." compaia nella lista Svincolati.
+- **Verificare dal vivo il Bug plusvalenza/recompra**: far puntare il proprietario precedente sul
+  proprio ex giocatore, far scadere/riaprire il timer, controllare che il popup NON venga più
+  offerto.
+- **Verificare dal vivo il Bug Anteprima**: terminare un'asta, entrare in una nuova con una
+  squadra dallo stesso nome, controllare che Anteprima parta vuota.
+- Opzionale: eliminare la strategia "Strategia SOS Fanta" duplicata in produzione (dati di test
+  di una sessione precedente).
 
-Richiesta dell'utente: mostrare quanti giocatori del listino sono già stati chiamati (estratti,
-a prescindere dall'esito — assegnati o scartati) sul totale del pool dell'asta. Aggiunto
-`<p id="liberi-counter">` in `frontend/index.html` (tab Svincolati, sopra la lista), popolato in
-`renderGiocatoriLiberi()` (`frontend/js/app.js`) con `pool.filter(g => g.estratto).length + ' / '
-+ pool.length`. Verificato via `javascript_tool` nel browser (nessuna asta live in sessione per
-un test end-to-end): con un pool finto di 3 giocatori (2 estratti) mostra correttamente
-"2 / 3 giocatori chiamati".
+## Prossimo passo consigliato
 
-## Fix — Quotazione Ufficiale (Quot.) persa nel pool giocatori durante l'asta
-
-Richiesta/bug dell'utente: il valore "Quot." del Listino Ufficiale non era visibile né in
-Svincolati durante l'asta. In Strategia (fuori asta) era **già** implementato (visibile +
-ordinabile Crescente/Decrescente, invariato in questa sessione) perché legge direttamente
-`listino_giocatori` da Supabase. Il problema reale era nel pool `asta.poolGiocatori`
-(`backend/server.js`): il campo `quotazione` non veniva mai copiato quando si costruiva il pool,
-in 4 punti — creazione asta da rosa squadre, da svincolati, ripristino di un giocatore svincolato
-non più in pool, ed export/reimport JSON di un'asta (`campiExtraGiocatorePerExport`). Il dato
-esisteva correttamente su `listino_giocatori` (mai perso lì), ma si "smarriva" nel momento in cui
-un'asta veniva creata o esportata/reimportata.
-
-Fix, solo additivo (nessuna logica esistente toccata, come richiesto esplicitamente
-dall'utente): aggiunto `quotazione: g.quotazione ?? null` in tutti e 4 i punti di costruzione del
-pool in `backend/server.js`; `usaListinoUfficialePerNuovaAsta()` in `frontend/js/app.js` ora passa
-`quotazione` esplicitamente (prima veniva solo riusato per popolare `costo`/`valore`, senza un
-campo dedicato); `renderGiocatoriLiberi()` mostra un nuovo badge "Quot." nella lista Svincolati
-(stesso stile del badge "Valore" già esistente), visibile solo se il dato è presente.
-
-Verificato: sintassi OK, server senza errori, testato `renderGiocatoriLiberi()` in console browser
-con un pool finto (un giocatore con quotazione, uno senza) — il badge appare/scompare
-correttamente. **Non verificato end-to-end creando una vera asta dal Listino Ufficiale** (nessuna
-asta live disponibile in sessione).
+Decidere insieme all'utente il destino del branch `redesign/asta-3d` (push per condividerlo,
+oppure QA locale prima), poi verificare dal vivo, in un'asta di test, tutti i fix già in
+produzione ma non ancora confermati (Max Offerta, Quotazione Ufficiale, i 2 bug di sessioni
+precedenti) prima del prossimo utilizzo reale della lega.
 
 ## Sicurezza Supabase — 3 fix applicati (email di alert + Security Advisors)
 
@@ -130,86 +111,36 @@ del dashboard Supabase (l'`apply_migration` diretto è stato bloccato dal classi
 permessi dell'agente su un'operazione DDL di produzione).
 
 1. **`app_settings` aveva RLS completamente disattivato** (ERROR critico, oggetto dell'email di
-   alert Supabase): chiunque avesse la chiave anon pubblica (embedded nel frontend) poteva
-   leggere/modificare/cancellare via API REST i toggle globali `backup_supabase_attivo` e
-   `manutenzione_attiva` (vedi [DECISIONS.md](../DECISIONS.md), "incidente banda agosto 2026" e
-   toggle manutenzione), senza passare dall'app. Fix: `ALTER TABLE public.app_settings ENABLE ROW
-   LEVEL SECURITY;` (nessuna policy, stesso pattern già usato per `asta_backups`/`asta_exports`/
-   `theme_overrides` — solo il backend con service role vi accede, mai il frontend).
-2. **`handle_new_user()` (trigger di creazione `profiles` al signup) con `search_path` non
-   fissato**: rischio di dirottamento di oggetti referenziati se un `SECURITY DEFINER` non fissa
-   il search_path. Fix: `ALTER FUNCTION public.handle_new_user() SET search_path = public,
-   pg_temp;`.
-3. **`handle_new_user()` invocabile via RPC pubblico** (`/rest/v1/rpc/handle_new_user`) da `anon`/
-   `authenticated`: non praticamente sfruttabile (è una funzione `trigger`, Postgres rifiuta di
-   eseguirla fuori da un trigger), ma chiuso per buona prassi. Primo tentativo (`REVOKE ... FROM
-   anon, authenticated`) non bastava perché l'`EXECUTE` restava concesso a `PUBLIC` (pseudo-ruolo
-   di cui `anon`/`authenticated` ereditano i permessi): serviva `REVOKE EXECUTE ON FUNCTION
-   public.handle_new_user() FROM PUBLIC;`. Il trigger di signup continua a funzionare invariato
-   (essendo `SECURITY DEFINER`, Postgres lo esegue con i privilegi del proprietario della
-   funzione indipendentemente da questi grant).
+   alert Supabase): chiunque avesse la chiave anon pubblica poteva leggere/modificare/cancellare
+   via API REST i toggle globali `backup_supabase_attivo`/`manutenzione_attiva` (vedi
+   [DECISIONS.md](../DECISIONS.md)), senza passare dall'app. Fix: `ALTER TABLE
+   public.app_settings ENABLE ROW LEVEL SECURITY;` (nessuna policy, stesso pattern già usato per
+   `asta_backups`/`asta_exports`/`theme_overrides`).
+2. **`handle_new_user()` con `search_path` non fissato**: `ALTER FUNCTION
+   public.handle_new_user() SET search_path = public, pg_temp;`.
+3. **`handle_new_user()` invocabile via RPC pubblico**: `REVOKE EXECUTE ON FUNCTION
+   public.handle_new_user() FROM PUBLIC;` (il primo tentativo, `REVOKE ... FROM anon,
+   authenticated`, non bastava perché l'`EXECUTE` restava concesso a `PUBLIC`). Il trigger di
+   signup continua a funzionare invariato (`SECURITY DEFINER`).
 
-**Residuo, non un problema**: 4 avvisi INFO "RLS enabled, no policy" su `app_settings`,
-`asta_backups`, `asta_exports`, `theme_overrides` — pattern intenzionale (accesso solo da
-backend via service role, mai dal frontend). **Residuo NON risolvibile sul piano attuale**:
-"Leaked Password Protection" disattivata in Auth — l'organizzazione Supabase
-(`AlbaVC95's Org`) è sul piano **Free**, e questa funzione richiede il piano **Pro o superiore**
-(confermato nella documentazione ufficiale Supabase). Non è un'impostazione DB/SQL né
-raggiungibile con l'MCP di Supabase (nessun tool per config Auth) — richiederebbe un upgrade di
-piano. Non bloccante (è un WARN informativo, non ERROR).
+**Residuo, non un problema**: 4 avvisi INFO "RLS enabled, no policy" (pattern intenzionale, solo
+il backend con service role accede a quelle tabelle). **Residuo non risolvibile sul piano
+attuale**: "Leaked Password Protection" richiede piano Supabase Pro, l'organizzazione è su Free.
 
-## Cambi in produzione (dall'ultimo reset di questo file)
+## Cambi principali già in produzione (riferimento rapido)
 
-1. **Fix — Diritto plusvalenza/recompra perso non persistente** (`backend/server.js`): il flag
-   viveva su `chiamataAttuale` (ricreata ad ogni chiamata) invece che in modo persistente, quindi
-   veniva "resuscitato" da timer riaperti, aste annullate/ripetute o nuove chiamate dello stesso
-   giocatore. Spostato su `giocatore.dirittoRiacquistoPerso`, persistente in `asta.poolGiocatori`.
-   Dettagli in [DECISIONS.md](../DECISIONS.md).
-
-2. **Fix — Anteprima non resettata tra aste diverse** (`frontend/js/app.js`): la chiave
-   `localStorage` del planner di formazione ora include `S.astaId` (`_antLsKey()`), invece di
-   essere fissa per squadra. Nessun cambio alla logica di schieramento/moduli. Dettagli in
-   [DECISIONS.md](../DECISIONS.md).
-
-3. *(Sessioni precedenti)* Filtri duplicati in cima a Strategia, Titolarità/Commento per
-   giocatore, fix badge U21 in Svincolati — commit `8e5c3d3`.
-
-## Redesign 3D Anteprima — direzione visiva salvata nel repo
-
-Dopo 6 iterazioni di feedback (v1 → v6, ognuna verificata in locale prima di essere mostrata),
-la versione finale è salvata come file HTML autonomo (apribile direttamente in un browser, foto
-giocatore incluse come base64, nessuna dipendenza esterna):
-
-**[docs/redesign-asta-3d/anteprima-3d-mockup.html](redesign-asta-3d/anteprima-3d-mockup.html)**
-
-Lo storico completo delle iterazioni (cosa è cambiato ad ogni passaggio) e le decisioni di design
-da portare nell'implementazione reale (colore carta per ruolo riusando `.badge-ruolo` esistente,
-badge ruolo in alto a sinistra con supporto multi-ruolo, foto a piena carta senza margini) sono
-documentati in **[docs/REDESIGN_ASTA_3D.md](REDESIGN_ASTA_3D.md)**, sezione "Mockup visivo di
-riferimento". **Pushato in produzione** (commit `4b22006`) — resta comunque solo un documento di
-design, nessuna implementazione nell'app reale.
-
-## Tasks pendenti
-
-- **Verificare dal vivo il fix Max Offerta Portieri/Movimento** in un'asta di test reale: portare
-  una squadra a un solo portiere ma oltre il minimo di movimento, controllare che l'offerta
-  massima proposta sui giocatori di movimento lasci abbastanza crediti per completare i portieri
-  minimi.
-- **Verificare dal vivo il Bug 1** in un'asta di test reale: far puntare il proprietario
-  precedente sul proprio ex giocatore, far scadere/riaprire il timer (o annullare e ri-estrarre
-  lo stesso giocatore), controllare che il popup plusvalenza/recompra NON venga più offerto.
-- **Verificare dal vivo il Bug 2**: terminare un'asta, entrare in una nuova con una squadra dallo
-  stesso nome, aprire Anteprima e controllare che parta vuota.
-- Test end-to-end titolarità/commento con login reale (pendente da sessioni precedenti, non
-  ancora confermato dall'utente).
-- Opzionale: eliminare la strategia "Strategia SOS Fanta" duplicata creata durante i test
-  dell'import FantaLab (due copie identiche in produzione, dati di test).
-- Redesign 3D: nessuna implementazione avviata, resta puramente di design — quando si deciderà di
-  procedere, il mockup salvato + `docs/REDESIGN_ASTA_3D.md` contengono tutto il necessario per
-  ripartire senza dover ricostruire il contesto da questa conversazione.
-
-## Prossimo passo consigliato
-
-Verificare dal vivo i due bug fix (plusvalenza/recompra e Anteprima) in un'asta di test prima del
-prossimo utilizzo reale della lega — impattano direttamente le regole dell'asta e non sono ancora
-stati confermati dall'utente in una situazione reale.
+- **Import/export Strategia formato FantaLab** (`frontend/js/app.js`,
+  `_importaGiocatoriFantaLabInStrategia()`/`esportaStrategiaFantaLab()`): 12 fogli Excel per
+  ruolo Mantra, matching nome+ruolo, fasce automatiche. Testato in produzione con dati reali
+  (497/497 giocatori importati, 0 scartati).
+- **Fix Max Offerta** (`backend/server.js`, `calcolaMaxOfferta()`): minimo Portieri e minimo
+  Movimento sono due vincoli separati, non un totale unico.
+- **Fix Quotazione Ufficiale**: il campo `quotazione` ora sopravvive alla creazione/export/
+  reimport di un'asta (prima si perdeva nel pool `poolGiocatori`, pur restando corretto su
+  `listino_giocatori`).
+- **Contatore Svincolati**: "X / Y giocatori chiamati" sopra la lista.
+- **Fix — Diritto plusvalenza/recompra perso non persistente** (`backend/server.js`): spostato da
+  `chiamataAttuale` (ricreata ad ogni chiamata) a `giocatore.dirittoRiacquistoPerso`
+  (persistente). Dettagli in [DECISIONS.md](../DECISIONS.md).
+- **Fix — Anteprima non resettata tra aste diverse**: chiave `localStorage` ora include
+  `S.astaId`. Dettagli in [DECISIONS.md](../DECISIONS.md).

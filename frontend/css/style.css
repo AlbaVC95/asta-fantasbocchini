@@ -1427,6 +1427,155 @@ html.theme-light body.layout-admin .asta-row-puja{
 .ant-picker-remove{margin-top:4px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:.8rem;color:#e74c3c;text-align:center;background:rgba(231,76,60,.1)}
 .ant-picker-remove:hover{background:rgba(231,76,60,.2)}
 
+/* ══════════════════════════════════════════════════════════
+   REDESIGN 3D — ANTEPRIMA (drawer, carta 3D, campo 3D, fx assegnazione)
+   Vedi docs/REDESIGN_ASTA_3D.md per le decisioni di design gia' concordate.
+   Riusa i token :root esistenti e la palette .badge-ruolo/.rose-riga-*
+   gia' esistente — nessuna palette nuova. Non modifica .chiamata-card,
+   .ant-slot/.ant-picker (vecchio schema 2D, lasciati intatti per sicurezza),
+   ANT_LAYOUT o la logica R.MANTRA: solo markup/CSS aggiuntivi.
+   ══════════════════════════════════════════════════════════ */
+
+/* Layout "push": Anteprima non e' piu' un overlay sopra Puja/Rose, e' una colonna che
+   convive in un flex row con tutto il resto (.asta-main-col) — quando si apre, il main
+   col si restringe (flex:1 lo fa da solo) invece di essere coperto. Vedi index.html:
+   #tab-anteprima e' stato spostato fuori da .tabs-panel per essere fratello di
+   .asta-main-col dentro .asta-live-layout. */
+.asta-live-layout{display:flex;align-items:flex-start;gap:16px}
+.asta-main-col{flex:1 1 auto;min-width:0}
+
+#tab-anteprima.ant-drawer{
+  flex:0 0 auto;align-self:stretch;width:0;min-width:0;
+  background:linear-gradient(180deg,var(--bg-card),var(--bg-main));
+  border:1px solid var(--border-light);border-radius:14px;
+  box-shadow:0 20px 50px rgba(0,0,0,.35);
+  opacity:0;overflow:hidden;
+  transition:width .35s cubic-bezier(.22,.9,.3,1),opacity .25s ease;
+}
+#tab-anteprima.ant-drawer.drawer-open{width:min(420px,40vw);opacity:1;overflow-y:auto}
+.ant-drawer-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:inherit;z-index:2}
+.ant-drawer-title{font-family:var(--font-display);font-weight:800;font-size:.95rem;color:var(--text-primary);white-space:nowrap}
+.ant-drawer-close{background:var(--bg-elevated);border:1px solid var(--border-light);color:var(--text-secondary);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.9rem;line-height:1;flex-shrink:0}
+.ant-drawer-close:hover{color:var(--text-primary);background:rgba(255,255,255,.1)}
+.ant-drawer-body{padding:14px 16px 24px;width:min(420px,40vw)}
+
+@media (max-width:900px){
+  #tab-anteprima.ant-drawer.drawer-open{width:min(380px,50vw)}
+  .ant-drawer-body{width:min(380px,50vw)}
+}
+@media (max-width:760px){
+  .asta-live-layout{display:block}
+  #tab-anteprima.ant-drawer{width:auto;max-height:0;opacity:0;transition:max-height .35s cubic-bezier(.22,.9,.3,1),opacity .25s ease;margin-top:0}
+  #tab-anteprima.ant-drawer.drawer-open{max-height:2000px;opacity:1;margin-top:14px;overflow-y:visible}
+  .ant-drawer-body{width:auto}
+}
+
+/* Sotto-tab interne Vista campo 3D / Vista lista — meccanismo indipendente dai .tab-btn principali */
+.ant-subtabs{display:flex;gap:6px;margin-top:12px}
+.ant-subtab{flex:1;font-family:var(--font-main);font-size:.72rem;font-weight:700;color:var(--text-muted);background:var(--bg-elevated);border:1px solid var(--border);border-radius:9px;padding:8px 6px;cursor:pointer;text-align:center;transition:all .2s}
+.ant-subtab.active{color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-bright));border-color:transparent}
+.ant-subview{display:none;margin-top:12px}
+.ant-subview.active{display:block}
+
+/* Campo 3D — STESSE coordinate ANT_LAYOUT (top/left %), solo nuova resa visiva.
+   Stadio decorativo (tribune/torri faro) intorno al campo, stile mockup di riferimento. */
+.ant-pitch-stage{perspective:1400px;padding:46px 4px 30px;position:relative;
+  background:radial-gradient(ellipse at 50% 0%,rgba(139,92,246,.08),transparent 60%),#050208;
+  border-radius:14px}
+.ant-pitch-stands{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:14px}
+.ant-pylon{position:absolute;top:6px;width:5px;height:34px;background:linear-gradient(180deg,#3a2d5c,#1a1230)}
+.ant-pylon::after{content:'';position:absolute;top:-11px;left:50%;transform:translateX(-50%);width:26px;height:11px;border-radius:3px;
+  background:linear-gradient(180deg,#fff6d8,#ffd97a);
+  box-shadow:0 0 18px 8px rgba(255,225,150,.5),0 0 50px 18px rgba(255,200,110,.22)}
+.ant-pylon-l{left:6%}
+.ant-pylon-r{right:6%}
+.ant-floodbeam{position:absolute;top:0;width:36%;height:60%;background:radial-gradient(ellipse at center top,rgba(255,238,190,.14),transparent 68%);filter:blur(1px)}
+.ant-floodbeam-l{left:-2%}
+.ant-floodbeam-r{right:-2%}
+
+/* IMPORTANTE: mai overflow:hidden qui — clippa la resa 3D delle carte (le fa apparire
+   "schiacciate" sul campo invece che ritte), anche se il markup resta transform-style:preserve-3d.
+   Il border-radius resta comunque rispettato dal background senza bisogno di overflow. */
+.ant-pitch.ant-pitch3d{
+  transform:rotateX(50deg);transform-style:preserve-3d;overflow:visible;
+  background-image:none;background-color:#0a3d23;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 2px,transparent 2px 38px),
+    repeating-linear-gradient(0deg,#0f5730 0 34px,#0a3d23 34px 68px);
+  box-shadow:0 0 0 3px rgba(255,255,255,.16),0 0 50px rgba(0,224,160,.08),0 30px 60px rgba(0,0,0,.6);
+}
+.ant-pitch.ant-pitch3d::before{content:'';position:absolute;left:0;right:0;top:50%;height:2px;background:rgba(255,255,255,.55);box-shadow:0 0 10px rgba(255,255,255,.5);transform:translateY(-1px)}
+.ant-pitch.ant-pitch3d::after{content:'';position:absolute;left:50%;top:50%;width:26%;height:26%;border:2px solid rgba(255,255,255,.5);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 12px rgba(255,255,255,.3)}
+.ant-pitch3d-border{position:absolute;inset:6%;border:2px solid rgba(255,255,255,.35);border-radius:6px;pointer-events:none}
+
+.ant-slot3d{position:absolute;transform:translate(-50%,-50%);transform-style:preserve-3d;z-index:2}
+.ant-slot3d .ant-card{transform:rotateX(-50deg) translateZ(34px);cursor:pointer;transition:transform .25s ease,box-shadow .25s ease}
+.ant-slot3d:hover .ant-card{transform:rotateX(-50deg) translateZ(58px) scale(1.12)}
+.ant-slot3d-empty{width:44px;height:60px;border-radius:8px;border:2px dashed rgba(255,255,255,.32);display:flex;align-items:center;justify-content:center;font-size:1rem;color:rgba(255,255,255,.5);background:rgba(0,0,0,.28);transform:rotateX(-50deg) translateZ(34px);cursor:pointer;transition:transform .25s ease,border-color .2s}
+.ant-slot3d:hover .ant-slot3d-empty{border-color:var(--gold);color:var(--gold);transform:rotateX(-50deg) translateZ(58px) scale(1.12)}
+.ant-slot3d-label{position:absolute;left:50%;bottom:-15px;transform:translateX(-50%) rotateX(-50deg);font-size:.52rem;font-weight:800;color:rgba(255,255,255,.7);white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.9);max-width:70px;overflow:hidden;text-overflow:ellipsis}
+/* Ombra di contatto SUL piano del campo (nessuna contro-rotazione, a differenza della carta):
+   e' il segnale che vende la profondita' — la carta "galleggia" sopra la sua ombra invece di
+   sembrare adagiata sul prato. Vedi commento in renderAnteprimaPitch() in app.js. */
+.ant-slot3d-shadow{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:40px;height:16px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.6),transparent 72%);z-index:1}
+
+/* Panchina */
+.ant-panchina{margin-top:14px}
+.ant-panchina-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.ant-panchina-title{font-family:var(--font-display);font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-secondary)}
+.ant-panchina-count{font-family:var(--font-mono);font-size:.68rem;color:var(--text-muted)}
+.ant-panchina-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:8px}
+.ant-panchina-empty{color:var(--text-muted);font-size:.76rem;padding:10px 0;text-align:center}
+
+/* Lista (sotto-tab alternativa al campo 3D) */
+.ant-lista{list-style:none;display:flex;flex-direction:column;gap:4px}
+.ant-lista li{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;background:var(--bg-main);font-size:.8rem}
+.ant-lista .ant-lista-nome{flex:1;font-weight:600}
+.ant-lista .ant-lista-slot{font-size:.68rem;color:var(--text-muted)}
+
+/* Carta 3D — riusa .badge-ruolo (colore/testo per ruolo) e la stessa pipeline foto di .cc-avatar */
+.ant-card{position:relative;border-radius:10px;overflow:hidden;background:#0d0720;
+  box-shadow:0 14px 22px -8px rgba(0,0,0,.65);border:1px solid var(--card-accent,var(--border-light));
+  transform-style:preserve-3d;flex-shrink:0}
+.ant-card.size-bench{width:54px;height:74px}
+.ant-card.size-pitch{width:44px;height:60px}
+.ant-card.size-xl{width:110px;height:152px}
+
+.ant-card-photo{position:absolute;inset:0;background-size:100% auto;background-position:center top;background-repeat:no-repeat;background-color:#1e1140}
+.ant-card-role{position:absolute;top:4%;left:5%;z-index:3;display:flex;gap:2px;flex-wrap:wrap;max-width:90%}
+.ant-card-role .badge-ruolo{height:auto;min-width:0;padding:1px 3px;font-size:.44rem;border-radius:3px;line-height:1.3}
+.size-xl .ant-card-role .badge-ruolo{font-size:.58rem;padding:2px 5px;border-radius:5px}
+
+/* Panchina: nome DENTRO la carta, fascia inferiore minima solo dietro al testo */
+.ant-card.in-bench .ant-card-fade{position:absolute;left:0;right:0;bottom:0;height:36%;background:linear-gradient(to bottom,transparent,rgba(8,4,18,.92))}
+.ant-card.in-bench .ant-card-name{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:.5rem;font-weight:700;color:#fff;padding:0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ant-card.in-bench.size-xl .ant-card-name{font-size:.72rem;bottom:6px}
+
+/* Sul campo: NESSUN degradado/ombra sopra la faccia — il nome vive FUORI dalla carta
+   (vedi .ant-slot3d-label sopra), richiesta esplicita dell'utente per non coprire l'avatar. */
+.ant-card.on-pitch{box-shadow:0 14px 22px -8px rgba(0,0,0,.65),0 0 0 1px var(--card-accent,transparent)}
+
+.ant-card.placeholder{background:var(--bg-elevated);border-style:dashed;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:.55rem;text-align:center;padding:2px}
+
+/* Colore carta per ruolo — riusa 1:1 gli stessi 5 gruppi/colori gia' usati per le righe di
+   Rose (.rose-riga-*, vedi _roseRowRoleClass() in app.js), nessuna palette nuova. */
+.ant-card.rose-riga-por{--card-accent:#f2b400}
+.ant-card.rose-riga-verde{--card-accent:#229954}
+.ant-card.rose-riga-azzurro{--card-accent:#3867d6}
+.ant-card.rose-riga-viola{--card-accent:#8854d0}
+.ant-card.rose-riga-rosso{--card-accent:#c0392b}
+
+/* Layer fx assegnazione — fuori da .tabs-panel apposta (backdrop-filter altrimenti rompe i
+   fixed, vedi commento su _antOpenPicker() in app.js). pointer-events:none: non deve mai
+   intercettare click sopra Puja/Rose durante l'animazione. */
+#assegnazione-fx-layer{position:fixed;inset:0;z-index:6000;pointer-events:none}
+.assegnazione-fx-card{position:fixed;pointer-events:none;will-change:transform,opacity;z-index:6000}
+
+@media (prefers-reduced-motion:reduce){
+  #tab-anteprima.ant-drawer{transition:none}
+  .ant-slot3d .ant-card,.ant-slot3d-empty{transition:none}
+}
+
 /* ══ Badge email utente loggato — visibile fisso in alto a sinistra, tranne durante l'asta
    (dove viene mostrato inline nell'header per non sovrapporsi a nessun controllo esistente) ══ */
 .user-email-badge{
