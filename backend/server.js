@@ -1634,7 +1634,9 @@ loadManutenzioneAttiva().catch(e => console.error('[loadManutenzioneAttiva] fata
 puliziaBackupFantasma().catch(e => console.error('[puliziaBackupFantasma] fatale (non-fatale):', e.message));
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+// Bind esplicito su tutte le interfacce: di default Node fa gia' bind su 0.0.0.0,
+// ma renderlo esplicito evita ambiguita' dietro reverse proxy di hosting diversi da Render.
+server.listen(PORT, '0.0.0.0', () => {
   console.log('\n🎯 Asta FantaSbocchini v2 — Server attivo');
   console.log('   http://localhost:' + PORT + '\n');
 });
