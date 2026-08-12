@@ -3301,10 +3301,14 @@ function renderAnteprimaPitch() {
       const g = filled ? rosa.find(x => x.nome === nomeGiocatore) : null;
       html += '<div class="ant-slot3d' + (filled ? ' filled' : '') + '" data-slotkey="' + slotKey + '" data-ruolo="' + _escAttr(ruolo) + '" style="top:' + top + '%;left:' + left + '%">';
       if (g) {
-        html += _antCardHTML(g, null, true) + '<div class="ant-slot3d-label">' + _escHtml(g.nome) + '</div>';
+        // Ombra di contatto: elemento piatto sul piano del campo (NON contro-ruotato come la
+        // carta) — e' il segnale visivo che vende la sensazione "la carta sta in piedi sopra
+        // il prato", altrimenti anche con la matrice 3D corretta le foto piatte leggono come
+        // adagiate sul campo invece che ritte.
+        html += '<div class="ant-slot3d-shadow"></div>' + _antCardHTML(g, null, true) + '<div class="ant-slot3d-label">' + _escHtml(g.nome) + '</div>';
       } else if (filled) {
         // Giocatore assegnato allo slot ma non piu' in rosa (es. annullato dopo lo schieramento): fallback "fantasma", mai un crash.
-        html += '<div class="ant-card on-pitch size-pitch placeholder">?</div><div class="ant-slot3d-label">' + _escHtml(nomeGiocatore) + '</div>';
+        html += '<div class="ant-slot3d-shadow"></div><div class="ant-card on-pitch size-pitch placeholder">?</div><div class="ant-slot3d-label">' + _escHtml(nomeGiocatore) + '</div>';
       } else {
         html += '<div class="ant-slot3d-empty">+</div><div class="ant-slot3d-label">' + _escHtml(ruolo) + '</div>';
       }
