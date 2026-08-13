@@ -11,6 +11,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.min.js"></script>
 </head>
 <body>
 <div class="pitch-bg" aria-hidden="true"></div>
@@ -922,12 +923,7 @@
         </div>
         <div id="ant-view-campo" class="ant-subview active">
           <div class="ant-pitch-stage">
-            <div class="ant-pitch-stands">
-              <span class="ant-stand ant-stand-l"></span><span class="ant-stand ant-stand-r"></span>
-              <span class="ant-stand-glow"></span>
-              <span class="ant-pylon ant-pylon-l"></span><span class="ant-pylon ant-pylon-r"></span>
-              <span class="ant-floodbeam ant-floodbeam-l"></span><span class="ant-floodbeam ant-floodbeam-r"></span>
-            </div>
+            <div id="ant-stadio-3d" class="ant-stadio-3d" aria-hidden="true"></div>
             <div id="ant-pitch" class="ant-pitch"></div>
           </div>
           <div id="ant-panchina" class="ant-panchina"></div>
@@ -1334,6 +1330,12 @@
       <button type="button" class="btn btn-secondary" onclick="closeModal()">Annulla</button>
       <button type="button" class="btn btn-primary" onclick="salvaCommentoModal()">✔ Salva</button>
     </div>
+  </div>
+  <!-- Lettura della nota dalla carta di chiamata: separata dall'editor Strategia. -->
+  <div id="modal-commento-puja" class="modal modal-commento-puja hidden" role="dialog" aria-modal="true" aria-labelledby="modal-commento-puja-titolo">
+    <button type="button" class="modal-close-x" onclick="closeModal()" aria-label="Chiudi commento">✕</button>
+    <h2 id="modal-commento-puja-titolo" class="modal-title">💬 Nota strategica</h2>
+    <p id="modal-commento-puja-testo" class="modal-commento-puja-testo"></p>
   </div>
 </div>
 <div id="toast-container" class="toast-container"></div>
