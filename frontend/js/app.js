@@ -3322,7 +3322,15 @@ function renderAnteprimaPitch() {
   const layout = ANT_LAYOUT[modulo];
   const squadra = ((S.asta && S.asta.squadre) || []).find(sq => sq.nome === nomeSquadra);
   const rosa = (squadra && squadra.rosa) || [];
-  let html = '';
+  // Bordo neon + bracket agli angoli (stile HUD/tech) — puramente decorativo, .ant-pitch3d-border
+  // esisteva gia' in CSS ma senza markup: aggiunto qui perche' pitch.innerHTML viene rigenerato
+  // ad ogni render, non puo' vivere come elemento statico in index.html.
+  let html = '<div class="ant-pitch3d-border">' +
+    '<span class="ant-pitch-corner ant-pitch-corner-tl"></span>' +
+    '<span class="ant-pitch-corner ant-pitch-corner-tr"></span>' +
+    '<span class="ant-pitch-corner ant-pitch-corner-bl"></span>' +
+    '<span class="ant-pitch-corner ant-pitch-corner-br"></span>' +
+  '</div>';
   rows.forEach((row, ri) => {
     const nCols = row.length;
     row.forEach((ruolo, ci) => {

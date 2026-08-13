@@ -8,15 +8,17 @@ Stato attuale del progetto. Questo file va sovrascritto ad ogni task importante 
 - **Deploy**: migrato da Render a **Hostinger** (dominio `asta.fantaplus.com`, deploy automatico
   su push a `main`). Render resta attivo temporaneamente come backup dell'utente. Bind esplicito
   su `0.0.0.0` in `server.listen()` applicato come misura difensiva (commit `7d32099`).
-- Branch `main`, ultimo commit pushato `9db26ef`/`49f7a2a` (merge + note del redesign 3D
-  Anteprima). Migration `backend/sql/2026-08-10_strategia_titolarita_commento.sql` già eseguita
-  dall'utente su Supabase.
-- **Correzioni post-redesign 3D Anteprima: applicate in locale, NON ANCORA COMMITTATE/PUSHATE**
-  (`frontend/index.html`, `frontend/css/style.css`, `frontend/js/app.js` — nessun file backend
+- Branch `main`, ultimo commit pushato `d9fe35f` (9 correzioni post-redesign 3D Anteprima +
+  round 2 di rifiniture, vedi sotto). Migration
+  `backend/sql/2026-08-10_strategia_titolarita_commento.sql` già eseguita dall'utente su Supabase.
+- **Correzioni post-redesign 3D Anteprima: COMMITTATE E PUSHATE su `main`** (commit `d9fe35f`,
+  `frontend/index.html`, `frontend/css/style.css`, `frontend/js/app.js` — nessun file backend
   toccato). Rispondono a 9 problemi concreti segnalati dall'utente dopo il merge del redesign in
   produzione (scroll rotto, animazione troppo veloce, carte 3D piatte/sovrapposte, stadio poco
-  visibile, bug di selezione posizione, ruoli tagliati). Vedi sezione dedicata sotto —
-  **verificate con dati simulati in locale, non ancora testate dal vivo dall'utente**.
+  visibile, bug di selezione posizione, ruoli tagliati) **più un round 2** di rifiniture su
+  screenshot reali dell'utente (etichette ancora sovrapposte, campo troppo semplice, spazio nero
+  nella carta XL). Vedi sezione dedicata sotto — **verificate con dati simulati in locale, non
+  ancora testate dal vivo dall'utente in un'asta reale**.
 - **Redesign 3D Anteprima: MERGIATO su `main` e IN PRODUZIONE** (richiesta esplicita dell'utente
   di deploy, dopo un giro di correzioni su feedback visivo). Branch di lavoro `redesign/asta-3d` e
   backup `backup/pre-redesign-asta-3d` restano su GitHub per riferimento/rollback rapido. Vedi
@@ -28,7 +30,7 @@ Stato attuale del progetto. Questo file va sovrascritto ad ogni task importante 
   più i 2 bug di sessioni precedenti (plusvalenza/recompra, Anteprima non resettata) — vedi
   "Tasks pendenti".
 
-## Correzioni post-redesign 3D Anteprima (9 punti, NON ancora committate)
+## Correzioni post-redesign 3D Anteprima (9 punti + round 2, committate `d9fe35f`)
 
 Richiesta dell'utente dopo aver usato il redesign 3D in produzione: 9 problemi concreti di
 scroll/animazione/rendering 3D/interazione, tutti risolti senza toccare logica Mantra, moduli,
@@ -98,6 +100,37 @@ dal vivo durante un'asta di prova reale con la Puja popolata.
 CRLF a LF (il resto del progetto usa CRLF) — individuato e corretto prima di chiudere, il diff
 finale contiene solo le righe effettivamente cambiate. Attenzione a questo rischio nelle prossime
 sessioni che editano quel file.
+
+### Round 2 — rifiniture su screenshot reali dell'utente (dopo il primo push)
+
+L'utente ha riportato 3 problemi visti in produzione (screenshot reali, non simulati):
+
+1. **Etichette nome/ruolo ancora sovrapposte**: causa — `.ant-slot3d-label` aveva
+   `max-width:64px` fisso, ma il gap minimo reale tra due slot adiacenti in `ANT_LAYOUT` è
+   ~16% del campo (difesa a 3): a schermi/zoom normali 64px superava quel gap, quindi due
+   etichette vicine (es. un nome lungo accanto al badge ruolo di uno slot vuoto) si
+   sovrapponevano comunque nonostante il fix del round 1. Fix: `max-width` portato a **13cqw**
+   (proporzionale al campo, coerente con `.size-pitch`/`.ant-slot3d-empty` già in cqw), calibrato
+   con margine sul gap minimo del layout.
+2. **Campo troppo semplice/non "futuristico"**: richiesta esplicita di un aspetto più moderno.
+   `.ant-pitch.ant-pitch3d` riscritto con griglia neon viola/ciano sovrapposta al prato scurito,
+   linea di metà campo e cerchio centrale con glow, bordo pulsante (`@keyframes
+   ant-pitch-pulse`, disattivato sotto `prefers-reduced-motion`) e 4 bracket agli angoli stile
+   HUD (`.ant-pitch-corner-tl/tr/bl/br`, markup iniettato in `renderAnteprimaPitch()` perché
+   `#ant-pitch.innerHTML` viene rigenerato ad ogni render). Stessa palette `--primary`/neon ciano
+   già usata altrove nel progetto, nessun colore nuovo.
+3. **Spazio nero vuoto sotto il nome nella carta XL** (animazione di assegnazione): la fascia
+   `.ant-card-fade` (36% dell'altezza, pensata per le mini-carte panchina) su una carta 152px
+   lasciava molto spazio vuoto sopra al nome. Aggiunta un override
+   `.ant-card.in-bench.size-xl .ant-card-fade{height:20%}` + nome riposizionato/ingrandito.
+
+**Verificato in locale** (stesso harness JS del round 1): etichette con nomi realistici lunghi
+("Bongracio", "Zaminay", "Di Lorenzo"...) troncano con ellissi senza più sovrapporsi ai badge
+ruolo dello slot accanto; bracket agli angoli e griglia neon visibili su screenshot; carta XL con
+fascia nera ridotta e nome ben proporzionato (verificato creando una carta XL isolata via
+`_antCardHTML(...,'xl',false)`). Commit pushato: `d9fe35f` su `main` (deploy Hostinger automatico
+su push). **Non verificabile in questo ambiente**: conferma visiva dal vivo dell'utente sul
+dominio di produzione.
 
 ## Redesign 3D Anteprima — MERGIATO su `main`, IN PRODUZIONE (non ancora confermato dal vivo)
 

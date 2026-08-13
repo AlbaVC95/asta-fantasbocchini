@@ -1511,18 +1511,49 @@ html.theme-light body.layout-admin .asta-row-puja{
 
 /* IMPORTANTE: mai overflow:hidden qui — clippa la resa 3D delle carte (le fa apparire
    "schiacciate" sul campo invece che ritte), anche se il markup resta transform-style:preserve-3d.
-   Il border-radius resta comunque rispettato dal background senza bisogno di overflow. */
+   Il border-radius resta comunque rispettato dal background senza bisogno di overflow.
+   Estetica "campo tattico digitale": griglia neon viola/ciano sovrapposta al prato scurito
+   (richiesta esplicita dell'utente, il campo piatto verde sembrava troppo semplice/generico
+   rispetto al resto dell'app) — stessa palette --primary/neon ciano gia' usata altrove
+   (vecchio minimap 2D), nessun colore nuovo introdotto. */
 .ant-pitch.ant-pitch3d{
   transform:rotateX(50deg);transform-style:preserve-3d;overflow:visible;
-  background-image:none;background-color:#0a3d23;
+  background-image:none;background-color:#061a14;
   background:
-    repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 2px,transparent 2px 38px),
-    repeating-linear-gradient(0deg,#0f5730 0 34px,#0a3d23 34px 68px);
-  box-shadow:0 0 0 3px rgba(255,255,255,.16),0 0 50px rgba(0,224,160,.08),0 30px 60px rgba(0,0,0,.6);
+    repeating-linear-gradient(90deg,rgba(167,139,250,.22) 0 1.5px,transparent 1.5px 38px),
+    repeating-linear-gradient(0deg,rgba(56,255,196,.14) 0 1.5px,transparent 1.5px 34px),
+    radial-gradient(ellipse at 50% 42%,rgba(139,92,246,.18),transparent 62%),
+    repeating-linear-gradient(0deg,#0c2e24 0 34px,#071c16 34px 68px);
+  box-shadow:
+    0 0 0 2px rgba(167,139,250,.55),
+    0 0 40px rgba(139,92,246,.35),
+    0 0 80px rgba(56,255,196,.12),
+    inset 0 0 60px rgba(139,92,246,.08),
+    0 30px 60px rgba(0,0,0,.6);
 }
-.ant-pitch.ant-pitch3d::before{content:'';position:absolute;left:0;right:0;top:50%;height:2px;background:rgba(255,255,255,.55);box-shadow:0 0 10px rgba(255,255,255,.5);transform:translateY(-1px)}
-.ant-pitch.ant-pitch3d::after{content:'';position:absolute;left:50%;top:50%;width:26%;height:26%;border:2px solid rgba(255,255,255,.5);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 12px rgba(255,255,255,.3)}
-.ant-pitch3d-border{position:absolute;inset:6%;border:2px solid rgba(255,255,255,.35);border-radius:6px;pointer-events:none}
+.ant-pitch.ant-pitch3d::before{content:'';position:absolute;left:0;right:0;top:50%;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(167,139,250,.9),rgba(56,255,196,.85),rgba(167,139,250,.9),transparent);
+  box-shadow:0 0 14px rgba(139,92,246,.75),0 0 26px rgba(56,255,196,.4);transform:translateY(-1px)}
+.ant-pitch.ant-pitch3d::after{content:'';position:absolute;left:50%;top:50%;width:26%;height:26%;
+  border:2px solid rgba(167,139,250,.85);border-radius:50%;transform:translate(-50%,-50%);
+  box-shadow:0 0 16px rgba(139,92,246,.6),inset 0 0 16px rgba(56,255,196,.22)}
+.ant-pitch3d-border{position:absolute;inset:5%;border:1.5px solid rgba(167,139,250,.45);border-radius:8px;
+  pointer-events:none;box-shadow:0 0 18px rgba(139,92,246,.25),inset 0 0 18px rgba(56,255,196,.06)}
+/* Bracket agli angoli, stile HUD/mirino — solo accenno grafico "tech", non deve competere
+   con le carte: dimensione contenuta, opacita' moderata. */
+.ant-pitch-corner{position:absolute;width:22px;height:22px;border:2px solid rgba(56,255,196,.75);
+  filter:drop-shadow(0 0 4px rgba(56,255,196,.6))}
+.ant-pitch-corner-tl{top:-1.5px;left:-1.5px;border-right:none;border-bottom:none;border-radius:8px 0 0 0}
+.ant-pitch-corner-tr{top:-1.5px;right:-1.5px;border-left:none;border-bottom:none;border-radius:0 8px 0 0}
+.ant-pitch-corner-bl{bottom:-1.5px;left:-1.5px;border-right:none;border-top:none;border-radius:0 0 0 8px}
+.ant-pitch-corner-br{bottom:-1.5px;right:-1.5px;border-left:none;border-top:none;border-radius:0 0 8px 0}
+@media (prefers-reduced-motion: no-preference) {
+  .ant-pitch3d-border{animation:ant-pitch-pulse 3.6s ease-in-out infinite}
+}
+@keyframes ant-pitch-pulse{
+  0%,100%{box-shadow:0 0 18px rgba(139,92,246,.25),inset 0 0 18px rgba(56,255,196,.06)}
+  50%{box-shadow:0 0 28px rgba(139,92,246,.4),inset 0 0 26px rgba(56,255,196,.12)}
+}
 
 .ant-slot3d{position:absolute;transform:translate(-50%,-50%);transform-style:preserve-3d;z-index:2}
 /* Angolo/translateZ INVARIATI (-50deg/34px, gli stessi del design originale gia' verificato):
@@ -1539,7 +1570,11 @@ html.theme-light body.layout-admin .asta-row-puja{
    nome, senza translateZ, restava sullo stesso Z del campo e finiva coperto dalla carta
    (che invece "galleggia" sopra) — ora condivide il piano della carta, leggermente piu'
    in basso, e resta sempre visibile sotto di essa senza mai coprirne l'avatar. */
-.ant-slot3d-label{position:absolute;left:50%;bottom:-30px;transform:translateX(-50%) rotateX(-50deg) translateZ(30px);font-size:.56rem;font-weight:800;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 4px rgba(0,0,0,.9);max-width:64px;z-index:3;
+/* max-width in cqw (non px fisso): calibrato sul gap piu' stretto tra due slot adiacenti
+   in ANT_LAYOUT (~16%, difesa a 3) — a 64px fisso le etichette di due slot vicini si
+   sovrapponevano visibilmente su schermi reali (segnalato dall'utente), specialmente nomi
+   lunghi accanto a un ruolo su slot vuoto. */
+.ant-slot3d-label{position:absolute;left:50%;bottom:-30px;transform:translateX(-50%) rotateX(-50deg) translateZ(30px);font-size:.56rem;font-weight:800;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 4px rgba(0,0,0,.9);max-width:13cqw;z-index:3;
   display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:2px;text-align:center}
 /* Ruolo su slot vuoto: badge multipli (es. "Dc/B", "T/A/Pc") invece di una riga di testo
    troncata — stesso pattern gia' usato in .ant-card-role, qui ridimensionato per lo slot. */
@@ -1584,7 +1619,12 @@ html.theme-light body.layout-admin .asta-row-puja{
 /* Panchina: nome DENTRO la carta, fascia inferiore minima solo dietro al testo */
 .ant-card.in-bench .ant-card-fade{position:absolute;left:0;right:0;bottom:0;height:36%;background:linear-gradient(to bottom,transparent,rgba(8,4,18,.92))}
 .ant-card.in-bench .ant-card-name{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:.5rem;font-weight:700;color:#fff;padding:0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ant-card.in-bench.size-xl .ant-card-name{font-size:.72rem;bottom:6px}
+/* Carta XL (animazione di assegnazione): il 36% di fascia nera pensato per le mini-carte
+   della panchina, su una carta grande (152px) lasciava troppo spazio vuoto sopra al nome
+   (segnalato dall'utente) — ridotta e il nome spostato/ingrandito per riempire meglio lo
+   spazio invece di restare una riga piccola in fondo a un'area nera sproporzionata. */
+.ant-card.in-bench.size-xl .ant-card-fade{height:20%}
+.ant-card.in-bench.size-xl .ant-card-name{font-size:.95rem;bottom:8px}
 
 /* Sul campo: il nome vive FUORI dalla carta (vedi .ant-slot3d-label sopra), richiesta
    esplicita dell'utente per non coprire l'avatar — qui solo un accenno di luce/volume.
