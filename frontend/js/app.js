@@ -3142,8 +3142,10 @@ function populateAnteprimaSquadre(squadre) {
 // portiere/difensore centrale, playmaker/trequartista) — misurato su tutti gli 11 moduli
 // con getBoundingClientRect(). Le fasce sotto usano gap ~21-23%, il massimo che ci sta
 // nello spazio verticale disponibile per 4 o 5 righe.
-const ANT_Y5 = [4, 25, 48, 71, 94];   // moduli a 5 righe (schieramento+portiere)
-const ANT_Y4 = [4, 27, 58, 93];       // moduli a 4 righe (centrocampo/attacco piu' larghi)
+// Centros de fila contenidos dentro del nuevo campo limpio: dejan sitio para la
+// etiqueta bajo cada carta sin que la última fila se corte al hacer zoom.
+const ANT_Y5 = [9, 28, 47, 66, 84];
+const ANT_Y4 = [10, 35, 61, 84];
 const ANT_LAYOUT = {
   '3-4-3': [
     [[50, ANT_Y5[0]]],
