@@ -2184,6 +2184,40 @@ body.layout-partecipante .puja-panel-slot .cc-strategia-info{
 .ant-slot3d:hover .ant-card{transform:perspective(420px) rotateX(5deg) rotateY(0) translateY(-9px) scale(1.06)!important}
 @media (max-width:760px){.ant-pitch-stage{padding:22px 12px 12px!important}}
 
+/* ══════ Campo vertical reglamentario y fondo espacial ══════ */
+.ant-pitch-stage{
+  padding:18px!important;overflow:visible!important;
+  background:
+    radial-gradient(circle at 13% 18%,rgba(182,225,255,.8) 0 1px,transparent 2px),
+    radial-gradient(circle at 82% 11%,rgba(192,156,255,.65) 0 1px,transparent 2px),
+    radial-gradient(circle at 70% 67%,rgba(110,238,255,.48) 0 1px,transparent 2px),
+    radial-gradient(ellipse at 50% 20%,rgba(100,70,255,.2),transparent 48%),
+    linear-gradient(180deg,#08051a,#020711 62%,#0b0620)!important;
+}
+.ant-pitch.ant-pitch3d{
+  width:min(100%,var(--ant-pitch-size,300px))!important;aspect-ratio:5 / 7!important;
+  clip-path:none!important;border:2px solid rgba(77,240,218,.9)!important;border-radius:12px!important;
+  background:repeating-linear-gradient(90deg,#0a3d2b 0 10%,#0d5136 10% 20%)!important;
+  box-shadow:0 0 0 2px rgba(116,83,255,.4),0 0 16px rgba(58,239,217,.6),0 0 38px rgba(111,74,255,.44),inset 0 0 50px rgba(0,0,0,.36)!important;
+  filter:none!important;
+}
+/* Las líneas proceden de SVG, no de una malla CSS. */
+.ant-pitch.ant-pitch3d::before,.ant-pitch.ant-pitch3d::after{display:none!important}
+.ant-field-markings{position:absolute;z-index:1;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.ant-field-markings rect,.ant-field-markings path,.ant-field-markings circle{fill:none;stroke:rgba(196,255,248,.96);stroke-width:.55;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 3px rgba(55,242,216,.74))}
+.ant-field-markings .ant-field-dot{fill:#bffff6;stroke:none;filter:drop-shadow(0 0 3px #48f3d6)}
+.ant-slot3d{z-index:2;width:12.5cqw;height:17.2cqw;min-width:37px;min-height:51px}
+.ant-card.size-pitch,.ant-slot3d-empty{width:12.5cqw!important;height:17.2cqw!important;min-width:37px;min-height:51px}
+/* Nombre completo: dos líneas dentro de la columna de su propio jugador. */
+.ant-slot3d-label{top:calc(100% + 4px);font-size:.62rem;line-height:1.05;overflow:visible!important;white-space:normal!important}
+.ant-slot3d-label .ant-slot3d-name-txt{display:-webkit-box;width:130%;max-width:130%;margin-left:-15%;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;word-break:break-word}
+.ant-slot3d .ant-card{transform:perspective(420px) rotateX(7deg) rotateY(-3deg) translateY(-3px)!important}
+.ant-slot3d:nth-child(even) .ant-card{transform:perspective(420px) rotateX(7deg) rotateY(3deg) translateY(-3px)!important}
+@media (max-width:760px){
+  .ant-pitch-stage{padding:13px!important;min-height:0}
+  .ant-slot3d,.ant-card.size-pitch,.ant-slot3d-empty{width:12.7cqw!important;height:17.5cqw!important}
+}
+
 /* ══════ FIX: rilancio-box.hidden debe permanecer oculto en mobile ══════
    Los bloques @media(max-width:900px/640px) de más arriba fuerzan
    display:flex!important en .rilancio-box (para mostrarlo bien apilado en
