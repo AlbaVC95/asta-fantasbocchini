@@ -3268,6 +3268,10 @@ function _antCardHTML(g, size, onPitch) {
 // vedi style.css). Tetto di 3 cloni simultanei: assegnazioni manuali rapide non devono accumulare.
 let _antFxCloniAttivi = 0;
 const ANT_FX_MAX_CLONI = 3;
+// Dimensioni NATURALI della carta (uguali a .ant-card.size-xl in CSS) — la carta durante il
+// volo mantiene SEMPRE queste proporzioni, mai deformata per adattarsi alla forma dell'avatar
+// sorgente (vedi sotto perche' era un problema reale).
+const ANT_FX_CARD_W = 110, ANT_FX_CARD_H = 152;
 function _playAssegnazioneCardFx(giocatore) {
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if (!_antGetFxAbilitata()) return;
@@ -3279,17 +3283,23 @@ function _playAssegnazioneCardFx(giocatore) {
   const srcRect = avatarEl.getBoundingClientRect();
   if (!srcRect.width || !srcRect.height) return;
 
+  // PRIMA la carta veniva forzata (width/height:100%) dentro un wrap sagomato esattamente come
+  // .cc-avatar — che pero' NON e' sempre un cerchio 84x84: nel layout admin e' un rettangolo
+  // width:118px;height:auto STIRATO da top+bottom (vedi .cc-avatar in style.css), quindi la
+  // carta usciva alta e stretta con tanto spazio nero sotto il nome (segnalato dall'utente).
+  // Ora il wrap ha SEMPRE le dimensioni naturali della carta (110x152, mai deformate) ed e'
+  // solo centrato sul punto centrale dell'avatar sorgente; l'illusione "esce dall'avatar" resta
+  // affidata alla scala di partenza (startScale sotto), non alla forma del contenitore.
+  const srcCx = srcRect.left + srcRect.width / 2, srcCy = srcRect.top + srcRect.height / 2;
   const wrap = document.createElement('div');
   wrap.className = 'assegnazione-fx-card';
-  wrap.style.left = srcRect.left + 'px';
-  wrap.style.top = srcRect.top + 'px';
-  wrap.style.width = srcRect.width + 'px';
-  wrap.style.height = srcRect.height + 'px';
+  wrap.style.left = (srcCx - ANT_FX_CARD_W / 2) + 'px';
+  wrap.style.top = (srcCy - ANT_FX_CARD_H / 2) + 'px';
+  wrap.style.width = ANT_FX_CARD_W + 'px';
+  wrap.style.height = ANT_FX_CARD_H + 'px';
   wrap.innerHTML = _antCardHTML(giocatore, 'xl', false);
   const cardEl = wrap.firstElementChild;
   if (cardEl) {
-    cardEl.style.width = '100%';
-    cardEl.style.height = '100%';
     cardEl.style.boxShadow = '0 20px 50px rgba(0,0,0,.6), 0 0 40px var(--gold-glow,rgba(255,179,0,.5))';
   }
   layer.appendChild(wrap);
@@ -3298,13 +3308,18 @@ function _playAssegnazioneCardFx(giocatore) {
   if (fxNameTxt) _antFitTestoLabel(fxNameTxt, 96);
 
   const cx = window.innerWidth / 2, cy = window.innerHeight * 0.42;
-  const srcCx = srcRect.left + srcRect.width / 2, srcCy = srcRect.top + srcRect.height / 2;
   const dx = cx - srcCx, dy = cy - srcCy;
-  const scalePeak = Math.max(2.2, 220 / srcRect.width);
+  // Scala di partenza proporzionata alla larghezza reale dell'avatar sorgente (varia molto tra
+  // layout admin/partecipante/mobile, vedi sopra), con un pavimento per non partire invisibile
+  // e un tetto a 1 per non partire gia' piu' grande del naturale. Il picco e' invece un target
+  // fisso (~250px) svincolato dall'avatar, cosi' la carta ha sempre la stessa dimensione finale
+  // indipendentemente da quanto e' grande/deforme l'avatar di partenza.
+  const startScale = Math.min(1, Math.max(0.35, srcRect.width / ANT_FX_CARD_W));
+  const scalePeak = 250 / ANT_FX_CARD_W;
 
   _antFxCloniAttivi++;
   const anim = wrap.animate([
-    { transform: 'translate(0,0) scale(1) rotate(0deg)', opacity: 1, offset: 0 },
+    { transform: 'translate(0,0) scale(' + startScale + ') rotate(0deg)', opacity: 1, offset: 0 },
     { transform: 'translate(' + (dx * 0.6) + 'px,' + (dy * 0.6) + 'px) scale(' + (scalePeak * 0.8) + ') rotate(-3deg)', opacity: 1, offset: .18 },
     { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + scalePeak + ') rotate(0deg)', opacity: 1, offset: .32 },
     // Hold: stessa posizione/scala per un lungo tratto, cosi' carta/avatar/nome restano

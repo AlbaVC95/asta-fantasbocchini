@@ -243,6 +243,32 @@ logicamente diretta, non replicabile in questo ambiente senza un'asta live reale
 client connessi (richiederebbe un round-trip socket reale) — verificata leggendo il codice, non
 via browser.
 
+### Round 6 — carta XL "alargada" con troppo spazio nero: causa vera trovata (non il CSS della fascia)
+
+Dopo il round 5 l'utente ha rilevato che la carta dell'animazione (con l'animazione ormai
+corretta per essere riservata al vincitore) era tornata "alargada" (allungata) con molto spazio
+nero sotto il nome — nonostante il round 3 avesse già ridotto la fascia. Causa REALE, mai
+notata prima perché i test dei round precedenti creavano la carta XL isolata con dimensioni
+fisse (110×152) invece di passare per il flusso reale: `_playAssegnazioneCardFx()` forzava
+`cardEl.style.width/height = '100%'` dentro un `wrap` dimensionato esattamente come
+`.cc-avatar` — ma `.cc-avatar` NON è sempre un cerchio 84×84: nel layout admin è
+`width:118px;height:auto` con `position:absolute;top:8px;bottom:8px` (si "stira" per riempire
+l'altezza del contenitore, spesso 200px+), quindi la carta usciva alta e stretta con
+proporzioni completamente diverse da quelle disegnate (110:152), e la fascia nera al 16%
+di un'altezza molto maggiore del previsto tornava a sembrare eccessiva.
+
+Fix: il `wrap` ora ha SEMPRE le dimensioni naturali della carta (`ANT_FX_CARD_W/H` = 110×152,
+mai deformate), centrato sul punto medio dell'avatar sorgente invece di copiarne la sagoma;
+l'illusione "esce dall'avatar" viene dalla scala di partenza (`startScale`, proporzionale alla
+larghezza reale dell'avatar, tetto 1 pavimento 0.35) invece che dalla forma del contenitore, e
+il picco (`scalePeak`) punta a una dimensione fissa (~250px) svincolata dall'avatar sorgente.
+
+**Verificato in locale**: simulato sia un avatar "stiracchiato" (118×260, come nel layout
+admin) sia uno normale (84×84 cerchio) come sorgente — in entrambi i casi la carta
+(`cardEl.getBoundingClientRect()`) mantiene esattamente le proporzioni naturali 110:152 (mai
+deformata), con la scala di partenza calcolata correttamente in ciascun caso; screenshot al
+picco dell'animazione conferma card portrait pulita, fascia nera compatta, nome su una riga.
+
 ## Redesign 3D Anteprima — MERGIATO su `main`, IN PRODUZIONE (non ancora confermato dal vivo)
 
 Richiesta dell'utente (7 requisiti precisi): animazione di assegnazione carta (Puja → centro

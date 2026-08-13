@@ -264,6 +264,26 @@ tab (`_antSyncDrawerLayout()` chiamato ad ogni click, idempotente) — così anc
 resize non fosse scattato in tempo, il primo click su una tab corregge comunque lo stato prima
 di decidere cosa mostrare.
 
+## Carta XL dell'animazione: dimensioni sempre fisse (110×152), mai copiate dalla forma di `.cc-avatar`
+
+Bug reale, rimasto nascosto per 3 round di fix perché i test in locale creavano la carta XL
+isolata con dimensioni fisse invece di passare dal flusso reale: `_playAssegnazioneCardFx()`
+forzava la carta a riempire (`width/height:100%`) un contenitore dimensionato esattamente come
+`.cc-avatar` al momento dell'assegnazione — ma `.cc-avatar` cambia forma parecchio tra i layout
+(cerchio 84×84 in alcuni contesti, rettangolo `width:118px;height:auto` STIRATO da
+`top:8px;bottom:8px` nel layout admin, che puo' arrivare a 200px+ di altezza). Il risultato:
+la carta "ereditava" la forma spesso molto allungata dell'avatar sorgente invece delle sue
+proporzioni disegnate, con la fascia del nome (percentuale dell'altezza) che sembrava
+eccessiva perché calcolata su un'altezza molto maggiore del previsto.
+
+Fix: la carta ha ora dimensioni SEMPRE fisse (110×152, mai lette/copiate da `.cc-avatar`),
+centrata sul punto medio dell'avatar sorgente. L'illusione "esce da lì" viene affidata a una
+scala di partenza proporzionale alla larghezza dell'avatar (non alla sua forma), non più a una
+dimensione/forma copiata 1:1. Lezione per i test futuri su questo componente: verificare sempre
+anche il flusso reale (`_playAssegnazioneCardFx` con un `#chiamata-card .cc-avatar` presente),
+non solo la carta creata isolata con `_antCardHTML(...)` — è quel secondo modo di testare che
+aveva nascosto il bug nei round precedenti.
+
 ## Toggle animazione assegnazione carta: locale (localStorage), non sincronizzato lato server
 
 Per lo stesso motivo del toggle pitch-size (`antPitchSize`): l'animazione di assegnazione
