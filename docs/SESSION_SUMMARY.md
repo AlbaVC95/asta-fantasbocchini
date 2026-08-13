@@ -8,9 +8,15 @@ Stato attuale del progetto. Questo file va sovrascritto ad ogni task importante 
 - **Deploy**: migrato da Render a **Hostinger** (dominio `asta.fantaplus.com`, deploy automatico
   su push a `main`). Render resta attivo temporaneamente come backup dell'utente. Bind esplicito
   su `0.0.0.0` in `server.listen()` applicato come misura difensiva (commit `7d32099`).
-- Branch `main` pulito, **tutto pushato e in produzione**, ultimo commit `9db26ef` (merge del
-  redesign 3D Anteprima, vedi sotto). Migration
-  `backend/sql/2026-08-10_strategia_titolarita_commento.sql` già eseguita dall'utente su Supabase.
+- Branch `main`, ultimo commit pushato `9db26ef`/`49f7a2a` (merge + note del redesign 3D
+  Anteprima). Migration `backend/sql/2026-08-10_strategia_titolarita_commento.sql` già eseguita
+  dall'utente su Supabase.
+- **Correzioni post-redesign 3D Anteprima: applicate in locale, NON ANCORA COMMITTATE/PUSHATE**
+  (`frontend/index.html`, `frontend/css/style.css`, `frontend/js/app.js` — nessun file backend
+  toccato). Rispondono a 9 problemi concreti segnalati dall'utente dopo il merge del redesign in
+  produzione (scroll rotto, animazione troppo veloce, carte 3D piatte/sovrapposte, stadio poco
+  visibile, bug di selezione posizione, ruoli tagliati). Vedi sezione dedicata sotto —
+  **verificate con dati simulati in locale, non ancora testate dal vivo dall'utente**.
 - **Redesign 3D Anteprima: MERGIATO su `main` e IN PRODUZIONE** (richiesta esplicita dell'utente
   di deploy, dopo un giro di correzioni su feedback visivo). Branch di lavoro `redesign/asta-3d` e
   backup `backup/pre-redesign-asta-3d` restano su GitHub per riferimento/rollback rapido. Vedi
@@ -21,6 +27,77 @@ Stato attuale del progetto. Questo file va sovrascritto ad ogni task importante 
   Portieri/Movimento separati, Quotazione Ufficiale persa nel pool asta, contatore Svincolati,
   più i 2 bug di sessioni precedenti (plusvalenza/recompra, Anteprima non resettata) — vedi
   "Tasks pendenti".
+
+## Correzioni post-redesign 3D Anteprima (9 punti, NON ancora committate)
+
+Richiesta dell'utente dopo aver usato il redesign 3D in produzione: 9 problemi concreti di
+scroll/animazione/rendering 3D/interazione, tutti risolti senza toccare logica Mantra, moduli,
+regole di schieramento, logica Asta/Rose o dati esistenti (solo `frontend/`). Piano in
+`/Users/alba/.claude/plans/frolicking-baking-tome.md`.
+
+1. **Scroll verticale rotto** (Storico/Rose/Svincolati/Griglia P/A/Anteprima): causa radice —
+   il wrapper `.asta-live-layout` (introdotto dal redesign per affiancare il drawer) non aveva
+   `flex:1;min-height:0`, e `.asta-main-col` non era una vera colonna flex vincolata in altezza,
+   rompendo la catena `min-height:0`+`overflow-y:auto` da cui dipende ogni scroll interno sotto
+   `#screen-asta{height:100vh;overflow:hidden}`. Fix: 3 regole CSS (`style.css`, blocco
+   `.asta-live-layout`/`.asta-main-col`).
+2. **Animazione assegnazione**: durata `1100ms`→`3000ms` con una fase di "hold" al picco
+   (`_playAssegnazioneCardFx()` in `app.js`). Aggiunto toggle **solo locale**
+   (`localStorage['antFxAbilitata']`, default attivo) in "⚙️ Impostazioni Admin" — deciso con
+   l'utente di non sincronizzarlo lato server: l'animazione è già puramente client-side, nessun
+   cambio a socket/stato asta.
+3. **Nome giocatore invisibile su carta in campo**: `.ant-slot3d-label` non aveva `translateZ`,
+   restava sul piano del prato dietro la carta (che invece "galleggia" a `translateZ(34px)`).
+   Ora condivide lo stesso piano (`translateZ(30px)`).
+4. **Carte "piatte"/sovrapposte al prato**: risolto con luce/ombra interna su
+   `.ant-card.on-pitch` (non toccando l'angolo/translateZ della proiezione 3D, che invece
+   ingrandisce la carta a schermo e peggiora le sovrapposizioni — verificato empiricamente).
+5. **Carte che si sovrappongono tra loro**: causa combinata — card a dimensione fissa (44×60px)
+   indipendente dallo zoom del campo, righe con gap verticale insufficiente specie quando due
+   ruoli di righe adiacenti condividono la stessa X (es. portiere/difensore centrale). Fix in due
+   parti: (a) `.ant-card.size-pitch`/`.ant-slot3d-empty` ora in **`cqw`** (CSS container query
+   units, `container-type:inline-size` su `.ant-pitch`) invece di px fissi, così la dimensione
+   della carta resta proporzionale al campo a qualunque livello di zoom (prima le sovrapposizioni
+   peggioravano molto sotto i 380px); (b) `ANT_LAYOUT` (`app.js`) riscritto con un template di
+   fasce verticali (`ANT_Y5`/`ANT_Y4`, gap ~21-23%) per tutti gli 11 moduli, con piccoli
+   disallineamenti X dove due righe adiacenti condividevano la stessa colonna. Verificato
+   misurando `getBoundingClientRect()` di ogni carta per tutti gli 11 moduli: da overlap fino al
+   45% (dimensione fissa, zoom minimo) a **residuo ~2% su 4 moduli** (solo portiere/difensore
+   centrale nei moduli a 3), 0% su tutti gli altri.
+6. **Ombra "linea nera"**: il box-shadow direzionale ereditato da `.ant-card` base si comprimeva
+   sotto la doppia rotazione 3D in una riga nera netta. Sostituito su `.ant-card.on-pitch` con un
+   rilievo leggero (inset), lasciando la vera ombra di profondità a `.ant-slot3d-shadow`
+   (elemento separato, non contro-ruotato).
+7. **Stadio poco visibile**: aggiunte gradinate stilizzate (`.ant-stand-l/-r`, gradiente a bassa
+   opacità con mask) + un bagliore ambientale (`.ant-stand-glow`) dentro `.ant-pitch-stands`,
+   mantenendo priorità visiva su campo/carte.
+8. **Bug selezione posizione→posizione**: `_antCloseHandler()` (chiusura del picker al click
+   fuori) era rimasto legato alla vecchia classe 2D `.ant-slot` invece della nuova `.ant-slot3d`
+   del campo 3D — un click su un'altra posizione valida veniva interpretato per errore come
+   "click fuori" e richiudeva il picker appena riaperto. Fix: selettore esteso a
+   `.ant-slot, .ant-slot3d`. Verificato via eventi click reali (non solo chiamate dirette):
+   selezione A→B→C ora funziona senza click intermedi fuori dal campo.
+9. **Ruoli tagliati su slot vuoti**: sostituito il testo semplice (troncato con ellissi a 70px)
+   con `_getRuoloBadgeHTML()` (già usato sulle carte piene) — ruoli compound tipo `"DC/B"`,
+   `"T/A/PC"` ora mostrano badge separati su più righe invece di troncare. Effetto collaterale
+   individuato e corretto in corsa: lo stesso contenitore serve anche per il NOME sulle carte
+   piene, che va invece troncato su una riga sola (altrimenti nomi lunghi si sovrappongono tra
+   slot adiacenti) — aggiunto uno `<span class="ant-slot3d-name-txt">` dedicato con
+   `overflow:hidden;text-overflow:ellipsis` solo per quel caso.
+
+**Verificato in locale** (browser automatizzato, stato `S.asta`/rosa iniettati via JS — nessuna
+asta live disponibile in sessione): scroll interno confermato su Storico con contenuto lungo
+(`scrollHeight` 1928px in un contenitore `clientHeight` 562px, `overflow-y:auto`); tutti gli 11
+moduli renderizzati senza sovrapposizioni rilevanti; bug di selezione verificato con eventi click
+reali end-to-end (assegnazione finisce sullo slot B, non A); toggle animazione verificato
+(checkbox default `checked`, disattivandolo `_playAssegnazioneCardFx()` non crea più cloni).
+**Non verificabile in questo ambiente**: aspetto reale su schermo/device fisico, animazione vista
+dal vivo durante un'asta di prova reale con la Puja popolata.
+
+**Nota tecnica**: durante la sessione, un `Edit` ha convertito l'intero `frontend/js/app.js` da
+CRLF a LF (il resto del progetto usa CRLF) — individuato e corretto prima di chiudere, il diff
+finale contiene solo le righe effettivamente cambiate. Attenzione a questo rischio nelle prossime
+sessioni che editano quel file.
 
 ## Redesign 3D Anteprima — MERGIATO su `main`, IN PRODUZIONE (non ancora confermato dal vivo)
 
@@ -80,6 +157,11 @@ immediatamente precedente al merge, se qualcosa non va basta un revert/reset a q
 
 ## Tasks pendenti
 
+- **Committare e pushare le correzioni post-redesign 3D Anteprima** (vedi sezione dedicata sopra)
+  quando l'utente conferma di volerle in produzione — al momento sono solo nel working tree.
+- **Verificare dal vivo le 9 correzioni post-redesign** in un'asta di test reale (scroll nelle 5
+  sotto-tab, tutti gli 11 moduli di Anteprima, animazione ~3s col toggle, selezione posizioni
+  A→B→C senza click fuori) prima del prossimo uso reale della lega.
 - **Verificare dal vivo il redesign 3D Anteprima** in un'asta di test reale (vedi sopra) prima
   del prossimo uso reale della lega — è il cambio più corposo di questa sessione, mai testato in
   condizioni reali.

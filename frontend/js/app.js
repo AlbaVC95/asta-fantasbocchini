@@ -2951,6 +2951,18 @@ function _antSetPitchSize(px) {
   _antApplyPitchSize(clamped);
 }
 
+// Toggle animazione assegnazione carta: solo locale (localStorage, come antPitchSize
+// sopra), non sincronizzato tra partecipanti — l'animazione stessa e' gia' puramente
+// client-side (vedi commento su _playAssegnazioneCardFx), quindi ogni browser decide
+// per se' se mostrarla, senza toccare backend/socket/stato asta. Default: attiva.
+function _antGetFxAbilitata() {
+  return localStorage.getItem('antFxAbilitata') !== 'false';
+}
+
+function _antSetFxAbilitata(attiva) {
+  localStorage.setItem('antFxAbilitata', attiva ? 'true' : 'false');
+}
+
 // Apre/chiude il drawer Anteprima (classe .drawer-open su #tab-anteprima.ant-drawer, vedi
 // style.css) — sostituisce il vecchio meccanismo .active di setupTabs() SOLO per questa tab,
 // cosi' puo' restare aperto sopra Rose/Storico/altre tab senza nasconderle.
@@ -3049,81 +3061,98 @@ function populateAnteprimaSquadre(squadre) {
 // poco realistica (es. mediano unico sovrapposto al cerchio di centrocampo).
 // La struttura rispecchia esattamente quella di ANTEPRIMA_FORMAZIONI (stesso
 // numero di righe e colonne per ogni modulo).
+// NOTA overlap (requisito UI: nessuna carta deve mai coprirne un'altra): le righe con
+// giocatori sulla stessa X di quella immediatamente sopra/sotto (es. portiere e difensore
+// centrale nei moduli a 3, o un centrocampista esattamente sotto un difensore) restavano
+// troppo vicine verticalmente e le carte si sovrapponevano — verificato misurando
+// getBoundingClientRect() delle carte renderizzate in tutti gli 11 moduli. Le coordinate
+// sotto sono state solo diradate (piu' spazio verticale, X leggermente disallineate tra
+// righe adiacenti) per eliminare le sovrapposizioni: stesso numero di righe/colonne di
+// ANTEPRIMA_FORMAZIONI per ogni modulo, nessun cambio alla logica Mantra.
+// Y "a fasce" (invariato il numero di righe/colonne per modulo, solo la profondita'):
+// con card a dimensione fissa rispetto al campo (vedi .size-pitch/.ant-slot3d-empty, in
+// cqw), un gap verticale inferiore al ~20% dell'altezza campo produce quasi sempre
+// sovrapposizione quando due ruoli di righe adiacenti condividono una X simile (es.
+// portiere/difensore centrale, playmaker/trequartista) — misurato su tutti gli 11 moduli
+// con getBoundingClientRect(). Le fasce sotto usano gap ~21-23%, il massimo che ci sta
+// nello spazio verticale disponibile per 4 o 5 righe.
+const ANT_Y5 = [4, 25, 48, 71, 94];   // moduli a 5 righe (schieramento+portiere)
+const ANT_Y4 = [4, 27, 58, 93];       // moduli a 4 righe (centrocampo/attacco piu' larghi)
 const ANT_LAYOUT = {
   '3-4-3': [
-    [[50, 8]],
-    [[28, 23], [50, 23], [72, 23]],
-    [[15, 42], [38, 46], [62, 46], [85, 42]],
-    [[24, 68], [76, 68]],
-    [[50, 89]]
+    [[50, ANT_Y5[0]]],
+    [[24, ANT_Y5[1]], [40, ANT_Y5[1]], [76, ANT_Y5[1]]],
+    [[15, ANT_Y5[2]], [38, ANT_Y5[2]], [62, ANT_Y5[2]], [85, ANT_Y5[2]]],
+    [[24, ANT_Y5[3]], [76, ANT_Y5[3]]],
+    [[50, ANT_Y5[4]]]
   ],
   '3-4-1-2': [
-    [[50, 8]],
-    [[28, 23], [50, 23], [72, 23]],
-    [[15, 42], [38, 46], [62, 46], [85, 42]],
-    [[50, 62]],
-    [[36, 87], [64, 87]]
+    [[50, ANT_Y5[0]]],
+    [[24, ANT_Y5[1]], [40, ANT_Y5[1]], [76, ANT_Y5[1]]],
+    [[15, ANT_Y5[2]], [38, ANT_Y5[2]], [62, ANT_Y5[2]], [85, ANT_Y5[2]]],
+    [[50, ANT_Y5[3]]],
+    [[36, ANT_Y5[4]], [64, ANT_Y5[4]]]
   ],
   '3-4-2-1': [
-    [[50, 8]],
-    [[28, 23], [50, 23], [72, 23]],
-    [[22, 42], [45, 46], [68, 42], [85, 48]],
-    [[38, 65], [64, 68]],
-    [[50, 89]]
+    [[50, ANT_Y5[0]]],
+    [[24, ANT_Y5[1]], [40, ANT_Y5[1]], [76, ANT_Y5[1]]],
+    [[16, ANT_Y5[2]], [45, ANT_Y5[2]], [72, ANT_Y5[2]], [88, ANT_Y5[2]]],
+    [[38, ANT_Y5[3]], [64, ANT_Y5[3]]],
+    [[50, ANT_Y5[4]]]
   ],
   '3-5-2': [
-    [[50, 8]],
-    [[28, 23], [50, 23], [72, 23]],
-    [[12, 44], [34, 48], [50, 44], [66, 48], [88, 44]],
-    [[36, 87], [64, 87]]
+    [[50, ANT_Y4[0]]],
+    [[24, ANT_Y4[1]], [40, ANT_Y4[1]], [76, ANT_Y4[1]]],
+    [[10, ANT_Y4[2]], [32, ANT_Y4[2]], [50, ANT_Y4[2]], [68, ANT_Y4[2]], [90, ANT_Y4[2]]],
+    [[36, ANT_Y4[3]], [64, ANT_Y4[3]]]
   ],
   '3-5-1-1': [
-    [[50, 8]],
-    [[28, 23], [50, 23], [72, 23]],
-    [[12, 44], [34, 48], [50, 44], [66, 48], [88, 44]],
-    [[50, 64]],
-    [[50, 89]]
+    [[50, ANT_Y5[0]]],
+    [[24, ANT_Y5[1]], [40, ANT_Y5[1]], [76, ANT_Y5[1]]],
+    [[10, ANT_Y5[2]], [32, ANT_Y5[2]], [50, ANT_Y5[2]], [68, ANT_Y5[2]], [90, ANT_Y5[2]]],
+    [[50, ANT_Y5[3]]],
+    [[50, ANT_Y5[4]]]
   ],
   '4-3-3': [
-    [[50, 8]],
-    [[16, 23], [38, 23], [62, 23], [84, 23]],
-    [[28, 46], [50, 44], [72, 46]],
-    [[22, 68], [78, 68]],
-    [[50, 89]]
+    [[50, ANT_Y5[0]]],
+    [[16, ANT_Y5[1]], [38, ANT_Y5[1]], [62, ANT_Y5[1]], [84, ANT_Y5[1]]],
+    [[28, ANT_Y5[2]], [50, ANT_Y5[2]], [72, ANT_Y5[2]]],
+    [[22, ANT_Y5[3]], [78, ANT_Y5[3]]],
+    [[50, ANT_Y5[4]]]
   ],
   '4-3-1-2': [
-    [[50, 8]],
-    [[16, 23], [38, 23], [62, 23], [84, 23]],
-    [[28, 46], [50, 44], [72, 46]],
-    [[50, 62]],
-    [[36, 87], [64, 87]]
+    [[50, ANT_Y5[0]]],
+    [[16, ANT_Y5[1]], [38, ANT_Y5[1]], [62, ANT_Y5[1]], [84, ANT_Y5[1]]],
+    [[28, ANT_Y5[2]], [50, ANT_Y5[2]], [72, ANT_Y5[2]]],
+    [[50, ANT_Y5[3]]],
+    [[36, ANT_Y5[4]], [64, ANT_Y5[4]]]
   ],
   '4-4-2': [
-    [[50, 8]],
-    [[16, 23], [38, 23], [62, 23], [84, 23]],
-    [[18, 54], [35, 40], [64, 50], [86, 38]],
-    [[36, 87], [64, 87]]
+    [[50, ANT_Y4[0]]],
+    [[16, ANT_Y4[1]], [38, ANT_Y4[1]], [62, ANT_Y4[1]], [84, ANT_Y4[1]]],
+    [[14, ANT_Y4[2]], [34, ANT_Y4[2]], [66, ANT_Y4[2]], [86, ANT_Y4[2]]],
+    [[36, ANT_Y4[3]], [64, ANT_Y4[3]]]
   ],
   '4-1-4-1': [
-    [[50, 8]],
-    [[16, 23], [38, 23], [62, 23], [84, 23]],
-    [[50, 40]],
-    [[14, 58], [38, 62], [62, 62], [86, 58]],
-    [[50, 89]]
+    [[50, ANT_Y5[0]]],
+    [[16, ANT_Y5[1]], [38, ANT_Y5[1]], [62, ANT_Y5[1]], [84, ANT_Y5[1]]],
+    [[50, ANT_Y5[2]]],
+    [[14, ANT_Y5[3]], [38, ANT_Y5[3]], [62, ANT_Y5[3]], [86, ANT_Y5[3]]],
+    [[50, ANT_Y5[4]]]
   ],
   '4-4-1-1': [
-    [[50, 8]],
-    [[16, 23], [38, 23], [62, 23], [84, 23]],
-    [[16, 46], [40, 44], [60, 44], [84, 46]],
-    [[50, 64]],
-    [[50, 89]]
+    [[50, ANT_Y5[0]]],
+    [[16, ANT_Y5[1]], [38, ANT_Y5[1]], [62, ANT_Y5[1]], [84, ANT_Y5[1]]],
+    [[26, ANT_Y5[2]], [42, ANT_Y5[2]], [58, ANT_Y5[2]], [74, ANT_Y5[2]]],
+    [[50, ANT_Y5[3]]],
+    [[50, ANT_Y5[4]]]
   ],
   '4-2-3-1': [
-    [[50, 8]],
-    [[16, 23], [38, 23], [62, 23], [84, 23]],
-    [[38, 42], [62, 42]],
-    [[20, 62], [50, 60], [80, 62]],
-    [[50, 89]]
+    [[50, ANT_Y5[0]]],
+    [[16, ANT_Y5[1]], [38, ANT_Y5[1]], [62, ANT_Y5[1]], [84, ANT_Y5[1]]],
+    [[30, ANT_Y5[2]], [70, ANT_Y5[2]]],
+    [[20, ANT_Y5[3]], [50, ANT_Y5[3]], [80, ANT_Y5[3]]],
+    [[50, ANT_Y5[4]]]
   ]
 };
 
@@ -3174,6 +3203,7 @@ let _antFxCloniAttivi = 0;
 const ANT_FX_MAX_CLONI = 3;
 function _playAssegnazioneCardFx(giocatore) {
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!_antGetFxAbilitata()) return;
   const layer = document.getElementById('assegnazione-fx-layer');
   const avatarEl = document.querySelector('#chiamata-card .cc-avatar');
   if (!layer || !avatarEl || !giocatore) return;
@@ -3206,11 +3236,15 @@ function _playAssegnazioneCardFx(giocatore) {
   _antFxCloniAttivi++;
   const anim = wrap.animate([
     { transform: 'translate(0,0) scale(1) rotate(0deg)', opacity: 1, offset: 0 },
-    { transform: 'translate(' + (dx * 0.6) + 'px,' + (dy * 0.6) + 'px) scale(' + (scalePeak * 0.8) + ') rotate(-3deg)', opacity: 1, offset: .35 },
-    { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + scalePeak + ') rotate(0deg)', opacity: 1, offset: .6 },
+    { transform: 'translate(' + (dx * 0.6) + 'px,' + (dy * 0.6) + 'px) scale(' + (scalePeak * 0.8) + ') rotate(-3deg)', opacity: 1, offset: .18 },
+    { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + scalePeak + ') rotate(0deg)', opacity: 1, offset: .32 },
+    // Hold: stessa posizione/scala per un lungo tratto, cosi' carta/avatar/nome restano
+    // leggibili al centro schermo invece di attraversarlo di corsa (richiesta esplicita
+    // dell'utente, durata totale portata da ~1.1s a ~3s).
+    { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + scalePeak + ') rotate(0deg)', opacity: 1, offset: .68 },
     { transform: 'translate(' + dx + 'px,' + (dy + 30) + 'px) scale(' + (scalePeak * 0.92) + ') rotate(2deg)', opacity: 1, offset: .85 },
     { transform: 'translate(' + dx + 'px,' + (dy + 160) + 'px) scale(' + (scalePeak * 0.6) + ') rotate(0deg)', opacity: 0, offset: 1 }
-  ], { duration: 1100, easing: 'cubic-bezier(.3,.7,.3,1)' });
+  ], { duration: 3000, easing: 'cubic-bezier(.3,.7,.3,1)' });
   const cleanup = () => { _antFxCloniAttivi = Math.max(0, _antFxCloniAttivi - 1); wrap.remove(); };
   anim.onfinish = cleanup;
   anim.oncancel = cleanup;
@@ -3305,12 +3339,12 @@ function renderAnteprimaPitch() {
         // carta) — e' il segnale visivo che vende la sensazione "la carta sta in piedi sopra
         // il prato", altrimenti anche con la matrice 3D corretta le foto piatte leggono come
         // adagiate sul campo invece che ritte.
-        html += '<div class="ant-slot3d-shadow"></div>' + _antCardHTML(g, null, true) + '<div class="ant-slot3d-label">' + _escHtml(g.nome) + '</div>';
+        html += '<div class="ant-slot3d-shadow"></div>' + _antCardHTML(g, null, true) + '<div class="ant-slot3d-label"><span class="ant-slot3d-name-txt">' + _escHtml(g.nome) + '</span></div>';
       } else if (filled) {
         // Giocatore assegnato allo slot ma non piu' in rosa (es. annullato dopo lo schieramento): fallback "fantasma", mai un crash.
-        html += '<div class="ant-slot3d-shadow"></div><div class="ant-card on-pitch size-pitch placeholder">?</div><div class="ant-slot3d-label">' + _escHtml(nomeGiocatore) + '</div>';
+        html += '<div class="ant-slot3d-shadow"></div><div class="ant-card on-pitch size-pitch placeholder">?</div><div class="ant-slot3d-label"><span class="ant-slot3d-name-txt">' + _escHtml(nomeGiocatore) + '</span></div>';
       } else {
-        html += '<div class="ant-slot3d-empty">+</div><div class="ant-slot3d-label">' + _escHtml(ruolo) + '</div>';
+        html += '<div class="ant-slot3d-empty">+</div><div class="ant-slot3d-label">' + _getRuoloBadgeHTML(ruolo) + '</div>';
       }
       html += '</div>';
     });
@@ -3408,7 +3442,7 @@ function _antOpenPicker(slotEl, nomeSquadra) {
 function _antCloseHandler(e) {
   const picker = document.getElementById('ant-picker');
   if (!picker) return;
-  if (!picker.contains(e.target) && !(e.target.closest && e.target.closest('.ant-slot'))) {
+  if (!picker.contains(e.target) && !(e.target.closest && e.target.closest('.ant-slot, .ant-slot3d'))) {
     picker.classList.add('hidden');
     document.removeEventListener('click', _antCloseHandler);
   }
@@ -3954,6 +3988,8 @@ window.apriModalAdminConfig = function() {
   document.getElementById('inp-ac-min-portieri').value = S.asta.minimoPortieri;
   document.getElementById('inp-ac-min-movimento').value = S.asta.minimoMovimento;
   document.getElementById('inp-ac-max-gioc').value = S.asta.maxGiocatoriPerSquadra || 25;
+  const chkFx = document.getElementById('chk-ac-fx-assegnazione');
+  if (chkFx) chkFx.checked = _antGetFxAbilitata();
   const lista = document.getElementById('ac-crediti-lista');
   lista.innerHTML = (S.asta.squadre || []).map(sq => {
     const nomeEsc = _escJsAttr(sq.nome);
@@ -3998,6 +4034,10 @@ window.confermaAdminConfig = function() {
     minimoMovimento: parseInt(document.getElementById('inp-ac-min-movimento').value),
     maxGiocatoriPerSquadra: parseInt(document.getElementById('inp-ac-max-gioc').value) || 25
   });
+  // Solo locale (localStorage), non fa parte della config asta lato server: l'animazione
+  // e' gia' un effetto puramente client-side, vedi _antGetFxAbilitata sopra.
+  const chkFx = document.getElementById('chk-ac-fx-assegnazione');
+  if (chkFx) _antSetFxAbilitata(chkFx.checked);
   toast('Impostazioni aggiornate', 'success');
 };
 

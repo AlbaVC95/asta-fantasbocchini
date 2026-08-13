@@ -185,6 +185,45 @@ chiave ora include `S.astaId` (`_antLsKey()`), cosi' ogni asta parte con uno sta
 bisogno di reset manuali; lo stato resta comunque locale al browser (nessun cambio a questa
 scelta architetturale, vedi sopra).
 
+## Anteprima 3D: dimensione carte in `cqw` (container query) invece di px fissi, per evitare sovrapposizioni a qualunque zoom
+
+Bug reale segnalato dall'utente dopo l'uso in produzione del redesign 3D: le carte sul campo
+tattico (`.ant-card.size-pitch`) si sovrapponevano vistosamente, specialmente allo zoom minimo
+del campo (`_antSetPitchSize`, 220-460px). Causa: dimensione carta fissa in px indipendente dal
+contenitore — a campo piccolo la carta occupa una fetta molto più grande dello spazio tra gli
+slot. Misurato con `getBoundingClientRect()` su tutti gli 11 moduli: con carta fissa, l'overlap
+passava da ~5% al campo massimo a ~45% al campo minimo. Soluzione: `.ant-pitch` dichiarato
+`container-type:inline-size`, `.ant-card.size-pitch`/`.ant-slot3d-empty` dimensionati in `cqw`
+(percentuale della larghezza REALE del contenitore, non del viewport) — così la carta scala
+proporzionalmente col campo e l'overlap misurato resta costante a qualunque livello di zoom,
+invece di peggiorare quando l'utente rimpicciolisce. Nota per debug futuro: durante la misura via
+browser automatizzato, `getComputedStyle().maxWidth`/`getBoundingClientRect()` letti subito dopo
+aver cambiato `--ant-pitch-size` restituivano valori non aggiornati a causa della
+`transition:max-width .15s ease` su `.ant-pitch` — bisogna forzare `element.style.transition =
+'none'` (o attendere un frame reale) prima di misurare, altrimenti i numeri sono inattendibili.
+
+Oltre al cambio di unità, `ANT_LAYOUT` (`app.js`) è stato riscritto con un template di fasce
+verticali condivise (`ANT_Y5`/`ANT_Y4`, ~21-23% di gap) per tutti gli 11 moduli — un gap
+verticale inferiore al ~20% dell'altezza campo produce quasi sempre sovrapposizione quando due
+ruoli di righe adiacenti condividono una X simile (es. portiere e difensore centrale nei moduli a
+3 difensori, entrambi centrati a x=50). Scartato un primo tentativo di rendere le carte "più 3D"
+cambiando l'angolo di controrotazione (-50°→-42°) e aumentando il `translateZ`: ingrandiva la
+proiezione a schermo della carta e PEGGIORAVA le sovrapposizioni su tutti gli 11 moduli, incluso
+alcuni che prima erano puliti — l'angolo/translateZ originali (-50°/34px, già verificati nel
+redesign precedente) sono stati mantenuti invariati, e la sensazione di volume richiesta
+dall'utente ottenuta invece via luce/ombra CSS (`.ant-card.on-pitch`) senza toccare la geometria
+di proiezione.
+
+## Toggle animazione assegnazione carta: locale (localStorage), non sincronizzato lato server
+
+Per lo stesso motivo del toggle pitch-size (`antPitchSize`): l'animazione di assegnazione
+(`_playAssegnazioneCardFx()`) è già un effetto puramente client-side (nessun evento socket
+dedicato, si aggancia solo a `giocatore-assegnato` che arriva comunque a tutti). Decisione presa
+con l'utente: il nuovo toggle on/off in "Impostazioni Admin" resta locale al browser
+(`localStorage['antFxAbilitata']`, default attivo) invece di diventare un campo della config asta
+sincronizzato via `admin-update-config`/`broadcastStato()` — evita di toccare lo stato asta
+condiviso lato server per una preferenza puramente visiva e per-dispositivo.
+
 ## Timer d'asta autoritativo lato server, stato sempre broadcastato per intero
 
 Il timer non viene mai calcolato o fidato lato client: è gestito interamente in `server.js`

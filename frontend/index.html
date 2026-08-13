@@ -923,6 +923,8 @@
         <div id="ant-view-campo" class="ant-subview active">
           <div class="ant-pitch-stage">
             <div class="ant-pitch-stands">
+              <span class="ant-stand ant-stand-l"></span><span class="ant-stand ant-stand-r"></span>
+              <span class="ant-stand-glow"></span>
               <span class="ant-pylon ant-pylon-l"></span><span class="ant-pylon ant-pylon-r"></span>
               <span class="ant-floodbeam ant-floodbeam-l"></span><span class="ant-floodbeam ant-floodbeam-r"></span>
             </div>
@@ -1278,6 +1280,12 @@
         <input type="number" id="inp-ac-max-gioc" min="1">
       </div>
     </div>
+    <!-- Solo locale a questo browser (localStorage), non sincronizzata tra partecipanti -->
+    <label class="rose-compatta-toggle" style="margin-top:10px">
+      <input type="checkbox" id="chk-ac-fx-assegnazione" checked>
+      <span class="rose-compatta-slider"></span>
+      <span class="rose-compatta-label">🎬 Animazione assegnazione carta (solo su questo dispositivo)</span>
+    </label>
     <div class="modal-actions">
       <button class="btn btn-primary" onclick="confermaAdminConfig()">✅ Salva impostazioni</button>
     </div>
