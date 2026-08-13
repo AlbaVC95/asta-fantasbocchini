@@ -3144,7 +3144,7 @@ function populateAnteprimaSquadre(squadre) {
 // nello spazio verticale disponibile per 4 o 5 righe.
 // Centros de fila contenidos dentro del nuevo campo limpio: dejan sitio para la
 // etiqueta bajo cada carta sin que la última fila se corte al hacer zoom.
-const ANT_Y5 = [9, 28, 47, 66, 84];
+const ANT_Y5 = [7, 27, 48, 69, 89];
 const ANT_Y4 = [10, 35, 61, 84];
 const ANT_LAYOUT = {
   '3-4-3': [
