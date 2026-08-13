@@ -2972,6 +2972,7 @@ function _antSetPitchSize(px) {
   const clamped = Math.min(ANT_PITCH_SIZE_MAX, Math.max(ANT_PITCH_SIZE_MIN, px));
   localStorage.setItem('antPitchSize', String(clamped));
   _antApplyPitchSize(clamped);
+  requestAnimationFrame(function(){requestAnimationFrame(function(){var p=document.getElementById('ant-pitch');if(p)_antFitEtichetteCampo(p);});});
 }
 
 // Toggle animazione assegnazione carta: solo locale (localStorage, come antPitchSize
@@ -3404,7 +3405,7 @@ function _antFitTestoLabel(el, maxWidthPx) {
   el.style.maxWidth = maxWidthPx + 'px';
   let fontPx = 9;
   el.style.fontSize = fontPx + 'px';
-  while (el.scrollWidth > maxWidthPx && fontPx > 5) {
+  while (el.scrollWidth > maxWidthPx && fontPx > 3.5) {
     fontPx -= 0.5;
     el.style.fontSize = fontPx + 'px';
   }
