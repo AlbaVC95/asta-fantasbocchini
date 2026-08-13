@@ -2422,24 +2422,53 @@ body.layout-admin .asta-row-puja .cc-avatar{width:108px!important;height:140px!i
   .puja-panel-slot .cc-avatar{width:46px!important;height:60px!important}
 }
 
-/* ── 2) Campo Anteprima: via l'effetto "gomma"/deformato sulle carte.
-   Causa: prospettiva troppo stretta (perspective:1200px) + inclinazione
-   forte (rotateX 48deg) applicate a carte lontane dal centro ottico —
-   matematicamente la contro-rotazione le rimette dritte, ma la proiezione
-   prospettica ravvicinata le deforma comunque ai lati/agli angoli.
-   Fix: prospettiva molto piu' "lunga" (quasi ortografica, come l'obiettivo
-   di uno scatto da stadio reale) + inclinazione del campo piu' moderata:
-   le carte restano dritte come cartellini da collezione, il campo mantiene
-   comunque un accenno di profondita' 3D. ── */
-.ant-pitch-stage{perspective:4200px!important;perspective-origin:50% 30%!important}
-.ant-pitch.ant-pitch3d{transform:rotateX(26deg)!important}
-.ant-slot3d .ant-card,.ant-slot3d-empty{transform:rotateX(-26deg) translateZ(16px)!important}
-.ant-slot3d:hover .ant-card{transform:rotateX(-26deg) translateZ(30px) scale(1.06)!important}
+/* ── 2) Campo Anteprima — RISCRITTA DA ZERO (2026-08-13, 2a passata):
+   la catena precedente (perspective + rotateX sul campo + rotateX opposto e
+   backface-visibility:hidden sulla carta, dentro piu' livelli di
+   transform-style:preserve-3d annidati, con perspective molto estrema)
+   e' risultata FRAGILE: in alcuni browser il calcolo combinato della
+   matrice 3D arrotonda al limite e fa percepire la carta come "di spalle"
+   (quindi invisibile per backface-visibility:hidden) finche' l'hover non
+   sposta abbastanza i valori da far ricadere il calcolo dalla parte giusta.
+   Anche le vecchie regole con selettore :nth-child(even) (rimaste da un
+   tentativo precedente) hanno specificita' PIU' ALTA di un semplice
+   ".ant-slot3d .ant-card" e vincevano comunque sulle carte pari, aggiungendo
+   una rotazione extra non compensata: la causa vera dell'effetto "gomma".
+   Soluzione definitiva, robusta per costruzione (nessuna dipendenza da
+   compensazioni 3D incrociate, quindi nessun rischio di "carta invisibile"):
+   il CAMPO diventa un trapezio in puro 2D (clip-path, nessuna rotazione),
+   le CARTE restano sempre piatte e sempre visibili (transform:none), la
+   sensazione di profondita' arriva da un leggero rialzo statico (translateY)
+   piu' l'ombra di contatto gia' esistente sotto — esattamente come le carte
+   di riferimento FIFA: anche quelle non sono davvero ruotate in 3D, sono
+   piatte e appoggiate su uno sfondo che simula la profondita'. */
+.ant-pitch-stage{perspective:none!important}
+.ant-pitch.ant-pitch3d{
+  transform:none!important;
+  clip-path:polygon(9% 0,91% 0,100% 100%,0 100%)!important;
+}
+.ant-slot3d,
+.ant-slot3d:nth-child(even),
+.ant-slot3d:nth-child(odd){
+  transform:translate(-50%,-50%)!important;
+  transform-style:flat!important;
+}
+.ant-slot3d .ant-card,
+.ant-slot3d:nth-child(even) .ant-card,
+.ant-slot3d:nth-child(odd) .ant-card,
+.ant-slot3d-empty,
+.ant-slot3d:nth-child(even) .ant-slot3d-empty{
+  transform:translateY(-4px)!important;
+  transform-style:flat!important;
+  backface-visibility:visible!important;
+  opacity:1!important;
+}
+.ant-slot3d:hover .ant-card,
+.ant-slot3d:hover .ant-slot3d-empty{
+  transform:translateY(-9px) scale(1.08)!important;
+}
 @media (max-width:760px){
-  .ant-pitch-stage{perspective:3000px!important}
-  .ant-pitch.ant-pitch3d{transform:rotateX(22deg)!important}
-  .ant-slot3d .ant-card,.ant-slot3d-empty{transform:rotateX(-22deg) translateZ(12px)!important}
-  .ant-slot3d:hover .ant-card{transform:rotateX(-22deg) translateZ(22px) scale(1.05)!important}
+  .ant-pitch.ant-pitch3d{clip-path:polygon(11% 0,89% 0,100% 100%,0 100%)!important}
 }
 
 /* ── 3) Nome sotto la carta: sempre leggibile per chiunque guardi (non solo
