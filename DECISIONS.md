@@ -214,6 +214,23 @@ redesign precedente) sono stati mantenuti invariati, e la sensazione di volume r
 dall'utente ottenuta invece via luce/ombra CSS (`.ant-card.on-pitch`) senza toccare la geometria
 di proiezione.
 
+## Nomi giocatore in Anteprima: wrap multi-riga invece di troncamento, mai su un elemento `position:absolute`
+
+Requisito esplicito dell'utente (dopo due round di fix insufficienti): i nomi giocatore non
+devono MAI essere tagliati, né in campo né sulla carta XL dell'animazione di assegnazione.
+Sostituito il troncamento a riga singola con ellissi con un wrap su più righe
+(`-webkit-line-clamp`), con `ANT_PITCH_SIZE_MIN` alzato (220→250) per garantire che nemmeno i
+cognomi più lunghi (~13 lettere) vengano mai tagliati al livello di zoom minimo consentito
+(soglia misurata: 230px).
+
+**Gotcha da ricordare**: `display:-webkit-box` (necessario per `-webkit-line-clamp`) non ha
+alcun effetto se applicato direttamente a un elemento `position:absolute` — Chrome lo
+"blockifica" silenziosamente, il CSS sembra corretto ma il wrap multi-riga non scatta mai a
+runtime (si torna al troncamento su riga singola). Il testo che deve wrappare va sempre in uno
+`<span>` interno NON posizionato, dentro all'elemento assoluto usato solo per il
+posizionamento — pattern usato sia per `.ant-slot3d-label`/`.ant-slot3d-name-txt` (campo) sia
+per `.ant-card-name`/`.ant-card-name-txt` (carta XL/panchina).
+
 ## Toggle animazione assegnazione carta: locale (localStorage), non sincronizzato lato server
 
 Per lo stesso motivo del toggle pitch-size (`antPitchSize`): l'animazione di assegnazione

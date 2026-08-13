@@ -1574,7 +1574,7 @@ html.theme-light body.layout-admin .asta-row-puja{
    in ANT_LAYOUT (~16%, difesa a 3) — a 64px fisso le etichette di due slot vicini si
    sovrapponevano visibilmente su schermi reali (segnalato dall'utente), specialmente nomi
    lunghi accanto a un ruolo su slot vuoto. */
-.ant-slot3d-label{position:absolute;left:50%;bottom:-30px;transform:translateX(-50%) rotateX(-50deg) translateZ(30px);font-size:.56rem;font-weight:800;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 4px rgba(0,0,0,.9);max-width:13cqw;z-index:3;
+.ant-slot3d-label{position:absolute;left:50%;bottom:-30px;transform:translateX(-50%) rotateX(-50deg) translateZ(30px);font-size:.46rem;font-weight:800;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 4px rgba(0,0,0,.9);max-width:15.5cqw;z-index:3;
   display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:2px;text-align:center}
 /* Ruolo su slot vuoto: badge multipli (es. "Dc/B", "T/A/Pc") invece di una riga di testo
    troncata — stesso pattern gia' usato in .ant-card-role, qui ridimensionato per lo slot. */
@@ -1583,11 +1583,23 @@ html.theme-light body.layout-admin .asta-row-puja{
    piu' righe corte), il nome e' una singola riga che deve troncare con ellissi invece di
    allargarsi — con righe di 4-5 slot ravvicinati un nome lungo senza troncamento invade lo
    spazio dello slot adiacente e i due nomi diventano illeggibili sovrapposti. */
-.ant-slot3d-name-txt{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Richiesta esplicita dell'utente (due volte, su screenshot reali): i nomi non devono MAI
+   essere tagliati. Sostituito il troncamento a riga singola con ellissi (tagliava qualunque
+   nome reale piu' lungo di 5-6 lettere) con un wrap su massimo 3 righe (-webkit-line-clamp,
+   supportato da tutti i browser moderni) — lo spazio orizzontale per slot e' inevitabilmente
+   stretto su un campo tattico compatto, quindi si preferisce un nome leggibile su piu' righe
+   corte piuttosto che tagliato. L'ellissi resta solo come rete di sicurezza per nomi
+   eccezionalmente lunghi che non ci starebbero nemmeno su 3 righe. */
+.ant-slot3d-name-txt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;
+  overflow:hidden;white-space:normal;word-break:break-word;line-height:1.2;max-width:100%}
 /* Ombra di contatto SUL piano del campo (nessuna contro-rotazione, a differenza della carta):
    e' il segnale che vende la profondita' — la carta "galleggia" sopra la sua ombra invece di
-   sembrare adagiata sul prato. Vedi commento in renderAnteprimaPitch() in app.js. */
-.ant-slot3d-shadow{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:46px;height:18px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.55),transparent 75%);z-index:1}
+   sembrare adagiata sul prato. Vedi commento in renderAnteprimaPitch() in app.js.
+   top:100% (non piu' 50%): l'ombra va sotto la BASE della carta, non al suo centro — prima
+   sedeva a meta' altezza e la meta' inferiore della carta sembrava "affondare" nel prato
+   invece di poggiarci sopra (segnalato dall'utente). In cqw come .size-pitch, cosi' resta
+   proporzionata a qualunque zoom del campo. */
+.ant-slot3d-shadow{position:absolute;left:50%;top:100%;transform:translate(-50%,-65%);width:15cqw;height:5.5cqw;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.55),transparent 75%);z-index:1}
 
 /* Panchina */
 .ant-panchina{margin-top:14px}
@@ -1616,15 +1628,28 @@ html.theme-light body.layout-admin .asta-row-puja{
 .ant-card-role .badge-ruolo{height:auto;min-width:0;padding:1px 3px;font-size:.44rem;border-radius:3px;line-height:1.3}
 .size-xl .ant-card-role .badge-ruolo{font-size:.58rem;padding:2px 5px;border-radius:5px}
 
-/* Panchina: nome DENTRO la carta, fascia inferiore minima solo dietro al testo */
+/* Panchina: nome DENTRO la carta, fascia inferiore minima solo dietro al testo. Il nome vive
+   in uno <span> interno (.ant-card-name-txt) NON posizionato — necessario perche'
+   display:-webkit-box (per il wrap multi-riga su 2+, vedi carta XL sotto) non ha effetto se
+   applicato direttamente a un elemento position:absolute come .ant-card-name: sull'elemento
+   assoluto il display viene "blockificato" e la modalita' box legacy del line-clamp si perde
+   (verificato: senza lo span interno la carta XL tornava a troncare su una riga singola). */
 .ant-card.in-bench .ant-card-fade{position:absolute;left:0;right:0;bottom:0;height:36%;background:linear-gradient(to bottom,transparent,rgba(8,4,18,.92))}
-.ant-card.in-bench .ant-card-name{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:.5rem;font-weight:700;color:#fff;padding:0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ant-card.in-bench .ant-card-name{position:absolute;left:0;right:0;bottom:2px;text-align:center;padding:0 3px}
+.ant-card.in-bench .ant-card-name-txt{display:block;font-size:.5rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Carta XL (animazione di assegnazione): il 36% di fascia nera pensato per le mini-carte
    della panchina, su una carta grande (152px) lasciava troppo spazio vuoto sopra al nome
-   (segnalato dall'utente) — ridotta e il nome spostato/ingrandito per riempire meglio lo
-   spazio invece di restare una riga piccola in fondo a un'area nera sproporzionata. */
-.ant-card.in-bench.size-xl .ant-card-fade{height:20%}
-.ant-card.in-bench.size-xl .ant-card-name{font-size:.95rem;bottom:8px}
+   (segnalato dall'utente due volte su screenshot reali) — fascia ridotta ulteriormente e
+   resa un vero "cartellino" (gradiente che si scurisce prima, non una lenta dissolvenza) con
+   nome grande e in grassetto che riempie lo spazio invece di restare una riga piccola in
+   fondo a un'area nera sproporzionata. Nome su max 2 righe (mai tagliato) invece di una
+   riga singola troncata, coerente con le etichette in campo. */
+.ant-card.in-bench.size-xl .ant-card-fade{height:16%;
+  background:linear-gradient(to bottom,transparent,rgba(8,4,18,.6) 40%,rgba(8,4,18,.96))}
+.ant-card.in-bench.size-xl .ant-card-name{bottom:5px;padding:0 8px}
+.ant-card.in-bench.size-xl .ant-card-name-txt{font-size:.92rem;font-weight:800;
+  white-space:normal;line-height:1.15;display:-webkit-box;-webkit-box-orient:vertical;
+  -webkit-line-clamp:2;overflow:hidden;word-break:break-word}
 
 /* Sul campo: il nome vive FUORI dalla carta (vedi .ant-slot3d-label sopra), richiesta
    esplicita dell'utente per non coprire l'avatar — qui solo un accenno di luce/volume.

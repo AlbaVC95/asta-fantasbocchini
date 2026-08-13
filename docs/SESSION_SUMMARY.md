@@ -130,8 +130,51 @@ L'utente ha riportato 3 problemi visti in produzione (screenshot reali, non simu
 ruolo dello slot accanto; bracket agli angoli e griglia neon visibili su screenshot; carta XL con
 fascia nera ridotta e nome ben proporzionato (verificato creando una carta XL isolata via
 `_antCardHTML(...,'xl',false)`). Commit: `af7332d` su `main` (round 1 `d9fe35f`; deploy Hostinger
-automatico su push). **Non verificabile in questo ambiente**: conferma visiva dal vivo
-dell'utente sul dominio di produzione.
+automatico su push).
+
+### Round 3 — l'utente ha ritestato in produzione: nomi ancora tagliati, campo "sinking", carta XL ancora nera
+
+Con screenshot reali (uno da app, uno foto da telefono di un'asta in corso) l'utente ha
+confermato che il round 2 non bastava: i nomi si tagliavano ancora (l'ellissi troncava
+comunque cognomi normali), le carte sembravano "affondare" nel prato, e la carta XL
+dell'animazione aveva ancora molto spazio nero vuoto col nome tagliato. Richiesta esplicita
+stavolta: **i nomi non devono MAI essere tagliati**, nemmeno parzialmente.
+
+1. **Nomi tagliati (in campo)**: sostituito il troncamento a riga singola con ellissi
+   (`.ant-slot3d-name-txt`) con un wrap su **max 4 righe** (`-webkit-line-clamp:4`),
+   `max-width` alzato da 13cqw a **15.5cqw**, font ridotto a `.46rem` per fare stare più
+   caratteri per riga. Verificato con `scrollHeight>clientHeight` (rileva un taglio reale,
+   non solo "sembra tagliato") su tutti gli 11 moduli con cognomi deliberatamente estremi
+   (`"Kvaratskhelia"`, 13 lettere): a zoom ≥250px nessun taglio; sotto i 250px anche 4 righe
+   non bastavano per il caso più estremo, quindi **`ANT_PITCH_SIZE_MIN` alzato da 220 a 250**
+   (soglia minima misurata: 230px) — l'utente non può più zoomare il campo così piccolo da
+   rischiare un taglio. Il wrap multi-riga (verticale) invece che l'allargamento orizzontale
+   evita anche di reintrodurre la sovrapposizione tra etichette adiacenti (verificato: 0
+   overlap su tutti gli 11 moduli con nomi lunghi, a 250/300/460px).
+2. **Carte che "affondano" nel prato**: causa — `.ant-slot3d-shadow` (ombra di contatto) era
+   centrata a `top:50%` del box carta (il suo centro verticale), non alla base/piedi. La
+   carta "galleggia" via `translateZ` da quel punto centrale, quindi la meta' inferiore
+   restava visivamente allo stesso piano Z del prato invece che sopra l'ombra. Fix:
+   `top:100%` (base della carta) + dimensione in cqw invece di px fissi (coerente con
+   `.size-pitch`).
+3. **Carta XL ancora con nome tagliato e molto nero vuoto**: causa radice trovata —
+   `display:-webkit-box` (necessario per `-webkit-line-clamp`) NON ha alcun effetto se
+   applicato direttamente a un elemento `position:absolute` (Chrome lo "blockifica",
+   perdendo la modalità box legacy del line-clamp): il fix del round 2 sembrava corretto nel
+   CSS ma non funzionava mai a runtime. Il nome ora vive in uno `<span class="ant-card-name-
+   txt">` interno NON posizionato, dentro al div assoluto usato solo per il posizionamento
+   (`_antCardHTML()` in `app.js`) — stesso pattern già usato per `.ant-slot3d-name-txt` in
+   campo, che infatti funzionava correttamente fin dal round 2. Fascia nera e dimensione
+   nome invariate dal round 2 (già ridotte), ora effettivamente wrappano su 2 righe invece di
+   troncare.
+
+**Verificato in locale**: 0 nomi tagliati su tutti gli 11 moduli con cognomi reali E con un
+cognome deliberatamente estremo, a tutti e 3 i livelli di zoom (250/300/460px); 0
+sovrapposizioni tra etichette negli stessi test; carta XL isolata (`_antCardHTML(...,'xl',
+false)`) verificata via `scrollHeight===clientHeight` (nessun taglio) e screenshot (wrap su 2
+righe, fascia nera compatta). **Non verificabile in questo ambiente**: la sensazione di
+profondità/"non affondare" richiede un giudizio visivo umano, non solo una misura DOM — da
+confermare con l'utente.
 
 ## Redesign 3D Anteprima — MERGIATO su `main`, IN PRODUZIONE (non ancora confermato dal vivo)
 

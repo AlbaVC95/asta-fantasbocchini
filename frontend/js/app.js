@@ -2929,7 +2929,12 @@ function _ruoliCompatibili(ruoloSlot, ruoloGiocatore) {
   return slotRoles.some(sr => gioRoles.includes(sr));
 }
 
-const ANT_PITCH_SIZE_MIN = 220;
+// 250 (non 220): sotto questa soglia, misurato che anche con wrap su 4 righe un cognome
+// eccezionalmente lungo (es. "Kvaratskhelia") non ci sta piu' nell'etichetta — l'utente ha
+// chiesto esplicitamente che i nomi non vengano mai tagliati, quindi lo zoom minimo e' stato
+// alzato quel poco che basta a garantirlo sempre (verificato via scrollHeight>clientHeight
+// su tutti gli 11 moduli).
+const ANT_PITCH_SIZE_MIN = 250;
 const ANT_PITCH_SIZE_MAX = 460;
 const ANT_PITCH_SIZE_STEP = 30;
 const ANT_PITCH_SIZE_DEFAULT = 300;
@@ -3187,7 +3192,11 @@ function _antCardHTML(g, size, onPitch) {
     '<div class="ant-card-photo"></div>' +
     '<div class="ant-card-role">' + _getRuoloBadgeHTML(g.ruolo) + '</div>';
   if (!onPitch) {
-    html += '<div class="ant-card-fade"></div><div class="ant-card-name">' + _escHtml(g.nome) + '</div>';
+    // Il nome vive in uno <span> interno NON posizionato, dentro al div assoluto solo per il
+    // posizionamento — necessario per il wrap multi-riga della carta XL (vedi CSS
+    // .ant-card-name-txt): display:-webkit-box (per -webkit-line-clamp) non funziona se
+    // applicato direttamente a un elemento position:absolute, va sull'elemento interno.
+    html += '<div class="ant-card-fade"></div><div class="ant-card-name"><span class="ant-card-name-txt">' + _escHtml(g.nome) + '</span></div>';
   }
   html += '</div>';
   return html;
