@@ -3539,7 +3539,7 @@ function renderAnteprimaPitch() {
   // ad ogni render, non puo' vivere come elemento statico in index.html.
   let html = '<svg class="ant-field-markings" viewBox="0 0 100 140" preserveAspectRatio="none" aria-hidden="true">' +
     '<rect x="2" y="2" width="96" height="136" rx="1" />' +
-    '<path d="M2 70H98 M50 2V138 M22 2V23H78V2 M22 138V117H78V138 M37 2V10H63V2 M37 138V130H63V138" />' +
+    '<path d="M2 70H98 M22 2V23H78V2 M22 138V117H78V138 M37 2V10H63V2 M37 138V130H63V138" />' +
     '<circle cx="50" cy="70" r="12" /><circle class="ant-field-dot" cx="50" cy="70" r=".8" />' +
     '<circle class="ant-field-dot" cx="50" cy="17" r=".8" /><circle class="ant-field-dot" cx="50" cy="123" r=".8" />' +
   '</svg>';
