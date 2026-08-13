@@ -3274,7 +3274,7 @@ const ANT_FX_MAX_CLONI = 3;
 // Dimensioni NATURALI della carta (uguali a .ant-card.size-xl in CSS) — la carta durante il
 // volo mantiene SEMPRE queste proporzioni, mai deformata per adattarsi alla forma dell'avatar
 // sorgente (vedi sotto perche' era un problema reale).
-const ANT_FX_CARD_W = 136, ANT_FX_CARD_H = 178;
+const ANT_FX_CARD_W = 142, ANT_FX_CARD_H = 194;
 function _playAssegnazioneCardFx(giocatore) {
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if (!_antGetFxAbilitata()) return;
@@ -3472,7 +3472,9 @@ function _antAssicuraStadio3D() {
   if (!contenitore || !window.THREE || _antStadio3D) return;
   const T = window.THREE, scena = new T.Scene();
   scena.background = new T.Color(0x050716); scena.fog = new T.FogExp2(0x07091c,.032);
-  const camera = new T.PerspectiveCamera(39,1,.1,120);
+  // Cámara táctica desde la grada detrás de una portería: eje central, elevada y con
+  // profundidad. Campo lejano estrecho, campo cercano ancho y tribunas simétricas.
+  const camera = new T.PerspectiveCamera(46,1,.1,120);
   const renderer = new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1,1.65)); renderer.shadowMap.enabled=true; renderer.shadowMap.type=T.PCFSoftShadowMap;
   renderer.outputColorSpace=T.SRGBColorSpace; renderer.toneMapping=T.ACESFilmicToneMapping; renderer.toneMappingExposure=1.2;
@@ -3496,8 +3498,10 @@ function _antAssicuraStadio3D() {
   const anello = new T.Mesh(new T.TorusGeometry(21,.16,8,64),metallo); anello.rotation.x=Math.PI/2; anello.position.y=10.5; scena.add(anello);
   const arcoGeo = new T.TorusGeometry(21,.28,8,64,Math.PI*.92);
   [-1,1].forEach(lato => { const arco = new T.Mesh(arcoGeo,metallo); arco.rotation.set(Math.PI/2,0,lato < 0 ? Math.PI*.04 : Math.PI*1.04); arco.position.y=10.4; scena.add(arco); });
-  const tettoMat = new T.MeshStandardMaterial({color:0x11152c,metalness:.7,roughness:.36,side:T.DoubleSide});
-  const tetto = new T.Mesh(new T.RingGeometry(16.8,25,64,1),tettoMat); tetto.rotation.x=-Math.PI/2; tetto.position.y=10.25; scena.add(tetto);
+  // La cubierta queda en el borde de la toma. Antes era opaca entre la cámara y
+  // el césped, por eso la vista acababa pareciendo una sala oscura.
+  const tettoMat = new T.MeshStandardMaterial({color:0x182048,metalness:.7,roughness:.36,side:T.DoubleSide,transparent:true,opacity:.22,depthWrite:false});
+  const tetto = new T.Mesh(new T.RingGeometry(19.5,25,64,1),tettoMat); tetto.rotation.x=-Math.PI/2; tetto.position.y=14.5; scena.add(tetto);
   for(let i=0;i<18;i++){ const a=i/18*Math.PI*2; const trave=new T.Mesh(new T.BoxGeometry(.18,.18,9),metallo); trave.position.set(Math.cos(a)*20.8,9.7,Math.sin(a)*16.1); trave.rotation.y=-a; trave.rotation.z=Math.sin(a)*.18; scena.add(trave); }
   [[-17,-12],[17,-12],[-17,12],[17,12]].forEach(([x,z])=>{
     const palo=new T.Mesh(new T.CylinderGeometry(.18,.24,10.5,8),metallo); palo.position.set(x,5.2,z); scena.add(palo);
@@ -3508,7 +3512,7 @@ function _antAssicuraStadio3D() {
   // Bandas violetas/cian en la grada, como los LED de la referencia.
   [-1,1].forEach(lato => { const led=new T.Mesh(new T.BoxGeometry(.12,.16,28.8),new T.MeshStandardMaterial({color:lato<0?0x7a4cff:0x25bfff,emissive:lato<0?0x5b2cff:0x159bff,emissiveIntensity:2})); led.position.set(lato*10.05,2.3,0); scena.add(led); });
   const stelleGeo=new T.BufferGeometry(), stelle=[]; for(let i=0;i<180;i++) stelle.push((Math.random()-.5)*70,6+Math.random()*26,(Math.random()-.5)*70); stelleGeo.setAttribute('position',new T.Float32BufferAttribute(stelle,3)); scena.add(new T.Points(stelleGeo,new T.PointsMaterial({color:0xb8c5ff,size:.09})));
-  function ridimensiona(){const w=contenitore.clientWidth,h=contenitore.clientHeight;if(!w||!h)return;camera.aspect=w/h; const mobile=w<420; camera.position.set(mobile?18:21,mobile?18:22,mobile?27:30); camera.lookAt(0,0,1.5);camera.updateProjectionMatrix();renderer.setSize(w,h,false);renderer.render(scena,camera);}
+  function ridimensiona(){const w=contenitore.clientWidth,h=contenitore.clientHeight;if(!w||!h)return;camera.aspect=w/h; const mobile=w<420; camera.position.set(0,mobile?17:19,mobile?31:35); camera.lookAt(0,0,-2.2);camera.updateProjectionMatrix();renderer.setSize(w,h,false);renderer.render(scena,camera);}
   const osservatore=new ResizeObserver(ridimensiona); osservatore.observe(contenitore); window.addEventListener('resize',ridimensiona); _antStadio3D={ridimensiona,osservatore}; requestAnimationFrame(ridimensiona);
 }
 
