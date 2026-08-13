@@ -2235,47 +2235,136 @@ body.layout-partecipante .puja-panel-slot .rilancio-box.hidden,
   display:none!important;
 }
 
-/* ══════ Vista 3D: cartas de pie sobre el campo inclinado ══════
-   Misma geometría del mockup aprobado (docs/redesign-asta-3d): campo inclinado
-   y cartas contrarrotadas + translateZ para que floten sobre el césped. */
+/* ══════ Vista 3D: carte in piedi sul campo inclinato (mockup docs/redesign-asta-3d) ══════
+   Blocco definitivo: annulla i transform 2D sparsi sopra (perspective() per-carta, rotateY
+   alternati, filter:drop-shadow che appiattisce preserve-3d) e ripristina la geometria condivisa:
+   prospettiva sullo stage, campo rotateX, carte contrarotate + translateZ sullo stesso piano 3D. */
 .ant-pitch-stage{
-  perspective:1200px;perspective-origin:50% 40%;
-  overflow:visible!important;
+  perspective:1200px;perspective-origin:50% 38%;
+  overflow:visible!important;transform-style:preserve-3d;
 }
 .ant-pitch.ant-pitch3d{
-  transform:rotateX(48deg);transform-style:preserve-3d;
+  transform:rotateX(48deg)!important;
+  transform-style:preserve-3d!important;
   transform-origin:center center;
+  overflow:visible!important;
 }
-.ant-slot3d{transform:translate(-50%,-50%);transform-style:preserve-3d}
-.ant-slot3d-shadow{display:block!important}
-.ant-slot3d-empty{transform:rotateX(-48deg) translateZ(34px)!important;transform-style:preserve-3d}
+.ant-slot3d{
+  transform:translate(-50%,-50%)!important;
+  transform-style:preserve-3d!important;
+  filter:none!important;
+}
+.ant-slot3d-shadow{
+  display:block!important;
+  position:absolute;left:50%;top:100%;
+  transform:translate(-50%,-72%)!important;
+  width:14cqw;height:5cqw;border-radius:50%;
+  background:radial-gradient(ellipse at center,rgba(0,0,0,.52) 0%,rgba(0,0,0,.18) 55%,transparent 78%);
+  z-index:0;pointer-events:none;
+}
+/* Glow di contatto sul prato, sotto l'ombra */
+.ant-slot3d::before{
+  content:'';position:absolute;left:50%;top:100%;
+  transform:translate(-50%,-58%);
+  width:11cqw;height:3.2cqw;border-radius:50%;
+  background:radial-gradient(ellipse at center,rgba(56,255,196,.22),transparent 72%);
+  z-index:0;pointer-events:none;
+}
+.ant-slot3d-empty{
+  transform:rotateX(-48deg) translateZ(34px)!important;
+  transform-style:preserve-3d!important;
+}
 .ant-slot3d .ant-card{
   transform:rotateX(-48deg) translateZ(34px)!important;
-  transform-style:preserve-3d;
+  transform-style:preserve-3d!important;
+  backface-visibility:hidden;
   box-shadow:
-    0 12px 20px rgba(0,0,0,.65),
-    0 0 14px color-mix(in srgb,var(--card-accent,#8a6cff) 52%,transparent),
-    inset 0 1px 0 rgba(255,255,255,.26),
-    inset 0 -12px 16px rgba(0,0,0,.34)!important;
+    0 14px 22px rgba(0,0,0,.62),
+    0 0 12px color-mix(in srgb,var(--card-accent,#8a6cff) 48%,transparent),
+    inset 0 1px 0 rgba(255,255,255,.24),
+    inset 0 -11px 14px rgba(0,0,0,.32)!important;
 }
-.ant-slot3d:nth-child(odd) .ant-card{transform:rotateX(-48deg) rotateY(-4deg) translateZ(34px)!important}
-.ant-slot3d:nth-child(even) .ant-card{transform:rotateX(-48deg) rotateY(4deg) translateZ(34px)!important}
-.ant-slot3d:hover .ant-card{transform:rotateX(-48deg) translateZ(56px) scale(1.1)!important}
+.ant-slot3d:hover .ant-card{
+  transform:rotateX(-48deg) translateZ(56px) scale(1.1)!important;
+}
+/* Spessore sottile del bordo destro (profondità percepita) */
+.ant-card.on-pitch::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;
+  transform:translateZ(-5px);
+  background:linear-gradient(90deg,rgba(0,0,0,.38),rgba(0,0,0,.12));
+  pointer-events:none;z-index:0;
+}
 .ant-card.on-pitch::after{
-  content:'';position:absolute;top:0;bottom:0;left:0;width:6px;z-index:4;pointer-events:none;
-  background:linear-gradient(90deg,rgba(0,0,0,.55),transparent);
+  content:'';position:absolute;top:0;bottom:0;left:0;width:5px;z-index:4;pointer-events:none;
+  transform:translateZ(2px);
+  background:linear-gradient(90deg,rgba(0,0,0,.5),transparent);
   border-radius:10px 0 0 10px;
 }
+@media (max-width:760px){
+  .ant-pitch-stage{perspective:920px;perspective-origin:50% 36%}
+  .ant-pitch.ant-pitch3d{transform:rotateX(44deg)!important}
+  .ant-slot3d .ant-card{transform:rotateX(-44deg) translateZ(26px)!important}
+  .ant-slot3d-empty{transform:rotateX(-44deg) translateZ(26px)!important}
+  .ant-slot3d:hover .ant-card{transform:rotateX(-44deg) translateZ(44px) scale(1.08)!important}
+  .ant-slot3d-shadow{width:15cqw;height:4.5cqw}
+}
 
-/* Avatar puja: dimensioni fisse, mai allungato dal contenuto strategia/manuale */
+/* Avatar asta: contain senza crop, massimo riempimento del box foto */
 body.layout-admin .asta-row-puja .cc-avatar,
 .puja-panel-slot .cc-avatar{
   bottom:auto!important;flex-shrink:0!important;
+  display:flex!important;align-items:flex-start!important;justify-content:center!important;
+  padding:0!important;
+}
+body.layout-admin .asta-row-puja .cc-avatar{
+  width:92px!important;height:120px!important;
+}
+.puja-panel-slot .cc-avatar{
+  width:70px!important;height:94px!important;
 }
 body.layout-admin .asta-row-puja .cc-avatar-img,
-.puja-panel-slot .cc-avatar-img{
-  object-fit:contain!important;object-position:center top!important;
-  width:100%!important;height:100%!important;
+.puja-panel-slot .cc-avatar-img,
+#chiamata-card .cc-avatar-img{
+  object-fit:contain!important;
+  object-position:center top!important;
+  width:auto!important;
+  height:100%!important;
+  max-width:112%!important;
+  max-height:112%!important;
+  margin:0 auto!important;
+  display:block!important;
+  flex-shrink:0!important;
+}
+@media (max-width:640px){
+  .puja-panel-slot .cc-avatar,
+  body.layout-admin .asta-row-puja .cc-avatar{
+    width:68px!important;height:88px!important;
+  }
+}
+
+/* Svincolati mobile: il nome resta sempre leggibile anche con badge Strategia attivo */
+@media (max-width:640px){
+  .liberi-list li{
+    flex-wrap:wrap;align-items:center;row-gap:3px;
+  }
+  .liberi-list li > .badge-ruolo{flex:0 0 auto;order:0}
+  .liberi-list .l-nome{
+    flex:1 1 calc(100% - 38px)!important;
+    min-width:100px!important;max-width:100%!important;
+    order:1;font-size:.84rem;font-weight:700;
+    white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+    color:var(--text-primary)!important;
+  }
+  .liberi-list .l-strategia-badge{
+    flex:1 1 100%!important;order:99;max-width:100%!important;
+    margin-top:1px;padding-left:2px;
+    white-space:normal!important;overflow-wrap:anywhere!important;line-height:1.25!important;
+  }
+  .liberi-list .l-tipo-badge,
+  .liberi-list .l-orig,
+  .liberi-list .l-valore-wrap,
+  .liberi-list .l-scartato-tag{order:5;flex-shrink:1}
+  .liberi-list .l-costo{order:6;margin-left:auto;flex-shrink:0}
 }
 
 
