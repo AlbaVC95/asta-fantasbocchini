@@ -2117,8 +2117,8 @@ body.layout-partecipante .puja-panel-slot .cc-strategia-info{
   background:
     repeating-linear-gradient(0deg,rgba(255,255,255,.028) 0 1px,transparent 1px 12.5%),
     repeating-linear-gradient(90deg,#0b4b2c 0 10%,#0d5a35 10% 20%)!important;
-  border:2px solid rgba(172,151,255,.85);border-radius:9px;overflow:visible!important;
-  box-shadow:0 0 0 2px rgba(92,75,224,.24),0 0 22px rgba(112,84,255,.34),inset 0 0 38px rgba(0,0,0,.28)!important;
+  border:2px solid rgba(126,230,255,.92);border-radius:9px;overflow:visible!important;
+  box-shadow:0 0 0 2px rgba(100,79,255,.34),0 0 14px rgba(80,222,255,.7),0 0 32px rgba(112,84,255,.42),inset 0 0 38px rgba(0,0,0,.28)!important;
   transition:width .18s ease;
 }
 /* Líneas blancas del campo, con círculo y áreas. */
@@ -2131,11 +2131,12 @@ body.layout-partecipante .puja-panel-slot .cc-strategia-info{
     linear-gradient(rgba(244,255,251,.9),rgba(244,255,251,.9)) 50% 100% / 58% 1px no-repeat,
     linear-gradient(rgba(244,255,251,.9),rgba(244,255,251,.9)) 21% 100% / 1px 17% no-repeat,
     linear-gradient(rgba(244,255,251,.9),rgba(244,255,251,.9)) 79% 100% / 1px 17% no-repeat;
-  opacity:.88;box-shadow:none!important;
+  opacity:.94;filter:drop-shadow(0 0 2px rgba(192,255,253,.85));box-shadow:none!important;
 }
 .ant-pitch.ant-pitch3d::after{display:block!important;content:'';position:absolute;z-index:0;left:50%;top:50%;width:22%;height:18%;
-  transform:translate(-50%,-50%)!important;border:1.5px solid rgba(244,255,251,.9);border-radius:50%;box-shadow:none!important;
+  transform:translate(-50%,-50%)!important;border:1.5px solid rgba(184,255,252,.95);border-radius:50%;box-shadow:0 0 7px rgba(86,238,255,.62),inset 0 0 6px rgba(86,238,255,.25)!important;
 }
+.ant-pitch.ant-pitch3d::selection{background:transparent}
 .ant-slot3d{z-index:2;width:11cqw;height:15cqw;min-width:32px;min-height:44px;filter:drop-shadow(0 4px 5px rgba(0,0,0,.6))}
 .ant-card.size-pitch,.ant-slot3d-empty{width:11cqw!important;height:15cqw!important;min-width:32px;min-height:44px}
 .ant-slot3d-empty{background:rgba(4,18,13,.48)!important;border-color:rgba(226,244,235,.58)!important;box-shadow:0 0 10px rgba(104,91,255,.22)!important}
