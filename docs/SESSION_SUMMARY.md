@@ -207,6 +207,42 @@ del 3-5-2 con "Fabbian/Skriniar/Immobile/Berardi/Puczka" tutti su una riga senza
 Carta XL isolata con "Kvaratskhelia": una riga, font auto-ridotto a 9px, entra esattamente nel
 budget di 96px.
 
+### Round 5 — preselezione squadra utente, Anteprima come tab normale su mobile, animazione solo per chi vince
+
+Tre richieste distinte dell'utente, tutte in `frontend/`, nessuna tocca `backend/`:
+
+1. **Anteprima preseleziona la squadra dell'utente**: `populateAnteprimaSquadre()` ora sceglie
+   `S.miaSquadra` come default (invece della prima squadra della lista) quando non c'è già una
+   scelta precedente da ricordare — se l'utente sta guardando l'Anteprima di un'altra squadra,
+   quella scelta resta rispettata ai render successivi, non viene rimessa sopra ad ogni update.
+2. **Su mobile, Anteprima si comporta come una tab normale** (richiesta esplicita: "no
+   toques la vista ordenador", solo mobile): prima era un drawer che su schermi stretti si
+   espandeva IN FONDO a tutta la pagina, sotto Storico/Rose/ecc. Ora (solo sotto i 760px,
+   stesso breakpoint già usato altrove) `#tab-anteprima` viene spostato DAVVERO dentro
+   `.tabs-panel` da `_antSyncDrawerLayout()` (`app.js`) e diventa esclusiva con le altre tab
+   (classe `.ant-drawer-as-tab`, nuova, in `style.css`) — stesso flusso/scroll delle altre
+   `.tab-content`, niente più header/bottone chiudi del drawer. Su desktop tutto invariato
+   (`_antToggleDrawer()`, drawer laterale indipendente). La sincronizzazione avviene
+   all'avvio, su `matchMedia('(max-width:760px)').addEventListener('change', ...)` **e**
+   viene ri-verificata ad ogni click su una tab (difensivo: garantisce comportamento corretto
+   anche se l'evento di resize non scattasse in tempo).
+3. **Animazione carta solo per chi vince la puja**: prima `_playAssegnazioneCardFx()` partiva
+   per OGNI client che riceveva `giocatore-assegnato` (evento broadcast a tutti, invariato).
+   Ora parte solo se `squadra === S.miaSquadra` (l'admin ha sempre una propria squadra
+   all'ingresso in asta, stessa regola per tutti — chiarito con l'utente). Gli altri
+   partecipanti continuano a vedere il toast già esistente con nome giocatore/squadra
+   vincitrice/prezzo (invariato, copriva già questo caso), solo senza l'effetto carta volante.
+
+**Verificato in locale**: preselezione confermata (`S.miaSquadra='Alba'` → select su "Alba"
+invece della prima squadra); comportamento mobile verificato con click reali — tab Anteprima
+si apre/chiude in modo esclusivo con le altre, contenuto (squadra preselezionata + campo 3D)
+visibile subito sotto la barra tab, non più in fondo alla pagina; verificato anche il
+"self-correcting sync" (resize senza aspettare l'evento, poi click su una tab: si corregge da
+solo). Il gate `squadra===S.miaSquadra` sull'animazione è una modifica di una riga,
+logicamente diretta, non replicabile in questo ambiente senza un'asta live reale con due
+client connessi (richiederebbe un round-trip socket reale) — verificata leggendo il codice, non
+via browser.
+
 ## Redesign 3D Anteprima — MERGIATO su `main`, IN PRODUZIONE (non ancora confermato dal vivo)
 
 Richiesta dell'utente (7 requisiti precisi): animazione di assegnazione carta (Puja → centro

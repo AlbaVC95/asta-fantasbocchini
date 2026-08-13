@@ -240,6 +240,30 @@ effetto se applicati direttamente a un elemento assoluto (Chrome lo "blockifica"
 silenziosamente). Pattern: `.ant-slot3d-label`/`.ant-slot3d-name-txt` (campo),
 `.ant-card-name`/`.ant-card-name-txt` (carta XL/panchina).
 
+## Anteprima su mobile: sposta davvero il nodo DOM tra drawer (desktop) e tab (mobile), non solo CSS
+
+Su desktop Anteprima è un drawer laterale indipendente (`#tab-anteprima`, figlio di
+`.asta-live-layout`, sibling di `.asta-main-col`) che può restare aperto sopra un'altra tab
+attiva — comportamento voluto, non toccato. Su mobile l'utente ha chiesto esplicitamente che si
+comporti come una tab normale (esclusiva con le altre, non un pannello che si espande sotto
+tutto il resto della pagina). Invece di scrivere CSS parallelo che duplica il comportamento di
+`.tab-content`/`.tab-content.active` (rischio di andare fuori sincrono ad ogni modifica futura
+allo scroll/layout delle tab, vedi il fix strutturale in cima a questo file), si è scelto di
+**spostare fisicamente il nodo DOM** dentro `.tabs-panel` quando si è sotto i 760px
+(`_antSyncDrawerLayout()` in `app.js`), aggiungendo solo la classe `.ant-drawer-as-tab` che
+attiva regole di visibilità minime (`display:none`/`.active{display:flex}`) dentro il
+`@media(max-width:760px)` esistente. Nessun codice interno di Anteprima si accorge dello
+spostamento (tutto lavora per `getElementById`, incluso il posizionamento del picker che è
+relativo — `picker.parentElement` — quindi si muove insieme al resto).
+
+Sincronizzazione a due livelli, perché un solo listener di resize non è affidabile in ogni
+contesto (verificato: l'emulazione viewport di alcuni tool di automazione non sempre dispara un
+evento `resize` "vero"): `matchMedia('(max-width:760px)').addEventListener('change', ...)`
+all'avvio/al cambio soglia, **più** una ri-verifica difensiva a inizio del click handler di ogni
+tab (`_antSyncDrawerLayout()` chiamato ad ogni click, idempotente) — così anche se l'evento di
+resize non fosse scattato in tempo, il primo click su una tab corregge comunque lo stato prima
+di decidere cosa mostrare.
+
 ## Toggle animazione assegnazione carta: locale (localStorage), non sincronizzato lato server
 
 Per lo stesso motivo del toggle pitch-size (`antPitchSize`): l'animazione di assegnazione

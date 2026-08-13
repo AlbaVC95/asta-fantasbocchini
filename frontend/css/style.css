@@ -1473,6 +1473,22 @@ html.theme-light body.layout-admin .asta-row-puja{
   #tab-anteprima.ant-drawer{width:auto;max-height:0;opacity:0;transition:max-height .35s cubic-bezier(.22,.9,.3,1),opacity .25s ease;margin-top:0}
   #tab-anteprima.ant-drawer.drawer-open{max-height:2000px;opacity:1;margin-top:14px;overflow-y:visible}
   .ant-drawer-body{width:auto}
+
+  /* Richiesta esplicita dell'utente: su mobile Anteprima deve comportarsi come una tab
+     normale del pannello (esclusiva con le altre, mai un pannello che si espande sotto tutto
+     il resto della pagina) — non piu' un drawer. L'elemento viene spostato DAVVERO dentro
+     .tabs-panel da _antSyncDrawerLayout() (app.js), qui bastano le regole di visibilita':
+     stessa logica display:none/.active di .tab-content, la vista ordinatore (.drawer-open,
+     sopra) resta invariata perche' si applica solo quando l'elemento NON ha questa classe. */
+  #tab-anteprima.ant-drawer.ant-drawer-as-tab{
+    width:auto;max-width:none;max-height:none;opacity:1;margin-top:0;transition:none;
+    display:none;overflow:hidden;box-shadow:none;border:none;background:none;
+  }
+  #tab-anteprima.ant-drawer.ant-drawer-as-tab.active{
+    display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;
+  }
+  #tab-anteprima.ant-drawer.ant-drawer-as-tab .ant-drawer-hdr{display:none}
+  #tab-anteprima.ant-drawer.ant-drawer-as-tab .ant-drawer-body{width:auto;padding:14px}
 }
 
 /* Sotto-tab interne Vista campo 3D / Vista lista — meccanismo indipendente dai .tab-btn principali */

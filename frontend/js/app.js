@@ -1808,10 +1808,20 @@ function setupFilters() {
 function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      // Anteprima non e' piu' una tab del flusso normale ma un drawer laterale che puo'
-      // restare aperto sopra un'altra tab attiva (es. Rose) — non condivide .active con
-      // le altre, altrimenti aprirla nasconderebbe il contenuto della tab di sfondo.
-      if (btn.dataset.tab === 'tab-anteprima') { _antToggleDrawer(); return; }
+      // Ri-verificato ad ogni click invece di fidarsi solo del listener di resize/matchMedia:
+      // se l'utente ha ridimensionato/ruotato il dispositivo senza che quell'evento sia ancora
+      // scattato, questo garantisce comunque che #tab-anteprima sia nel posto giusto (drawer
+      // desktop o dentro .tabs-panel come tab mobile) PRIMA di decidere come reagire al click.
+      _antSyncDrawerLayout();
+      const isAnteprimaBtn = btn.dataset.tab === 'tab-anteprima';
+      // Su desktop Anteprima resta un drawer laterale indipendente che puo' restare aperto
+      // sopra un'altra tab attiva (es. Rose) — non condivide .active con le altre, altrimenti
+      // aprirla nasconderebbe il contenuto della tab di sfondo. Su mobile invece l'utente ha
+      // chiesto che si comporti come una tab normale (esclusiva con le altre, non un pannello
+      // che si apre sotto tutto il resto) — vedi _antSyncDrawerLayout().
+      if (isAnteprimaBtn && !_antIsMobile()) { _antToggleDrawer(); return; }
+      const drawer = document.getElementById('tab-anteprima');
+      if (_antIsMobile() && drawer) drawer.classList.remove('active', 'drawer-open');
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       btn.classList.add('active');
@@ -1993,8 +2003,13 @@ socket.on('timer-tick', ({ secondi, fase }) => updateTimer(secondi, fase));
 socket.on('giocatore-assegnato', ({ giocatore, prezzo, squadra, tipo, guadagno, plusvalenzaA }) => {
   // Deve leggere la posizione di .cc-avatar PRIMA che il resto dell'handler la muti (sotto,
   // card.className/innerHTML) — per questo e' la primissima riga. Puro effetto client-side,
-  // nessun evento socket nuovo: 'giocatore-assegnato' arriva gia' a tutti i partecipanti.
-  _playAssegnazioneCardFx(giocatore);
+  // nessun evento socket nuovo: 'giocatore-assegnato' arriva gia' a tutti i partecipanti, ma
+  // l'animazione della carta volante deve restare riservata a chi si e' aggiudicato il
+  // giocatore (richiesta esplicita dell'utente: ogni squadra — admin compreso, che ha sempre
+  // una propria squadra all'ingresso in asta — vede l'animazione solo quando vince LEI). Gli
+  // altri ricevono comunque il toast con nome/squadra/prezzo poco sotto (gia' esistente,
+  // invariato), solo senza l'effetto carta.
+  if (squadra === S.miaSquadra) _playAssegnazioneCardFx(giocatore);
   S.attesaConferma = false;
   nascondiConfermaBox();
   document.getElementById('rilancio-box').classList.add('hidden');
@@ -2968,9 +2983,39 @@ function _antSetFxAbilitata(attiva) {
   localStorage.setItem('antFxAbilitata', attiva ? 'true' : 'false');
 }
 
+// Stessa soglia del breakpoint CSS "mobile" gia' usato altrove per Anteprima
+// (.asta-live-layout{display:block}, vedi style.css).
+function _antIsMobile() {
+  return window.matchMedia('(max-width:760px)').matches;
+}
+
+// Su desktop #tab-anteprima resta un drawer laterale (figlio di .asta-live-layout, si affianca
+// a .asta-main-col). Su mobile, richiesta esplicita dell'utente: deve comportarsi come una tab
+// normale del pannello (esclusiva con le altre, non un drawer che si espande sotto tutto il
+// resto della pagina) — per ottenerlo lo si sposta DAVVERO dentro .tabs-panel, cosi' eredita lo
+// stesso flusso/scroll delle altre .tab-content invece di richiedere CSS duplicato apposta.
+// La classe .ant-drawer-as-tab (solo mobile, vedi style.css) sostituisce le regole del drawer
+// desktop con quelle di una tab normale SOLO quando l'elemento vive li'. Richiamata all'avvio e
+// ad ogni resize/cambio orientamento che attraversa la soglia dei 760px.
+function _antSyncDrawerLayout() {
+  const drawer = document.getElementById('tab-anteprima');
+  const tabsPanel = document.querySelector('.tabs-panel');
+  const liveLayout = document.getElementById('asta-live-layout');
+  if (!drawer || !tabsPanel || !liveLayout) return;
+  if (_antIsMobile()) {
+    if (drawer.parentElement !== tabsPanel) tabsPanel.appendChild(drawer);
+    drawer.classList.add('ant-drawer-as-tab');
+    drawer.classList.remove('drawer-open');
+  } else {
+    if (drawer.parentElement !== liveLayout) liveLayout.appendChild(drawer);
+    drawer.classList.remove('ant-drawer-as-tab', 'active');
+  }
+}
+
 // Apre/chiude il drawer Anteprima (classe .drawer-open su #tab-anteprima.ant-drawer, vedi
 // style.css) — sostituisce il vecchio meccanismo .active di setupTabs() SOLO per questa tab,
-// cosi' puo' restare aperto sopra Rose/Storico/altre tab senza nasconderle.
+// cosi' puo' restare aperto sopra Rose/Storico/altre tab senza nasconderle. Solo desktop, vedi
+// _antSyncDrawerLayout() sopra per il comportamento mobile.
 function _antToggleDrawer() {
   const drawer = document.getElementById('tab-anteprima');
   if (!drawer) return;
@@ -3000,6 +3045,13 @@ function setupAnteprima() {
   const btnDrawerClose = document.getElementById('ant-drawer-close');
   if (btnDrawerClose) btnDrawerClose.addEventListener('click', _antToggleDrawer);
   _antSetupSubtabs();
+  _antSyncDrawerLayout();
+  // matchMedia 'change' invece di window.resize: e' l'evento pensato apposta per reagire
+  // all'attraversamento di una soglia CSS (qui i 760px), scatta in modo affidabile anche su
+  // rotazione dispositivo — un resize listener generico puo' non scattare in tempo utile.
+  const _antMql = window.matchMedia('(max-width:760px)');
+  if (_antMql.addEventListener) _antMql.addEventListener('change', _antSyncDrawerLayout);
+  else if (_antMql.addListener) _antMql.addListener(_antSyncDrawerLayout); // fallback Safari vecchi
   if (!selSquadra || !selModulo) return;
 
   _antApplyPitchSize(_antGetPitchSize());
@@ -3052,6 +3104,12 @@ function populateAnteprimaSquadre(squadre) {
   selSquadra.innerHTML = squadre.map(sq => '<option value="' + _escAttr(sq.nome) + '">' + _escHtml(sq.nome) + '</option>').join('');
   if (prevVal && squadre.some(sq => sq.nome === prevVal)) {
     selSquadra.value = prevVal;
+  } else if (S.miaSquadra && squadre.some(sq => sq.nome === S.miaSquadra)) {
+    // Preseleziona la squadra dell'utente stesso (richiesta esplicita: aprendo Anteprima si
+    // vede subito la propria formazione) invece della prima della lista — solo quando non
+    // c'e' gia' una scelta precedente da ricordare, cosi' se l'utente sta consultando
+    // l'Anteprima di un'altra squadra questa non gli viene rimessa sotto ad ogni aggiornamento.
+    selSquadra.value = S.miaSquadra;
   }
   if (selSquadra.value) {
     const state = _antGetSquadraState(selSquadra.value);
