@@ -742,8 +742,8 @@ body.layout-admin .asta-row-puja .timer-label-text{font-size:.66rem!important}
 /* ══════ Fallback larghezze strette (admin) — evita che il timer scompaia o la riga vada in overflow ══════ */
 body.layout-admin .asta-row-puja .timer-ring-container{flex:1 1 60px!important;min-width:60px}
 /* ══ Avatar giocatore ampliato in chiamata-card (admin + partecipante) ══ */
-body.layout-admin .asta-row-puja .chiamata-card{position:relative!important;padding:8px 14px 8px 134px!important}
-body.layout-admin .asta-row-puja .cc-avatar{width:118px!important;height:auto!important;position:absolute!important;left:8px!important;top:8px!important;bottom:8px!important;border-radius:14px!important}
+body.layout-admin .asta-row-puja .chiamata-card{position:relative!important;padding:8px 14px 8px 112px!important;overflow:visible!important}
+body.layout-admin .asta-row-puja .cc-avatar{width:96px!important;height:118px!important;position:absolute!important;left:8px!important;top:8px!important;bottom:auto!important;border-radius:14px!important;flex-shrink:0!important}
 body.layout-admin .asta-row-puja .cc-avatar-icon{font-size:2.2rem!important}
 body.layout-admin .asta-row-puja .cc-avatar-initial{font-size:2rem!important}
 body.layout-admin .asta-row-puja .cc-avatar-svg{width:90%!important;height:90%!important}
@@ -2021,7 +2021,7 @@ body.layout-partecipante .puja-panel-slot .cc-strategia-info{
 .asta-live-layout:has(#tab-anteprima.drawer-open) .btn-rilancia{max-width:205px;margin-inline:auto}
 
 /* La foto es una zona fija y protagonista; no hereda nunca el alto del comentario. */
-.cc-avatar-img{object-fit:cover!important;object-position:center top!important}
+.cc-avatar-img{object-fit:contain!important;object-position:center top!important}
 .cc-commento-preview{
   width:100%;margin-top:4px;padding:5px 7px;border:1px solid rgba(167,139,250,.22);
   border-radius:7px;background:rgba(9,7,24,.25);color:var(--text-secondary);font:inherit;
@@ -2233,6 +2233,49 @@ body.layout-partecipante .puja-panel-slot .rilancio-box.hidden,
 .puja-panel-slot .rilancio-box.hidden,
 #rilancio-box.hidden {
   display:none!important;
+}
+
+/* ══════ Vista 3D: cartas de pie sobre el campo inclinado ══════
+   Misma geometría del mockup aprobado (docs/redesign-asta-3d): campo inclinado
+   y cartas contrarrotadas + translateZ para que floten sobre el césped. */
+.ant-pitch-stage{
+  perspective:1200px;perspective-origin:50% 40%;
+  overflow:visible!important;
+}
+.ant-pitch.ant-pitch3d{
+  transform:rotateX(48deg);transform-style:preserve-3d;
+  transform-origin:center center;
+}
+.ant-slot3d{transform:translate(-50%,-50%);transform-style:preserve-3d}
+.ant-slot3d-shadow{display:block!important}
+.ant-slot3d-empty{transform:rotateX(-48deg) translateZ(34px)!important;transform-style:preserve-3d}
+.ant-slot3d .ant-card{
+  transform:rotateX(-48deg) translateZ(34px)!important;
+  transform-style:preserve-3d;
+  box-shadow:
+    0 12px 20px rgba(0,0,0,.65),
+    0 0 14px color-mix(in srgb,var(--card-accent,#8a6cff) 52%,transparent),
+    inset 0 1px 0 rgba(255,255,255,.26),
+    inset 0 -12px 16px rgba(0,0,0,.34)!important;
+}
+.ant-slot3d:nth-child(odd) .ant-card{transform:rotateX(-48deg) rotateY(-4deg) translateZ(34px)!important}
+.ant-slot3d:nth-child(even) .ant-card{transform:rotateX(-48deg) rotateY(4deg) translateZ(34px)!important}
+.ant-slot3d:hover .ant-card{transform:rotateX(-48deg) translateZ(56px) scale(1.1)!important}
+.ant-card.on-pitch::after{
+  content:'';position:absolute;top:0;bottom:0;left:0;width:6px;z-index:4;pointer-events:none;
+  background:linear-gradient(90deg,rgba(0,0,0,.55),transparent);
+  border-radius:10px 0 0 10px;
+}
+
+/* Avatar puja: dimensioni fisse, mai allungato dal contenuto strategia/manuale */
+body.layout-admin .asta-row-puja .cc-avatar,
+.puja-panel-slot .cc-avatar{
+  bottom:auto!important;flex-shrink:0!important;
+}
+body.layout-admin .asta-row-puja .cc-avatar-img,
+.puja-panel-slot .cc-avatar-img{
+  object-fit:contain!important;object-position:center top!important;
+  width:100%!important;height:100%!important;
 }
 
 
