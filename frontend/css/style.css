@@ -242,7 +242,7 @@ html.theme-light .chiamata-card{
 .tipo-RIC{background:rgba(139,92,246,.15);color:var(--primary-bright);border:1px solid rgba(139,92,246,.3)}
 .tipo-PLUS{background:rgba(255,184,0,.15);color:var(--gold);border:1px solid rgba(255,184,0,.3)}
 .tipo-U21{background:rgba(0,224,160,.15);color:var(--success);border:1px solid rgba(0,224,160,.3)}
-.timer-ring-container{position:relative;width:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(170deg,var(--bg-main) 0%,var(--bg-card) 100%);border:1px solid rgba(139,92,246,.15);border-top:none;border-radius:0 0 20px 20px;padding:14px 0 18px;box-shadow:0 20px 40px rgba(0,0,0,.3);overflow:hidden}
+.timer-ring-container{position:relative;width:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(170deg,var(--bg-main) 0%,var(--bg-card) 100%);border:1px solid rgba(139,92,246,.15);border-top:none;border-radius:0 0 20px 20px;padding:14px 0 18px;box-shadow:0 20px 40px rgba(0,0,0,.3);overflow:visible}
 .timer-ring{width:90px;height:90px;filter:drop-shadow(0 0 10px rgba(139,92,246,.2));position:relative;z-index:1}
 .timer-progress{transition:stroke-dashoffset .9s linear}
 /* Pallone che percorre l'anello seguendo il conto alla rovescia, con una leggera rotazione mentre si muove */
@@ -2507,9 +2507,13 @@ body.layout-admin .asta-row-puja .cc-avatar{width:108px!important;height:140px!i
   white-space:nowrap!important;
   overflow:visible!important;
 }
+/* max-width NON va qui: e' impostato via JS (_antFitTestoLabel, in app.js) in base
+   allo spazio REALE misurato tra le carte vicine — un max-width!important in CSS lo
+   sovrascriverebbe sempre (le regole inline perdono contro !important in CSS) e la
+   riduzione automatica del font non avrebbe piu' alcun effetto visibile. */
 .ant-slot3d-label .ant-slot3d-name-txt{
-  display:block!important;
-  width:auto!important;max-width:none!important;margin-left:0!important;
+  display:inline-block!important;
+  width:auto!important;margin-left:0!important;
   white-space:nowrap!important;
   overflow:hidden!important;text-overflow:ellipsis!important;
   -webkit-line-clamp:1!important;line-clamp:1!important;
@@ -2530,8 +2534,37 @@ body.layout-admin .asta-row-puja .cc-avatar{width:108px!important;height:140px!i
    quindi niente sovrapposizioni — verificato che il gap verticale minimo tra
    righe (~20% dell'altezza campo) resta piu' largo dell'altezza della carta
    anche con questa dimensione maggiore. ── */
-.ant-slot3d{width:14.5cqw;height:20cqw;min-width:42px;min-height:58px}
-.ant-card.size-pitch,.ant-slot3d-empty{width:14.5cqw!important;height:20cqw!important;min-width:42px;min-height:58px}
+.ant-slot3d{width:14.5cqw;height:20cqw}
+.ant-card.size-pitch,.ant-slot3d-empty{width:14.5cqw!important;height:20cqw!important}
 @media (max-width:760px){
-  .ant-slot3d,.ant-card.size-pitch,.ant-slot3d-empty{width:15cqw!important;height:20.7cqw!important;min-width:38px;min-height:52px}
+  .ant-slot3d,.ant-card.size-pitch,.ant-slot3d-empty{width:15cqw!important;height:20.7cqw!important}
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ══ FIX 2026-08-14 (2): Timer di puja "tagliato"/scomposto ══
+   Causa reale: #timer-wrap contiene 3 elementi in un flex-column (ring SVG,
+   pallina decorativa .timer-ball, numero+etichetta .timer-inner) ma NON
+   esisteva in nessun file CSS una sola regola per .timer-ball o .timer-inner:
+   di default restavano quindi impilati IN FILA sotto il cerchio invece che
+   centrati sopra di esso, e il contenitore aveva overflow:hidden (rimosso
+   sopra) che tagliava la parte che non ci stava piu'. Risultato visivo:
+   "anello a metà" scollegato dal numero. Soluzione robusta (una sola causa,
+   una sola correzione): pallina e numero diventano assoluti, centrati sul
+   cerchio, che resta l'unico elemento "in flusso" — il contenitore si
+   dimensiona quindi esattamente come il cerchio, senza bisogno di clip. ══
+   ══════════════════════════════════════════════════════════════════════════ */
+.timer-ring{display:block}
+.timer-ball{
+  position:absolute!important;top:0;left:50%;
+  transform:translate(-50%,-50%)!important;
+  width:20%;height:20%;z-index:3;pointer-events:none;
+}
+.timer-ball-svg{width:100%;height:100%;display:block}
+.timer-inner{
+  position:absolute!important;top:50%;left:50%;
+  transform:translate(-50%,-50%)!important;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;z-index:2;pointer-events:none;width:74%;
+}
+.timer-number{line-height:1}
+.timer-label-text{white-space:normal;word-break:break-word}
