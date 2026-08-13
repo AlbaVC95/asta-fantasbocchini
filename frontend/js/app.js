@@ -3236,6 +3236,8 @@ function _playAssegnazioneCardFx(giocatore) {
   }
   layer.appendChild(wrap);
   _antApplyCardPhoto(wrap.querySelector('.ant-card-photo'), giocatore.nome, giocatore.squadra);
+  const fxNameTxt = wrap.querySelector('.ant-card-name-txt');
+  if (fxNameTxt) _antFitTestoLabel(fxNameTxt, 96);
 
   const cx = window.innerWidth / 2, cy = window.innerHeight * 0.42;
   const srcCx = srcRect.left + srcRect.width / 2, srcCy = srcRect.top + srcRect.height / 2;
@@ -3316,6 +3318,49 @@ function _antRenderVuoto() {
   if (lista) lista.innerHTML = '';
 }
 
+// Riduce il font-size di un'etichetta finche' il suo contenuto (riga singola, mai a capo) non
+// entra nella larghezza disponibile — richiesta esplicita dell'utente: nome sempre su una riga
+// sola, mai tagliato, mai sovrapposto al vicino. Uno spazio fisso in CSS non basta perche' la
+// larghezza realmente disponibile varia da riga a riga e da modulo a modulo (vedi
+// _antFitEtichetteCampo sotto), quindi si misura sul DOM reale invece di stimarla.
+function _antFitTestoLabel(el, maxWidthPx) {
+  el.style.maxWidth = maxWidthPx + 'px';
+  let fontPx = 9;
+  el.style.fontSize = fontPx + 'px';
+  while (el.scrollWidth > maxWidthPx && fontPx > 5) {
+    fontPx -= 0.5;
+    el.style.fontSize = fontPx + 'px';
+  }
+}
+
+// Per ogni riga del campo, misura la distanza REALE (getBoundingClientRect, dopo il render —
+// tiene conto automaticamente della prospettiva 3D, che rende i gap in percentuale diversi in
+// pixel a seconda della profondita' della riga) tra gli slot vicini e restringe il nome di
+// ognuno finche' non entra in quello spazio, senza mai invadere quello del vicino. I ruoli sugli
+// slot vuoti (badge, non testo libero) non sono toccati: non hanno questo problema.
+function _antFitEtichetteCampo(pitch) {
+  const perRiga = {};
+  pitch.querySelectorAll('.ant-slot3d').forEach(el => {
+    const ri = el.dataset.slotkey.split('-')[0];
+    (perRiga[ri] = perRiga[ri] || []).push(el);
+  });
+  Object.values(perRiga).forEach(elsRiga => {
+    const conCentro = elsRiga.map(el => {
+      const r = el.getBoundingClientRect();
+      return { el, cx: r.left + r.width / 2 };
+    }).sort((a, b) => a.cx - b.cx);
+    conCentro.forEach((item, idx) => {
+      const nameTxt = item.el.querySelector('.ant-slot3d-name-txt');
+      if (!nameTxt) return;
+      let gapPx = Infinity;
+      if (idx > 0) gapPx = Math.min(gapPx, item.cx - conCentro[idx - 1].cx);
+      if (idx < conCentro.length - 1) gapPx = Math.min(gapPx, conCentro[idx + 1].cx - item.cx);
+      if (!isFinite(gapPx)) gapPx = 120;
+      _antFitTestoLabel(nameTxt, Math.max(24, gapPx - 6));
+    });
+  });
+}
+
 function renderAnteprimaPitch() {
   const pitch = document.getElementById('ant-pitch');
   const selSquadra = document.getElementById('ant-squadra-select');
@@ -3374,6 +3419,7 @@ function renderAnteprimaPitch() {
     const g = rosa.find(x => x.nome === el.dataset.nome);
     if (g) _antApplyCardPhoto(el.querySelector('.ant-card-photo'), g.nome, g.squadra);
   });
+  _antFitEtichetteCampo(pitch);
   _antRenderPanchina(nomeSquadra);
   _antRenderLista(nomeSquadra);
 }

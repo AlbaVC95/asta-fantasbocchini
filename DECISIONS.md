@@ -214,22 +214,31 @@ redesign precedente) sono stati mantenuti invariati, e la sensazione di volume r
 dall'utente ottenuta invece via luce/ombra CSS (`.ant-card.on-pitch`) senza toccare la geometria
 di proiezione.
 
-## Nomi giocatore in Anteprima: wrap multi-riga invece di troncamento, mai su un elemento `position:absolute`
+## Nomi giocatore in Anteprima: auto-fit a riga singola (font ridotto su misura), non wrap multi-riga
 
-Requisito esplicito dell'utente (dopo due round di fix insufficienti): i nomi giocatore non
-devono MAI essere tagliati, né in campo né sulla carta XL dell'animazione di assegnazione.
-Sostituito il troncamento a riga singola con ellissi con un wrap su più righe
-(`-webkit-line-clamp`), con `ANT_PITCH_SIZE_MIN` alzato (220→250) per garantire che nemmeno i
-cognomi più lunghi (~13 lettere) vengano mai tagliati al livello di zoom minimo consentito
-(soglia misurata: 230px).
+Requisito esplicito dell'utente, chiarito dopo un round intermedio: i nomi giocatore devono
+stare **su una riga sola** (mai andare a capo) E non devono mai essere tagliati né sovrapporsi
+al nome dello slot vicino. Un primo tentativo aveva usato il wrap su più righe
+(`-webkit-line-clamp`) per evitare i tagli, ma l'utente ha chiarito che il wrap multi-riga non
+va bene: serve una riga sola. Poiché nessun `max-width` fisso (px o cqw) può garantire "riga
+singola + mai tagliato + mai sovrapposto" per ogni riga di `ANT_LAYOUT` — righe con pochi
+giocatori hanno più margine di righe da 5, e la prospettiva 3D fa sì che lo stesso gap in
+percentuale corrisponda a pixel diversi a seconda della profondità della riga — la soluzione è
+un **auto-fit a runtime**: `_antFitEtichetteCampo()` misura con `getBoundingClientRect()` la
+distanza reale in pixel tra slot vicini sulla stessa riga dopo il render, e
+`_antFitTestoLabel()` riduce il `font-size` di ogni etichetta (a step di 0.5px, pavimento 5px)
+finché il nome (sempre `white-space:nowrap`) non entra in quello spazio. Stesso helper riusato
+per il nome sulla carta XL dell'animazione di assegnazione (nessun vicino: budget fisso
+generoso). `ANT_PITCH_SIZE_MIN` resta alzato a 250 (da un fix precedente) come ulteriore
+margine di sicurezza.
 
-**Gotcha da ricordare**: `display:-webkit-box` (necessario per `-webkit-line-clamp`) non ha
-alcun effetto se applicato direttamente a un elemento `position:absolute` — Chrome lo
-"blockifica" silenziosamente, il CSS sembra corretto ma il wrap multi-riga non scatta mai a
-runtime (si torna al troncamento su riga singola). Il testo che deve wrappare va sempre in uno
-`<span>` interno NON posizionato, dentro all'elemento assoluto usato solo per il
-posizionamento — pattern usato sia per `.ant-slot3d-label`/`.ant-slot3d-name-txt` (campo) sia
-per `.ant-card-name`/`.ant-card-name-txt` (carta XL/panchina).
+**Gotcha da ricordare** (rimasto valido anche col nuovo approccio, per la carta XL): il testo
+che deve essere misurato/ridimensionato via JS (`scrollWidth`, `-webkit-line-clamp` se mai
+servisse di nuovo) va sempre in uno `<span>` interno NON posizionato, dentro all'elemento
+`position:absolute` usato solo per il posizionamento — `display:-webkit-box` e simili non hanno
+effetto se applicati direttamente a un elemento assoluto (Chrome lo "blockifica"
+silenziosamente). Pattern: `.ant-slot3d-label`/`.ant-slot3d-name-txt` (campo),
+`.ant-card-name`/`.ant-card-name-txt` (carta XL/panchina).
 
 ## Toggle animazione assegnazione carta: locale (localStorage), non sincronizzato lato server
 

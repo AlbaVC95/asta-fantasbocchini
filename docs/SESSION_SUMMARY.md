@@ -176,6 +176,37 @@ righe, fascia nera compatta). **Non verificabile in questo ambiente**: la sensaz
 profondità/"non affondare" richiede un giudizio visivo umano, non solo una misura DOM — da
 confermare con l'utente.
 
+### Round 4 — requisito cambiato: nome SEMPRE su una riga sola, mai a capo (non più multi-riga)
+
+L'utente ha chiarito il requisito dopo il round 3: i nomi si sovrapponevano ancora tra loro
+E non devono andare a capo su più righe — devono stare **su una riga sola**, per intero, senza
+mai toccare il nome dello slot vicino. Un `max-width` fisso (in cqw o px) non può garantirlo
+per ogni riga di `ANT_LAYOUT`: righe con pochi giocatori hanno molto più margine di righe da 5,
+e la prospettiva 3D del campo fa sì che lo stesso gap in percentuale corrisponda a pixel
+diversi a seconda di quanto la riga è vicina alla "telecamera". Sostituito l'approccio
+"dimensione fissa che tronca/va a capo" con un **auto-fit a runtime**:
+
+- `_antFitEtichetteCampo(pitch)` (nuova, `app.js`): dopo il render, raggruppa gli slot per riga
+  e MISURA con `getBoundingClientRect()` la distanza reale in pixel tra gli slot vicini sulla
+  stessa riga (tiene conto automaticamente della prospettiva, a differenza di un calcolo sulle
+  coordinate percentuali).
+- `_antFitTestoLabel(el, maxWidthPx)` (nuova, `app.js`): riduce il `font-size` di un'etichetta
+  a step di 0.5px finché il testo (sempre `white-space:nowrap`, mai a capo) non entra nello
+  spazio disponibile, con un pavimento leggibile (5px). Stesso helper riusato per il nome sulla
+  carta XL dell'animazione (nessun vicino: budget fisso generoso, 96px).
+- CSS: `.ant-slot3d-name-txt`/`.ant-card-name-txt` tornati a riga singola
+  (`white-space:nowrap;text-overflow:ellipsis`, l'ellissi resta come rete di sicurezza teorica
+  ma non dovrebbe più scattare); rimossi i `max-width` statici in CSS, sostituiti dal calcolo
+  dinamico.
+
+**Verificato in locale**: con cognomi reali E uno deliberatamente estremo
+(`"Kvaratskhelia"`), su tutti gli 11 moduli e 3 livelli di zoom (250/300/460px) — **0 nomi
+tagliati** (`scrollWidth<=clientWidth`) e **0 sovrapposizioni tra etichette** in ogni singolo
+caso testato, confermato anche via screenshot (riga singola, leggibile, es. riga da 5 giocatori
+del 3-5-2 con "Fabbian/Skriniar/Immobile/Berardi/Puczka" tutti su una riga senza toccarsi).
+Carta XL isolata con "Kvaratskhelia": una riga, font auto-ridotto a 9px, entra esattamente nel
+budget di 96px.
+
 ## Redesign 3D Anteprima — MERGIATO su `main`, IN PRODUZIONE (non ancora confermato dal vivo)
 
 Richiesta dell'utente (7 requisiti precisi): animazione di assegnazione carta (Puja → centro

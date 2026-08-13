@@ -1570,28 +1570,22 @@ html.theme-light body.layout-admin .asta-row-puja{
    nome, senza translateZ, restava sullo stesso Z del campo e finiva coperto dalla carta
    (che invece "galleggia" sopra) — ora condivide il piano della carta, leggermente piu'
    in basso, e resta sempre visibile sotto di essa senza mai coprirne l'avatar. */
-/* max-width in cqw (non px fisso): calibrato sul gap piu' stretto tra due slot adiacenti
-   in ANT_LAYOUT (~16%, difesa a 3) — a 64px fisso le etichette di due slot vicini si
-   sovrapponevano visibilmente su schermi reali (segnalato dall'utente), specialmente nomi
-   lunghi accanto a un ruolo su slot vuoto. */
-.ant-slot3d-label{position:absolute;left:50%;bottom:-30px;transform:translateX(-50%) rotateX(-50deg) translateZ(30px);font-size:.46rem;font-weight:800;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 4px rgba(0,0,0,.9);max-width:15.5cqw;z-index:3;
-  display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:2px;text-align:center}
+/* Richiesta esplicita dell'utente: nome SEMPRE su una riga sola (mai andare a capo), MAI
+   tagliato, e MAI sovrapposto al nome dello slot adiacente. Uno spazio fisso (px o cqw) non
+   puo' garantirlo per ogni nome/riga: righe diverse di ANT_LAYOUT hanno spazio diverso tra
+   slot (una riga da 2 giocatori ha molto piu' margine di una da 5), e la prospettiva 3D del
+   campo fa si' che lo stesso gap in percentuale corrisponda a pixel diversi a seconda della
+   riga (piu' vicina alla telecamera = piu' pixel). Percio' niente max-width fisso qui: la
+   larghezza disponibile viene MISURATA sul DOM reale (getBoundingClientRect degli slot vicini
+   sulla stessa riga, dopo il render) e il font-size viene ridotto su misura finche' il nome
+   non ci sta in una riga sola — vedi _antFitEtichetteCampo() in app.js, richiamata alla fine
+   di renderAnteprimaPitch(). Qui restano solo gli stili base, non le dimensioni.*/
+.ant-slot3d-label{position:absolute;left:50%;bottom:-30px;transform:translateX(-50%) rotateX(-50deg) translateZ(30px);font-weight:800;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 4px rgba(0,0,0,.9);z-index:3;
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:2px;text-align:center;max-width:none}
 /* Ruolo su slot vuoto: badge multipli (es. "Dc/B", "T/A/Pc") invece di una riga di testo
    troncata — stesso pattern gia' usato in .ant-card-role, qui ridimensionato per lo slot. */
 .ant-slot3d-label .badge-ruolo{height:auto;min-width:0;padding:1px 4px;font-size:.5rem;border-radius:4px;line-height:1.3}
-/* Nome giocatore (slot pieno): a differenza dei badge ruolo (che possono andare a capo su
-   piu' righe corte), il nome e' una singola riga che deve troncare con ellissi invece di
-   allargarsi — con righe di 4-5 slot ravvicinati un nome lungo senza troncamento invade lo
-   spazio dello slot adiacente e i due nomi diventano illeggibili sovrapposti. */
-/* Richiesta esplicita dell'utente (due volte, su screenshot reali): i nomi non devono MAI
-   essere tagliati. Sostituito il troncamento a riga singola con ellissi (tagliava qualunque
-   nome reale piu' lungo di 5-6 lettere) con un wrap su massimo 3 righe (-webkit-line-clamp,
-   supportato da tutti i browser moderni) — lo spazio orizzontale per slot e' inevitabilmente
-   stretto su un campo tattico compatto, quindi si preferisce un nome leggibile su piu' righe
-   corte piuttosto che tagliato. L'ellissi resta solo come rete di sicurezza per nomi
-   eccezionalmente lunghi che non ci starebbero nemmeno su 3 righe. */
-.ant-slot3d-name-txt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;
-  overflow:hidden;white-space:normal;word-break:break-word;line-height:1.2;max-width:100%}
+.ant-slot3d-name-txt{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.56rem}
 /* Ombra di contatto SUL piano del campo (nessuna contro-rotazione, a differenza della carta):
    e' il segnale che vende la profondita' — la carta "galleggia" sopra la sua ombra invece di
    sembrare adagiata sul prato. Vedi commento in renderAnteprimaPitch() in app.js.
@@ -1639,17 +1633,16 @@ html.theme-light body.layout-admin .asta-row-puja{
 .ant-card.in-bench .ant-card-name-txt{display:block;font-size:.5rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Carta XL (animazione di assegnazione): il 36% di fascia nera pensato per le mini-carte
    della panchina, su una carta grande (152px) lasciava troppo spazio vuoto sopra al nome
-   (segnalato dall'utente due volte su screenshot reali) — fascia ridotta ulteriormente e
-   resa un vero "cartellino" (gradiente che si scurisce prima, non una lenta dissolvenza) con
-   nome grande e in grassetto che riempie lo spazio invece di restare una riga piccola in
-   fondo a un'area nera sproporzionata. Nome su max 2 righe (mai tagliato) invece di una
-   riga singola troncata, coerente con le etichette in campo. */
+   (segnalato dall'utente su screenshot reali) — fascia ridotta ulteriormente e resa un vero
+   "cartellino" (gradiente che si scurisce prima, non una lenta dissolvenza). Nome su riga
+   singola (richiesta esplicita dell'utente, mai andare a capo): il font-size di partenza e'
+   generoso, poi _antFitTestoLabel() in app.js lo restringe su misura solo se il nome non ci
+   sta nella larghezza della carta — quasi mai per nomi normali, dato lo spazio ampio qui. */
 .ant-card.in-bench.size-xl .ant-card-fade{height:16%;
   background:linear-gradient(to bottom,transparent,rgba(8,4,18,.6) 40%,rgba(8,4,18,.96))}
-.ant-card.in-bench.size-xl .ant-card-name{bottom:5px;padding:0 8px}
+.ant-card.in-bench.size-xl .ant-card-name{bottom:5px;padding:0 6px}
 .ant-card.in-bench.size-xl .ant-card-name-txt{font-size:.92rem;font-weight:800;
-  white-space:normal;line-height:1.15;display:-webkit-box;-webkit-box-orient:vertical;
-  -webkit-line-clamp:2;overflow:hidden;word-break:break-word}
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* Sul campo: il nome vive FUORI dalla carta (vedi .ant-slot3d-label sopra), richiesta
    esplicita dell'utente per non coprire l'avatar — qui solo un accenno di luce/volume.
