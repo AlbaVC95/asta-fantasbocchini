@@ -2631,7 +2631,7 @@ function _getChiamataStrategiaInfoHTML(g) {
     ? '<p class="cc-strategia-info">' + '★'.repeat(cfg.titolarita) + '☆'.repeat(5 - cfg.titolarita) + ' Titolarità</p>'
     : '';
   const commentoHTML = haCommento
-    ? '<p class="cc-strategia-info" title="' + _escAttr(cfg.commento) + '">💬 ' + escapeHTML(cfg.commento) + '</p>'
+    ? '<button type="button" class="cc-strategia-info cc-commento-preview" data-commento="' + _escAttr(cfg.commento) + '" aria-label="Apri commento completo">💬 <span>' + escapeHTML(cfg.commento) + '</span><small>Vedi tutto</small></button>'
     : '';
   return fasciaHTML + titolaritaHTML + commentoHTML;
 }
@@ -2689,6 +2689,9 @@ function renderChiamata(chiamata) {
       attesaBadge +
       _getChiamataStrategiaInfoHTML(g) +
     '</div>';
+  card.querySelectorAll('.cc-commento-preview').forEach(el => {
+    el.addEventListener('click', () => apriModalCommentoPuja(el.dataset.commento || ''));
+  });
   aggiornaQuickBids();
   _loadPlayerPhoto(g.nome, g.squadra, _myAvatarVersion);
 }
@@ -3271,7 +3274,7 @@ const ANT_FX_MAX_CLONI = 3;
 // Dimensioni NATURALI della carta (uguali a .ant-card.size-xl in CSS) — la carta durante il
 // volo mantiene SEMPRE queste proporzioni, mai deformata per adattarsi alla forma dell'avatar
 // sorgente (vedi sotto perche' era un problema reale).
-const ANT_FX_CARD_W = 110, ANT_FX_CARD_H = 152;
+const ANT_FX_CARD_W = 136, ANT_FX_CARD_H = 178;
 function _playAssegnazioneCardFx(giocatore) {
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if (!_antGetFxAbilitata()) return;
@@ -3304,8 +3307,7 @@ function _playAssegnazioneCardFx(giocatore) {
   }
   layer.appendChild(wrap);
   _antApplyCardPhoto(wrap.querySelector('.ant-card-photo'), giocatore.nome, giocatore.squadra);
-  const fxNameTxt = wrap.querySelector('.ant-card-name-txt');
-  if (fxNameTxt) _antFitTestoLabel(fxNameTxt, 96);
+  // La carta de confirmación admite dos líneas: no reducimos el nombre hasta hacerlo ilegible.
 
   const cx = window.innerWidth / 2, cy = window.innerHeight * 0.42;
   const dx = cx - srcCx, dy = cy - srcCy;
@@ -3315,7 +3317,7 @@ function _playAssegnazioneCardFx(giocatore) {
   // fisso (~250px) svincolato dall'avatar, cosi' la carta ha sempre la stessa dimensione finale
   // indipendentemente da quanto e' grande/deforme l'avatar di partenza.
   const startScale = Math.min(1, Math.max(0.35, srcRect.width / ANT_FX_CARD_W));
-  const scalePeak = 250 / ANT_FX_CARD_W;
+  const scalePeak = 215 / ANT_FX_CARD_W;
 
   _antFxCloniAttivi++;
   const anim = wrap.animate([
@@ -3434,12 +3436,89 @@ function _antFitEtichetteCampo(pitch) {
   });
 }
 
+// Stadio procedurale Three.js: il canvas contiene soltanto ambiente/campo/luci. Gli slot,
+// le carte e la selezione restano deliberatamente nel DOM per non alterare la logica Mantra.
+let _antStadio3D = null;
+function _antAggiungiLineeCampo(scene, T, larghezza, lunghezza) {
+  const punti = [];
+  const linea = (x1, z1, x2, z2) => punti.push(x1,.045,z1, x2,.045,z2);
+  const x = larghezza / 2, z = lunghezza / 2;
+  linea(-x,-z,x,-z); linea(x,-z,x,z); linea(x,z,-x,z); linea(-x,z,-x,-z);
+  linea(-x,0,x,0);
+  const areaW = larghezza * .56, areaD = lunghezza * .17;
+  [-1,1].forEach(lato => {
+    const bordo = lato * z, interno = lato * (z - areaD);
+    linea(-areaW/2,bordo,-areaW/2,interno); linea(-areaW/2,interno,areaW/2,interno); linea(areaW/2,interno,areaW/2,bordo);
+    const piccolaW = larghezza * .26, piccolaD = lunghezza * .07, piccoloInterno = lato * (z - piccolaD);
+    linea(-piccolaW/2,bordo,-piccolaW/2,piccoloInterno); linea(-piccolaW/2,piccoloInterno,piccolaW/2,piccoloInterno); linea(piccolaW/2,piccoloInterno,piccolaW/2,bordo);
+  });
+  const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.Float32BufferAttribute(punti, 3));
+  scene.add(new T.LineSegments(geo, new T.LineBasicMaterial({ color:0xf3f7ff, transparent:true, opacity:.9 })));
+  const cerchio = new T.LineLoop(new T.BufferGeometry().setFromPoints(Array.from({length:48}, (_, i) => {
+    const a = i / 48 * Math.PI * 2; return new T.Vector3(Math.cos(a)*2.15,.05,Math.sin(a)*2.15);
+  })), new T.LineBasicMaterial({color:0xf3f7ff,transparent:true,opacity:.9}));
+  scene.add(cerchio);
+}
+function _antCreaPorta(scene, T, z) {
+  const gruppo = new T.Group(), bianco = new T.MeshStandardMaterial({color:0xf8fbff,metalness:.35,roughness:.34});
+  const tubo = new T.CylinderGeometry(.075,.075,2.7,8), traversa = new T.CylinderGeometry(.075,.075,5.2,8);
+  [-2.6,2.6].forEach(x => { const palo = new T.Mesh(tubo,bianco); palo.position.set(x,1.35,z); gruppo.add(palo); });
+  const alto = new T.Mesh(traversa,bianco); alto.rotation.z=Math.PI/2; alto.position.set(0,2.7,z); gruppo.add(alto);
+  const rete = new T.Mesh(new T.PlaneGeometry(5.2,2.7,8,5),new T.MeshBasicMaterial({color:0x9ccfff,wireframe:true,transparent:true,opacity:.3,side:T.DoubleSide}));
+  rete.position.set(0,1.35,z - Math.sign(z)*.7); rete.rotation.y=Math.PI; gruppo.add(rete); scene.add(gruppo);
+}
+function _antAssicuraStadio3D() {
+  const contenitore = document.getElementById('ant-stadio-3d');
+  if (!contenitore || !window.THREE || _antStadio3D) return;
+  const T = window.THREE, scena = new T.Scene();
+  scena.background = new T.Color(0x050716); scena.fog = new T.FogExp2(0x07091c,.032);
+  const camera = new T.PerspectiveCamera(39,1,.1,120);
+  const renderer = new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1,1.65)); renderer.shadowMap.enabled=true; renderer.shadowMap.type=T.PCFSoftShadowMap;
+  renderer.outputColorSpace=T.SRGBColorSpace; renderer.toneMapping=T.ACESFilmicToneMapping; renderer.toneMappingExposure=1.2;
+  contenitore.appendChild(renderer.domElement);
+  scena.add(new T.HemisphereLight(0x7186ff,0x06110d,1.55));
+  const luceCampo = new T.DirectionalLight(0xe9f5ff,2.4); luceCampo.position.set(-10,18,8); luceCampo.castShadow=true; luceCampo.shadow.mapSize.set(1024,1024); scena.add(luceCampo);
+  const viola = new T.PointLight(0x764cff,22,38,2); viola.position.set(-15,9,-3); scena.add(viola);
+  const blu = new T.PointLight(0x36adff,18,38,2); blu.position.set(15,8,5); scena.add(blu);
+  const pratoMat = new T.MeshStandardMaterial({color:0x0b6b45,roughness:.82,metalness:.03});
+  const prato = new T.Mesh(new T.PlaneGeometry(18,30),pratoMat); prato.rotation.x=-Math.PI/2; prato.receiveShadow=true; scena.add(prato);
+  for(let i=0;i<12;i++) { const fascia = new T.Mesh(new T.PlaneGeometry(18,2.5),new T.MeshStandardMaterial({color:i%2?0x0c754b:0x095d3e,roughness:.9})); fascia.rotation.x=-Math.PI/2; fascia.position.set(0,.012,-13.75+i*2.5); scena.add(fascia); }
+  _antAggiungiLineeCampo(scena,T,18,30); _antCreaPorta(scena,T,-15.05); _antCreaPorta(scena,T,15.05);
+  const cemento = new T.MeshStandardMaterial({color:0x252343,roughness:.8,metalness:.15}), sedile = new T.MeshStandardMaterial({color:0x45348a,roughness:.65,metalness:.2});
+  [-1,1].forEach(lato => { for(let fila=0;fila<6;fila++) { const tribuna = new T.Mesh(new T.BoxGeometry(5.2,1.05,29),cemento); tribuna.position.set(lato*(11.5+fila*.72),.55+fila*.68,0); tribuna.castShadow=true; scena.add(tribuna); const sedute = new T.Mesh(new T.BoxGeometry(5.28,.14,27.8),sedile); sedute.position.set(lato*(11.45+fila*.72),1.12+fila*.68,0); scena.add(sedute); } });
+  [-1,1].forEach(lato => { const fondo = new T.Mesh(new T.BoxGeometry(25,4.2,2.8),cemento); fondo.position.set(0,2,lato*17.3); scena.add(fondo); });
+  const testa = new T.SphereGeometry(.105,6,5), pubblicoMat = [0x8c7cff,0x41b7ff,0xffc55c,0xf0f3ff].map(c=>new T.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:.2}));
+  pubblicoMat.forEach((mat,mi) => { const folla=new T.InstancedMesh(testa,mat,150); const obj=new T.Object3D(); for(let i=0;i<150;i++){const lato=i%2?1:-1; obj.position.set(lato*(10.1+(i%6)*.72),1.45+Math.floor(i/24)*.67,-13+(i*2.77%26)); obj.scale.setScalar(.65+(i%3)*.12); obj.updateMatrix(); folla.setMatrixAt(i,obj.matrix);} scena.add(folla); });
+  const metallo = new T.MeshStandardMaterial({color:0x5d6c9c,metalness:.82,roughness:.26});
+  // Corona, cubierta y vigas: dan al encuadre la escala de un estadio real incluso
+  // en pantallas estrechas. Son geometria 3D, no decoracion CSS superpuesta.
+  const anello = new T.Mesh(new T.TorusGeometry(21,.16,8,64),metallo); anello.rotation.x=Math.PI/2; anello.position.y=10.5; scena.add(anello);
+  const arcoGeo = new T.TorusGeometry(21,.28,8,64,Math.PI*.92);
+  [-1,1].forEach(lato => { const arco = new T.Mesh(arcoGeo,metallo); arco.rotation.set(Math.PI/2,0,lato < 0 ? Math.PI*.04 : Math.PI*1.04); arco.position.y=10.4; scena.add(arco); });
+  const tettoMat = new T.MeshStandardMaterial({color:0x11152c,metalness:.7,roughness:.36,side:T.DoubleSide});
+  const tetto = new T.Mesh(new T.RingGeometry(16.8,25,64,1),tettoMat); tetto.rotation.x=-Math.PI/2; tetto.position.y=10.25; scena.add(tetto);
+  for(let i=0;i<18;i++){ const a=i/18*Math.PI*2; const trave=new T.Mesh(new T.BoxGeometry(.18,.18,9),metallo); trave.position.set(Math.cos(a)*20.8,9.7,Math.sin(a)*16.1); trave.rotation.y=-a; trave.rotation.z=Math.sin(a)*.18; scena.add(trave); }
+  [[-17,-12],[17,-12],[-17,12],[17,12]].forEach(([x,z])=>{
+    const palo=new T.Mesh(new T.CylinderGeometry(.18,.24,10.5,8),metallo); palo.position.set(x,5.2,z); scena.add(palo);
+    const barra=new T.Mesh(new T.BoxGeometry(3.7,.25,.42),metallo); barra.position.set(x,10.2,z); scena.add(barra);
+    for(let i=-2;i<=2;i++){ const pannello=new T.Mesh(new T.BoxGeometry(.5,.28,.14),new T.MeshStandardMaterial({color:0xeef7ff,emissive:0xc9deff,emissiveIntensity:2.4})); pannello.position.set(x+i*.65,10.05,z); scena.add(pannello); }
+    const faro=new T.SpotLight(0xeef7ff,700,44,.48,.5,1.4); faro.position.set(x,10,z); faro.target.position.set(0,0,0); faro.castShadow=true; scena.add(faro,faro.target);
+  });
+  // Bandas violetas/cian en la grada, como los LED de la referencia.
+  [-1,1].forEach(lato => { const led=new T.Mesh(new T.BoxGeometry(.12,.16,28.8),new T.MeshStandardMaterial({color:lato<0?0x7a4cff:0x25bfff,emissive:lato<0?0x5b2cff:0x159bff,emissiveIntensity:2})); led.position.set(lato*10.05,2.3,0); scena.add(led); });
+  const stelleGeo=new T.BufferGeometry(), stelle=[]; for(let i=0;i<180;i++) stelle.push((Math.random()-.5)*70,6+Math.random()*26,(Math.random()-.5)*70); stelleGeo.setAttribute('position',new T.Float32BufferAttribute(stelle,3)); scena.add(new T.Points(stelleGeo,new T.PointsMaterial({color:0xb8c5ff,size:.09})));
+  function ridimensiona(){const w=contenitore.clientWidth,h=contenitore.clientHeight;if(!w||!h)return;camera.aspect=w/h; const mobile=w<420; camera.position.set(mobile?18:21,mobile?18:22,mobile?27:30); camera.lookAt(0,0,1.5);camera.updateProjectionMatrix();renderer.setSize(w,h,false);renderer.render(scena,camera);}
+  const osservatore=new ResizeObserver(ridimensiona); osservatore.observe(contenitore); window.addEventListener('resize',ridimensiona); _antStadio3D={ridimensiona,osservatore}; requestAnimationFrame(ridimensiona);
+}
+
 function renderAnteprimaPitch() {
   const pitch = document.getElementById('ant-pitch');
   const selSquadra = document.getElementById('ant-squadra-select');
   const selModulo = document.getElementById('ant-modulo-select');
   if (!pitch || !selSquadra || !selModulo) return;
   pitch.classList.add('ant-pitch3d');
+  _antAssicuraStadio3D();
   const nomeSquadra = selSquadra.value;
   if (!nomeSquadra) { _antRenderVuoto(); return; }
   const modulo = selModulo.value;
@@ -4288,6 +4367,18 @@ window.closeModalOnOverlay = function(e) {
   if (S.popupAttivoCli && ['ric-conferma','post-asta','svincolo'].includes(S.popupAttivoCli.tipo)) return;
   closeModal();
 };
+
+// Il commento nella carta di chiamata e' solo una preview: non deve mai alterare
+// l'altezza del ritratto o della puja. Il testo completo vive in questo modal.
+function apriModalCommentoPuja(testo) {
+  const contenuto = document.getElementById('modal-commento-puja-testo');
+  if (!contenuto) return;
+  contenuto.textContent = testo;
+  openModal('modal-commento-puja');
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !document.getElementById('modal-overlay').classList.contains('hidden')) closeModal();
+});
 
 function hidePoupOverride() {
   document.getElementById('popup-override-box').classList.add('hidden');
