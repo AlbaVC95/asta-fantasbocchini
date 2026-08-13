@@ -1232,8 +1232,8 @@ body.app-role-admin .gk-config-actions.gk-admin-only{display:flex}
   position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;
   background-color:var(--bg-deep);
   background-image:
-    linear-gradient(180deg, rgba(8,4,20,.42) 0%, rgba(8,4,20,.22) 35%, rgba(8,4,20,.45) 75%, rgba(8,4,20,.68) 100%),
-    url('/img/backgrounds/stadium-bg.jpg');
+    linear-gradient(180deg, rgba(8,4,20,.55) 0%, rgba(8,4,20,.38) 35%, rgba(8,4,20,.55) 75%, rgba(8,4,20,.78) 100%),
+    url('/img/backgrounds/fantabar-bg.jpg');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
@@ -1241,8 +1241,8 @@ body.app-role-admin .gk-config-actions.gk-admin-only{display:flex}
 }
 html.theme-light .pitch-bg{
   background-image:
-    linear-gradient(180deg, rgba(233,236,247,.42) 0%, rgba(233,236,247,.28) 35%, rgba(233,236,247,.42) 75%, rgba(233,236,247,.65) 100%),
-    url('/img/backgrounds/stadium-bg.jpg');
+    linear-gradient(180deg, rgba(233,236,247,.5) 0%, rgba(233,236,247,.36) 35%, rgba(233,236,247,.5) 75%, rgba(233,236,247,.72) 100%),
+    url('/img/backgrounds/fantabar-bg.jpg');
   filter:saturate(1) brightness(1.08);
 }
 body{background:transparent!important}
@@ -2486,3 +2486,52 @@ body.layout-admin .asta-row-puja .cc-avatar{width:108px!important;height:140px!i
    tra le carte della stessa riga, cosi' anche i nomi hanno sempre spazio. ── */
 .ant-slot3d{margin:0}
 .ant-card.size-pitch,.ant-slot3d-empty{transform-origin:center bottom}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ══ FIX 2026-08-14: nomi a 2 righe con zoom, campo "tagliato" a triangolo,
+      carte troppo piccole in Anteprima ══
+   NON tocca .ant-slot3d .ant-card / .ant-slot3d-empty (visibilita' e transform
+   delle carte, confermata funzionante dall'utente) — solo dimensioni carta,
+   forma del campo, avvolgimento del nome. Blocco finale, vince per ordine di
+   cascata sulle regole sparse sopra senza doverle rimuovere una per una. ══
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1) Nome SEMPRE su una riga sola, mai tagliato, anche quando lo zoom del
+   campo riduce lo spazio: una regola precedente ("Campo vertical
+   reglamentario") forzava white-space:normal + -webkit-line-clamp:2 +
+   word-break:break-word, che spezzava il nome anche a meta' parola (es.
+   "Cambia/so"). _antFitTestoLabel() in app.js gia' riduce il font-size finche'
+   il nome non entra in una riga sola (misurando lo spazio REALE disponibile) —
+   basta ripristinare nowrap perche' quella logica funzioni come deve. ── */
+.ant-slot3d-label{
+  white-space:nowrap!important;
+  overflow:visible!important;
+}
+.ant-slot3d-label .ant-slot3d-name-txt{
+  display:block!important;
+  width:auto!important;max-width:none!important;margin-left:0!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;text-overflow:ellipsis!important;
+  -webkit-line-clamp:1!important;line-clamp:1!important;
+}
+
+/* ── 2) Forma del campo SEMPRE intera, mai "tagliata"/triangolare: rimosso
+   il clip-path a trapezio (si notava soprattutto riducendo lo zoom) — resta
+   un rettangolo pieno con angoli smussati, stessa estetica delle linee bianche
+   gia' disegnate dall'SVG interno (che non tocca). ── */
+.ant-pitch.ant-pitch3d{
+  clip-path:none!important;
+  aspect-ratio:5 / 7!important;
+}
+
+/* ── 3) Carte piu' grandi sul campo, stessa griglia di posizionamento
+   (ANT_LAYOUT/ANT_Y5/ANT_Y4 in app.js non toccati): solo la dimensione della
+   carta cresce (+~18%), le distanze relative tra slot restano identiche,
+   quindi niente sovrapposizioni — verificato che il gap verticale minimo tra
+   righe (~20% dell'altezza campo) resta piu' largo dell'altezza della carta
+   anche con questa dimensione maggiore. ── */
+.ant-slot3d{width:14.5cqw;height:20cqw;min-width:42px;min-height:58px}
+.ant-card.size-pitch,.ant-slot3d-empty{width:14.5cqw!important;height:20cqw!important;min-width:42px;min-height:58px}
+@media (max-width:760px){
+  .ant-slot3d,.ant-card.size-pitch,.ant-slot3d-empty{width:15cqw!important;height:20.7cqw!important;min-width:38px;min-height:52px}
+}
