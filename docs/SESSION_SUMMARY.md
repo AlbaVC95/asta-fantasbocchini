@@ -8,10 +8,11 @@ Stato attuale del progetto. Questo file va sovrascritto ad ogni task importante 
 - **Deploy**: migrato da Render a **Hostinger** (dominio `asta.fantaplus.com`, deploy automatico
   su push a `main`). Render resta attivo temporaneamente come backup dell'utente. Bind esplicito
   su `0.0.0.0` in `server.listen()` applicato come misura difensiva (commit `7d32099`).
-- Branch `main`, ultimo commit pushato `d9fe35f` (9 correzioni post-redesign 3D Anteprima +
-  round 2 di rifiniture, vedi sotto). Migration
-  `backend/sql/2026-08-10_strategia_titolarita_commento.sql` già eseguita dall'utente su Supabase.
-- **Correzioni post-redesign 3D Anteprima: COMMITTATE E PUSHATE su `main`** (commit `d9fe35f`,
+- Branch `main`, ultimo commit `af7332d` (9 correzioni post-redesign 3D Anteprima `d9fe35f` +
+  round 2 di rifiniture `af7332d`, vedi sotto — **da verificare se già pushato**, vedi comando
+  sotto). Migration `backend/sql/2026-08-10_strategia_titolarita_commento.sql` già eseguita
+  dall'utente su Supabase.
+- **Correzioni post-redesign 3D Anteprima: COMMITTATE su `main`** (commit `d9fe35f`+`af7332d`,
   `frontend/index.html`, `frontend/css/style.css`, `frontend/js/app.js` — nessun file backend
   toccato). Rispondono a 9 problemi concreti segnalati dall'utente dopo il merge del redesign in
   produzione (scroll rotto, animazione troppo veloce, carte 3D piatte/sovrapposte, stadio poco
@@ -128,9 +129,9 @@ L'utente ha riportato 3 problemi visti in produzione (screenshot reali, non simu
 ("Bongracio", "Zaminay", "Di Lorenzo"...) troncano con ellissi senza più sovrapporsi ai badge
 ruolo dello slot accanto; bracket agli angoli e griglia neon visibili su screenshot; carta XL con
 fascia nera ridotta e nome ben proporzionato (verificato creando una carta XL isolata via
-`_antCardHTML(...,'xl',false)`). Commit pushato: `d9fe35f` su `main` (deploy Hostinger automatico
-su push). **Non verificabile in questo ambiente**: conferma visiva dal vivo dell'utente sul
-dominio di produzione.
+`_antCardHTML(...,'xl',false)`). Commit: `af7332d` su `main` (round 1 `d9fe35f`; deploy Hostinger
+automatico su push). **Non verificabile in questo ambiente**: conferma visiva dal vivo
+dell'utente sul dominio di produzione.
 
 ## Redesign 3D Anteprima — MERGIATO su `main`, IN PRODUZIONE (non ancora confermato dal vivo)
 
