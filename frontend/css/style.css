@@ -2387,3 +2387,73 @@ body.layout-admin .asta-row-puja .cc-avatar-img,
   .gk-grid-row-label{height:36px;font-size:.6rem}
   .gk-grid-cell{font-size:.62rem}
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ══ FIX 2026-08-13: foto Puja troppo piccola + effetto "gomma" Anteprima ══
+   Blocco intenzionalmente posto in fondo al file: per specificita' pari,
+   vince sempre sulle regole sparse sopra (accumulate in sessioni precedenti),
+   senza doverle rimuovere una per una e senza rischiare regressioni altrove.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1) Foto giocatore in Puja: ingrandita per davvero, ammin + partecipante,
+   con padding-left della card sempre coerente con la nuova larghezza (evita
+   che il nome/testo si sovrapponga alla foto). ── */
+body.layout-admin .asta-row-puja .chiamata-card{padding-left:126px!important}
+body.layout-admin .asta-row-puja .cc-avatar{width:108px!important;height:140px!important;border-radius:14px!important}
+.puja-panel-slot .chiamata-card{padding-left:104px!important}
+.puja-panel-slot .cc-avatar{width:86px!important;height:112px!important;border-radius:12px!important}
+
+@media (max-width:1200px){
+  .puja-panel-slot .chiamata-card{padding-left:96px!important}
+  .puja-panel-slot .cc-avatar{width:78px!important;height:102px!important}
+}
+@media (max-width:700px){
+  body.layout-admin .asta-row-puja .chiamata-card{padding-left:78px!important}
+  body.layout-admin .asta-row-puja .cc-avatar{width:62px!important;height:82px!important}
+}
+@media (max-width:640px){
+  .puja-panel-slot .chiamata-card{padding-left:78px!important}
+  .puja-panel-slot .cc-avatar{width:62px!important;height:82px!important}
+}
+@media (max-width:400px){
+  body.layout-admin .asta-row-puja .chiamata-card{padding-left:60px!important}
+  body.layout-admin .asta-row-puja .cc-avatar{width:46px!important;height:60px!important}
+  .puja-panel-slot .chiamata-card{padding-left:60px!important}
+  .puja-panel-slot .cc-avatar{width:46px!important;height:60px!important}
+}
+
+/* ── 2) Campo Anteprima: via l'effetto "gomma"/deformato sulle carte.
+   Causa: prospettiva troppo stretta (perspective:1200px) + inclinazione
+   forte (rotateX 48deg) applicate a carte lontane dal centro ottico —
+   matematicamente la contro-rotazione le rimette dritte, ma la proiezione
+   prospettica ravvicinata le deforma comunque ai lati/agli angoli.
+   Fix: prospettiva molto piu' "lunga" (quasi ortografica, come l'obiettivo
+   di uno scatto da stadio reale) + inclinazione del campo piu' moderata:
+   le carte restano dritte come cartellini da collezione, il campo mantiene
+   comunque un accenno di profondita' 3D. ── */
+.ant-pitch-stage{perspective:4200px!important;perspective-origin:50% 30%!important}
+.ant-pitch.ant-pitch3d{transform:rotateX(26deg)!important}
+.ant-slot3d .ant-card,.ant-slot3d-empty{transform:rotateX(-26deg) translateZ(16px)!important}
+.ant-slot3d:hover .ant-card{transform:rotateX(-26deg) translateZ(30px) scale(1.06)!important}
+@media (max-width:760px){
+  .ant-pitch-stage{perspective:3000px!important}
+  .ant-pitch.ant-pitch3d{transform:rotateX(22deg)!important}
+  .ant-slot3d .ant-card,.ant-slot3d-empty{transform:rotateX(-22deg) translateZ(12px)!important}
+  .ant-slot3d:hover .ant-card{transform:rotateX(-22deg) translateZ(22px) scale(1.05)!important}
+}
+
+/* ── 3) Nome sotto la carta: sempre leggibile per chiunque guardi (non solo
+   per chi ha creato la formazione) — sfondo pieno dietro al testo invece di
+   solo un'ombra, cosi' resta leggibile anche sopra prato chiaro/carte vicine,
+   e z-index piu' alto della carta della riga sopra per non finirci mai sotto. ── */
+.ant-slot3d-label{
+  background:rgba(6,4,16,.74)!important;border-radius:6px!important;
+  padding:1px 5px!important;z-index:5!important;
+  box-shadow:0 1px 4px rgba(0,0,0,.5)!important;
+}
+
+/* ── 4) Nessuna sovrapposizione tra carte: meno "sbalzo" prospettico (punto 2
+   sopra riduce già molto l'altezza proiettata di ogni carta) + margine extra
+   tra le carte della stessa riga, cosi' anche i nomi hanno sempre spazio. ── */
+.ant-slot3d{margin:0}
+.ant-card.size-pitch,.ant-slot3d-empty{transform-origin:center bottom}
