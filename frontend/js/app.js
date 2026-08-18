@@ -1931,6 +1931,7 @@ socket.on('stato-asta', (asta) => {
     const _tipo = S.popupAttivoCli.tipo;
     if (_popupRisolto && (_tipo === 'post-asta' || _tipo === 'svincolo')) {
       closeModal();
+      if (_tipo === 'svincolo') _nascondiBadgeSvincoloPendente();
     } else if (_ricRisolto && _tipo === 'ric-conferma') {
       closeModal();
     } else if (_popupRisolto && _ricRisolto) {
@@ -2179,11 +2180,17 @@ socket.on('popup-svincolo', (popupData) => {
   openModal('modal-svincolo');
 });
 
+// Backup: l'Admin puo' selezionare ed eseguire lo svincolo anche lui, come gia' avviene per
+// la riconferma RIC (adminRicConferma) e il post-asta (adminPostAsta) — esegui-svincolo
+// accetta gia' l'Admin indipendentemente dalla squadra proprietaria. Si riusa direttamente lo
+// stesso modal/rendering della squadra (nessun markup separato necessario per una lista con
+// checkbox multi-selezione, a differenza dei 2-3 bottoni di RIC/post-asta).
 socket.on('popup-svincolo-admin', function(popup) {
   if (!S.isAdmin) return;
-  document.getElementById('popup-override-chi').textContent = popup.squadraVincitrice + ' sta decidendo su ' + popup.giocatore.nome + '...';
-  document.getElementById('popup-override-actions').innerHTML = '<em class="text-muted">⏳ In attesa della scelta della squadra...</em>';
-  document.getElementById('popup-override-box').classList.remove('hidden');
+  S.svincoloSel.clear();
+  S.popupAttivoCli = Object.assign({ tipo: 'svincolo' }, popup);
+  renderPopupSvincolo(popup);
+  openModal('modal-svincolo');
 });
 
 // Caso limite (non dovrebbe accadere se calcolaMaxOfferta/Massima Offerta funzionano bene):
@@ -2216,6 +2223,9 @@ function renderBudgetBar(squadre) {
     const gioc = sq.giocatori ? sq.giocatori.length : rosaSq.length;
     const maxGioc = (S.asta && S.asta.maxGiocatoriPerSquadra) || 25;
     const numPortieri = rosaSq.filter(g => _isPortiere(g.ruolo)).length;
+    const svinChip = (S.asta && S.asta.tipoAsta === 'riparazione')
+      ? ' <span class="sq-svincoli">🔓 ' + Math.max(0, (S.asta.svincoliTotali || 0) - (sq.svincoliUsati || 0)) + '/' + (S.asta.svincoliTotali || 0) + '</span>'
+      : '';
     const barCls = pct <= 15 ? 'crit' : (pct <= 40 ? 'warn' : 'ok');
     return '<div class="' + cls + '">' +
       '<div class="sq-top">' +
@@ -2224,7 +2234,7 @@ function renderBudgetBar(squadre) {
         '<span class="sq-crediti">💰 ' + sq.crediti + '</span>' +
       '</div>' +
       '<div class="budget-progress"><div class="budget-progress-fill ' + barCls + '" style="width:' + pct + '%"></div></div>' +
-      '<div class="sq-bottom">Tot: ' + gioc + '/' + maxGioc + ' <span class="sq-portieri">🧤 ' + numPortieri + '</span></div>' +
+      '<div class="sq-bottom">Tot: ' + gioc + '/' + maxGioc + ' <span class="sq-portieri">🧤 ' + numPortieri + '</span>' + svinChip + '</div>' +
     '</div>';
   }).join('');
 }
@@ -2825,10 +2835,12 @@ function renderStorico(storico) {
     if (s.tipo === 'scartato') return '<li><span class="storico-nome text-muted">' + _escHtml(s.giocatore.nome) + '</span><span class="storico-tipo tipo-tag-scartato">scartato</span></li>';
     const manualeTag = s.manuale ? '<span class="storico-manuale-tag" title="Chiamata/assegnazione manuale dell\'admin">🔨</span>' : '';
     if (s.tipo === 'con_svincolo' && filtro === 'recap-riparazione') {
-      const nomi = _escHtml((s.svincolati || []).map(g => g.nome).join(', ') || '—');
+      const totRecup = (s.svincolati || []).reduce((sum, g) => sum + (g.creditiRecuperati || 0), 0);
+      const dettaglio = (s.svincolati || []).map(g => _escHtml(g.nome) + ' (+' + (g.creditiRecuperati || 0) + 'cr)').join(', ') || '—';
       return '<li>' + manualeTag + '<span class="storico-nome">' + _escHtml(s.giocatore.nome) + '</span>' +
         '<span class="storico-sq">' + _escHtml(s.squadra) + '</span>' +
-        '<span class="storico-tipo tipo-tag-con_svincolo">svincolati: ' + nomi + '</span></li>';
+        '<span class="storico-prezzo">' + s.prezzo + 'cr</span>' +
+        '<span class="storico-tipo tipo-tag-con_svincolo">svincolati: ' + dettaglio + ' (tot. +' + totRecup + 'cr)</span></li>';
     }
     return '<li>' + manualeTag + '<span class="storico-nome">' + _escHtml(s.giocatore.nome) + '</span>' +
       '<span class="storico-sq">' + _escHtml(s.squadra) + '</span>' +
@@ -4146,11 +4158,22 @@ socket.on('tradeoff-usato', function({ nomeSquadra, tipo }) {
   toast('⚡ ' + nomeSquadra + ' ha usato Trade-off: ' + (labels[tipo] || tipo), 'info');
 });
 
+// Recupero crediti da uno svincolo: specchio client di calcolaRecuperoSvincolo() in
+// backend/server.js — deve restare sincronizzata, e' solo un hint UI (il calcolo che conta
+// davvero e' quello server-side in esegui-svincolo). Arrotondamento normale con pavimento di
+// 1 credito, mai 0.
+function calcolaRecuperoSvincoloCli(prezzo, fattore) {
+  return Math.max(1, Math.round(prezzo * fattore));
+}
+
 function renderPopupSvincolo(popupData) {
   document.getElementById('sv-giocatore').textContent = popupData.giocatore.nome;
   document.getElementById('sv-prezzo').textContent = popupData.prezzoFinale;
-  const sq = getMiaSquadra();
-  document.getElementById('sv-crediti').textContent = sq ? sq.crediti : 0;
+  // La squadra che deve svincolare non e' sempre "la mia": puo' essere l'Admin che sta
+  // supervisionando/eseguendo per conto di un'altra squadra (vedi popup-svincolo-admin) —
+  // cercarla per nome invece di assumere getMiaSquadra().
+  const sqSvincolante = ((S.asta && S.asta.squadre) || []).find(s => s.nome === popupData.squadraVincitrice);
+  document.getElementById('sv-crediti').textContent = sqSvincolante ? sqSvincolante.crediti : 0;
   document.getElementById('sv-diff').textContent = popupData.differenza;
   document.getElementById('sv-svincoli-rem').textContent = 'Svincoli rimanenti: ' + popupData.svincoliRimanenti;
   const svRoomGap = document.getElementById('sv-room-gap');
@@ -4159,26 +4182,53 @@ function renderPopupSvincolo(popupData) {
       ? 'Devi liberare almeno ' + popupData.minSvincoli + ' giocatori' + (popupData.roomGap > 0 ? ' (di cui ' + popupData.roomGap + ' solo per fare spazio in rosa)' : '')
       : '';
   }
+  const svAdminNota = document.getElementById('sv-admin-nota');
+  if (svAdminNota) {
+    svAdminNota.textContent = (S.isAdmin && S.miaSquadra !== popupData.squadraVincitrice)
+      ? '👁️ Stai gestendo lo svincolo per conto di ' + popupData.squadraVincitrice
+      : '';
+  }
   const fattore = popupData.fattoreSvincolo || 0.5;
   document.getElementById('sv-lista').innerHTML = (popupData.rosa || []).map(g => {
-    const recup = Math.floor(g.prezzo * fattore);
+    const recup = calcolaRecuperoSvincoloCli(g.prezzo, fattore);
+    const u21Badge = g.u21 === true ? '<span class="cc-tipo-badge tipo-U21">U21</span>' : '';
     return '<div class="sv-item" id="svi-' + g.id + '" onclick="toggleSvincolo(\'' + g.id + '\',' + recup + ')">' +
       '<input type="checkbox" id="svc-' + g.id + '" onclick="event.stopPropagation();toggleSvincolo(\'' + g.id + '\',' + recup + ')">' +
-      '<div class="sv-item-info"><div class="sv-item-nome">' + _escHtml(g.nome) + '</div>' +
-      '<div class="sv-item-detail">' + (g.ruolo||'?') + ' — ' + g.prezzo + 'cr</div></div>' +
+      '<img class="sv-item-avatar" data-photo-nome="' + _escAttr(g.nome) + '" data-photo-squadra="' + _escAttr(g.squadra || '') + '" src="img/players/unknown_anime.jpg" alt="">' +
+      _getRuoloBadgeHTML(g.ruolo) +
+      '<div class="sv-item-info"><span class="sv-item-nome">' + _escHtml(g.nome) + '</span>' + u21Badge + '</div>' +
+      '<span class="sv-item-costo">' + g.prezzo + 'cr</span>' +
       '<span class="sv-item-recup">+' + recup + 'cr</span></div>';
   }).join('');
-  // Pre-seleziona il piano suggerito dal server (copre gia' il minimo necessario calcolato
-  // server-side) — l'allenatore resta libero di deselezionare/scegliere altri giocatori,
-  // purche' il totale continui a coprire debito e spazio rosa (vedi aggiornaTotaleSvincolo).
-  const suggeriti = popupData.suggerimento
-    ? [].concat(popupData.suggerimento.portieriDaLiberare || [], popupData.suggerimento.movimentoDaLiberare || [])
-    : [];
-  suggeriti.forEach(id => {
-    const g = (popupData.rosa || []).find(r => r.id === id);
-    if (g) window.toggleSvincolo(id, Math.floor(g.prezzo * fattore));
+  _loadSvincoloAvatars(document.getElementById('sv-lista'));
+  // MAI una preselezione automatica del server: si ripristina solo la selezione GIA' fatta
+  // dall'allenatore (vuota al primo apertura del popup — S.svincoloSel viene svuotato solo
+  // quando arriva un popup genuinamente nuovo, vedi socket.on('popup-svincolo', ...) — e
+  // preservata se il popup viene nascosto e riaperto, vedi nascondiSvincolo/riprendiSvincolo).
+  S.svincoloSel.forEach(id => {
+    const cb = document.getElementById('svc-' + id);
+    const item = document.getElementById('svi-' + id);
+    if (cb) cb.checked = true;
+    if (item) item.classList.add('selezionato');
   });
   aggiornaTotaleSvincolo(popupData.differenza);
+}
+
+// Carica gli avatar della lista svincolo — stesso identico pattern di _loadEditorAvatars,
+// stessa cache/loader condivisi (_tryLocalPhoto), scritto separato solo perché opera su
+// .sv-item-avatar invece di .editor-player-avatar.
+function _loadSvincoloAvatars(container) {
+  container.querySelectorAll('.sv-item-avatar[data-photo-nome]').forEach(img => {
+    const nome = img.getAttribute('data-photo-nome');
+    const squadra = img.getAttribute('data-photo-squadra');
+    _withTimeout(_tryLocalPhoto(nome, squadra), 4000, null).then(function(url) {
+      const finalUrl = url || 'img/players/unknown_anime.jpg';
+      const test = new Image();
+      test.onload = function() { img.src = finalUrl; };
+      test.onerror = function() { img.src = 'img/players/unknown_anime.jpg'; };
+      test.src = finalUrl;
+    }).catch(function() { img.src = 'img/players/unknown_anime.jpg'; });
+  });
 }
 
 window.toggleSvincolo = function(id, crediti) {
@@ -4209,7 +4259,7 @@ function aggiornaTotaleSvincolo(differenza) {
   let recupero = 0;
   S.svincoloSel.forEach(id => {
     const g = (popup.rosa || []).find(r => r.id === id);
-    if (g) recupero += Math.floor(g.prezzo * fattore);
+    if (g) recupero += calcolaRecuperoSvincoloCli(g.prezzo, fattore);
   });
   const debito = Math.max(0, differenza - recupero);
   // Vincolo minimo (prima solo sui crediti): il pulsante resta disabilitato anche se manca
@@ -4223,7 +4273,31 @@ function aggiornaTotaleSvincolo(differenza) {
 window.confermaSvincolo = function() {
   socket.emit('esegui-svincolo', { astaId: S.astaId, giocatoriIds: [...S.svincoloSel] });
   closeModal(); hidePoupOverride();
+  _nascondiBadgeSvincoloPendente();
 };
+
+// "Nascondi": chiude solo la VISTA, l'operazione resta pendente — S.popupAttivoCli e
+// S.svincoloSel non vengono toccati, cosi' l'allenatore puo' navigare altrove (es.
+// Svincolati) e tornare dopo con la selezione esatta com'era (vedi riprendiSvincolo).
+window.nascondiSvincolo = function() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+  document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+  const btn = document.getElementById('btn-svincolo-pendente');
+  if (btn) btn.classList.remove('hidden');
+};
+
+window.riprendiSvincolo = function() {
+  if (!S.popupAttivoCli || S.popupAttivoCli.tipo !== 'svincolo') return;
+  renderPopupSvincolo(S.popupAttivoCli);
+  openModal('modal-svincolo');
+  _nascondiBadgeSvincoloPendente();
+};
+
+function _nascondiBadgeSvincoloPendente() {
+  const btn = document.getElementById('btn-svincolo-pendente');
+  if (btn) btn.classList.add('hidden');
+}
+
 
 // ══ MODALE CHIAMA MANUALE (ricerca live + filtro ruolo) ══════
 S.cmFiltroRuolo = 'tutti';

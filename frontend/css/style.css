@@ -325,6 +325,9 @@ html.theme-light .chiamata-card{
 .popup-override{background:rgba(255,77,42,.05);border:1px solid rgba(255,77,42,.2);border-radius:10px;padding:6px;margin-top:4px}
 .popup-override p{font-size:.72rem;color:var(--text-secondary);margin-bottom:4px}
 .popup-override .btn{margin:2px 3px 2px 0;font-size:.7rem;padding:4px 8px}
+/* Badge fisso per lo svincolo nascosto (nascondiSvincolo) ma ancora pendente: permette di
+   navigare altrove e tornare senza perdere la selezione (riprendiSvincolo). */
+.svincolo-pendente-btn{position:fixed;bottom:16px;right:16px;z-index:500;background:var(--gold);color:#1a1a1a;border:none;border-radius:24px;padding:10px 16px;font-weight:700;font-size:.82rem;box-shadow:0 4px 14px rgba(0,0,0,.4);cursor:pointer}
 /* Quando c'è una decisione admin in attesa (popup RIC/PLUS o timer scaduto), la priorità è vedere
    SUBITO i bottoni di conferma senza scroll: nascondiamo temporaneamente la grid di bottoni admin
    (Estrai/Manuale/Assegna/Annulla/Reintr./Timer/Termina) finché la decisione non è risolta */
@@ -416,8 +419,11 @@ html.theme-light .chiamata-card{
 .to-arrow{font-size:1rem;color:var(--text-muted)}.to-ricevi{font-size:1rem;font-weight:800;color:var(--success)}
 .sv-lista{max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;margin:12px 0}
 .sv-item{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg-main);border-radius:9px;border:1px solid var(--border);cursor:pointer;transition:all .15s}
-.sv-item.selected{border-color:var(--danger);background:rgba(255,23,68,.06)}
+.sv-item.selezionato{border-color:var(--danger);background:rgba(255,23,68,.06)}
 .sv-item-nome{flex:1;font-weight:600;font-size:.85rem}.sv-item-costo{font-family:var(--font-display);font-weight:700;color:var(--gold)}
+.sv-item-avatar{width:26px;height:26px;min-width:26px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--bg-elevated)}
+.sv-item-info{flex:1;min-width:0;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.sv-item-info .sv-item-nome{flex:0 1 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
 .sv-totale{font-size:.85rem;color:var(--text-secondary);padding:8px 0;border-top:1px solid var(--border);margin-top:4px}
 .sv-totale strong{color:var(--text-primary)}
 .annulla-storico-lista{max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}

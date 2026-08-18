@@ -314,7 +314,10 @@ function broadcastStato(astaId, doBackup) {
   const asta = aste.get(astaId); if (!asta) return;
   if (doBackup && asta.stato !== 'attesa') saveBackup(asta);
   const stato = {
-    ...asta, adminSocketIds: undefined,
+    // svincoliVietati e' un Set (diventerebbe {} vuoto via JSON, nessun client deve leggerlo
+    // comunque: e' solo un gate server-side sul rilancio) — escluso esplicitamente come
+    // adminSocketIds, invece di lasciarlo spargere involontariamente nel payload.
+    ...asta, adminSocketIds: undefined, svincoliVietati: undefined,
     squadre: asta.squadre.map(s => ({
       ...s, utenti: undefined, numUtenti: s.utenti.length, online: s.utenti.length > 0
     }))
@@ -330,13 +333,22 @@ function broadcastStato(astaId, doBackup) {
 // residui, restando poi bloccata a fine asta senza poter completare i portieri minimi). Il
 // "giocatore" attualmente chiamato conta verso la SUA categoria (Por o movimento), le altre
 // categorie restano comunque riservate per il loro minimo.
+// Recupero crediti da uno svincolo: arrotondamento NORMALE (non floor) del prezzo per il
+// fattore di riparazione, con un pavimento di 1 credito garantito (nessuno svincolo puo'
+// mai fruttare 0, nemmeno un giocatore costato 1cr in Riparazione 2 dove 1*1/3 arrotonda a
+// 0). Math.round in JS arrotonda .5 sempre per eccesso (1.5->2, 2.5->3), coerente con gli
+// esempi forniti per Riparazione 1 (fattore 0.5).
+function calcolaRecuperoSvincolo(prezzo, fattore) {
+  return Math.max(1, Math.round(prezzo * fattore));
+}
+
 // Liste rosa ordinate per valore di svincolo (prezzo*fattoreSvincolo) decrescente, separate
 // per categoria, con prefix-sum: permette di calcolare in O(1) "quanto si recupera liberando
 // i top-N di una categoria", usato sia per la Massima Offerta sia per il piano minimo post-
 // vittoria (vedi sotto) senza riordinare la rosa ad ogni combinazione testata.
 function costruisciListeOrdinateSvincolo(asta, squadra) {
   const fattore = asta.fattoreSvincolo || 0.5;
-  const valore = g => Math.floor(g.prezzo * fattore);
+  const valore = g => calcolaRecuperoSvincolo(g.prezzo, fattore);
   const portieri = squadra.rosa.filter(g => isPortiere(g.ruolo)).slice().sort((a, b) => valore(b) - valore(a));
   const movimento = squadra.rosa.filter(g => !isPortiere(g.ruolo)).slice().sort((a, b) => valore(b) - valore(a));
   const prefixPor = [0]; portieri.forEach(g => prefixPor.push(prefixPor[prefixPor.length - 1] + valore(g)));
@@ -579,7 +591,10 @@ function chiudiAsta(astaId) {
         };
         asta.chiamataAttuale = null;
         emitToSquadra(astaId, squadraOfferente, 'popup-svincolo', { ...asta.popupAttivo, rosa: sq.rosa, fattoreSvincolo: asta.fattoreSvincolo || 0.5 });
-        emitToAdmins(astaId, 'popup-svincolo-admin', asta.popupAttivo);
+        // Stesso payload arricchito della squadra (rosa+fattoreSvincolo): l'Admin deve poter
+        // eseguire lo svincolo anche lui come backup, non solo vedere un messaggio di attesa
+        // (esegui-svincolo accetta gia' l'Admin indipendentemente dalla squadra proprietaria).
+        emitToAdmins(astaId, 'popup-svincolo-admin', { ...asta.popupAttivo, rosa: sq.rosa, fattoreSvincolo: asta.fattoreSvincolo || 0.5 });
         broadcastStato(astaId); return;
       }
     }
@@ -691,6 +706,10 @@ app.post('/api/asta', async (req, res) => {
     stato: 'attesa', squadre: [], adminNome: null, adminSocketIds: [], adminToken,
     creatorUserId: userData.user.id, creatorEmail: userData.user.email || null,
     poolGiocatori: [], chiamataAttuale: null, popupAttivo: null,
+    // Riparazione: chi ha svincolato un giocatore non puo' ripujarlo se ri-estratto nella
+    // STESSA asta (blocco squadra+giocatore, non un blocco globale sul giocatore — le altre
+    // squadre restano libere). Ambito solo questa asta, non sopravvive a export/reimport.
+    svincoliVietati: new Set(),
     storico: [], createdAt: new Date().toISOString()
   };
 
@@ -1268,6 +1287,12 @@ io.on('connection', (socket) => {
     const sq = getSquadraBySocket(asta, socket.id);
     if (!sq) return socket.emit('errore', { msg: 'Non sei in questa asta' });
     const chiamata = asta.chiamataAttuale;
+    // Riparazione: chi ha svincolato questo giocatore in questa asta non puo' ripujarlo se
+    // ri-estratto — le altre squadre restano libere di farlo (vedi popolamento in
+    // esegui-svincolo). Solo sul rilancio a tempo, non su assegna-manuale.
+    if (asta.tipoAsta === 'riparazione' && asta.svincoliVietati.has(sq.nome + '|' + chiamata.giocatore.id)) {
+      return socket.emit('errore', { msg: 'Hai già svincolato questo giocatore in questa asta: non puoi ripujarlo' });
+    }
     offerta = parseInt(offerta);
     const minOfferta = Math.max(1, chiamata.offertaAttuale + (chiamata.offertaAttuale === 0 ? 1 : 1));
     if (offerta < minOfferta) return socket.emit('errore', { msg: `Offerta minima: ${minOfferta} crediti` });
@@ -1397,7 +1422,7 @@ io.on('connection', (socket) => {
     // Ricalcolo fresco: mai fidarsi di popup.differenza, congelata al momento dell'apertura
     // del popup — i crediti squadra potrebbero essere cambiati nel frattempo (es. l'Admin ha
     // corretto i crediti con admin-update-crediti mentre il popup era aperto).
-    const creditiRecuperabiliScelti = scelti.reduce((s, g) => s + Math.floor(g.prezzo * fattore), 0);
+    const creditiRecuperabiliScelti = scelti.reduce((s, g) => s + calcolaRecuperoSvincolo(g.prezzo, fattore), 0);
     const creditoGap = Math.max(0, popup.prezzoFinale - squadra.crediti);
     if (creditiRecuperabiliScelti < creditoGap) {
       return socket.emit('errore', { msg: `I crediti recuperati (${creditiRecuperabiliScelti}) non coprono il debito di ${creditoGap} crediti` });
@@ -1415,9 +1440,12 @@ io.on('connection', (socket) => {
     scelti.forEach(g => {
       const idx = squadra.rosa.findIndex(x => x.id === g.id);
       squadra.rosa.splice(idx, 1);
-      const credRecup = Math.floor(g.prezzo * fattore); creditiRecuperati += credRecup;
+      const credRecup = calcolaRecuperoSvincolo(g.prezzo, fattore); creditiRecuperati += credRecup;
       svincolati.push({ ...g, creditiRecuperati: credRecup });
       squadra.svincoliUsati = (squadra.svincoliUsati || 0) + 1;
+      // Chi ha appena svincolato questo giocatore non puo' ripujarlo se ri-estratto in
+      // questa stessa asta (vedi check in 'rilancio') — le altre squadre restano libere.
+      asta.svincoliVietati.add(squadra.nome + '|' + g.id);
       const gPool = asta.poolGiocatori.find(p => p.id === g.id);
       if (gPool) { gPool.estratto = false; gPool.assegnato = false; gPool.scartato = false; }
       else asta.poolGiocatori.push({ id: g.id, nome: g.nome, ruolo: g.ruolo || '', tipo: 'NN', costoOriginale: g.prezzo, valore: g.valore || 0, squadraOriginale: null, estratto: false, assegnato: false, scartato: false, quotazione: g.quotazione ?? null });

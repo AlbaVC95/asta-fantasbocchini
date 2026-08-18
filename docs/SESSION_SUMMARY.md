@@ -5,7 +5,7 @@ non accumulato (per la cronologia vedi `git log`).
 
 ## Stato attuale
 
-- Branch `main`, allineato con `origin/main` (ultimo push: `3c5e2ba`). Nessuna modifica al
+- Branch `main`, allineato con `origin/main` (ultimo push: `7328e74`). Nessuna modifica al
   codice pendente.
 - **Nota importante**: durante questa sessione, il redesign 3D di Anteprima costruito qui
   (carta FX orizzontale, stadio Three.js con importmap, fix carta Puja admin) è stato
@@ -20,7 +20,73 @@ non accumulato (per la cronologia vedi `git log`).
   (`d5b5b0f`). I commit precedenti di questa sessione restano con l'identità automatica
   precedente (`alba@MacBook-Air-de-Alba.local`), non riscritti.
 
-## Ultimo intervento — Asta di riparazione: Massima Offerta ottimizzata + svincoli post-vittoria
+## Ultimo intervento — Asta di riparazione: UI svincolo, blocco riacquisto, arrotondamento, popup Admin
+
+9 correzioni/aggiunte richieste dall'utente attorno al motore di svincolo (già costruito
+nell'intervento precedente, non toccato nella sua logica economica). Pianificato con
+`EnterPlanMode` + due `AskUserQuestion` di chiarimento (vista Admin: interattiva come backup,
+non solo lettura; blocco riacquisto: solo sul rilancio a tempo, non su assegna-manuale).
+
+1. **Redesign riga selezione svincolo** (`renderPopupSvincolo`, app.js): avatar (stessa cache/
+   loader di `_loadEditorAvatars`, nuovo `_loadSvincoloAvatars`), badge ruolo colorato
+   (`_getRuoloBadgeHTML`), badge U21, prezzo, recupero. **Rimossa la pre-selezione
+   automatica** del piano suggerito dal server — nessun giocatore selezionato di default.
+2. **Recap Riparazione**: mostra ora il credito recuperato per ciascun giocatore svincolato
+   più il totale (`renderStorico`), non solo i nomi.
+3. **Blocco riacquisto squadra+giocatore+asta**: nuovo `asta.svincoliVietati` (Set, escluso da
+   `broadcastStato` perché non serializzabile/non necessario al client), popolato in
+   `esegui-svincolo`, controllato in `'rilancio'` — chi ha svincolato un giocatore non può
+   ripujarlo se ri-estratto nella stessa asta; le altre squadre restano libere. Solo sul
+   rilancio a tempo (decisione confermata), non su `assegna-manuale`.
+4. **Nessun cooldown sul re-svincolo**: verificato che comprare-e-poi-risvincolare nella
+   stessa asta resti sempre permesso (nessuna modifica necessaria).
+5-6. **Arrotondamento**: `Math.floor` → nuovo `calcolaRecuperoSvincolo(prezzo, fattore)` =
+   `Math.max(1, Math.round(prezzo*fattore))` (Math.round arrotonda .5 sempre per eccesso in
+   JS, coincide con tutti gli esempi dati), con pavimento di 1 credito garantito. Sostituito
+   in tutti e 7 i punti dove veniva calcolato (3 backend, 4 frontend, duplicato client come da
+   pattern già in uso).
+7. **Chip "🔓 X/Y" svincoli rimanenti** in `renderBudgetBar` (pannello "Riepilogo squadre"
+   live, tutte le squadre), si aggiorna da solo ad ogni `broadcastStato`.
+8. **Popup svincolo azionabile anche dall'Admin**: stesso pattern già esistente per la
+   riconferma RIC (`emitToAdmins` con lo stesso payload arricchito della squadra,
+   `esegui-svincolo` già accettava l'Admin lato server) — il client ora riusa DIRETTAMENTE lo
+   stesso `modal-svincolo`/`renderPopupSvincolo` invece del vecchio messaggio di sola attesa.
+   Fix necessario: `sv-crediti` cercava `getMiaSquadra()` (sbagliato per l'Admin che supervisiona
+   un'altra squadra) — ora cerca la squadra vincitrice per nome in `S.asta.squadre`.
+9. **"Nascondi" + ripresa dello svincolo**: nuovo bottone che nasconde il modal SENZA toccare
+   `S.popupAttivoCli`/`S.svincoloSel` (l'operazione resta pendente), badge fisso
+   `#btn-svincolo-pendente` per riprenderla identica. Stesso meccanismo di "nessuna
+   preselezione" (punto 1) riusato per il ripristino: `renderPopupSvincolo` ri-applica sempre
+   `S.svincoloSel` corrente (vuoto al primo apertura, preservato se nascosto e riaperto), mai
+   il suggerimento del server.
+
+**Bug reale trovato durante l'implementazione**: il primo tentativo di inserire il badge
+`#btn-svincolo-pendente` lo ha piazzato per errore DENTRO `#modal-overlay` — restava invisibile
+insieme a lui quando l'overlay veniva nascosto (`display:none` su un antenato vince su
+`position:fixed`). Spostato fuori, subito prima di `</body>`.
+
+**Bug di tooling reale, da ricordare per il futuro**: l'Edit tool standard, usato per un
+singolo cambio di una riga in `frontend/js/app.js`, ha silenziosamente convertito TUTTE le
+6000+ righe del file da CRLF a LF (non solo la riga toccata) — il file ha 137 righe LF-only
+preesistenti (confermate già presenti nel commit `7a1cafb`, non introdotte da questa sessione)
+che evidentemente confondono il meccanismo di patch dell'Edit tool su questo file specifico.
+Rilevato subito dal controllo `awk` di routine (137→0), corretto con `git checkout` del file +
+ripetizione del cambio con lo script Node che fa `split("\n")` (mai `split("\r\n")`, che
+disallinea gli indici di riga proprio a causa di queste righe miste) + `\r` esplicito solo
+sulle righe nuove. **Da questa sessione in poi: mai più l'Edit tool su `frontend/js/app.js` o
+`frontend/index.html` o `frontend/css/style.css` (tutti hanno righe LF-only preesistenti),
+nemmeno per un cambio di una riga sola — sempre lo script Node.**
+
+**Verificato**: 14 test standalone Node (arrotondamento con tutti gli esempi esatti
+dell'utente + blocco riacquisto), verifica visuale nel browser con dati sintetici iniettati in
+console (screenshot): redesign riga con avatar/badge/nessuna preselezione, arrotondamento
+corretto a schermo (3cr→+2cr), Nascondi→badge pendente→Riprendi con selezione esatta
+ripristinata E bordo di selezione ora visibile (fix CSS `.selezionato`), popup Admin con nota
+"stai gestendo per conto di X" e crediti della squadra corretta (non i propri), chip svincoli
+nel Riepilogo squadre che decresce con l'uso, Recap con dettaglio per-giocatore. Non
+verificato in un flusso live reale (stesso limite di login Supabase delle sessioni precedenti).
+
+## Intervento precedente — Asta di riparazione: Massima Offerta ottimizzata + svincoli post-vittoria
 
 Feature complessa richiesta esplicitamente dall'utente (pianificata con `EnterPlanMode`,
 decisioni chiave confermate via `AskUserQuestion` prima di scrivere codice — vedi

@@ -1175,10 +1175,12 @@
       <p class="text-muted">Seleziona i giocatori da svincolare per coprire la differenza di <strong id="sv-diff" class="text-danger"></strong> cr.</p>
       <p class="text-muted" id="sv-svincoli-rem"></p>
       <p class="text-muted" id="sv-room-gap"></p>
+      <p class="text-muted" id="sv-admin-nota"></p>
     </div>
     <div id="sv-lista" class="sv-lista"></div>
     <div class="sv-totale">Recupero: <strong id="sv-recupero">0</strong> cr | Debito: <strong id="sv-debito" class="text-danger">0</strong> cr</div>
     <div class="modal-actions">
+      <button class="btn btn-secondary" type="button" onclick="nascondiSvincolo()">🙈 Nascondi</button>
       <button class="btn btn-success" id="btn-sv-conferma" onclick="confermaSvincolo()">✅ Conferma svincolo</button>
     </div>
   </div>
@@ -1375,5 +1377,8 @@
 <script src="js/gk-planner-engine.js?v=1785717557150"></script>
 <script src="js/gk-planner-ui.js?v=1785754583010"></script>
 <script src="js/app.js?v=1786151647675"></script>
+<!-- Badge fisso: svincolo nascosto ma ancora pendente (nascondiSvincolo/riprendiSvincolo) —
+     va TENUTO fuori da #modal-overlay, altrimenti resta nascosto insieme a lui. -->
+<button id="btn-svincolo-pendente" class="svincolo-pendente-btn hidden" onclick="riprendiSvincolo()">🔓 Svincolo in sospeso — riprendi</button>
 </body>
 </html>
