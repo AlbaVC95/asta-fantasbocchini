@@ -2909,6 +2909,18 @@ function _antRoleClass(ruolo) {
   const base = (ruolo || '').split('/')[0].trim().toLowerCase();
   return 'ruolo-rose-' + base;
 }
+// Ordine di visualizzazione in Panchina (Anteprima): stesso raggruppamento a 5 gruppi
+// gia' usato per il colore d'accento delle carte (_roseRowRoleClass) - Por, Difesa,
+// Centrocampo, Esterni, Attacco - cosi' i due criteri restano coerenti tra loro.
+function _antRoleGroupOrder(ruolo) {
+  const r = (ruolo || '').split('/')[0].trim().toUpperCase();
+  if (r === 'POR' || r === 'P') return 0;
+  if (['DD', 'DS', 'DC', 'D', 'B'].includes(r)) return 1;
+  if (['M', 'C', 'E'].includes(r)) return 2;
+  if (['T', 'W'].includes(r)) return 3;
+  if (['A', 'PC'].includes(r)) return 4;
+  return 5;
+}
 // Classe di sfondo per la riga di un giocatore nella sezione "Rose", basata
 // sul suo PRIMO ruolo reale (stesso raggruppamento a 5 colori già usato per i
 // badge dei ruoli: Por=giallo, Dd/Ds/Dc/D/B=verde, M/C/E=azzurro, T/W=viola, A/Pc=rosso).
@@ -3303,9 +3315,11 @@ function _antCardHTML(g, size, onPitch) {
   const accentClass = _roseRowRoleClass(g.ruolo);
   const sizeClass = size === 'xl' ? 'size-xl' : (onPitch ? 'size-pitch' : 'size-bench');
   const stato = onPitch ? 'on-pitch' : 'in-bench';
+  const u21Badge = g.u21 === true ? '<div class="ant-card-u21">U21</div>' : '';
   let html = '<div class="ant-card ' + stato + ' ' + sizeClass + ' ' + accentClass + '" data-nome="' + _escAttr(g.nome) + '">' +
     '<div class="ant-card-photo"></div>' +
-    '<div class="ant-card-role">' + _getRuoloBadgeHTML(g.ruolo) + '</div>';
+    '<div class="ant-card-role">' + _getRuoloBadgeHTML(g.ruolo) + '</div>' +
+    u21Badge;
   if (!onPitch) {
     // Il nome vive in uno <span> interno NON posizionato, dentro al div assoluto solo per il
     // posizionamento — necessario per il wrap multi-riga della carta XL (vedi CSS
@@ -3402,7 +3416,8 @@ function _antRenderPanchina(nomeSquadra) {
   const rosa = (squadra && squadra.rosa) || [];
   const state = _antGetSquadraState(nomeSquadra);
   const assegnati = new Set(Object.keys(state.slots).map(k => state.slots[k]));
-  const disponibili = rosa.filter(g => !assegnati.has(g.nome));
+  const disponibili = rosa.filter(g => !assegnati.has(g.nome))
+    .sort((a, b) => _antRoleGroupOrder(a.ruolo) - _antRoleGroupOrder(b.ruolo));
   let html = '<div class="ant-panchina-hdr"><span class="ant-panchina-title">🪑 Panchina</span><span class="ant-panchina-count">' + disponibili.length + '</span></div>';
   if (!disponibili.length) {
     html += '<div class="ant-panchina-empty">Nessun giocatore in panchina</div>';

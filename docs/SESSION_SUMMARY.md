@@ -18,7 +18,36 @@ non accumulato (per la cronologia vedi `git log`).
   (`alba@MacBook-Air-de-Alba.local`) — utente avvisato, non ancora confermato se vuole
   correggerlo con `git config --global` + `git commit --amend --reset-author`.
 
-## Ultimo intervento — Cambio modulo in Anteprima non svuota più gli slot
+## Ultimo intervento — Badge U21 sulle carte Anteprima
+
+Richiesta esplicita dell'utente: i giocatori U21 devono essere riconoscibili come tali anche
+in Anteprima (non solo in Puja/Svincolati/Fasce, dove esisteva già `.tipo-U21`). Aggiunto in
+`_antCardHTML()` (`frontend/js/app.js`, dopo la riga `const stato = ...`) un badge condizionale
+`g.u21 === true ? '<div class="ant-card-u21">U21</div>' : ''`, stesso campo/valore booleano già
+usato altrove (nessuna logica nuova, solo un badge sulla carta). CSS `.ant-card-u21`
+(`frontend/css/style.css`, subito dopo `.ant-card-role`) speculare al badge ruolo esistente
+(stessa posizione in angolo, stesso pattern di dimensioni per `size-xl`) ma a destra invece che
+a sinistra, riusando i colori di `.tipo-U21` (verde `--success`). Aggiunti anche gli stessi
+override di z-index/posizione già esistenti per il badge ruolo nei contesti `in-bench.size-xl`
+e `.assegnazione-fx-card` (carta grande dell'animazione di assegnazione), cosi' il badge U21 si
+comporta in modo coerente in tutte le dimensioni di carta (bench, pitch minimo ~37px, xl).
+Verificato iniettando carte di test nella pagina reale (via console) alle tre dimensioni: badge
+leggibile e senza overlap col badge ruolo anche alla dimensione minima del campo. Non verificato
+con un giocatore U21 reale in un'asta live (nessuna asta di test disponibile in sessione).
+
+## Intervento precedente — Panchina in Anteprima ordinata per ruolo
+
+Richiesta esplicita dell'utente: i giocatori in Panchina (Anteprima) ora sono ordinati per
+ruolo (Portiere → Difesa → Centrocampo → Esterni → Attacco), invece dell'ordine grezzo di
+`squadra.rosa`. Nuova `_antRoleGroupOrder()` (`frontend/js/app.js`, subito dopo
+`_antRoleClass`) riusa lo stesso raggruppamento a 5 gruppi già usato per il colore d'accento
+delle carte (`_roseRowRoleClass`), cosi' i due criteri restano coerenti. Applicato con un
+`.sort()` sull'array `disponibili` in `_antRenderPanchina()`. Nessun controllo UI aggiunto
+(nessun toggle): l'ordinamento per ruolo è ora il comportamento di default, non opzionale.
+Verificato con dati sintetici in console browser (ordine risultante Por→Dc→M→W/T→A, come
+richiesto) — non verificato in un'asta reale con rosa assegnata.
+
+## Intervento precedente — Cambio modulo in Anteprima non svuota più gli slot
 
 Richiesta esplicita dell'utente: passando da un modulo all'altro (es. 4-3-3 → 4-2-3-1) i
 giocatori già piazzati non vengono più cancellati — si ricollocano automaticamente nel nuovo

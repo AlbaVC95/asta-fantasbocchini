@@ -1637,6 +1637,10 @@ html.theme-light body.layout-admin .asta-row-puja{
 .ant-card-role{position:absolute;top:4%;left:5%;z-index:3;display:flex;gap:2px;flex-wrap:wrap;max-width:90%}
 .ant-card-role .badge-ruolo{height:auto;min-width:0;padding:1px 3px;font-size:.44rem;border-radius:3px;line-height:1.3}
 .size-xl .ant-card-role .badge-ruolo{font-size:.58rem;padding:2px 5px;border-radius:5px}
+/* Badge U21: stesso pattern posizionale di .ant-card-role (angolo carta) ma speculare a
+   destra, colori riusati identici da .tipo-U21 (badge Puja/Svincolati/Fasce). */
+.ant-card-u21{position:absolute;top:4%;right:5%;z-index:3;font-size:.44rem;font-weight:800;text-transform:uppercase;padding:1px 3px;border-radius:3px;line-height:1.3;background:rgba(0,224,160,.15);color:var(--success);border:1px solid rgba(0,224,160,.3)}
+.size-xl .ant-card-u21{font-size:.58rem;padding:2px 5px;border-radius:5px}
 
 /* Panchina: nome DENTRO la carta, fascia inferiore minima solo dietro al testo. Il nome vive
    in uno <span> interno (.ant-card-name-txt) NON posizionato — necessario perche'
@@ -1997,6 +2001,7 @@ body.layout-partecipante .puja-panel-slot .cc-strategia-info{
 .ant-card.in-bench.size-xl .ant-card-name-txt{font-size:.76rem;font-weight:900;white-space:normal;overflow:visible;text-overflow:clip;
   display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;text-shadow:0 2px 5px #000}
 .ant-card.in-bench.size-xl .ant-card-role{z-index:4}
+.ant-card.in-bench.size-xl .ant-card-u21{z-index:4}
 .assegnazione-fx-card{filter:drop-shadow(0 0 18px rgba(125,93,255,.5))}
 @media (max-width:900px){
   #tab-anteprima.ant-drawer.drawer-open{width:min(440px,55vw)}
@@ -2052,6 +2057,7 @@ body.layout-partecipante .puja-panel-slot .cc-strategia-info{
   color:#fff;font-size:.82rem!important;font-weight:900;text-shadow:0 2px 5px #000;
 }
 .assegnazione-fx-card .ant-card.in-bench.size-xl .ant-card-role{top:7px;left:7px}
+.assegnazione-fx-card .ant-card.in-bench.size-xl .ant-card-u21{top:7px;right:7px}
 
 @media (max-width:900px){
   #tab-anteprima.ant-drawer.drawer-open{width:min(390px,42vw)}
