@@ -598,10 +598,14 @@ app.post('/api/asta', async (req, res) => {
       if (sq.giocatori) {
         sq.giocatori.forEach(g => {
           const tipo = g.tipo === 'RIC' ? 'RIC' : g.tipo === 'PLUS' ? 'PLUS' : 'NN';
-          asta.poolGiocatori.push({
+          // Riparazione: nel file il giocatore ha già una fantasquadra assegnata (sq.nome) —
+          // resta lì, non torna tra i chiamabili. Solo chi nel file risulta davvero senza
+          // squadra (blocco svincolatiJson sotto) può essere chiamato/assegnato in asta.
+          const giaAssegnatoInRiparazione = asta.tipoAsta === 'riparazione';
+          const giocatoreObj = {
             id: uuidv4(), nome: g.nome, ruolo: g.ruolo || '', tipo,
             costoOriginale: g.costo || 1, valore: g.valore || 0, squadraOriginale: sq.nome,
-            estratto: false, assegnato: false, scartato: false,
+            estratto: giaAssegnatoInRiparazione, assegnato: giaAssegnatoInRiparazione, scartato: false,
             // campi extra: club reale (mostrato in Puja/confirma) + statistiche non mostrate ancora da nessuna parte, servono per una funzione futura
             squadra: g.squadra || null,
             pgv: g.pgv ?? null, mv: g.mv ?? null, fm: g.fm ?? null,
@@ -609,7 +613,9 @@ app.post('/api/asta', async (req, res) => {
             idFantaleghe: g.idFantaleghe ?? null,
             under: g.under ?? null, u21: !!g.u21,
             quotazione: g.quotazione ?? null
-          });
+          };
+          asta.poolGiocatori.push(giocatoreObj);
+          if (giaAssegnatoInRiparazione) squadra.rosa.push({ ...giocatoreObj, prezzo: giocatoreObj.costoOriginale });
         });
       }
       asta.squadre.push(squadra);

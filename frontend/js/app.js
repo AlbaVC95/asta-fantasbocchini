@@ -1419,10 +1419,11 @@ function handleExcelFile(file) {
       }
 
       const giocatoriPerSquadra = {};
+      const svincolati = [];
       rows.forEach(row => {
         const nome = row[colGiocatore];
         if (!nome) return;
-        const fantaSquadra = row[colFantaSquadra] || 'Senza squadra';
+        const fantaSquadra = (row[colFantaSquadra] || '').toString().trim();
         const g = {
           nome,
           squadra: colSquadra && row[colSquadra] !== '' ? row[colSquadra] : null,
@@ -1434,17 +1435,21 @@ function handleExcelFile(file) {
           qam: colQam && row[colQam] !== '' ? row[colQam] : null,
           tipo: (row[colRP] || 'NN').toString().toUpperCase(),
           costo: row[colCosto] || 1,
-          squadraOriginale: fantaSquadra,
+          squadraOriginale: fantaSquadra || null,
           idFantaleghe: colId && row[colId] !== '' ? row[colId] : null
         };
+        if (!fantaSquadra) {
+          svincolati.push(g);
+          return;
+        }
         if (!giocatoriPerSquadra[fantaSquadra]) giocatoriPerSquadra[fantaSquadra] = [];
         giocatoriPerSquadra[fantaSquadra].push(g);
       });
 
       const squadre = Object.keys(giocatoriPerSquadra).map(nome => ({ nome, giocatori: giocatoriPerSquadra[nome] }));
-      if (!squadre.length) return toast('Nessun giocatore valido trovato nel file', 'error');
+      if (!squadre.length && !svincolati.length) return toast('Nessun giocatore valido trovato nel file', 'error');
 
-      const data = { squadre };
+      const data = { squadre, svincolati };
       window._jsonData = data;
       renderJsonPreview(data);
       const dropLabel = document.getElementById('file-drop-label');

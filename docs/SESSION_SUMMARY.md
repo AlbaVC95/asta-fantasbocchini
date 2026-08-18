@@ -20,7 +20,49 @@ non accumulato (per la cronologia vedi `git log`).
   (`d5b5b0f`). I commit precedenti di questa sessione restano con l'identità automatica
   precedente (`alba@MacBook-Air-de-Alba.local`), non riscritti.
 
-## Ultimo intervento — `maxGiocatoriPerSquadra` ora è un tetto TOTALE (portieri+movimento), enforced
+## Ultimo intervento — Asta di riparazione: i giocatori importati restano nella loro fantasquadra
+
+Bug segnalato dall'utente: creando un'asta di riparazione (1 o 2) da Excel o JSON, i
+giocatori che nel file appartenevano già a una fantasquadra finivano trattati come
+svincolati/chiamabili invece di restare nella loro rosa — solo chi nel file risultava
+davvero senza squadra doveva essere svincolato. Causa: `POST /api/asta`
+(`backend/server.js:598-618`) metteva SEMPRE ogni giocatore di `sq.giocatori` in
+`asta.poolGiocatori` con `assegnato:false` (chiamabile), senza mai popolare
+`squadra.rosa` all'import — quel campo veniva riempito solo da `assegnaGiocatoreASquadra()`
+durante un'asta live, mai al momento della creazione.
+
+Fix, **solo per `tipoAsta === 'riparazione'`** (comportamento di `'iniziale'` invariato,
+per scelta esplicita — lì i giocatori con una fantasquadra nel file devono restare
+chiamabili per la logica RIC/PLUS):
+- `backend/server.js:598-618`: se l'asta è di riparazione, ogni giocatore di
+  `sq.giocatori` viene marcato `assegnato:true, estratto:true` in `poolGiocatori` (non più
+  richiamabile) E aggiunto direttamente a `squadra.rosa` con `prezzo: costoOriginale`
+  (nessuna doppia decurtazione crediti — `sq.crediti` per riparazione rappresenta già il
+  budget NETTO residuo, non un totale lordo, vedi commento esistente su `campiCrediti`
+  poco sopra). Effetto collaterale positivo: il calcolo "crediti recuperabili da svincolo"
+  in `calcolaMaxOfferta()` (ramo riparazione) ora funziona fin dalla creazione, prima
+  restava sempre a zero perché `squadra.rosa` era sempre vuota all'import.
+- `frontend/js/app.js:1421-1452` (`handleExcelFile`): il parsing Excel raggruppava i
+  giocatori senza `FantaSquadra` sotto una fantasquadra FITTIZIA letterale
+  `"Senza squadra"` (mai un vero array `svincolati`, a differenza del formato
+  JSON/export). Ora le righe con `FantaSquadra` vuota (o solo spazi, con `.trim()`)
+  finiscono in un array `svincolati` separato — stesso formato già atteso dal backend
+  (`svincolatiJson`) e dall'import JSON. Necessario perché senza questo fix il nuovo
+  comportamento backend avrebbe creato una squadra reale "Senza squadra" con tutti i
+  liberi intrappolati nella sua rosa invece che svincolati.
+
+**Verificato**: `node --check` su entrambi i file, diff puliti (CRLF preservato a mano via
+`perl`, stesso gotcha di sempre). Estratto il codice REALE di entrambe le funzioni
+modificate e testato con l'identico scenario descritto dall'utente (Giocatore A →
+fantasquadra1, Giocatore B → fantasquadra2, Giocatore C → senza squadra): 13/13 casi
+passati lato backend (A e B restano in rosa con crediti squadra invariati, C è l'unico
+chiamabile, comportamento `'iniziale'` invariato in regressione) + 7/7 lato frontend
+(nessuna squadra fittizia "Senza squadra", C finisce in `svincolati` con
+`squadraOriginale:null`, gestito anche il caso di celle con soli spazi). **Non verificato
+in un flusso live reale nel browser** (upload file → creazione asta → controllo rose):
+stesso limite di login Supabase già annotato per l'intervento precedente.
+
+## Intervento precedente — `maxGiocatoriPerSquadra` ora è un tetto TOTALE (portieri+movimento), enforced
 
 Richiesta esplicita dell'utente: prima `maxGiocatoriPerSquadra` esisteva solo come dato di
 config, senza ALCUN enforcement in nessun punto del codice (né come totale né come solo
