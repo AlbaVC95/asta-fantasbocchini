@@ -5,8 +5,8 @@ non accumulato (per la cronologia vedi `git log`).
 
 ## Stato attuale
 
-- Branch `main`, allineato con `origin/main` (ultimo push: `201def3`). Nessuna modifica locale
-  pendente.
+- Branch `main`, allineato con `origin/main` (ultimo push: `d5b5b0f`). Nessuna modifica al
+  codice pendente.
 - **Nota importante**: durante questa sessione, il redesign 3D di Anteprima costruito qui
   (carta FX orizzontale, stadio Three.js con importmap, fix carta Puja admin) è stato
   **scartato su richiesta esplicita dell'utente** in favore di una versione diversa già presente
@@ -14,9 +14,11 @@ non accumulato (per la cronologia vedi `git log`).
   cambiato da "Asta FantaSbocchini" a "FantaBar", stadio 3D con `ant-stadio-3d` (Three.js via
   `<script>` globale, non importmap). Il lavoro scartato resta recuperabile nel branch
   `backup/sesion-redesign-tres-js-20260817` se mai servisse confrontarlo o riprenderlo.
-- Git: l'autore dei commit di questa sessione risulta configurato in automatico dal sistema
-  (`alba@MacBook-Air-de-Alba.local`) — utente avvisato, non ancora confermato se vuole
-  correggerlo con `git config --global` + `git commit --amend --reset-author`.
+- Git: identità corretta con `git config --global user.name "AlbaVC95"` +
+  `user.email "albavicentecarragal@gmail.com"` (coerente con l'autore già usato in commit
+  precedenti del repo) e applicata con `--amend --reset-author` all'ultimo commit locale
+  (`d5b5b0f`). I commit precedenti di questa sessione restano con l'identità automatica
+  precedente (`alba@MacBook-Air-de-Alba.local`), non riscritti.
 
 ## Ultimo intervento — Badge U21 sulle carte Anteprima
 
