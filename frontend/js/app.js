@@ -1251,7 +1251,8 @@ function setupHome() {
       maxGiocatoriPerSquadra: parseInt(document.getElementById('inp-max-gioc').value) || 25,
       svincoliTotali: parseInt(document.getElementById('inp-svincoli').value) || 15,
       squadreJson: window._jsonData ? window._jsonData.squadre : null,
-      svincolatiJson: window._jsonData ? window._jsonData.svincolati : null
+      svincolatiJson: window._jsonData ? window._jsonData.svincolati : null,
+      fonteListino: !!(window._jsonData && window._jsonData.fonteListinoUfficiale)
     };
     try {
       const { data: sessData } = await supa.auth.getSession();
@@ -1348,6 +1349,19 @@ async function usaListinoUfficialePerNuovaAsta() {
       quotazione: r.quotazione
     }));
     const data2 = { squadre: [], svincolati };
+    data2.fonteListinoUfficiale = true;
+    // Un'asta di riparazione partirebbe senza rosa pregressa da cui svincolare (tutti i
+    // giocatori del Listino diventano svincolati, nessuna squadra ha una rosa) — non ha
+    // senso per questo tipo di asta. Disabilitato qui proattivamente (UX); il blocco reale
+    // e autoritativo resta lato server (vedi POST /api/asta).
+    const optRip = document.querySelector('#inp-tipo-asta option[value="riparazione"]');
+    if (optRip) optRip.disabled = true;
+    const inpTipoSel = document.getElementById('inp-tipo-asta');
+    if (inpTipoSel && inpTipoSel.value === 'riparazione') {
+      inpTipoSel.value = 'iniziale';
+      const rowSotto = document.getElementById('row-sottotipo');
+      if (rowSotto) rowSotto.style.display = 'none';
+    }
     window._jsonData = data2;
     const box = document.getElementById('json-preview');
     if (box) {
@@ -1377,6 +1391,17 @@ function handleJsonFile(file) {
       document.getElementById('file-drop-label').textContent = '✅ ' + file.name + ' caricato';
       toast('JSON caricato: ' + (data.squadre ? data.squadre.length : 0) + ' squadre', 'success');
       aggiornaAdminNomeDropdown(data);
+      // Tetto svincoli cumulativo Riparazione1->Riparazione2: se il JSON lo porta (export di
+      // un'asta di riparazione precedente), pre-riempie il form invece di ripartire dal
+      // default — resta comunque modificabile dall'admin prima di creare l'asta.
+      if (data.svincoliTotali != null) {
+        const inpSv = document.getElementById('inp-svincoli');
+        if (inpSv) inpSv.value = data.svincoliTotali;
+      }
+      // Riabilita "riparazione" nel caso fosse stata disabilitata da un uso precedente del
+      // Listino Ufficiale nella stessa sessione del form (vedi usaListinoUfficialePerNuovaAsta).
+      const optRipJson = document.querySelector('#inp-tipo-asta option[value="riparazione"]');
+      if (optRipJson) optRipJson.disabled = false;
     } catch (err) { toast('File JSON non valido', 'error'); }
   };
   reader.readAsText(file);
@@ -1451,6 +1476,10 @@ function handleExcelFile(file) {
 
       const data = { squadre, svincolati };
       window._jsonData = data;
+      // Riabilita "riparazione" nel caso fosse stata disabilitata da un uso precedente del
+      // Listino Ufficiale nella stessa sessione del form (vedi usaListinoUfficialePerNuovaAsta).
+      const optRipExcel = document.querySelector('#inp-tipo-asta option[value="riparazione"]');
+      if (optRipExcel) optRipExcel.disabled = false;
       renderJsonPreview(data);
       const dropLabel = document.getElementById('file-drop-label');
       if (dropLabel) dropLabel.textContent = '✅ ' + file.name + ' importato (Excel)';
@@ -2155,6 +2184,14 @@ socket.on('popup-svincolo-admin', function(popup) {
   document.getElementById('popup-override-chi').textContent = popup.squadraVincitrice + ' sta decidendo su ' + popup.giocatore.nome + '...';
   document.getElementById('popup-override-actions').innerHTML = '<em class="text-muted">⏳ In attesa della scelta della squadra...</em>';
   document.getElementById('popup-override-box').classList.remove('hidden');
+});
+
+// Caso limite (non dovrebbe accadere se calcolaMaxOfferta/Massima Offerta funzionano bene):
+// nemmeno tutti gli svincoli residui basterebbero a completare l'operazione — il backend ha
+// bloccato senza chiudere l'asta, l'admin puo' ritentare con un'azione diversa.
+socket.on('errore-svincolo-impossibile', (data) => {
+  if (!S.isAdmin) return;
+  toast('⚠️ ' + data.motivo, 'error');
 });
 
 // ════ RENDER FUNCTIONS ════════════════════════
@@ -4116,6 +4153,12 @@ function renderPopupSvincolo(popupData) {
   document.getElementById('sv-crediti').textContent = sq ? sq.crediti : 0;
   document.getElementById('sv-diff').textContent = popupData.differenza;
   document.getElementById('sv-svincoli-rem').textContent = 'Svincoli rimanenti: ' + popupData.svincoliRimanenti;
+  const svRoomGap = document.getElementById('sv-room-gap');
+  if (svRoomGap) {
+    svRoomGap.textContent = (popupData.minSvincoli > 0)
+      ? 'Devi liberare almeno ' + popupData.minSvincoli + ' giocatori' + (popupData.roomGap > 0 ? ' (di cui ' + popupData.roomGap + ' solo per fare spazio in rosa)' : '')
+      : '';
+  }
   const fattore = popupData.fattoreSvincolo || 0.5;
   document.getElementById('sv-lista').innerHTML = (popupData.rosa || []).map(g => {
     const recup = Math.floor(g.prezzo * fattore);
@@ -4125,12 +4168,29 @@ function renderPopupSvincolo(popupData) {
       '<div class="sv-item-detail">' + (g.ruolo||'?') + ' — ' + g.prezzo + 'cr</div></div>' +
       '<span class="sv-item-recup">+' + recup + 'cr</span></div>';
   }).join('');
+  // Pre-seleziona il piano suggerito dal server (copre gia' il minimo necessario calcolato
+  // server-side) — l'allenatore resta libero di deselezionare/scegliere altri giocatori,
+  // purche' il totale continui a coprire debito e spazio rosa (vedi aggiornaTotaleSvincolo).
+  const suggeriti = popupData.suggerimento
+    ? [].concat(popupData.suggerimento.portieriDaLiberare || [], popupData.suggerimento.movimentoDaLiberare || [])
+    : [];
+  suggeriti.forEach(id => {
+    const g = (popupData.rosa || []).find(r => r.id === id);
+    if (g) window.toggleSvincolo(id, Math.floor(g.prezzo * fattore));
+  });
   aggiornaTotaleSvincolo(popupData.differenza);
 }
 
 window.toggleSvincolo = function(id, crediti) {
   const cb = document.getElementById('svc-' + id);
   const item = document.getElementById('svi-' + id);
+  const popup = S.popupAttivoCli;
+  // Tetto massimo (prima assente): non si puo' selezionare piu' giocatori di quanti
+  // svincoli restano disponibili alla squadra.
+  if (!S.svincoloSel.has(id) && popup && S.svincoloSel.size >= popup.svincoliRimanenti) {
+    toast('Hai raggiunto il massimo di ' + popup.svincoliRimanenti + ' svincoli disponibili', 'error');
+    return;
+  }
   if (S.svincoloSel.has(id)) {
     S.svincoloSel.delete(id);
     if (cb) cb.checked = false;
@@ -4140,7 +4200,7 @@ window.toggleSvincolo = function(id, crediti) {
     if (cb) cb.checked = true;
     if (item) item.classList.add('selezionato');
   }
-  aggiornaTotaleSvincolo(S.popupAttivoCli ? S.popupAttivoCli.differenza : 0);
+  aggiornaTotaleSvincolo(popup ? popup.differenza : 0);
 };
 
 function aggiornaTotaleSvincolo(differenza) {
@@ -4152,9 +4212,12 @@ function aggiornaTotaleSvincolo(differenza) {
     if (g) recupero += Math.floor(g.prezzo * fattore);
   });
   const debito = Math.max(0, differenza - recupero);
+  // Vincolo minimo (prima solo sui crediti): il pulsante resta disabilitato anche se manca
+  // spazio in rosa, non solo se manca il recupero crediti.
+  const spazioOk = S.svincoloSel.size >= (popup.roomGap || 0);
   document.getElementById('sv-recupero').textContent = recupero;
   document.getElementById('sv-debito').textContent = debito;
-  document.getElementById('btn-sv-conferma').disabled = debito > 0;
+  document.getElementById('btn-sv-conferma').disabled = debito > 0 || !spazioOk;
 }
 
 window.confermaSvincolo = function() {
@@ -4281,6 +4344,11 @@ window.apriModalAdminConfig = function() {
   document.getElementById('inp-ac-min-portieri').value = S.asta.minimoPortieri;
   document.getElementById('inp-ac-min-movimento').value = S.asta.minimoMovimento;
   document.getElementById('inp-ac-max-gioc').value = S.asta.maxGiocatoriPerSquadra || 25;
+  // Solo in riparazione ha senso modificare il tetto svincoli (non esiste in 'iniziale').
+  const rowAcSv = document.getElementById('row-ac-svincoli');
+  if (rowAcSv) rowAcSv.style.display = (S.asta.tipoAsta === 'riparazione') ? 'flex' : 'none';
+  const inpAcSv = document.getElementById('inp-ac-svincoli');
+  if (inpAcSv) inpAcSv.value = S.asta.svincoliTotali != null ? S.asta.svincoliTotali : 15;
   const chkFx = document.getElementById('chk-ac-fx-assegnazione');
   if (chkFx) chkFx.checked = _antGetFxAbilitata();
   const lista = document.getElementById('ac-crediti-lista');
@@ -4319,14 +4387,20 @@ window.copiaLinkAdmin = function() {
 };
 
 window.confermaAdminConfig = function() {
-  socket.emit('admin-update-config', {
+  const payloadConfig = {
     astaId: S.astaId,
     timerPrimaChiamata: parseInt(document.getElementById('inp-ac-timer-prima').value),
     timerRilancio: parseInt(document.getElementById('inp-ac-timer-rilancio').value),
     minimoPortieri: parseInt(document.getElementById('inp-ac-min-portieri').value),
     minimoMovimento: parseInt(document.getElementById('inp-ac-min-movimento').value),
     maxGiocatoriPerSquadra: parseInt(document.getElementById('inp-ac-max-gioc').value) || 25
-  });
+  };
+  // Il tetto svincoli esiste solo in riparazione — non fa parte del form per 'iniziale'.
+  if (S.asta && S.asta.tipoAsta === 'riparazione') {
+    const inpAcSv = document.getElementById('inp-ac-svincoli');
+    if (inpAcSv) payloadConfig.svincoliTotali = parseInt(inpAcSv.value) || 0;
+  }
+  socket.emit('admin-update-config', payloadConfig);
   // Solo locale (localStorage), non fa parte della config asta lato server: l'animazione
   // e' gia' un effetto puramente client-side, vedi _antGetFxAbilitata sopra.
   const chkFx = document.getElementById('chk-ac-fx-assegnazione');
@@ -4394,35 +4468,75 @@ function prezzoRealeStrategia(cfg) {
   return cfg.prezzo;
 }
 
-// I minimi Portieri/Movimento sono due vincoli SEPARATI, non un totale unico (stessa
-// motivazione e stessa formula di calcolaMaxOfferta() in backend/server.js — deve restare
-// sincronizzata, e' solo un hint UI, la validazione autoritativa e' lato server). Il
-// giocatore della chiamata attuale (se c'e') conta verso la SUA categoria; se non c'e' nessuna
-// chiamata attiva si riservano comunque entrambi i minimi per intero (caso conservativo).
-function calcolaMaxOffertaSquadra(sq) {
-  if (!sq || !S.asta) return 0;
-  if (sq.rosa.length >= (S.asta.maxGiocatoriPerSquadra || 25)) return 0;
-  const chiamata = S.asta.chiamataAttuale;
-  const giocatore = chiamata ? chiamata.giocatore : null;
+// Specchio client di costruisciListeOrdinateSvincolo() in backend/server.js — deve restare
+// sincronizzata, e' solo un hint UI, la validazione autoritativa e' lato server.
+function _costruisciListeOrdinateSvincoloCli(sq) {
+  const fattore = S.asta.fattoreSvincolo || 0.5;
+  const valore = g => Math.floor(g.prezzo * fattore);
+  const portieri = sq.rosa.filter(g => _isPortiere(g.ruolo)).slice().sort((a, b) => valore(b) - valore(a));
+  const movimento = sq.rosa.filter(g => !_isPortiere(g.ruolo)).slice().sort((a, b) => valore(b) - valore(a));
+  const prefixPor = [0]; portieri.forEach(g => prefixPor.push(prefixPor[prefixPor.length - 1] + valore(g)));
+  const prefixMov = [0]; movimento.forEach(g => prefixMov.push(prefixMov[prefixMov.length - 1] + valore(g)));
+  return { portieri, movimento, prefixPor, prefixMov };
+}
+
+// Specchio client di calcolaPianoSvincoloOttimale() in backend/server.js (stessa ricerca su
+// tutte le combinazioni portieri/movimento da liberare, stesso vincolo duro kRoster) — deve
+// restare sincronizzata, e' solo un hint UI, la validazione autoritativa e' lato server.
+function _calcolaPianoSvincoloOttimaleCli(sq, giocatore, svincoliRimanenti, capMax) {
+  const { portieri, movimento, prefixPor, prefixMov } = _costruisciListeOrdinateSvincoloCli(sq);
   const minimoPortieri = S.asta.minimoPortieri || 0;
   const minimoMovimento = S.asta.minimoMovimento || 0;
-  const portieriAttuali = sq.rosa.filter(g => _isPortiere(g.ruolo)).length;
-  const movimentoAttuali = sq.rosa.length - portieriAttuali;
+  const portieriAttuali = portieri.length, movimentoAttuali = movimento.length;
   const ePortiere = giocatore ? _isPortiere(giocatore.ruolo) : null;
-  const portieriDopo = portieriAttuali + (ePortiere === true ? 1 : 0);
-  const movimentoDopo = movimentoAttuali + (ePortiere === false ? 1 : 0);
-  const creditiRiservati = Math.max(0, minimoPortieri - portieriDopo) + Math.max(0, minimoMovimento - movimentoDopo);
+  const kRoster = Math.max(0, (sq.rosa.length + 1) - capMax);
+  if (kRoster > svincoliRimanenti) return { possibile: false, maxOfferta: 0 };
+
+  let best = null;
+  const maxP = Math.min(portieriAttuali, svincoliRimanenti);
+  for (let p = 0; p <= maxP; p++) {
+    const mMax = Math.min(movimentoAttuali, svincoliRimanenti - p);
+    for (let m = Math.max(0, kRoster - p); m <= mMax; m++) {
+      const creditiRecuperabili = prefixPor[p] + prefixMov[m];
+      const portieriDopo = portieriAttuali - p + (ePortiere === true ? 1 : 0);
+      const movimentoDopo = movimentoAttuali - m + (ePortiere === false ? 1 : 0);
+      const creditiRiservati = Math.max(0, minimoPortieri - portieriDopo) + Math.max(0, minimoMovimento - movimentoDopo);
+      const valoreNetto = creditiRecuperabili - creditiRiservati;
+      if (!best || valoreNetto > best.valoreNetto) best = { p, m, valoreNetto };
+    }
+  }
+  if (!best) return { possibile: false, maxOfferta: 0 };
+  return { possibile: true, maxOfferta: Math.max(1, sq.crediti + best.valoreNetto) };
+}
+
+// Specchio client di calcolaMaxOfferta() in backend/server.js — deve restare sincronizzata,
+// e' solo un hint UI (abilita/disabilita il box di rilancio, mostra il chip "Max Xcr"), la
+// validazione autoritativa e' sempre lato server (handler 'rilancio').
+function calcolaMaxOffertaSquadra(sq) {
+  if (!sq || !S.asta) return 0;
+  const capMax = S.asta.maxGiocatoriPerSquadra || 25;
+  const chiamata = S.asta.chiamataAttuale;
+  const giocatore = chiamata ? chiamata.giocatore : null;
 
   if (S.asta.tipoAsta === 'iniziale') {
+    if (sq.rosa.length >= capMax) return 0;
+    const minimoPortieri = S.asta.minimoPortieri || 0;
+    const minimoMovimento = S.asta.minimoMovimento || 0;
+    const portieriAttuali = sq.rosa.filter(g => _isPortiere(g.ruolo)).length;
+    const movimentoAttuali = sq.rosa.length - portieriAttuali;
+    const ePortiere = giocatore ? _isPortiere(giocatore.ruolo) : null;
+    const portieriDopo = portieriAttuali + (ePortiere === true ? 1 : 0);
+    const movimentoDopo = movimentoAttuali + (ePortiere === false ? 1 : 0);
+    const creditiRiservati = Math.max(0, minimoPortieri - portieriDopo) + Math.max(0, minimoMovimento - movimentoDopo);
     return Math.max(1, sq.crediti - creditiRiservati);
   }
-  const fattore = S.asta.fattoreSvincolo || 0.5;
+
   const svinR = S.asta.svincoliTotali - (sq.svincoliUsati || 0);
-  if (svinR <= 0) return sq.crediti;
-  const sorted = [...sq.rosa].sort((a, b) => Math.floor(b.prezzo * fattore) - Math.floor(a.prezzo * fattore));
-  let recup = 0;
-  for (let i = 0; i < Math.min(svinR, sorted.length); i++) recup += Math.floor(sorted[i].prezzo * fattore);
-  return Math.max(1, sq.crediti + recup - creditiRiservati);
+  if (svinR <= 0) {
+    if (sq.rosa.length >= capMax) return 0;
+    return sq.crediti;
+  }
+  return _calcolaPianoSvincoloOttimaleCli(sq, giocatore, svinR, capMax).maxOfferta;
 }
 
 function getMaxOfferta() {

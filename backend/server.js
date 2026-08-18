@@ -330,32 +330,130 @@ function broadcastStato(astaId, doBackup) {
 // residui, restando poi bloccata a fine asta senza poter completare i portieri minimi). Il
 // "giocatore" attualmente chiamato conta verso la SUA categoria (Por o movimento), le altre
 // categorie restano comunque riservate per il loro minimo.
-function calcolaMaxOfferta(asta, squadra, giocatore) {
-  // Tetto TOTALE rosa (portieri+movimento sommati), separato dai minimi per categoria
-  // sopra: se la squadra ha gia' raggiunto/superato il tetto non puo' fare offerte,
-  // qualunque sia la composizione. Bloccato qui (non nell'handler 'rilancio') cosi'
-  // resta l'unico punto di verita', coerente col controllo gia' esistente offerta > maxOff.
-  if (squadra.rosa.length >= (asta.maxGiocatoriPerSquadra || 25)) return 0;
+// Liste rosa ordinate per valore di svincolo (prezzo*fattoreSvincolo) decrescente, separate
+// per categoria, con prefix-sum: permette di calcolare in O(1) "quanto si recupera liberando
+// i top-N di una categoria", usato sia per la Massima Offerta sia per il piano minimo post-
+// vittoria (vedi sotto) senza riordinare la rosa ad ogni combinazione testata.
+function costruisciListeOrdinateSvincolo(asta, squadra) {
+  const fattore = asta.fattoreSvincolo || 0.5;
+  const valore = g => Math.floor(g.prezzo * fattore);
+  const portieri = squadra.rosa.filter(g => isPortiere(g.ruolo)).slice().sort((a, b) => valore(b) - valore(a));
+  const movimento = squadra.rosa.filter(g => !isPortiere(g.ruolo)).slice().sort((a, b) => valore(b) - valore(a));
+  const prefixPor = [0]; portieri.forEach(g => prefixPor.push(prefixPor[prefixPor.length - 1] + valore(g)));
+  const prefixMov = [0]; movimento.forEach(g => prefixMov.push(prefixMov[prefixMov.length - 1] + valore(g)));
+  return { portieri, movimento, prefixPor, prefixMov };
+}
+
+// Massima Offerta in riparazione: cerca su tutte le combinazioni (p portieri, m movimento da
+// liberare, p+m <= svincoliRimanenti) quella che MASSIMIZZA crediti recuperabili meno crediti
+// riservati per i minimi — la riserva e' calcolata SIMULANDO la rimozione di p/m giocatori
+// dalla rosa attuale prima di confrontare col minimo, non sulla rosa cosi' com'e' oggi:
+// altrimenti si ignora che liberare giocatori per pagare l'offerta puo' far scendere sotto i
+// minimi. Non forza l'uso di tutti gli svincoli disponibili: un ultimo svincolo che costa piu'
+// in riserva di quanto recupera in crediti non viene scelto (si cerca il MASSIMO, non si
+// assume k=svincoliRimanenti). kRoster e' un vincolo DURO (a differenza dei minimi, che sono
+// solo una riserva "morbida" sui crediti): se la rosa e' gia' al tetto
+// asta.maxGiocatoriPerSquadra serve fare spazio per forza, altrimenti l'offerta e' impossibile
+// a prescindere dai crediti disponibili.
+function calcolaPianoSvincoloOttimale(asta, squadra, giocatore, svincoliRimanenti, capMax) {
+  const { portieri, movimento, prefixPor, prefixMov } = costruisciListeOrdinateSvincolo(asta, squadra);
   const minimoPortieri = asta.minimoPortieri || 0;
   const minimoMovimento = asta.minimoMovimento || 0;
-  const portieriAttuali = squadra.rosa.filter(g => isPortiere(g.ruolo)).length;
-  const movimentoAttuali = squadra.rosa.length - portieriAttuali;
+  const portieriAttuali = portieri.length, movimentoAttuali = movimento.length;
   const ePortiere = giocatore ? isPortiere(giocatore.ruolo) : null;
-  const portieriDopo = portieriAttuali + (ePortiere === true ? 1 : 0);
-  const movimentoDopo = movimentoAttuali + (ePortiere === false ? 1 : 0);
-  const creditiRiservati = Math.max(0, minimoPortieri - portieriDopo) + Math.max(0, minimoMovimento - movimentoDopo);
+  const kRoster = Math.max(0, (squadra.rosa.length + 1) - capMax);
+  if (kRoster > svincoliRimanenti) return { possibile: false, maxOfferta: 0 };
+
+  let best = null;
+  const maxP = Math.min(portieriAttuali, svincoliRimanenti);
+  for (let p = 0; p <= maxP; p++) {
+    const mMax = Math.min(movimentoAttuali, svincoliRimanenti - p);
+    for (let m = Math.max(0, kRoster - p); m <= mMax; m++) {
+      const creditiRecuperabili = prefixPor[p] + prefixMov[m];
+      const portieriDopo = portieriAttuali - p + (ePortiere === true ? 1 : 0);
+      const movimentoDopo = movimentoAttuali - m + (ePortiere === false ? 1 : 0);
+      const creditiRiservati = Math.max(0, minimoPortieri - portieriDopo) + Math.max(0, minimoMovimento - movimentoDopo);
+      const valoreNetto = creditiRecuperabili - creditiRiservati;
+      if (!best || valoreNetto > best.valoreNetto) best = { p, m, valoreNetto };
+    }
+  }
+  if (!best) return { possibile: false, maxOfferta: 0 };
+  return { possibile: true, maxOfferta: Math.max(1, squadra.crediti + best.valoreNetto) };
+}
+
+// Post-vittoria: numero MINIMO di giocatori da liberare per completare legalmente
+// l'operazione — coprire il debito di crediti E fare spazio in rosa se serve (due vincoli
+// DURI). I minimi Portieri/Movimento restano solo un criterio di spareggio tra piani con lo
+// stesso numero di svincoli (la rosa PUO' scendere temporaneamente sotto i minimi dopo uno
+// svincolo, non e' mai un motivo per bloccarlo). Riusata sia per aprire/popolare il popup di
+// svincolo sia per validare lato server cosa l'allenatore ha davvero scelto — mai fidarsi
+// solo del client, stesso principio gia' applicato al timer d'asta.
+function calcolaSvincoliMinimiPerVittoria(asta, squadra, giocatore, prezzoFinale, capMax) {
+  const svincoliRimanenti = asta.svincoliTotali - (squadra.svincoliUsati || 0);
+  const { portieri, movimento, prefixPor, prefixMov } = costruisciListeOrdinateSvincolo(asta, squadra);
+  const portieriAttuali = portieri.length, movimentoAttuali = movimento.length;
+  const creditoGap = Math.max(0, prezzoFinale - squadra.crediti);
+  const kRoster = Math.max(0, (squadra.rosa.length + 1) - capMax);
+  if (kRoster > svincoliRimanenti) return { possibile: false, creditoGap, kRoster, svincoliRimanenti };
+
+  const minimoPortieri = asta.minimoPortieri || 0;
+  const minimoMovimento = asta.minimoMovimento || 0;
+  const ePortiere = giocatore ? isPortiere(giocatore.ruolo) : null;
+  let best = null;
+  const maxP = Math.min(portieriAttuali, svincoliRimanenti);
+  for (let p = 0; p <= maxP; p++) {
+    const mMax = Math.min(movimentoAttuali, svincoliRimanenti - p);
+    for (let m = Math.max(0, kRoster - p); m <= mMax; m++) {
+      const creditiRecuperabili = prefixPor[p] + prefixMov[m];
+      if (creditiRecuperabili < creditoGap) continue;
+      const k = p + m;
+      const portieriDopo = portieriAttuali - p + (ePortiere === true ? 1 : 0);
+      const movimentoDopo = movimentoAttuali - m + (ePortiere === false ? 1 : 0);
+      const creditiRiservati = Math.max(0, minimoPortieri - portieriDopo) + Math.max(0, minimoMovimento - movimentoDopo);
+      if (!best || k < best.k || (k === best.k && creditiRiservati < best.creditiRiservati)) {
+        best = { p, m, k, creditiRiservati };
+      }
+    }
+  }
+  if (!best) return { possibile: false, creditoGap, kRoster, svincoliRimanenti };
+  return {
+    possibile: true, minSvincoli: best.k, creditoGap, kRoster, svincoliRimanenti,
+    suggerimento: {
+      portieriDaLiberare: portieri.slice(0, best.p).map(g => g.id),
+      movimentoDaLiberare: movimento.slice(0, best.m).map(g => g.id)
+    }
+  };
+}
+
+// Tetto TOTALE rosa (portieri+movimento) e minimi per categoria: vedi commento sopra per il
+// perche' i minimi sono due riserve separate. In 'iniziale' il tetto rosa blocca subito
+// l'offerta (nessun modo di liberare spazio in questo tipo di asta). In 'riparazione' il
+// tetto NON blocca subito se restano svincoli disponibili — la squadra potrebbe liberare
+// spazio dopo aver vinto (vedi calcolaSvincoliMinimiPerVittoria) — quindi la decisione si
+// delega a calcolaPianoSvincoloOttimale, che include gia' questo vincolo (kRoster).
+function calcolaMaxOfferta(asta, squadra, giocatore) {
+  const capMax = asta.maxGiocatoriPerSquadra || 25;
 
   if (asta.tipoAsta === 'iniziale') {
+    if (squadra.rosa.length >= capMax) return 0;
+    const minimoPortieri = asta.minimoPortieri || 0;
+    const minimoMovimento = asta.minimoMovimento || 0;
+    const portieriAttuali = squadra.rosa.filter(g => isPortiere(g.ruolo)).length;
+    const movimentoAttuali = squadra.rosa.length - portieriAttuali;
+    const ePortiere = giocatore ? isPortiere(giocatore.ruolo) : null;
+    const portieriDopo = portieriAttuali + (ePortiere === true ? 1 : 0);
+    const movimentoDopo = movimentoAttuali + (ePortiere === false ? 1 : 0);
+    const creditiRiservati = Math.max(0, minimoPortieri - portieriDopo) + Math.max(0, minimoMovimento - movimentoDopo);
     return Math.max(1, squadra.crediti - creditiRiservati);
   }
-  const fattore = asta.fattoreSvincolo || 0.5;
+
   const svincoliRimanenti = asta.svincoliTotali - (squadra.svincoliUsati || 0);
-  if (svincoliRimanenti <= 0) return squadra.crediti;
-  const sorted = [...squadra.rosa].sort((a, b) => Math.floor(b.prezzo * fattore) - Math.floor(a.prezzo * fattore));
-  let creditiRecuperabili = 0;
-  const maxSvinc = Math.min(svincoliRimanenti, sorted.length);
-  for (let i = 0; i < maxSvinc; i++) creditiRecuperabili += Math.floor(sorted[i].prezzo * fattore);
-  return Math.max(1, squadra.crediti + creditiRecuperabili - creditiRiservati);
+  if (svincoliRimanenti <= 0) {
+    if (squadra.rosa.length >= capMax) return 0;
+    return squadra.crediti;
+  }
+  const piano = calcolaPianoSvincoloOttimale(asta, squadra, giocatore, svincoliRimanenti, capMax);
+  return piano.maxOfferta;
 }
 
 function assegnaGiocatoreASquadra(asta, giocatore, squadra, prezzo, usatoSlotRIC) {
@@ -451,16 +549,39 @@ function chiudiAsta(astaId) {
     }
   }
 
-  // Svincolo (riparazione)
+  // Svincolo (riparazione): scatta se manca il credito PER PAGARE l'offerta O manca lo
+  // spazio in rosa rispetto al tetto configurato — non solo per crediti insufficienti come
+  // prima, perche' altrimenti una squadra al tetto non potrebbe mai completare una vittoria
+  // anche avendo svincoli disponibili per fare posto (vedi calcolaMaxOfferta).
   if (asta.tipoAsta === 'riparazione' && squadraOfferente) {
     const sq = getSquadra(asta, squadraOfferente);
-    if (sq && offertaAttuale > sq.crediti) {
-      const svincoliRimanenti = asta.svincoliTotali - (sq.svincoliUsati || 0);
-      asta.popupAttivo = { tipo: 'svincolo', giocatore, prezzoFinale: offertaAttuale, squadraVincitrice: squadraOfferente, differenza: offertaAttuale - sq.crediti, svincoliRimanenti };
-      asta.chiamataAttuale = null;
-      emitToSquadra(astaId, squadraOfferente, 'popup-svincolo', { ...asta.popupAttivo, rosa: sq.rosa, fattoreSvincolo: asta.fattoreSvincolo || 0.5 });
-      emitToAdmins(astaId, 'popup-svincolo-admin', asta.popupAttivo);
-      broadcastStato(astaId); return;
+    const capMax = asta.maxGiocatoriPerSquadra || 25;
+    if (sq) {
+      const creditoGap = Math.max(0, offertaAttuale - sq.crediti);
+      const kRoster = Math.max(0, (sq.rosa.length + 1) - capMax);
+      if (creditoGap > 0 || kRoster > 0) {
+        const piano = calcolaSvincoliMinimiPerVittoria(asta, sq, giocatore, offertaAttuale, capMax);
+        if (!piano.possibile) {
+          // Non dovrebbe accadere se calcolaMaxOfferta ha fatto il suo lavoro (puo' capitare
+          // solo con un'assegnazione manuale che ignora i limiti) — si blocca l'operazione
+          // invece di lasciare crediti negativi o la rosa oltre il tetto senza modo di
+          // rientrare. chiamataAttuale NON viene toccata: l'admin puo' riprovare.
+          emitToAdmins(astaId, 'errore-svincolo-impossibile', {
+            giocatore, offertaAttuale, squadraOfferente,
+            motivo: `Anche liberando tutti gli svincoli residui (${piano.svincoliRimanenti}) non basta a completare l'operazione (debito ${piano.creditoGap}cr, ${piano.kRoster} slot da liberare per il tetto rosa).`
+          });
+          return;
+        }
+        asta.popupAttivo = {
+          tipo: 'svincolo', giocatore, prezzoFinale: offertaAttuale, squadraVincitrice: squadraOfferente,
+          differenza: creditoGap, svincoliRimanenti: piano.svincoliRimanenti,
+          roomGap: kRoster, minSvincoli: piano.minSvincoli, suggerimento: piano.suggerimento
+        };
+        asta.chiamataAttuale = null;
+        emitToSquadra(astaId, squadraOfferente, 'popup-svincolo', { ...asta.popupAttivo, rosa: sq.rosa, fattoreSvincolo: asta.fattoreSvincolo || 0.5 });
+        emitToAdmins(astaId, 'popup-svincolo-admin', asta.popupAttivo);
+        broadcastStato(astaId); return;
+      }
     }
   }
 
@@ -545,6 +666,13 @@ app.post('/api/asta', async (req, res) => {
   const b = req.body;
   const sottoTipo = b.sottoTipoRiparazione || '1';
   const fattoreSvincolo = sottoTipo === '2' ? (1 / 3) : 0.5;
+
+  // Il Listino Ufficiale produce sempre squadre vuote (tutti i giocatori diventano
+  // svincolati) — un'asta di riparazione partirebbe senza alcuna rosa pregressa da cui
+  // svincolare, uno scenario che non ha senso per questo tipo di asta.
+  if (b.tipoAsta === 'riparazione' && b.fonteListino) {
+    return res.status(400).json({ error: "Non è possibile creare un'asta di riparazione a partire dal Listino Ufficiale: nessuna squadra avrebbe una rosa da cui svincolare" });
+  }
 
   // Token segreto generato server-side: solo chi lo possiede può ottenere i
   // privilegi di Admin su questa asta (in join-asta). Non viene MAI restituito
@@ -845,6 +973,10 @@ app.get('/api/asta/:id/export', (req, res) => {
   const anno = new Date().getFullYear();
   const exportData = {
     lega: 'FantaSbocchini', stagione: `${anno}/${anno + 1}`, tipoAsta: asta.tipoAsta,
+    // Il tetto configurato (non l'uso, gia' esportato sotto come svincoliUsati per squadra)
+    // va esportato cosi' il tetto cumulativo tra Riparazione 1 e Riparazione 2 sopravvive
+    // al reimport invece di ripartire ogni volta dal default.
+    svincoliTotali: asta.svincoliTotali,
     squadre: asta.squadre.map(s => ({
       nome: s.nome, crediti: s.crediti,
       slotRiconferme: Math.max(0, s.slotsRIC - s.slotsRICUsati),
@@ -1247,17 +1379,48 @@ io.on('connection', (socket) => {
     if (!admin && (!sq || sq.nome !== popup.squadraVincitrice)) return;
     const squadra = getSquadra(asta, popup.squadraVincitrice);
     if (!squadra) return socket.emit('errore', { msg: 'Squadra non trovata' });
+    const capMax = asta.maxGiocatoriPerSquadra || 25;
     const fattore = asta.fattoreSvincolo || 0.5;
+
+    // Validazioni server-side — prima erano assenti (il client poteva mandare 0 giocatori,
+    // piu' del consentito, o non coprire il debito): mai fidarsi del client, stesso
+    // principio gia' applicato al timer d'asta.
+    const idsUnici = [...new Set(giocatoriIds)];
+    const scelti = idsUnici.map(id => squadra.rosa.find(g => g.id === id)).filter(Boolean);
+    if (scelti.length !== idsUnici.length) {
+      return socket.emit('errore', { msg: 'Uno o più giocatori selezionati non sono più in rosa' });
+    }
+    const svincoliRimanenti = asta.svincoliTotali - (squadra.svincoliUsati || 0);
+    if (scelti.length > svincoliRimanenti) {
+      return socket.emit('errore', { msg: `Puoi liberare al massimo ${svincoliRimanenti} giocatori (svincoli rimanenti)` });
+    }
+    // Ricalcolo fresco: mai fidarsi di popup.differenza, congelata al momento dell'apertura
+    // del popup — i crediti squadra potrebbero essere cambiati nel frattempo (es. l'Admin ha
+    // corretto i crediti con admin-update-crediti mentre il popup era aperto).
+    const creditiRecuperabiliScelti = scelti.reduce((s, g) => s + Math.floor(g.prezzo * fattore), 0);
+    const creditoGap = Math.max(0, popup.prezzoFinale - squadra.crediti);
+    if (creditiRecuperabiliScelti < creditoGap) {
+      return socket.emit('errore', { msg: `I crediti recuperati (${creditiRecuperabiliScelti}) non coprono il debito di ${creditoGap} crediti` });
+    }
+    const kRoster = Math.max(0, (squadra.rosa.length + 1) - capMax);
+    if (scelti.length < kRoster) {
+      return socket.emit('errore', { msg: `Devi liberare almeno ${kRoster} giocatori per rientrare nel limite di ${capMax} per rosa` });
+    }
+    const check = calcolaSvincoliMinimiPerVittoria(asta, squadra, popup.giocatore, popup.prezzoFinale, capMax);
+    if (!check.possibile) {
+      return socket.emit('errore', { msg: 'Operazione non eseguibile: nemmeno tutti gli svincoli disponibili basterebbero. Contatta l\'Admin.' });
+    }
+
     let creditiRecuperati = 0; const svincolati = [];
-    giocatoriIds.forEach(gId => {
-      const idx = squadra.rosa.findIndex(g => g.id === gId); if (idx === -1) return;
-      const g = squadra.rosa.splice(idx, 1)[0];
+    scelti.forEach(g => {
+      const idx = squadra.rosa.findIndex(x => x.id === g.id);
+      squadra.rosa.splice(idx, 1);
       const credRecup = Math.floor(g.prezzo * fattore); creditiRecuperati += credRecup;
       svincolati.push({ ...g, creditiRecuperati: credRecup });
       squadra.svincoliUsati = (squadra.svincoliUsati || 0) + 1;
-      const gPool = asta.poolGiocatori.find(p => p.id === gId);
+      const gPool = asta.poolGiocatori.find(p => p.id === g.id);
       if (gPool) { gPool.estratto = false; gPool.assegnato = false; gPool.scartato = false; }
-      else asta.poolGiocatori.push({ id: gId, nome: g.nome, ruolo: g.ruolo || '', tipo: 'NN', costoOriginale: g.prezzo, valore: g.valore || 0, squadraOriginale: null, estratto: false, assegnato: false, scartato: false, quotazione: g.quotazione ?? null });
+      else asta.poolGiocatori.push({ id: g.id, nome: g.nome, ruolo: g.ruolo || '', tipo: 'NN', costoOriginale: g.prezzo, valore: g.valore || 0, squadraOriginale: null, estratto: false, assegnato: false, scartato: false, quotazione: g.quotazione ?? null });
     });
     squadra.crediti += creditiRecuperati;
     assegnaGiocatoreASquadra(asta, popup.giocatore, squadra, popup.prezzoFinale);
@@ -1286,7 +1449,7 @@ io.on('connection', (socket) => {
     io.to(astaId).emit('tradeoff-usato', { nomeSquadra: sq.nome, tipo });
   });
 
-  socket.on('admin-update-config', ({ astaId, timerPrimaChiamata, timerRilancio, minimoPortieri, minimoMovimento, maxGiocatoriPerSquadra }) => {
+  socket.on('admin-update-config', ({ astaId, timerPrimaChiamata, timerRilancio, minimoPortieri, minimoMovimento, maxGiocatoriPerSquadra, svincoliTotali }) => {
     const asta = aste.get(astaId);
     if (!asta || !isAdmin(asta, socket.id)) return;
     if (timerPrimaChiamata !== undefined) asta.timerPrimaChiamata = Math.max(1, parseInt(timerPrimaChiamata) || asta.timerPrimaChiamata);
@@ -1294,6 +1457,7 @@ io.on('connection', (socket) => {
     if (minimoPortieri !== undefined) asta.minimoPortieri = Math.max(0, parseInt(minimoPortieri) || 0);
     if (minimoMovimento !== undefined) asta.minimoMovimento = Math.max(0, parseInt(minimoMovimento) || 0);
     if (maxGiocatoriPerSquadra !== undefined) asta.maxGiocatoriPerSquadra = Math.max(1, parseInt(maxGiocatoriPerSquadra) || asta.maxGiocatoriPerSquadra || 25);
+    if (svincoliTotali !== undefined) asta.svincoliTotali = Math.max(0, parseInt(svincoliTotali) || 0);
     broadcastStato(astaId);
   });
 

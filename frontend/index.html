@@ -1174,6 +1174,7 @@
       <p>Hai vinto <strong id="sv-giocatore"></strong> per <strong id="sv-prezzo" class="text-accent"></strong> cr, ma hai solo <strong id="sv-crediti"></strong> cr.</p>
       <p class="text-muted">Seleziona i giocatori da svincolare per coprire la differenza di <strong id="sv-diff" class="text-danger"></strong> cr.</p>
       <p class="text-muted" id="sv-svincoli-rem"></p>
+      <p class="text-muted" id="sv-room-gap"></p>
     </div>
     <div id="sv-lista" class="sv-lista"></div>
     <div class="sv-totale">Recupero: <strong id="sv-recupero">0</strong> cr | Debito: <strong id="sv-debito" class="text-danger">0</strong> cr</div>
@@ -1274,6 +1275,10 @@
       <div class="form-group">
         <label>Massimo giocatori per squadra</label>
         <input type="number" id="inp-ac-max-gioc" min="1">
+      </div>
+      <div class="form-group" id="row-ac-svincoli" style="display:none">
+        <label>Svincoli totali per squadra</label>
+        <input type="number" id="inp-ac-svincoli" min="0" max="30">
       </div>
     </div>
     <!-- Solo locale a questo browser (localStorage), non sincronizzata tra partecipanti -->

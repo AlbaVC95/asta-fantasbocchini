@@ -320,3 +320,55 @@ percepire un tempo diverso da quello reale, cosa critica in un contesto competit
 tempo. Per lo stesso motivo di semplicità/robustezza, non esistono aggiornamenti incrementali:
 `broadcastStato()` reinvia sempre lo stato asta completo dopo ogni cambiamento, evitando bug di
 stato client/server disallineato a costo di un payload più pesante.
+
+## Asta di riparazione: Massima Offerta come ottimizzazione (p,m), non top-N per valore
+
+La stima dei crediti recuperabili da svincolo ordinava la rosa per valore economico e sommava
+i primi N (N = svincoli residui), ignorando l'effetto sulla composizione Portieri/Movimento —
+poteva quindi suggerire di liberare giocatori che facevano scendere una categoria sotto il
+minimo configurato, sottostimando la vera Massima Offerta (la riserva calcolata sui minimi non
+teneva conto di QUALI giocatori sarebbero stati liberati). Sostituito con una ricerca su tutte
+le combinazioni possibili (p portieri, m movimento da liberare, con `p+m <= svincoliRimanenti`)
+che massimizza `crediti + recuperabili(p,m) - riservati(p,m)`, dove la riserva è calcolata
+SIMULANDO la rimozione di p/m giocatori dalla rosa attuale prima di confrontare con i minimi
+(`calcolaPianoSvincoloOttimale()` in `backend/server.js`, prefix-sum per accesso O(1) al
+recupero di ciascuna categoria — scala tipica ≤ ~900 combinazioni, irrilevante). Non forza
+l'uso di tutti gli svincoli disponibili: un ultimo svincolo che costa più in riserva di quanto
+recupera in crediti non viene scelto, la ricerca esplora anche k inferiori. Verificato contro
+un esempio numerico fornito dall'utente prima di scrivere codice (26 movimento/minimo 25/0
+crediti/3 svincoli da 10cr, fattore 0.5 → atteso 14, non 15 come darebbe un top-N ingenuo).
+
+I minimi Portieri/Movimento restano vincoli "morbidi" (solo riserva di crediti, mai bloccano
+uno svincolo): una squadra può scendere temporaneamente sotto un minimo dopo uno svincolo,
+scelta esplicita dell'utente per non impedire operazioni altrimenti legali. Il tetto rosa
+(`maxGiocatoriPerSquadra`) è invece un vincolo DURO (`kRoster` nel codice): se non c'è modo di
+liberare abbastanza spazio con gli svincoli residui, l'offerta/operazione è impossibile a
+prescindere dai crediti disponibili.
+
+Conseguenza su una decisione presa in una sessione precedente: il blocco assoluto "squadra al
+tetto rosa non può mai offrire" (aggiunto per `maxGiocatoriPerSquadra`) si applicava a
+`calcolaMaxOfferta()` senza distinguere `tipoAsta`. In riparazione questo impediva di vincere
+un giocatore anche quando la squadra aveva svincoli disponibili per fare spazio DOPO la
+vittoria — corretto rendendo il blocco condizionato: bloccata solo se al tetto E senza
+svincoli residui. `tipoAsta==='iniziale'` mantiene il blocco assoluto originale, invariato
+(non esiste un meccanismo di svincolo in quel tipo di asta).
+
+## Asta di riparazione: svincoli post-vittoria, non durante il rilancio
+
+Coerentemente con l'asta di riparazione che già permette offerte sopra i crediti correnti
+(risolte poi con un popup di svincolo, vedi sopra "Backup a doppio livello" — pattern
+preesistente), il trigger del popup è stato allargato: prima scattava solo per crediti
+insufficienti (`offertaAttuale > sq.crediti`), ora scatta anche per mancanza di SPAZIO rosa
+rispetto al tetto configurato. Il numero minimo di svincoli da liberare (crediti E spazio) è
+calcolato server-side (`calcolaSvincoliMinimiPerVittoria()`) e comunicato al client come
+suggerimento pre-selezionabile — l'allenatore resta libero di liberarne di più (fino al limite
+residuo) ma mai di meno. Caso limite esplicitamente gestito (richiesta dell'utente): se anche
+liberando tutti gli svincoli residui non basta (dovrebbe essere impossibile se Massima Offerta
+funziona bene, ma può accadere con un'assegnazione manuale admin che ignora i limiti),
+l'operazione viene bloccata con un errore invece di lasciare crediti negativi o la rosa oltre
+il tetto — `chiamataAttuale` non viene toccata, l'admin può ritentare.
+
+L'handler `esegui-svincolo` non validava nulla lato server (bypassabile dal client: nessun
+controllo su copertura crediti, tetto svincoli per operazione, o tetto cumulativo
+`svincoliTotali`) — aggiunta validazione autoritativa completa, stesso principio già applicato
+al timer d'asta ("il server non si fida mai del client").

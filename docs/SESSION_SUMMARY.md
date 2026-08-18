@@ -20,7 +20,55 @@ non accumulato (per la cronologia vedi `git log`).
   (`d5b5b0f`). I commit precedenti di questa sessione restano con l'identità automatica
   precedente (`alba@MacBook-Air-de-Alba.local`), non riscritti.
 
-## Ultimo intervento — Asta di riparazione: i giocatori importati restano nella loro fantasquadra
+## Ultimo intervento — Asta di riparazione: Massima Offerta ottimizzata + svincoli post-vittoria
+
+Feature complessa richiesta esplicitamente dall'utente (pianificata con `EnterPlanMode`,
+decisioni chiave confermate via `AskUserQuestion` prima di scrivere codice — vedi
+`DECISIONS.md` per il design completo). Riassunto:
+
+- **Massima Offerta** in riparazione ora simula QUALE combinazione di portieri/movimento
+  liberare massimizza `crediti + recuperabili − riservati per i minimi`, invece del vecchio
+  top-N per valore che ignorava l'effetto sui minimi Portieri/Movimento. Nuove
+  `costruisciListeOrdinateSvincolo()`/`calcolaPianoSvincoloOttimale()` in `backend/server.js`
+  (prima di `calcolaMaxOfferta()`), specchiate lato client in `_costruisciListeOrdinateSvincoloCli`/
+  `_calcolaPianoSvincoloOttimaleCli` (`frontend/js/app.js`, dentro `calcolaMaxOffertaSquadra`).
+- Una squadra al tetto `maxGiocatoriPerSquadra` ora può continuare a offrire in riparazione
+  SE ha ancora svincoli disponibili (prima bloccata sempre a 0, anche in riparazione — fix
+  necessario di un mio intervento precedente nella stessa sessione). `tipoAsta==='iniziale'`
+  resta invariato.
+- Il popup di svincolo (`chiudiAsta`) ora scatta anche per mancanza di SPAZIO rosa, non solo
+  crediti, e mostra il numero minimo di svincoli necessari (`calcolaSvincoliMinimiPerVittoria()`)
+  con un piano suggerito pre-selezionato nella UI (`renderPopupSvincolo`).
+- `esegui-svincolo` era completamente privo di validazione server-side (bypassabile dal
+  client) — aggiunta copertura crediti, tetto massimo (`svincoliRimanenti`), spazio minimo
+  rosa, tutto ricalcolato fresco lato server, mai fidandosi del popup congelato.
+- `svincoliTotali` ora è configurabile anche dopo la creazione (`admin-update-config` +
+  modale Impostazioni Admin) e viene incluso nell'export JSON, cosi' il tetto cumulativo
+  Riparazione1→Riparazione2 sopravvive al reimport.
+- Creare un'asta di riparazione dal Listino Ufficiale è ora bloccato (client: opzione
+  disabilitata proattivamente; server: 400 esplicito) — produrrebbe squadre senza rosa
+  pregressa da cui svincolare.
+
+**Verificato**: 11 test standalone Node sul codice REALE estratto da `server.js` (incluso
+l'esempio numerico esatto dell'utente: 26 movimento/min 25/0 crediti/3 svincoli da 10cr →
+atteso e ottenuto 14, non 15), 6 test di sincronia client↔server (stessi input, stesso
+output), verifica manuale nel browser via dati sintetici iniettati in console: popup svincolo
+con pre-selezione del suggerimento server, blocco al superamento del tetto svincoli, blocco
+pulsante conferma sotto il minimo, campo Impostazioni Admin mostrato solo in riparazione e
+pre-riempito, riabilitazione dell'opzione "riparazione" dopo un ricaricamento Excel/JSON. Non
+verificato in un flusso live completo (stesso limite di login Supabase delle sessioni
+precedenti).
+
+**Nota tecnica**: sia `backend/server.js` sia `frontend/js/app.js` hanno line-ending misti
+pre-esistenti (137 righe LF-only in app.js, confermate presenti già nel commit
+`7a1cafb` "Add files via upload", non introdotte da questa sessione) — lo split ingenuo per
+`\r\n` usato nelle sessioni precedenti per patch puntuali può disallineare gli indici di riga
+in punti del file adiacenti a queste righe. Tecnica corretta usata da questa sessione in poi:
+split per `\n` (come fa `sed`/`grep -n`), poi ricongiungere sempre con `\n` aggiungendo `\r`
+esplicito solo alle righe NUOVE inserite — preserva esattamente la terminazione originale
+(mista) di ogni riga non toccata.
+
+## Intervento precedente — Asta di riparazione: i giocatori importati restano nella loro fantasquadra
 
 Bug segnalato dall'utente: creando un'asta di riparazione (1 o 2) da Excel o JSON, i
 giocatori che nel file appartenevano già a una fantasquadra finivano trattati come
