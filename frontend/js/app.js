@@ -4396,6 +4396,7 @@ function prezzoRealeStrategia(cfg) {
 // chiamata attiva si riservano comunque entrambi i minimi per intero (caso conservativo).
 function calcolaMaxOffertaSquadra(sq) {
   if (!sq || !S.asta) return 0;
+  if (sq.rosa.length >= (S.asta.maxGiocatoriPerSquadra || 25)) return 0;
   const chiamata = S.asta.chiamataAttuale;
   const giocatore = chiamata ? chiamata.giocatore : null;
   const minimoPortieri = S.asta.minimoPortieri || 0;

@@ -5,7 +5,7 @@ non accumulato (per la cronologia vedi `git log`).
 
 ## Stato attuale
 
-- Branch `main`, allineato con `origin/main` (ultimo push: `d5b5b0f`). Nessuna modifica al
+- Branch `main`, allineato con `origin/main` (ultimo push: `3c5e2ba`). Nessuna modifica al
   codice pendente.
 - **Nota importante**: durante questa sessione, il redesign 3D di Anteprima costruito qui
   (carta FX orizzontale, stadio Three.js con importmap, fix carta Puja admin) è stato
@@ -20,7 +20,49 @@ non accumulato (per la cronologia vedi `git log`).
   (`d5b5b0f`). I commit precedenti di questa sessione restano con l'identità automatica
   precedente (`alba@MacBook-Air-de-Alba.local`), non riscritti.
 
-## Ultimo intervento — Badge U21 sulle carte Anteprima
+## Ultimo intervento — `maxGiocatoriPerSquadra` ora è un tetto TOTALE (portieri+movimento), enforced
+
+Richiesta esplicita dell'utente: prima `maxGiocatoriPerSquadra` esisteva solo come dato di
+config, senza ALCUN enforcement in nessun punto del codice (né come totale né come solo
+movimento — verificato con grep esaustivo prima di intervenire). L'etichetta del form già
+diceva "Portieri + Giocatori" ma non veniva mai fatta rispettare. `minimoPortieri`/
+`minimoMovimento` restano vincoli minimi separati per categoria, invariati (già corretti,
+riservano crediti in `calcolaMaxOfferta`/`calcolaMaxOffertaSquadra`).
+
+Aggiunto un guard `if (squadra.rosa.length >= (asta.maxGiocatoriPerSquadra || 25)) return 0`
+in **4 punti** di `backend/server.js` (nessuna nuova funzione, riuso dei percorsi di
+validazione/gating già esistenti):
+- `calcolaMaxOfferta()` (riga 333): punto centrale, blocca qualunque rilancio normale tramite
+  il controllo `offerta > maxOff` già esistente nell'handler `'rilancio'` — non tocca l'handler.
+- `avviaChiamata()` RIC (riga 376, `haSpazio`): il proprietario precedente non riceve più
+  l'offerta di riconferma a prezzo fisso se la sua rosa è già piena — il giocatore va invece
+  alla normale asta a tempo per le altre squadre.
+- `chiudiAsta()` popup post-asta (riga 433, `hasRecompra`): l'opzione "recompra" viene
+  nascosta se il proprietario precedente è al tetto (la "plusvalenza", che non aggiunge un
+  giocatore alla sua rosa, resta sempre disponibile).
+- Handler `'assegna-manuale'` (riga 1114): stesso blocco per l'assegnazione diretta admin, che
+  non passa da `calcolaMaxOfferta`.
+
+Specchio lato client in `frontend/js/app.js:4399` (`calcolaMaxOffertaSquadra`, già documentata
+come "deve restare sincronizzata col server, solo hint UI").
+
+**Verificato**: `node --check` su entrambi i file, diff puliti senza rumore di line-ending
+(file CRLF, stesso gotcha di sempre — modifiche fatte a mano via `perl` preservando `\r\n`,
+non con l'Edit tool). Estratto il codice REALE di `calcolaMaxOfferta()` così com'è nel file e
+testato con 8 casi sintetici (incluso l'esempio esatto dell'utente: min 3 portieri/25
+movimento/max 32 totali) — sotto il tetto può offrire, al tetto o oltre è bloccata (max=0),
+minimi per categoria e logica svincoli (asta riparazione) invariati. **Non verificato in un
+flusso live reale nel browser** (crea asta → chiama giocatore → rilancio → blocco): l'app
+richiede login con account Supabase e non erano disponibili credenziali di test in sessione,
+non è stato creato un account per questo.
+
+**Limite noto, non corretto in questo intervento** (per non allargare lo scope, l'utente non
+ha ancora confermato se vuole chiuderlo): race molto rara se un admin usa `'assegna-manuale'`
+per la stessa squadra mentre un popup "recompra" è pendente per quella squadra — stesso tipo
+di race già preesistente per i contatori slotsRIC/slotsPLUS, non introdotta da questo
+intervento.
+
+## Intervento precedente — Badge U21 sulle carte Anteprima
 
 Richiesta esplicita dell'utente: i giocatori U21 devono essere riconoscibili come tali anche
 in Anteprima (non solo in Puja/Svincolati/Fasce, dove esisteva già `.tipo-U21`). Aggiunto in

@@ -331,6 +331,11 @@ function broadcastStato(astaId, doBackup) {
 // "giocatore" attualmente chiamato conta verso la SUA categoria (Por o movimento), le altre
 // categorie restano comunque riservate per il loro minimo.
 function calcolaMaxOfferta(asta, squadra, giocatore) {
+  // Tetto TOTALE rosa (portieri+movimento sommati), separato dai minimi per categoria
+  // sopra: se la squadra ha gia' raggiunto/superato il tetto non puo' fare offerte,
+  // qualunque sia la composizione. Bloccato qui (non nell'handler 'rilancio') cosi'
+  // resta l'unico punto di verita', coerente col controllo gia' esistente offerta > maxOff.
+  if (squadra.rosa.length >= (asta.maxGiocatoriPerSquadra || 25)) return 0;
   const minimoPortieri = asta.minimoPortieri || 0;
   const minimoMovimento = asta.minimoMovimento || 0;
   const portieriAttuali = squadra.rosa.filter(g => isPortiere(g.ruolo)).length;
@@ -369,7 +374,8 @@ function avviaChiamata(astaId, giocatore, manuale) {
     const sqPrec = getSquadra(asta, giocatore.squadraOriginale);
     const haSlot = sqPrec && (sqPrec.slotsRIC - sqPrec.slotsRICUsati) > 0;
     const haCrediti = sqPrec && sqPrec.crediti >= giocatore.costoOriginale;
-    if (haSlot && haCrediti) {
+    const haSpazio = sqPrec && sqPrec.rosa.length < (asta.maxGiocatoriPerSquadra || 25);
+    if (haSlot && haCrediti && haSpazio) {
       asta.chiamataAttuale = {
         giocatore, offertaAttuale: giocatore.costoOriginale, squadraOfferente: null,
         proprietarioPrecedente: giocatore.squadraOriginale, aspettandoConferma: true,
@@ -424,7 +430,7 @@ function chiudiAsta(astaId) {
     const prevBid = !!giocatore.dirittoRiacquistoPerso;
     if (!prevBid && sqPrec && giocatore.tipo === 'RIC') {
       const hasPLUS = (sqPrec.slotsPLUS - sqPrec.slotsPLUSUsati) > 0;
-      const hasRecompra = (sqPrec.recompra - sqPrec.recompraUsati) > 0;
+      const hasRecompra = (sqPrec.recompra - sqPrec.recompraUsati) > 0 && sqPrec.rosa.length < (asta.maxGiocatoriPerSquadra || 25);
       if (hasPLUS || hasRecompra) {
         asta.popupAttivo = { tipo: 'post-asta-ric', giocatore, prezzoFinale: offertaAttuale, squadraVincitrice: squadraOfferente, proprietarioPrecedente: giocatore.squadraOriginale, opzioni: { plusvalenza: hasPLUS, recompra: hasRecompra } };
         asta.chiamataAttuale = null;
@@ -1106,6 +1112,7 @@ io.on('connection', (socket) => {
     const squadra = getSquadra(asta, squadraNome);
     if (!giocatore) return socket.emit('errore', { msg: 'Giocatore non trovato o non disponibile' });
     if (!squadra) return socket.emit('errore', { msg: 'Squadra non trovata' });
+    if (squadra.rosa.length >= (asta.maxGiocatoriPerSquadra || 25)) return socket.emit('errore', { msg: `Squadra già al limite massimo di ${asta.maxGiocatoriPerSquadra} giocatori` });
     const p = Math.max(1, parseInt(prezzo) || 1);
     if (squadra.crediti < p) return socket.emit('errore', { msg: 'Crediti insufficienti per questa squadra' });
     giocatore.estratto = true;
