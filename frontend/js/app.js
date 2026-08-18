@@ -2947,6 +2947,51 @@ function _ruoliCompatibili(ruoloSlot, ruoloGiocatore) {
   return slotRoles.some(sr => gioRoles.includes(sr));
 }
 
+// Cambio modulo in Anteprima: richiesta esplicita dell'utente di NON svuotare piu' gli slot,
+// ma di ricollocare automaticamente il massimo numero possibile di giocatori gia' piazzati nel
+// nuovo modulo, riusando la STESSA _ruoliCompatibili() gia' usata dal picker (nessuna nuova
+// regola R.Mantra). E' un problema di matching bipartito (giocatori piazzati <-> slot del nuovo
+// modulo, arco solo se compatibili) — risolto con l'algoritmo di Kuhn (augmenting path): scala
+// tipica di 11 giocatori x 11 slot, quindi banale in termini di costo, e garantisce il numero
+// MASSIMO di abbinamenti possibile (non solo "il primo che si trova", che con un greedy semplice
+// potrebbe bloccare un abbinamento migliore trovabile riassegnando un giocatore gia' scelto).
+// Chi non trova nessuno slot compatibile nel nuovo modulo resta semplicemente fuori da
+// nuoviSlots — torna in Panchina (derivata al volo da rosa meno slot occupati), MAI rimosso
+// dalla rosa.
+function _antRimappaSlotSuNuovoModulo(rosa, vecchiSlot, nuovoModulo) {
+  const righe = ANTEPRIMA_FORMAZIONI[nuovoModulo];
+  if (!righe) return {};
+  const nuoviSlotList = [];
+  righe.forEach((row, ri) => row.forEach((ruolo, ci) => {
+    nuoviSlotList.push({ slotKey: ri + '-' + ci, ruolo });
+  }));
+  const nomiPiazzati = Object.values(vecchiSlot).filter((nome, idx, arr) => arr.indexOf(nome) === idx);
+  const giocatori = nomiPiazzati.map(nome => rosa.find(g => g.nome === nome)).filter(Boolean);
+  const adiacenza = giocatori.map(g =>
+    nuoviSlotList.map((_, i) => i).filter(i => _ruoliCompatibili(nuoviSlotList[i].ruolo, g.ruolo))
+  );
+  const slotAssegnatoA = new Array(nuoviSlotList.length).fill(-1); // indice slot -> indice giocatore
+  function trovaAbbinamento(giocatoreIdx, visitati) {
+    for (const slotIdx of adiacenza[giocatoreIdx]) {
+      if (visitati[slotIdx]) continue;
+      visitati[slotIdx] = true;
+      if (slotAssegnatoA[slotIdx] === -1 || trovaAbbinamento(slotAssegnatoA[slotIdx], visitati)) {
+        slotAssegnatoA[slotIdx] = giocatoreIdx;
+        return true;
+      }
+    }
+    return false;
+  }
+  for (let i = 0; i < giocatori.length; i++) {
+    trovaAbbinamento(i, new Array(nuoviSlotList.length).fill(false));
+  }
+  const nuoviSlots = {};
+  slotAssegnatoA.forEach((giocatoreIdx, slotIdx) => {
+    if (giocatoreIdx !== -1) nuoviSlots[nuoviSlotList[slotIdx].slotKey] = giocatori[giocatoreIdx].nome;
+  });
+  return nuoviSlots;
+}
+
 // 250 (non 220): sotto questa soglia, misurato che anche con wrap su 4 righe un cognome
 // eccezionalmente lungo (es. "Kvaratskhelia") non ci sta piu' nell'etichetta — l'utente ha
 // chiesto esplicitamente che i nomi non vengano mai tagliati, quindi lo zoom minimo e' stato
@@ -3081,8 +3126,14 @@ function setupAnteprima() {
     if (!nome) return;
     const state = _antGetSquadraState(nome);
     if (state.formazione !== selModulo.value) {
+      // Richiesta esplicita dell'utente: NON svuotare piu' gli slot al cambio modulo — si
+      // ricolloca automaticamente il massimo numero possibile di giocatori gia' piazzati nel
+      // nuovo modulo (stessa compatibilita' R.Mantra di sempre, vedi
+      // _antRimappaSlotSuNuovoModulo). Chi non trova posto torna in Panchina, mai rimosso.
+      const squadra = ((S.asta && S.asta.squadre) || []).find(sq => sq.nome === nome);
+      const rosa = (squadra && squadra.rosa) || [];
+      state.slots = _antRimappaSlotSuNuovoModulo(rosa, state.slots, selModulo.value);
       state.formazione = selModulo.value;
-      state.slots = {};
       _antSetSquadraState(nome, state);
     }
     renderAnteprimaPitch();
