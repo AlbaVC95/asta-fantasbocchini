@@ -294,6 +294,24 @@ con l'utente: il nuovo toggle on/off in "Impostazioni Admin" resta locale al bro
 sincronizzato via `admin-update-config`/`broadcastStato()` — evita di toccare lo stato asta
 condiviso lato server per una preferenza puramente visiva e per-dispositivo.
 
+## Cambio modulo in Anteprima: matching bipartito (Kuhn) invece di greedy per ricollocare i giocatori
+
+Richiesta esplicita dell'utente: cambiando modulo (es. 4-3-3 → 4-2-3-1) i giocatori già
+piazzati non devono più essere cancellati, ma ricollocati automaticamente dove il ruolo lo
+permette, riusando la stessa `_ruoliCompatibili()` già usata dal picker (nessuna nuova regola
+R.Mantra). Il problema è un matching bipartito (giocatori piazzati ↔ slot del nuovo modulo, arco
+solo se i ruoli sono compatibili) — scartato un abbinamento greedy semplice ("assegna il primo
+slot libero compatibile nell'ordine in cui si processano i giocatori") perché può bloccare un
+abbinamento migliore: un giocatore con un solo slot possibile può restare senza posto solo perché
+un giocatore precedente, che aveva anche altre opzioni valide, ha occupato per primo quell'unico
+slot. Risolto con l'algoritmo di Kuhn (augmenting path, `_antRimappaSlotSuNuovoModulo()` in
+`app.js`): quando un giocatore non trova slot libero, l'algoritmo tenta di RIASSEGNARE il
+giocatore che occupa uno slot candidato a un'altra opzione valida, liberandolo — garantendo il
+numero massimo di giocatori riposizionabili, non solo il primo risultato trovato. Scala tipica
+(~11 giocatori × ~11 slot) rende il costo computazionale irrilevante. Chi non trova comunque
+posto nel nuovo modulo torna in Panchina (derivata al volo da rosa meno slot occupati), mai
+rimosso dalla rosa.
+
 ## Timer d'asta autoritativo lato server, stato sempre broadcastato per intero
 
 Il timer non viene mai calcolato o fidato lato client: è gestito interamente in `server.js`
