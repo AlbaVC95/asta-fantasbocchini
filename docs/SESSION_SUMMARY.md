@@ -5,18 +5,23 @@ non accumulato (per la cronologia vedi `git log`).
 
 ## Stato attuale
 
-- Branch `main`, allineato con `origin/main` fino al commit `8b34600` (rosa ordinata per ruolo nel
-  popup svincolo). **Modifica locale pendente non ancora pushata**: contatore selezionati + stato
-  selezionato più visibile nello stesso popup (vedi sotto, "Ultimo intervento").
-- **Attenzione per la prossima sessione**: nel working tree locale sono presenti modifiche NON
-  committate a `frontend/css/style.css`, `frontend/index.html` e `frontend/js/app.js` che NON sono
-  di questa sessione (es. un refactor di `confirm()` → `confermaAzione()` in `app.js`, ~370 righe di
-  CSS, 48 righe di HTML) — quasi certamente lavoro in corso dell'altro strumento con cui l'utente
-  lavora in parallelo su questo repo (vedi nota sotto sul redesign 3D). Ogni fix di questa sessione
-  è stato isolato e committato con una patch mirata (`git apply --cached` su una copia pulita di
-  HEAD), MAI con un `git add` del file intero, per non commitare per errore quel lavoro altrui non
-  ancora rivisto. Prima di un `git add -A`/`git commit` generico in futuro, controllare `git diff`
-  per non includere involontariamente queste modifiche.
+- Branch `main`, allineato con `origin/main` fino al commit `da80113`, pushato. Working tree pulito
+  (a parte `.agents/`, `.claude/skills/`, `.impeccable/`, `skills-lock.json`, non tracciati, non
+  toccati).
+- **Episodio di sessione da ricordare**: durante il lavoro, l'utente stava testando IN PARALLELO
+  (altro strumento, non questa sessione) un redesign del tema (nome in codice "FantaBar Pulse":
+  variabili colore, animazioni logo/card, refactor `confirm()` → `confermaAzione()`) — prima presente
+  come modifiche non committate nel working tree locale, poi pushato direttamente su GitHub in 6
+  commit "Add files via upload", poi **revertito dall'utente stesso** con altri 2 commit "Add files
+  via upload" tornando esattamente al contenuto del commit `8b34600`. Nel mezzo il push di questa
+  sessione è stato rifiutato due volte (`non-fast-forward`) — ogni fix di questa sessione era stato
+  isolato con una patch mirata (`git apply --cached` su copia pulita di `HEAD`, mai un `git add` del
+  file intero) proprio per poter scartare/riallineare senza rischio quando il tema è stato revertito:
+  alla fine, working tree resettato su `origin/main` (`git checkout -B main origin/main`) +
+  cherry-pick del solo commit di questa sessione (`88e6344`→`da80113`), push pulito. **Nessun lavoro
+  perso** da nessuna delle due parti. Lezione per il futuro: se un push viene rifiutato su questo
+  repo, ri-`fetch`/controllare `origin/main` più di una volta prima di forzare qualunque merge — lo
+  stato remoto può cambiare rapidamente per lavoro in parallelo.
 - **Hosting: Hostinger, non più Render** (l'utente ha corretto questa sessione un'assunzione
   sbagliata — Render era il provider di una fase precedente del progetto). Deploy automatico al
   push su `main`, nessun passo manuale. Vedi [PROJECT.md](PROJECT.md#hosting).
