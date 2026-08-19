@@ -662,6 +662,22 @@ function _annullaItem(asta, index) {
         }
       }
       if (item.tipo === 'recompra') sq.recompraUsati = Math.max(0, (sq.recompraUsati || 0) - 1);
+      // Asta di riparazione: un acquisto "con_svincolo" aveva anche liberato uno o piu'
+      // giocatori per finanziarlo (item.svincolati, salvato da 'esegui-svincolo' con lo
+      // snapshot completo del giocatore + creditiRecuperati) — annullare l'acquisto senza
+      // disfare anche quella parte lascerebbe crediti gonfiati, slot svincolo non restituiti
+      // e quei giocatori persi fuori rosa per sempre. Rollback completo dell'operazione.
+      if (item.tipo === 'con_svincolo' && Array.isArray(item.svincolati)) {
+        item.svincolati.forEach(sv => {
+          sq.crediti -= (sv.creditiRecuperati || 0);
+          sq.svincoliUsati = Math.max(0, (sq.svincoliUsati || 0) - 1);
+          const { creditiRecuperati, ...giocatoreOriginale } = sv;
+          sq.rosa.push(giocatoreOriginale);
+          asta.svincoliVietati.delete(sq.nome + '|' + sv.id);
+          const gSvincolato = asta.poolGiocatori.find(p => p.id === sv.id);
+          if (gSvincolato) { gSvincolato.estratto = true; gSvincolato.assegnato = true; gSvincolato.scartato = false; }
+        });
+      }
     }
     const g = asta.poolGiocatori.find(p => p.id === item.giocatore.id || p.nome === item.giocatore.nome);
     if (g) { g.estratto = false; g.assegnato = false; g.scartato = false; }
@@ -1575,6 +1591,12 @@ io.on('connection', (socket) => {
     const asta = aste.get(astaId);
     if (!asta || !isAdmin(asta, socket.id)) return;
     if (index < 0 || index >= asta.storico.length) return socket.emit('errore', { msg: 'Indice non valido' });
+    // Asta di riparazione: ogni estrazione modifica lo stato (crediti/rosa/slot svincolo) di
+    // quelle successive — annullarne una nel mezzo lascerebbe lo stato incoerente. Si puo'
+    // annullare solo a ritroso, un'estrazione alla volta. Asta iniziale invariata.
+    if (asta.tipoAsta === 'riparazione' && index !== asta.storico.length - 1) {
+      return socket.emit('errore', { msg: 'In Asta di riparazione puoi annullare solo l\'estrazione più recente' });
+    }
     const item = asta.storico[index];
     _annullaItem(asta, index);
     broadcastStato(astaId, true); io.to(astaId).emit('assegnazione-annullata', { giocatore: item.giocatore });

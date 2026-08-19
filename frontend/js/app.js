@@ -1804,16 +1804,26 @@ function apriModalAnnullaStorico() {
   if (!items.length) {
     lista.innerHTML = '<p class="text-muted">Nessuna assegnazione da annullare</p>';
   } else {
+    // Asta di riparazione: annullabile solo l'estrazione piu' recente (stesso vincolo
+    // applicato lato server in 'annulla-assegnazione-specifica') - bottone disabilitato sulle
+    // altre righe invece di far scoprire il blocco solo dopo un errore del server.
+    const soloUltimoRip = asta.tipoAsta === 'riparazione';
+    const ultimoIdx = asta.storico.length - 1;
     lista.innerHTML = [...items].reverse().map((item, i) => {
       const realIdx = asta.storico.lastIndexOf(item);
       const g = item.giocatore || {};
       const rb = g.ruolo ? '<span class="storico-ruolo ruolo-' + g.ruolo + '">' + g.ruolo + '</span>' : '';
+      const bloccato = soloUltimoRip && realIdx !== ultimoIdx;
+      const testoBtn = item.tipo === 'scartato' ? '↩️ Riapri' : 'Annulla';
+      const btnHTML = bloccato
+        ? '<button class="btn btn-secondary btn-small" disabled title="In Asta di riparazione annulla prima le estrazioni più recenti">' + testoBtn + '</button>'
+        : '<button class="btn btn-danger btn-small" onclick="annullaSpecifica(' + realIdx + ')">' + testoBtn + '</button>';
       return '<div class="annulla-item">' + rb +
         '<span class="annulla-nome">' + _escHtml(g.nome || 'N/D') + '</span>' +
         '<span class="annulla-sq">' + _escHtml(item.squadra || '') + '</span>' +
         '<span class="annulla-prezzo">' + (item.prezzo || 0) + 'cr</span>' +
         '<span class="storico-tipo tipo-tag-' + item.tipo + '">' + item.tipo + '</span>' +
-        '<button class="btn btn-danger btn-small" onclick="annullaSpecifica(' + realIdx + ')">' + (item.tipo === 'scartato' ? '↩️ Riapri' : 'Annulla') + '</button>' +
+        btnHTML +
         '</div>';
     }).join('');
   }

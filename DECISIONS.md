@@ -506,6 +506,48 @@ già eseguita ad ogni `toggleSvincolo`, nessuna nuova chiamata introdotta) e rin
 `.sv-item.selezionato` (`frontend/css/style.css`): bordo 2px invece di 1px e sfondo rosso più
 opaco (`.16` invece di `.06`), praticamente impercettibile alla dimensione originale.
 
+## Asta di riparazione: annullamento come rollback completo, solo a ritroso
+
+Richiesta esplicita dell'utente, con specifica dettagliata fornita prima di scrivere codice
+(pianificato con `EnterPlanMode`). Due bug/gap distinti nello stesso meccanismo (`_annullaItem()`,
+handler `annulla-assegnazione-specifica`, `backend/server.js`):
+
+1. **Rollback incompleto per gli acquisti `con_svincolo`**: annullare un acquisto fatto liberando
+   giocatori (`asta.storico` con `tipo:'con_svincolo'` e `svincolati:[...]`, salvato da
+   `esegui-svincolo`) rimetteva solo il giocatore acquistato tra gli Svincolati e restituiva i
+   crediti pagati per lui — ma ignorava `item.svincolati` del tutto: i giocatori liberati per
+   finanziare l'acquisto restavano fuori rosa per sempre, i crediti recuperati dal loro svincolo
+   non venivano sottratti (crediti gonfiati), gli slot svincolo consumati non tornavano disponibili,
+   e restava un blocco fantasma in `asta.svincoliVietati`. Fix: `_annullaItem()` ora itera
+   `item.svincolati` (che già contiene uno snapshot completo di ciascun giocatore — prezzo/ruolo/tipo
+   originali — più `creditiRecuperati`, salvato al momento dello svincolo) e per ciascuno sottrae i
+   crediti recuperati, restituisce lo slot svincolo, rimette il giocatore in `squadra.rosa` col
+   prezzo originale, rimuove il blocco `svincoliVietati` e lo marca come non più chiamabile nel
+   `poolGiocatori` (stesso pattern già usato per i giocatori importati direttamente in rosa in
+   riparazione). Nessuna nuova struttura dati: tutto il necessario era già salvato da
+   `esegui-svincolo`, mancava solo leggerlo in fase di annullamento.
+
+2. **Annullamento fuori ordine cronologico**: `annulla-assegnazione-specifica` accettava un `index`
+   arbitrario nello storico — annullare una vecchia estrazione lasciando invariate quelle successive
+   può produrre stati incoerenti (crediti negativi, rosa oltre il tetto, slot svincolo errati, doppio
+   recupero/sottrazione crediti), perché ogni estrazione modifica lo stato su cui le successive si
+   basano. Fix: **solo per `tipoAsta === 'riparazione'`**, l'handler rifiuta la richiesta se
+   `index !== asta.storico.length - 1` (si può annullare solo l'estrazione più recente, poi la nuova
+   più recente, e così via a ritroso). `annulla-assegnazione` (senza index) non ha richiesto modifiche
+   perché annulla già sempre e solo l'ultimo elemento. Asta iniziale esplicitamente esclusa dal
+   vincolo (nessun requisito analogo, comportamento invariato). Specchiato lato client
+   (`apriModalAnnullaStorico`, `frontend/js/app.js`) disabilitando il bottone su tutte le righe tranne
+   la più recente quando l'asta è di riparazione, con tooltip esplicativo — solo hint UI, la
+   validazione autoritativa resta sempre server-side.
+
+Verificato con 30 test standalone Node sul codice REALE estratto da `_annullaItem()` (rollback
+completo di un `con_svincolo` con 2 giocatori liberati, verificando crediti/rosa/svincoliUsati/
+svincoliVietati/poolGiocatori tornano esattamente allo stato pre-operazione; rollback a ritroso di 2
+estrazioni concatenate A→B annullate in ordine B poi A; regressione su `tipo:'normale'` e
+`tipo:'scartato'`; blocco d'ordine su riparazione vs comportamento invariato su iniziale) — tutti
+PASS. Verificato anche nel browser con dati sintetici: solo il bottone dell'estrazione più recente è
+cliccabile in riparazione, tutti attivi in iniziale.
+
 ## Strategia ↔ tipo asta: tabella ponte additiva, non colonna array/modifica dello schema esistente
 
 `strategie.tipo_asta` era scalare (un solo valore), impedendo strutturalmente a una strategia

@@ -5,9 +5,11 @@ non accumulato (per la cronologia vedi `git log`).
 
 ## Stato attuale
 
-- Branch `main`, allineato con `origin/main` fino al commit `da80113`, pushato. Working tree pulito
-  (a parte `.agents/`, `.claude/skills/`, `.impeccable/`, `skills-lock.json`, non tracciati, non
-  toccati).
+- Branch `main`, allineato con `origin/main` fino al commit `2e88f09`. **Modifica locale pendente
+  non ancora committata**: annullamento estrazioni in Asta di riparazione (rollback completo +
+  solo ordine cronologico, vedi sotto "Ultimo intervento") in `backend/server.js` e
+  `frontend/js/app.js`. Working tree altrimenti pulito (a parte `.agents/`, `.claude/skills/`,
+  `.impeccable/`, `skills-lock.json`, non tracciati, non toccati).
 - **Episodio di sessione da ricordare**: durante il lavoro, l'utente stava testando IN PARALLELO
   (altro strumento, non questa sessione) un redesign del tema (nome in codice "FantaBar Pulse":
   variabili colore, animazioni logo/card, refactor `confirm()` → `confermaAzione()`) — prima presente
@@ -42,7 +44,46 @@ non accumulato (per la cronologia vedi `git log`).
   (`d5b5b0f`). I commit precedenti di questa sessione restano con l'identità automatica
   precedente (`alba@MacBook-Air-de-Alba.local`), non riscritti.
 
-## Ultimo intervento — Popup svincolo: contatore selezionati + stato selezionato più visibile
+## Ultimo intervento — Asta di riparazione: annullamento come rollback completo, solo a ritroso
+
+Richiesta esplicita dell'utente con specifica dettagliata (pianificato con `EnterPlanMode`,
+approvato prima di scrivere codice). Due bug/gap nello stesso meccanismo (`_annullaItem()`,
+handler `annulla-assegnazione-specifica`, `backend/server.js`):
+
+1. Annullare un acquisto fatto con svincolo (`tipo:'con_svincolo'`) rimetteva solo il giocatore
+   acquistato tra gli Svincolati e i crediti pagati per lui — ignorava del tutto
+   `item.svincolati`: i giocatori liberati restavano fuori rosa, i crediti recuperati dal loro
+   svincolo non venivano sottratti (crediti gonfiati), gli slot svincolo non tornavano
+   disponibili, restava un blocco fantasma in `svincoliVietati`. Fix: `_annullaItem()` ora fa un
+   rollback completo iterando `item.svincolati` (snapshot già completo salvato da
+   `esegui-svincolo`, nessuna nuova struttura dati).
+2. Si poteva annullare qualunque estrazione dello storico per `index` arbitrario, anche lasciando
+   invariate estrazioni successive che nel frattempo avevano già modificato lo stato — rischio di
+   crediti/rosa/slot incoerenti. Fix: **solo per `tipoAsta==='riparazione'`**, l'handler rifiuta
+   se `index` non è l'ultimo elemento dello storico (si annulla solo a ritroso, una alla volta).
+   Asta iniziale esplicitamente esclusa, comportamento invariato. Specchiato in UI
+   (`apriModalAnnullaStorico`): bottone disabilitato con tooltip su tutte le righe tranne la più
+   recente, solo in riparazione.
+
+Dettagli completi (formula, snippet, motivazione di ogni scelta) in [DECISIONS.md](DECISIONS.md).
+
+File: `backend/server.js` (`_annullaItem`, handler `annulla-assegnazione-specifica`),
+`frontend/js/app.js` (`apriModalAnnullaStorico`).
+
+**Verificato**: 30 test standalone Node sul codice REALE estratto di `_annullaItem()` — rollback
+completo di un `con_svincolo` con 2 giocatori liberati (crediti/rosa/svincoliUsati/
+svincoliVietati/poolGiocatori tutti tornano esattamente allo stato pre-operazione), rollback a
+ritroso di 2 estrazioni concatenate (A→B, annullate B poi A, stato intermedio e finale corretti),
+regressione su `tipo:'normale'`/`'scartato'` (invariati), blocco d'ordine su riparazione vs
+comportamento invariato su iniziale — tutti PASS. `node --check` pulito su entrambi i file.
+Verificato anche nel browser (dev server locale, dati sintetici iniettati in console): nel modal
+"Annulla Storico" solo il bottone dell'estrazione più recente è cliccabile quando l'asta è di
+riparazione (le altre righe disabilitate con tooltip), tutti e tre attivi quando l'asta è
+iniziale. **Non verificato in un flusso live reale** (svincolo → annullamento → ricontrollo rosa
+in un'asta di riparazione vera): stesso limite di login Supabase delle sessioni precedenti — solo
+verificato via test standalone sul codice reale estratto + verifica UI nel browser.
+
+## Intervento precedente — Popup svincolo: contatore selezionati + stato selezionato più visibile
 
 Richiesta dell'utente dopo aver visto uno screenshot del popup in produzione (col fix precedente
 già live): "Recupero: X cr | Debito: Y cr" non diceva quanti/quali giocatori fossero selezionati,
