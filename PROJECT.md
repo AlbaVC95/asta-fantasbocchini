@@ -19,6 +19,11 @@ scade e il giocatore viene assegnato al miglior offerente.
 
 Non ci sono script di test, lint o build.
 
+## Hosting
+
+Deploy in produzione su **Hostinger** (non più Render). Deploy automatico al push su `main` di
+GitHub — nessun passo manuale necessario dopo un push.
+
 ## Comandi
 
 ```bash

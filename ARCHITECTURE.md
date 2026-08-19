@@ -11,8 +11,9 @@ in `const aste = new Map()` (in `server.js`), indicizzata per `astaId`.
 
 - Backup a doppio livello: (1) snapshot JSON su disco locale in `backend/data/backup_asta_*.json`, e
   (2) upsert su Supabase (tabella `asta_backups`), quest'ultimo l'unico che sopravvive a un
-  deploy/riavvio del container su Render. All'avvio, `loadBackups()` ripristina prima da Supabase, poi
-  da disco locale come fallback (dedup automatico).
+  deploy/riavvio del container di hosting (vedi [PROJECT.md](PROJECT.md) per il provider attuale).
+  All'avvio, `loadBackups()` ripristina prima da Supabase, poi da disco locale come fallback
+  (dedup automatico).
 - Il backup su Supabase viene fatto ogni 30s per le aste attive (`setInterval` in fondo a `server.js`)
   più ad ogni evento significativo (`broadcastStato(astaId, true)`), con dedup via hash SHA1 del
   contenuto per evitare upload ridondanti. Disattivabile temporaneamente da un toggle Super Admin
