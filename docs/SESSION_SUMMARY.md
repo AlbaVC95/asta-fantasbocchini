@@ -5,10 +5,17 @@ non accumulato (per la cronologia vedi `git log`).
 
 ## Stato attuale
 
-- Branch `main`, allineato con `origin/main` fino al commit `8e6f288` (fix badge fascia Strategia,
-  vedi sotto). **Modifica locale pendente non ancora committata**: selettore tipo asta nell'import
-  Strategia da JSON (vedi sotto, "Ultimo intervento") in `frontend/js/app.js` e
-  `frontend/index.html`.
+- Branch `main`, allineato con `origin/main` fino al commit `8388035` (selettore tipo asta
+  nell'import Strategia, vedi sotto "Intervento precedente").
+- **Attenzione per la prossima sessione**: nel working tree locale sono presenti modifiche NON
+  committate a `frontend/css/style.css`, `frontend/index.html` e `frontend/js/app.js` che NON sono
+  di questa sessione (es. un refactor di `confirm()` → `confermaAzione()` in `app.js`, ~370 righe di
+  CSS, 48 righe di HTML) — quasi certamente lavoro in corso dell'altro strumento con cui l'utente
+  lavora in parallelo su questo repo (vedi nota sotto sul redesign 3D). Ogni fix di questa sessione
+  è stato isolato e committato con una patch mirata (`git apply --cached` su una copia pulita di
+  HEAD), MAI con un `git add` del file intero, per non commitare per errore quel lavoro altrui non
+  ancora rivisto. Prima di un `git add -A`/`git commit` generico in futuro, controllare `git diff`
+  per non includere involontariamente queste modifiche.
 - **Hosting: Hostinger, non più Render** (l'utente ha corretto questa sessione un'assunzione
   sbagliata — Render era il provider di una fase precedente del progetto). Deploy automatico al
   push su `main`, nessun passo manuale. Vedi [PROJECT.md](PROJECT.md#hosting).
@@ -29,7 +36,27 @@ non accumulato (per la cronologia vedi `git log`).
   (`d5b5b0f`). I commit precedenti di questa sessione restano con l'identità automatica
   precedente (`alba@MacBook-Air-de-Alba.local`), non riscritti.
 
-## Ultimo intervento — Selettore tipo asta nell'import Strategia da JSON
+## Ultimo intervento — Popup svincolo (Asta di riparazione): rosa ordinata per ruolo
+
+Richiesta esplicita dell'utente: nel popup di selezione svincolo (bottone che appare quando una
+squadra deve liberare crediti/spazio in Asta di riparazione), i giocatori della rosa non erano
+raggruppati per ruolo — riusato `_antRoleGroupOrder()` (già esistente per la Panchina di Anteprima)
+per ordinarli Portiere → Difesa → Centrocampo → Esterni → Attacco, coerente col resto dell'app.
+Un solo `.sort()` in `renderPopupSvincolo()`, nessuna modifica al payload server. Dettagli in
+[DECISIONS.md](DECISIONS.md).
+
+**Nota tecnica di sessione**: `frontend/js/app.js` aveva, al momento di questo fix, molte altre
+modifiche non committate e non mie nel working tree (vedi "Stato attuale" sopra) — il commit di
+questo fix è stato isolato con una patch mirata su una copia pulita di `HEAD` (`git apply --cached`),
+per non includere per errore quel lavoro altrui.
+
+**Verificato**: `node --check` pulito sul file risultante nel working tree (che include anche le
+altre modifiche non mie, quindi il check copre l'intero file così com'è ora, non solo la mia
+riga) — nessun errore di sintassi. Non verificato visivamente nel browser (il popup richiede uno
+stato di asta di riparazione con svincoli pendenti, non riproducibile senza login/asta live reale
+— stesso limite delle sessioni precedenti).
+
+## Intervento precedente — Selettore tipo asta nell'import Strategia da JSON
 
 Richiesta esplicita dell'utente, emersa parlando del fix precedente (fasce invisibili): importando
 una Strategia da JSON ("📥 Importa strategia") non c'era **alcun** modo di scegliere a quale tipo di

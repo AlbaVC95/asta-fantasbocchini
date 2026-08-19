@@ -484,6 +484,18 @@ già esistente di "Crea strategia" (stesso punto dove FantaLab chiama
 stesso inserimento di fasce/giocatori spostato dopo la creazione della strategia con i tipi scelti
 dall'utente invece che con quello letto a sua insaputa dal file.
 
+## Popup selezione svincolo (Asta di riparazione): rosa ordinata per ruolo, riuso di `_antRoleGroupOrder`
+
+Richiesta esplicita dell'utente: nel popup di selezione dei giocatori da svincolare
+(`renderPopupSvincolo`, `frontend/js/app.js`), la rosa veniva mostrata nell'ordine grezzo in cui
+arriva in `popupData.rosa` (ordine di acquisizione/import), senza alcun raggruppamento — difficile
+scorrere una rosa di 25+ giocatori per decidere chi liberare. Invece di scrivere un nuovo criterio
+di ordinamento, riusata `_antRoleGroupOrder()` (già esistente per la Panchina di Anteprima, vedi
+sopra "Panchina in Anteprima ordinata per ruolo"): stesso raggruppamento a 5 gruppi (Portiere →
+Difesa → Centrocampo → Esterni → Attacco), così il criterio resta coerente in tutta l'app invece di
+introdurne uno diverso solo per questo popup. Un semplice `.sort()` prima del `.map()` che genera
+l'HTML, nessuna modifica alla struttura dati o al payload del server.
+
 ## Strategia ↔ tipo asta: tabella ponte additiva, non colonna array/modifica dello schema esistente
 
 `strategie.tipo_asta` era scalare (un solo valore), impedendo strutturalmente a una strategia

@@ -4189,7 +4189,8 @@ function renderPopupSvincolo(popupData) {
       : '';
   }
   const fattore = popupData.fattoreSvincolo || 0.5;
-  document.getElementById('sv-lista').innerHTML = (popupData.rosa || []).map(g => {
+  const svRosaOrdinata = (popupData.rosa || []).slice().sort((a, b) => _antRoleGroupOrder(a.ruolo) - _antRoleGroupOrder(b.ruolo));
+  document.getElementById('sv-lista').innerHTML = svRosaOrdinata.map(g => {
     const recup = calcolaRecuperoSvincoloCli(g.prezzo, fattore);
     const u21Badge = g.u21 === true ? '<span class="cc-tipo-badge tipo-U21">U21</span>' : '';
     return '<div class="sv-item" id="svi-' + g.id + '" onclick="toggleSvincolo(\'' + g.id + '\',' + recup + ')">' +
