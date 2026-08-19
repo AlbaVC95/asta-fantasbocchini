@@ -5,8 +5,8 @@ non accumulato (per la cronologia vedi `git log`).
 
 ## Stato attuale
 
-- Branch `main`, allineato con `origin/main` (ultimo push: `7328e74`). Nessuna modifica al
-  codice pendente.
+- Branch `main`, allineato con `origin/main` (ultimo push: `83f1939`). Modifiche locali
+  pendenti: Strategia multi-asta (vedi sotto), non ancora committate.
 - **Nota importante**: durante questa sessione, il redesign 3D di Anteprima costruito qui
   (carta FX orizzontale, stadio Three.js con importmap, fix carta Puja admin) è stato
   **scartato su richiesta esplicita dell'utente** in favore di una versione diversa già presente
@@ -20,7 +20,32 @@ non accumulato (per la cronologia vedi `git log`).
   (`d5b5b0f`). I commit precedenti di questa sessione restano con l'identità automatica
   precedente (`alba@MacBook-Air-de-Alba.local`), non riscritti.
 
-## Ultimo intervento — Asta di riparazione: UI svincolo, blocco riacquisto, arrotondamento, popup Admin
+## Ultimo intervento — Strategia associabile a più Aste (non più solo Asta iniziale)
+
+Bug reale: `strategie.tipo_asta` era una colonna scalare (un solo valore), quindi una
+strategia creata come `'iniziale'` non poteva mai risultare compatibile con un'asta di
+riparazione (`caricaStrategieCompatibili()` filtrava con `.eq()`) — non era un problema di ID,
+solo cardinalità 1:1 dove serviva 1:N. Confermato anche sui dati reali: 2 strategie esistenti
+("repa1", "test Riparazione1") già create per riparazione1 erano invisibili in quell'asta.
+
+Fix additivo: nuova tabella `strategia_tipi_asta` (strategia_id, tipo_asta), applicata su
+Supabase con backfill (30 strategie → iniziale, 2 → riparazione1, retrocompatibili senza
+reimportare). `strategie.tipo_asta` non toccata. Form di creazione ora ha checkbox multiple
+(non più un `<select>` singolo); `caricaStrategieCompatibili` legge dalla tabella ponte; 3
+punti di rendering mostrano un badge per tipo associato invece di uno solo. Nulla toccato in
+`selezionaStrategiaAsta`/`S.strategiaAsta`/calcolo prezzi (operano già su una strategia_id
+risolta, indipendente dal tipo) — Asta iniziale invariata.
+
+File: `backend/sql/2026-08-19_strategia_tipi_asta.sql` (nuovo), `frontend/index.html`,
+`frontend/js/app.js`, `frontend/css/style.css`.
+
+**Verificato**: query SQL dirette sul DB reale (compatibilità corretta per riparazione1 sui
+dati reali; test isolato con strategia associata a tutti e 3 i tipi, poi ripulito), e nel
+browser via mock di `supa.from` (impossibile testare con login reale, stesso limite delle
+sessioni precedenti): checkbox di default solo "iniziale", multi-selezione funzionante,
+badge multipli renderizzati correttamente nella lista strategie (screenshot). Non committato.
+
+## Intervento precedente — Asta di riparazione: UI svincolo, blocco riacquisto, arrotondamento, popup Admin
 
 9 correzioni/aggiunte richieste dall'utente attorno al motore di svincolo (già costruito
 nell'intervento precedente, non toccato nella sua logica economica). Pianificato con

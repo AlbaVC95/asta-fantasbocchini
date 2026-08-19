@@ -372,3 +372,15 @@ L'handler `esegui-svincolo` non validava nulla lato server (bypassabile dal clie
 controllo su copertura crediti, tetto svincoli per operazione, o tetto cumulativo
 `svincoliTotali`) — aggiunta validazione autoritativa completa, stesso principio già applicato
 al timer d'asta ("il server non si fida mai del client").
+
+## Strategia ↔ tipo asta: tabella ponte additiva, non colonna array/modifica dello schema esistente
+
+`strategie.tipo_asta` era scalare (un solo valore), impedendo strutturalmente a una strategia
+di essere compatibile con più di un'asta. Scartata l'opzione di convertire la colonna in
+`text[]` (avrebbe richiesto un `ALTER COLUMN TYPE` con migrazione dei dati esistenti, più
+rischioso) in favore di una nuova tabella `strategia_tipi_asta(strategia_id, tipo_asta)`,
+stesso pattern RLS già usato da `fasce`/`strategia_giocatori` (ownership verificato via
+subquery su `strategie.user_id`, non hanno una colonna `user_id` propria). `strategie.tipo_asta`
+resta intatta come dato storico/fallback, mai più letta dal codice; un backfill iniziale crea
+una riga ponte per ogni strategia esistente così le strategie già create restano compatibili
+senza bisogno di reimportarle.

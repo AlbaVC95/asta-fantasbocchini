@@ -4719,6 +4719,47 @@ function setupMenu() {
   });
 }
 
+// Una Strategia può essere associata a più tipi di asta (Iniziale, Riparazione 1,
+// Riparazione 2) tramite la tabella ponte `strategia_tipi_asta` (strategia_id, tipo_asta) —
+// vedi backend/sql/2026-08-19_strategia_tipi_asta.sql. `strategie.tipo_asta` (colonna
+// scalare originale) NON viene più letta per decidere la compatibilità: resta scritta solo
+// per retrocompatibilità/storico, il codice nuovo legge sempre e solo dalla tabella ponte.
+const TIPO_ASTA_LABEL = { iniziale: 'Asta iniziale', riparazione1: 'Riparazione 1', riparazione2: 'Riparazione 2' };
+
+function _leggiTipiAstaSelezionati() {
+  return [...document.querySelectorAll('#strategia-form-tipi input[type="checkbox"]:checked')].map(c => c.value);
+}
+
+function _resetCheckboxTipiAsta() {
+  document.querySelectorAll('#strategia-form-tipi input[type="checkbox"]').forEach(c => {
+    c.checked = (c.value === 'iniziale');
+  });
+}
+
+async function _salvaTipiAstaStrategia(strategiaId, tipi) {
+  if (!tipi || !tipi.length) return;
+  const righe = tipi.map(t => ({ strategia_id: strategiaId, tipo_asta: t }));
+  await supa.from('strategia_tipi_asta').insert(righe);
+}
+
+// Restituisce Map(strategiaId -> [tipi]) per un elenco di id strategia.
+async function _caricaTipiAstaPerStrategie(strategiaIds) {
+  const map = new Map();
+  if (!strategiaIds || !strategiaIds.length) return map;
+  const { data } = await supa.from('strategia_tipi_asta').select('strategia_id, tipo_asta').in('strategia_id', strategiaIds);
+  (data || []).forEach(r => {
+    if (!map.has(r.strategia_id)) map.set(r.strategia_id, []);
+    map.get(r.strategia_id).push(r.tipo_asta);
+  });
+  return map;
+}
+
+function _badgeTipiAstaHTML(tipi) {
+  return '<div class="strategia-tipo-badges">' + (tipi || []).map(t =>
+    '<span class="strategia-tipo-badge">' + escapeHTML(TIPO_ASTA_LABEL[t] || t) + '</span>'
+  ).join('') + '</div>';
+}
+
 function setupStrategie() {
   const btnBackListaMenu = document.getElementById('btn-back-lista-menu');
   const btnNuovaStrategia = document.getElementById('btn-nuova-strategia');
@@ -4749,7 +4790,7 @@ function setupStrategie() {
       _pendingImportFantaLabFile = file;
       document.getElementById('strategia-form-nome').value = file.name.replace(/\.(xlsx|xls)$/i, '');
       document.getElementById('strategia-form-crediti').value = '';
-      document.getElementById('strategia-form-tipo').value = 'iniziale';
+      _resetCheckboxTipiAsta();
       document.getElementById('strategia-form-error').style.display = 'none';
       document.querySelector('#screen-strategia-form .home-title').textContent = 'Nuova strategia da FantaLab';
       showScreen('screen-strategia-form');
@@ -4760,7 +4801,7 @@ function setupStrategie() {
     _pendingImportFantaLabFile = null;
     document.getElementById('strategia-form-nome').value = '';
     document.getElementById('strategia-form-crediti').value = '';
-    document.getElementById('strategia-form-tipo').value = 'iniziale';
+    _resetCheckboxTipiAsta();
     document.getElementById('strategia-form-error').style.display = 'none';
     document.querySelector('#screen-strategia-form .home-title').textContent = 'Nuova strategia';
     showScreen('screen-strategia-form');
@@ -4774,16 +4815,18 @@ function setupStrategie() {
   if (btnCreaStrategia) btnCreaStrategia.addEventListener('click', async () => {
     const nome = document.getElementById('strategia-form-nome').value.trim();
     const crediti = parseInt(document.getElementById('strategia-form-crediti').value, 10);
-    const tipo = document.getElementById('strategia-form-tipo').value;
+    const tipi = _leggiTipiAstaSelezionati();
     const errEl = document.getElementById('strategia-form-error');
     errEl.style.display = 'none';
     if (!nome) { errEl.textContent = 'Inserisci un nome per la strategia'; errEl.style.display = 'block'; return; }
     if (!crediti || crediti <= 0) { errEl.textContent = 'Inserisci un numero di crediti valido'; errEl.style.display = 'block'; return; }
+    if (!tipi.length) { errEl.textContent = 'Seleziona almeno un tipo di asta'; errEl.style.display = 'block'; return; }
 
     const { data: strategia, error } = await supa.from('strategie').insert({
-      user_id: S.userId, nome, crediti_totali: crediti, tipo_asta: tipo
+      user_id: S.userId, nome, crediti_totali: crediti, tipo_asta: tipi[0]
     }).select().single();
     if (error) { errEl.textContent = 'Errore: ' + error.message; errEl.style.display = 'block'; return; }
+    await _salvaTipiAstaStrategia(strategia.id, tipi);
 
     if (_pendingImportFantaLabFile) {
       const file = _pendingImportFantaLabFile;
@@ -4812,12 +4855,13 @@ async function caricaStrategie() {
   if (error) { container.innerHTML = '<p class="hint-text">Errore nel caricamento delle strategie</p>'; return; }
   if (!data || !data.length) { container.innerHTML = '<p class="hint-text">Nessuna strategia creata. Premi "+ Nuova strategia" per iniziare.</p>'; return; }
 
-  const tipoLabel = { iniziale: 'Asta iniziale', riparazione1: 'Riparazione 1', riparazione2: 'Riparazione 2' };
+  const tipiMap = await _caricaTipiAstaPerStrategie(data.map(s => s.id));
   container.innerHTML = data.map(s => (
     '<div class="strategia-row" data-id="' + s.id + '">' +
       '<div class="strategia-row-info">' +
         '<div class="strategia-row-nome">' + escapeHTML(s.nome) + '</div>' +
-        '<div class="strategia-row-meta">' + (tipoLabel[s.tipo_asta] || s.tipo_asta) + ' · ' + s.crediti_totali + ' crediti</div>' +
+        '<div class="strategia-row-meta">' + s.crediti_totali + ' crediti</div>' +
+        _badgeTipiAstaHTML(tipiMap.get(s.id)) +
       '</div>' +
       '<button type="button" class="btn btn-secondary btn-small strategia-apri-btn" data-id="' + s.id + '">Apri</button>' +
     '</div>'
@@ -4876,10 +4920,10 @@ async function apriEditorStrategia(strategiaId) {
   document.querySelectorAll('.editor-ordina-campo-select').forEach(s => { s.value = 'prezzo'; });
   document.querySelectorAll('.editor-ordina-dir-btn').forEach(b => { b.dataset.dir = 'desc'; b.textContent = '↓ Decrescente'; });
 
-  const tipoLabel = { iniziale: 'Asta iniziale', riparazione1: 'Riparazione 1', riparazione2: 'Riparazione 2' };
+  const tipiAsta = (await _caricaTipiAstaPerStrategie([strategia.id])).get(strategia.id);
   document.getElementById('editor-strategia-nome').textContent = strategia.nome;
-  document.getElementById('editor-strategia-info').textContent =
-    (tipoLabel[strategia.tipo_asta] || strategia.tipo_asta) + ' · ' + strategia.crediti_totali + ' crediti';
+  document.getElementById('editor-strategia-info').innerHTML =
+    strategia.crediti_totali + ' crediti' + _badgeTipiAstaHTML(tipiAsta);
 
   renderEditorFasce();
   showScreen('screen-strategia-editor');
@@ -5498,6 +5542,10 @@ async function importaStrategiaDaFile(file) {
         user_id: S.userId, nome: data.strategia.nome, crediti_totali: data.strategia.crediti_totali, tipo_asta: data.strategia.tipo_asta
       }).select().single();
       if (errStrategia) throw errStrategia;
+      // Il file esportato porta il vecchio tipo_asta scalare (singolo) — resta compatibile
+      // subito registrando quello stesso tipo anche nella tabella ponte, senza forzare
+      // l'utente a passare da un selettore multi-tipo per un semplice reimport 1:1.
+      if (data.strategia.tipo_asta) await _salvaTipiAstaStrategia(strategia.id, [data.strategia.tipo_asta]);
 
       const fasceInsert = data.fasce.map((f, i) => ({
         strategia_id: strategia.id, nome: f.nome, colore: f.colore, ordine: i
@@ -5694,7 +5742,12 @@ function esportaStrategiaFantaLab() {
 // ══════════════════════════════════════════════════════════
 
 async function caricaStrategieCompatibili(tipoAsta) {
-  const { data, error } = await supa.from('strategie').select('*').eq('tipo_asta', tipoAsta).order('created_at', { ascending: false });
+  // Compatibilita' passa dalla tabella ponte strategia_tipi_asta (una strategia puo'
+  // coprire piu' tipi asta), non piu' da un confronto diretto su strategie.tipo_asta.
+  const { data: righe, error: errRighe } = await supa.from('strategia_tipi_asta').select('strategia_id').eq('tipo_asta', tipoAsta);
+  if (errRighe || !righe || !righe.length) return [];
+  const ids = righe.map(r => r.strategia_id);
+  const { data, error } = await supa.from('strategie').select('*').in('id', ids).order('created_at', { ascending: false });
   return (!error && data) ? data : [];
 }
 
@@ -5734,13 +5787,14 @@ async function mostraPromptStrategiaSeNecessario() {
   apriModalStrategia(strategie);
 }
 
-function apriModalStrategia(strategie) {
+async function apriModalStrategia(strategie) {
   const lista = document.getElementById('strategia-modal-lista');
-  const tipoLabel = { iniziale: 'Asta iniziale', riparazione1: 'Riparazione 1', riparazione2: 'Riparazione 2' };
+  const tipiMap = await _caricaTipiAstaPerStrategie(strategie.map(s => s.id));
   let html = strategie.map(s => (
     '<button type="button" class="strategia-modal-item" data-id="' + s.id + '">' +
       '<span class="strategia-modal-item-nome">' + escapeHTML(s.nome) + '</span>' +
-      '<span class="strategia-modal-item-meta">' + (tipoLabel[s.tipo_asta] || s.tipo_asta) + ' · ' + s.crediti_totali + ' crediti</span>' +
+      '<span class="strategia-modal-item-meta">' + s.crediti_totali + ' crediti</span>' +
+      _badgeTipiAstaHTML(tipiMap.get(s.id)) +
     '</button>'
   )).join('');
   if (S.strategiaAsta) {

@@ -911,6 +911,12 @@ body.layout-admin .asta-row-puja .rilancio-box{
 .strategia-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:var(--bg-main);border-radius:10px;margin-bottom:8px}
 .strategia-row-nome{font-weight:700;font-size:.92rem;color:var(--text-primary)}
 .strategia-row-meta{font-size:.75rem;color:var(--text-muted);margin-top:2px}
+/* Checkbox multi-tipo nel form di creazione strategia (una strategia puo' valere per piu' aste) */
+.strategia-tipi-check{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.strategia-tipo-check{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--text-primary);cursor:pointer}
+/* Badge tipo asta: uno o piu' per strategia, riusato in lista/editor/modal strategia */
+.strategia-tipo-badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.strategia-tipo-badge{display:inline-block;font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:6px;background:var(--primary-subtle);color:var(--primary-bright);border:1px solid var(--primary)}
 .fascia-section{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:14px}
 .fascia-header{display:flex;align-items:center;gap:8px;padding:0 0 10px 10px;flex-wrap:wrap}
 .fascia-nome-input{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);border-radius:7px;padding:5px 8px;font-size:16px;font-weight:600;width:140px}

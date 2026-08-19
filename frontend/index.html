@@ -143,12 +143,12 @@
         <input type="number" id="strategia-form-crediti" placeholder="Es: 500" min="1">
       </div>
       <div class="form-group">
-        <label>Tipo di asta</label>
-        <select id="strategia-form-tipo">
-          <option value="iniziale">Asta iniziale</option>
-          <option value="riparazione1">Asta di riparazione 1</option>
-          <option value="riparazione2">Asta di riparazione 2</option>
-        </select>
+        <label>Tipo di asta <span class="hint-text">(puoi selezionarne più di uno)</span></label>
+        <div id="strategia-form-tipi" class="strategia-tipi-check">
+          <label class="strategia-tipo-check"><input type="checkbox" value="iniziale" checked> Asta iniziale</label>
+          <label class="strategia-tipo-check"><input type="checkbox" value="riparazione1"> Asta di riparazione 1</label>
+          <label class="strategia-tipo-check"><input type="checkbox" value="riparazione2"> Asta di riparazione 2</label>
+        </div>
       </div>
       <button type="button" id="btn-crea-strategia" class="btn btn-primary btn-lg" style="width:100%">Crea strategia</button>
       <p id="strategia-form-error" class="hint-text" style="display:none;color:var(--danger,#ff4d4d)"></p>
