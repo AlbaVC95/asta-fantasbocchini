@@ -373,6 +373,54 @@ controllo su copertura crediti, tetto svincoli per operazione, o tetto cumulativ
 `svincoliTotali`) — aggiunta validazione autoritativa completa, stesso principio già applicato
 al timer d'asta ("il server non si fida mai del client").
 
+## Asta di riparazione: "stato morto" bloccato con `verificaCapacitaRecupero`, non con soglie dirette su crediti/svincoli
+
+Bug reale in produzione (squadra "Adriano&Federico", asta_id `b953b4db-250e-4f2f-b374-c76391505906`):
+finita a `21/32, 🧤 0/3 portieri, 💰 0 crediti, 🔓 0/15 svincoli` — sotto il minimo portieri e
+senza più alcuna risorsa per recuperare. Causa reale, riprodotta con la sequenza esatta delle
+8 operazioni ricostruite dall'export Supabase reale: `calcolaMaxOfferta()` aveva un ramo
+speciale `if (svincoliRimanenti <= 0) return squadra.crediti` che ignorava del tutto la riserva
+sui minimi (introdotta per il caso normale, vedi sopra "Massima Offerta come ottimizzazione")
+quando gli svincoli erano finiti — proprio il caso in cui la riserva serve di più. Con 0
+svincoli residui e 0/3 portieri, la Massima Offerta tornava 5 crediti crudi invece di riservarne
+3 per i portieri mancanti; l'ultima chiamata normale (nessuno svincolo coinvolto) ha speso quei
+5 crediti, azzerando ogni risorsa residua in uno stato ormai irrecuperabile.
+
+Scartati esplicitamente pattern semplicistici tipo `if (crediti===0) blocca` o
+`if (svincoli===0) blocca tutti gli svincoli`: bloccherebbero anche operazioni legittime che
+lasciano la squadra temporaneamente sotto un minimo ma ancora recuperabile (comportamento
+esplicitamente voluto, vedi sopra "vincoli morbidi"). Serviva invece un controllo che simuli lo
+stato RISULTANTE di un'operazione e verifichi se da lì esiste ancora una combinazione di
+crediti+svincoli residui capace di raggiungere i minimi — non se l'operazione stessa consuma
+l'ultima risorsa.
+
+Fix (nessuna nuova formula economica, solo un nuovo predicato sopra le funzioni esistenti):
+- Rimosso il ramo speciale `svincoliRimanenti<=0` da `calcolaMaxOfferta()` — ora delega sempre a
+  `calcolaPianoSvincoloOttimale()`, che già gestisce correttamente 0 svincoli residui (nessun
+  recupero possibile, solo riserva sui minimi correnti) essendo un caso particolare della stessa
+  ricerca (p=0, m=0 è sempre tra le combinazioni valutate).
+- `calcolaPianoSvincoloOttimale()` ora ritorna anche `valoreGrezzo` (il valore netto NON
+  pavimentato a 1 credito) — necessario per distinguere "posso ancora offrire almeno 1cr per
+  convenzione UI" da "sono realmente in grado di coprire la riserva senza andare in negativo".
+- Nuova `verificaCapacitaRecupero(asta, squadraSimulata, svincoliRimanenti, capMax)`:
+  `piano.possibile && piano.valoreGrezzo >= 0` — il predicato di "stato morto", riusato in tre
+  punti (non duplicato): dentro `esegui-svincolo` (rifiuta una scelta specifica di giocatori da
+  liberare se lascerebbe la squadra senza via d'uscita, es. liberare tutti i portieri quando
+  bastava liberare movimento), in una nuova validazione finale di `termina-asta` per l'asta di
+  riparazione (blocca la chiusura se una squadra risulta sotto un minimo o sopra il tetto al
+  momento esatto di chiusura già esistente, nessun nuovo punto di validazione inventato), e
+  specchiata lato client (`_verificaCapacitaRecuperoCli`) solo come hint UI che disabilita
+  "Conferma svincolo" — la validazione autoritativa resta sempre server-side.
+- `assegna-manuale` (admin) resta volutamente FUORI da questi controlli, stessa scelta esplicita
+  già presa in una sessione precedente per la creazione dell'asta di riparazione: l'admin può
+  bypassare i limiti automatici in casi eccezionali, a proprio rischio.
+
+Verificato con 29 test standalone Node sul codice REALE estratto (10 scenari mandatori inclusa
+la riproduzione esatta del bug reale, 4 sulla scelta di combo in `esegui-svincolo`, 3 su
+`termina-asta`, 6 di sincronia client↔server sugli stessi input, 6 di regressione su
+`tipoAsta==='iniziale'` e sui casi "sotto il minimo ma ancora recuperabile" che devono restare
+permessi) — tutti PASS, nessuna regressione sui vincoli morbidi esistenti.
+
 ## Strategia ↔ tipo asta: tabella ponte additiva, non colonna array/modifica dello schema esistente
 
 `strategie.tipo_asta` era scalare (un solo valore), impedendo strutturalmente a una strategia

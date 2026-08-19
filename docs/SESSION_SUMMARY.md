@@ -6,7 +6,8 @@ non accumulato (per la cronologia vedi `git log`).
 ## Stato attuale
 
 - Branch `main`, allineato con `origin/main` (ultimo push: `83f1939`). Modifiche locali
-  pendenti: Strategia multi-asta (vedi sotto), non ancora committate.
+  pendenti: fix "stato morto" asta di riparazione (vedi sotto, appena completato) + Strategia
+  multi-asta (vedi sotto), non ancora committate.
 - **Nota importante**: durante questa sessione, il redesign 3D di Anteprima costruito qui
   (carta FX orizzontale, stadio Three.js con importmap, fix carta Puja admin) è stato
   **scartato su richiesta esplicita dell'utente** in favore di una versione diversa già presente
@@ -20,7 +21,47 @@ non accumulato (per la cronologia vedi `git log`).
   (`d5b5b0f`). I commit precedenti di questa sessione restano con l'identità automatica
   precedente (`alba@MacBook-Air-de-Alba.local`), non riscritti.
 
-## Ultimo intervento — Strategia associabile a più Aste (non più solo Asta iniziale)
+## Ultimo intervento — Asta di riparazione: eliminato lo "stato morto" (sotto minimo, 0 crediti, 0 svincoli)
+
+Bug reale in produzione: squadra "Adriano&Federico" finita a `21/32, 🧤 0/3, 💰 0, 🔓 0/15` —
+sotto il minimo portieri, senza più alcuna risorsa per recuperare. Riprodotto con la sequenza
+esatta delle 8 operazioni reali (dati Supabase, asta_id `b953b4db-250e-4f2f-b374-c76391505906`).
+
+**Causa reale**: `calcolaMaxOfferta()` aveva un ramo `if (svincoliRimanenti<=0) return
+squadra.crediti` che ignorava la riserva sui minimi proprio quando serviva di più (0 svincoli
+residui). Con 0/3 portieri e 0 svincoli, tornava 5 crediti crudi invece di riservarne 3 —
+l'ultima chiamata normale ha speso quei 5cr, azzerando ogni risorsa in modo irrecuperabile.
+Dettagli completi (formula, decisione, alternative scartate) in DECISIONS.md.
+
+**Fix** (riuso delle funzioni esistenti, nessuna nuova formula economica):
+- Rimosso il ramo speciale da `calcolaMaxOfferta()` — ora delega sempre a
+  `calcolaPianoSvincoloOttimale()`, che gestisce già correttamente 0 svincoli residui.
+- `calcolaPianoSvincoloOttimale()` ora ritorna anche `valoreGrezzo` (valore netto non
+  pavimentato a 1cr).
+- Nuova `verificaCapacitaRecupero(asta, squadraSimulata, svincoliRimanenti, capMax)` — il
+  predicato di "stato morto" (`piano.possibile && piano.valoreGrezzo >= 0`), riusato in:
+  `esegui-svincolo` (rifiuta una scelta specifica se lascia la squadra senza via d'uscita),
+  nuova validazione finale in `termina-asta` per riparazione (blocca la chiusura se una
+  squadra è sotto un minimo o sopra il tetto), e specchiata lato client
+  (`_verificaCapacitaRecuperoCli`) come hint UI che disabilita "Conferma svincolo".
+- `assegna-manuale` resta volutamente fuori (stessa scelta esplicita di sessioni precedenti).
+- I vincoli "morbidi" restano invariati: una squadra può ancora scendere temporaneamente sotto
+  un minimo se resta comunque recuperabile — bloccato solo il caso realmente irrecuperabile.
+
+File: `backend/server.js` (`calcolaMaxOfferta`, `calcolaPianoSvincoloOttimale`, nuova
+`verificaCapacitaRecupero`, handler `esegui-svincolo` e `termina-asta`), `frontend/js/app.js`
+(specchio dei 3 fix: `calcolaMaxOffertaSquadra`, `_calcolaPianoSvincoloOttimaleCli`, nuova
+`_verificaCapacitaRecuperoCli`, `aggiornaTotaleSvincolo`).
+
+**Verificato**: 29 test standalone Node sul codice REALE estratto — 10 scenari mandatori
+(inclusa la riproduzione esatta del bug reale: Massima Offerta passa da 5cr crudi a 2cr con
+riserva), 4 sulla scelta di combo in `esegui-svincolo`, 3 su `termina-asta`, 6 di sincronia
+client↔server sugli stessi input (output identici), tutti PASS. Regressione confermata:
+`tipoAsta==='iniziale'` invariata, i casi "sotto il minimo ma ancora recuperabile" restano
+permessi (non ri-bloccati per errore). `node --check` pulito su entrambi i file. Non verificato
+in un flusso live reale nel browser (stesso limite di login Supabase delle sessioni precedenti).
+
+## Intervento precedente — Strategia associabile a più Aste (non più solo Asta iniziale)
 
 Bug reale: `strategie.tipo_asta` era una colonna scalare (un solo valore), quindi una
 strategia creata come `'iniziale'` non poteva mai risultare compatibile con un'asta di

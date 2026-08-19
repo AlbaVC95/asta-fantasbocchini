@@ -4265,10 +4265,32 @@ function aggiornaTotaleSvincolo(differenza) {
   // Vincolo minimo (prima solo sui crediti): il pulsante resta disabilitato anche se manca
   // spazio in rosa, non solo se manca il recupero crediti.
   const spazioOk = S.svincoloSel.size >= (popup.roomGap || 0);
+  // Hint "stato senza via d'uscita" (solo lato client, il server rivalida sempre): simula lo
+  // stato risultante da QUESTA selezione e avvisa se lascerebbe la squadra senza alcuna
+  // possibilita' futura di raggiungere i minimi — stesso controllo di verificaCapacitaRecupero
+  // lato server, qui solo per dare un feedback immediato prima di inviare la richiesta.
+  const sqSvincolante = ((S.asta && S.asta.squadre) || []).find(s => s.nome === popup.squadraVincitrice);
+  const creditiAttuali = sqSvincolante ? sqSvincolante.crediti : 0;
+  const rosaSimulata = (popup.rosa || []).filter(g => !S.svincoloSel.has(g.id)).concat([{ ...popup.giocatore, prezzo: popup.prezzoFinale }]);
+  const capMax = (S.asta && S.asta.maxGiocatoriPerSquadra) || 25;
+  const svincoliRimanentiDopo = (popup.svincoliRimanenti || 0) - S.svincoloSel.size;
+  const recuperabile = _verificaCapacitaRecuperoCli(
+    { rosa: rosaSimulata, crediti: creditiAttuali + recupero - popup.prezzoFinale },
+    svincoliRimanentiDopo, capMax
+  );
+  const svRoomGap = document.getElementById('sv-room-gap');
+  if (svRoomGap && !recuperabile) {
+    svRoomGap.textContent = '⚠️ Questa selezione lascerebbe la squadra senza possibilità di recupero dei minimi';
+  } else if (svRoomGap && popup.minSvincoli > 0) {
+    svRoomGap.textContent = 'Devi liberare almeno ' + popup.minSvincoli + ' giocatori' + (popup.roomGap > 0 ? ' (di cui ' + popup.roomGap + ' solo per fare spazio in rosa)' : '');
+  } else if (svRoomGap) {
+    svRoomGap.textContent = '';
+  }
   document.getElementById('sv-recupero').textContent = recupero;
   document.getElementById('sv-debito').textContent = debito;
-  document.getElementById('btn-sv-conferma').disabled = debito > 0 || !spazioOk;
+  document.getElementById('btn-sv-conferma').disabled = debito > 0 || !spazioOk || !recuperabile;
 }
+
 
 window.confermaSvincolo = function() {
   socket.emit('esegui-svincolo', { astaId: S.astaId, giocatoriIds: [...S.svincoloSel] });
@@ -4546,7 +4568,10 @@ function prezzoRealeStrategia(cfg) {
 // sincronizzata, e' solo un hint UI, la validazione autoritativa e' lato server.
 function _costruisciListeOrdinateSvincoloCli(sq) {
   const fattore = S.asta.fattoreSvincolo || 0.5;
-  const valore = g => Math.floor(g.prezzo * fattore);
+  // Era Math.floor qui (dimenticato nel fix generale dell'arrotondamento — vedi
+  // calcolaRecuperoSvincoloCli, gia' usata altrove in questo stesso file): disallineava
+  // l'hint "Max Xcr" mostrato al giocatore dal valore reale calcolato lato server.
+  const valore = g => calcolaRecuperoSvincoloCli(g.prezzo, fattore);
   const portieri = sq.rosa.filter(g => _isPortiere(g.ruolo)).slice().sort((a, b) => valore(b) - valore(a));
   const movimento = sq.rosa.filter(g => !_isPortiere(g.ruolo)).slice().sort((a, b) => valore(b) - valore(a));
   const prefixPor = [0]; portieri.forEach(g => prefixPor.push(prefixPor[prefixPor.length - 1] + valore(g)));
@@ -4564,7 +4589,7 @@ function _calcolaPianoSvincoloOttimaleCli(sq, giocatore, svincoliRimanenti, capM
   const portieriAttuali = portieri.length, movimentoAttuali = movimento.length;
   const ePortiere = giocatore ? _isPortiere(giocatore.ruolo) : null;
   const kRoster = Math.max(0, (sq.rosa.length + 1) - capMax);
-  if (kRoster > svincoliRimanenti) return { possibile: false, maxOfferta: 0 };
+  if (kRoster > svincoliRimanenti) return { possibile: false, maxOfferta: 0, valoreGrezzo: -Infinity };
 
   let best = null;
   const maxP = Math.min(portieriAttuali, svincoliRimanenti);
@@ -4579,8 +4604,17 @@ function _calcolaPianoSvincoloOttimaleCli(sq, giocatore, svincoliRimanenti, capM
       if (!best || valoreNetto > best.valoreNetto) best = { p, m, valoreNetto };
     }
   }
-  if (!best) return { possibile: false, maxOfferta: 0 };
-  return { possibile: true, maxOfferta: Math.max(1, sq.crediti + best.valoreNetto) };
+  if (!best) return { possibile: false, maxOfferta: 0, valoreGrezzo: -Infinity };
+  const valoreGrezzo = sq.crediti + best.valoreNetto;
+  return { possibile: true, maxOfferta: Math.max(1, valoreGrezzo), valoreGrezzo };
+}
+
+// Specchio client di verificaCapacitaRecupero() in backend/server.js — usata per dare un
+// hint immediato (disabilitare "Conferma svincolo") se la selezione corrente lascerebbe la
+// squadra senza alcuna via d'uscita verso i minimi. Solo hint: il server rivalida sempre.
+function _verificaCapacitaRecuperoCli(sq, svincoliRimanenti, capMax) {
+  const piano = _calcolaPianoSvincoloOttimaleCli(sq, null, Math.max(0, svincoliRimanenti), capMax);
+  return piano.possibile && piano.valoreGrezzo >= 0;
 }
 
 // Specchio client di calcolaMaxOfferta() in backend/server.js — deve restare sincronizzata,
@@ -4605,13 +4639,14 @@ function calcolaMaxOffertaSquadra(sq) {
     return Math.max(1, sq.crediti - creditiRiservati);
   }
 
-  const svinR = S.asta.svincoliTotali - (sq.svincoliUsati || 0);
-  if (svinR <= 0) {
-    if (sq.rosa.length >= capMax) return 0;
-    return sq.crediti;
-  }
+  // BUG REALE corretto (vedi server.js/DECISIONS.md): esisteva qui un ramo speciale
+  // "if (svinR <= 0) return sq.crediti" che ignorava la riserva minimi quando gli svincoli
+  // erano finiti — _calcolaPianoSvincoloOttimaleCli gestisce gia' correttamente da sola il
+  // caso svincoliRimanenti<=0 (nessun recupero possibile, solo riserva sui minimi correnti).
+  const svinR = Math.max(0, S.asta.svincoliTotali - (sq.svincoliUsati || 0));
   return _calcolaPianoSvincoloOttimaleCli(sq, giocatore, svinR, capMax).maxOfferta;
 }
+
 
 function getMaxOfferta() {
   return calcolaMaxOffertaSquadra(getMiaSquadra());

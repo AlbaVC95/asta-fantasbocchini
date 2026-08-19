@@ -374,7 +374,7 @@ function calcolaPianoSvincoloOttimale(asta, squadra, giocatore, svincoliRimanent
   const portieriAttuali = portieri.length, movimentoAttuali = movimento.length;
   const ePortiere = giocatore ? isPortiere(giocatore.ruolo) : null;
   const kRoster = Math.max(0, (squadra.rosa.length + 1) - capMax);
-  if (kRoster > svincoliRimanenti) return { possibile: false, maxOfferta: 0 };
+  if (kRoster > svincoliRimanenti) return { possibile: false, maxOfferta: 0, valoreGrezzo: -Infinity };
 
   let best = null;
   const maxP = Math.min(portieriAttuali, svincoliRimanenti);
@@ -389,8 +389,25 @@ function calcolaPianoSvincoloOttimale(asta, squadra, giocatore, svincoliRimanent
       if (!best || valoreNetto > best.valoreNetto) best = { p, m, valoreNetto };
     }
   }
-  if (!best) return { possibile: false, maxOfferta: 0 };
-  return { possibile: true, maxOfferta: Math.max(1, squadra.crediti + best.valoreNetto) };
+  if (!best) return { possibile: false, maxOfferta: 0, valoreGrezzo: -Infinity };
+  // valoreGrezzo (senza il pavimento di 1 credito): serve per sapere se la MIGLIOR strategia
+  // futura basta DAVVERO a coprire il deficit (>= 0), non solo "esiste un'offerta minima di 1
+  // credito" — usato da verificaCapacitaRecupero per rilevare stati irreversibili.
+  const valoreGrezzo = squadra.crediti + best.valoreNetto;
+  return { possibile: true, maxOfferta: Math.max(1, valoreGrezzo), valoreGrezzo };
+}
+
+// Rileva uno stato SENZA VIA D'USCITA: dopo un'operazione, verifica se esiste ancora
+// QUALUNQUE strategia futura (con gli svincoli/crediti che restano) capace di raggiungere i
+// minimi Portieri/Movimento — non se li raggiunge gia' subito, solo se un percorso resta
+// possibile (stessa convenzione "1 credito riservato = 1 giocatore mancante" gia' usata in
+// tutto il sistema). Se anche la MIGLIOR strategia futura lascia un deficit di crediti,
+// l'operazione va bloccata: altrimenti la squadra resterebbe sotto i minimi per sempre, senza
+// nessuna possibilita' di recupero — bug reale osservato (squadra Adriano&Federico, riparazione
+// 18/19 agosto: 0 crediti, 0 svincoli, 0 portieri su un minimo di 3, nessuna via d'uscita).
+function verificaCapacitaRecupero(asta, squadraSimulata, svincoliRimanenti, capMax) {
+  const piano = calcolaPianoSvincoloOttimale(asta, squadraSimulata, null, Math.max(0, svincoliRimanenti), capMax);
+  return piano.possibile && piano.valoreGrezzo >= 0;
 }
 
 // Post-vittoria: numero MINIMO di giocatori da liberare per completare legalmente
@@ -459,11 +476,17 @@ function calcolaMaxOfferta(asta, squadra, giocatore) {
     return Math.max(1, squadra.crediti - creditiRiservati);
   }
 
-  const svincoliRimanenti = asta.svincoliTotali - (squadra.svincoliUsati || 0);
-  if (svincoliRimanenti <= 0) {
-    if (squadra.rosa.length >= capMax) return 0;
-    return squadra.crediti;
-  }
+  // BUG REALE trovato e corretto (vedi DECISIONS.md): esisteva qui un ramo speciale
+  // "if (svincoliRimanenti <= 0) return squadra.crediti" che restituiva i crediti CRUDI,
+  // ignorando del tutto la riserva per i minimi Portieri/Movimento — permetteva di spendere
+  // fino all'ultimo credito anche restando sotto i minimi, senza NESSUNA possibilita' futura
+  // di recuperare (lo svincolo, unica fonte di nuovi crediti in riparazione, era gia'
+  // esaurito). calcolaPianoSvincoloOttimale gestisce GIA' correttamente il caso
+  // svincoliRimanenti<=0 da solo (i limiti del ciclo collassano a un'unica combinazione
+  // p=0,m=0: nessun recupero possibile, solo riserva sui minimi correnti) — delegare sempre
+  // a lei, senza scorciatoie, elimina il bug e lascia un solo percorso/una sola fonte di
+  // verita' per il calcolo.
+  const svincoliRimanenti = Math.max(0, asta.svincoliTotali - (squadra.svincoliUsati || 0));
   const piano = calcolaPianoSvincoloOttimale(asta, squadra, giocatore, svincoliRimanenti, capMax);
   return piano.maxOfferta;
 }
@@ -1435,6 +1458,19 @@ io.on('connection', (socket) => {
     if (!check.possibile) {
       return socket.emit('errore', { msg: 'Operazione non eseguibile: nemmeno tutti gli svincoli disponibili basterebbero. Contatta l\'Admin.' });
     }
+    // Anche se QUESTA selezione copre il debito/spazio richiesti, potrebbe comunque lasciare
+    // la squadra senza alcuna via d'uscita per i minimi (es. liberare l'ultimo portiere
+    // quando bastava liberare un movimento) — simula lo stato risultante e verifica che resti
+    // una strategia futura valida PRIMA di committare (bug reale osservato altrimenti: 0
+    // crediti, 0 svincoli, 0 portieri, nessuna possibilita' di recupero).
+    const rosaSimulata = squadra.rosa.filter(g => !scelti.find(s => s.id === g.id))
+      .concat([{ ...popup.giocatore, prezzo: popup.prezzoFinale }]);
+    const squadraSimulata = { rosa: rosaSimulata, crediti: squadra.crediti + creditiRecuperabiliScelti - popup.prezzoFinale };
+    const svincoliRimanentiDopo = svincoliRimanenti - scelti.length;
+    if (!verificaCapacitaRecupero(asta, squadraSimulata, svincoliRimanentiDopo, capMax)) {
+      return socket.emit('errore', { msg: 'Questa selezione lascerebbe la squadra senza alcuna possibilità di recupero dei minimi Portieri/Movimento. Scegli una combinazione diversa (libera meno giocatori, o giocatori diversi).' });
+    }
+
 
     let creditiRecuperati = 0; const svincolati = [];
     scelti.forEach(g => {
@@ -1555,6 +1591,26 @@ io.on('connection', (socket) => {
   socket.on('termina-asta', ({ astaId }) => {
     const asta = aste.get(astaId);
     if (!asta || !isAdmin(asta, socket.id)) return;
+    // Validazione finale (solo riparazione: 'iniziale' non ha un meccanismo di svincolo per
+    // "aggiustare" una rosa incompleta, quindi lo stesso controllo non avrebbe un'azione
+    // correttiva disponibile). Il tetto massimo e' gia' garantito continuamente durante
+    // l'asta da calcolaMaxOfferta/esegui-svincolo — ricontrollato qui solo per difesa in
+    // profondita', non dovrebbe mai scattare in pratica.
+    if (asta.tipoAsta === 'riparazione') {
+      const minimoPortieri = asta.minimoPortieri || 0;
+      const minimoMovimento = asta.minimoMovimento || 0;
+      const capMax = asta.maxGiocatoriPerSquadra || 25;
+      const squadreNonConformi = asta.squadre.filter(sq => {
+        const portieriSq = sq.rosa.filter(g => isPortiere(g.ruolo)).length;
+        const movimentoSq = sq.rosa.length - portieriSq;
+        return portieriSq < minimoPortieri || movimentoSq < minimoMovimento || sq.rosa.length > capMax;
+      });
+      if (squadreNonConformi.length) {
+        return socket.emit('errore', {
+          msg: `Non puoi terminare l'asta: ${squadreNonConformi.map(sq => sq.nome).join(', ')} non rispetta ancora i minimi Portieri/Movimento o il tetto rosa configurati. Sistema la rosa (es. admin-update-crediti) prima di chiudere.`
+        });
+      }
+    }
     clearTimer(astaId); asta.stato = 'completata'; asta.chiamataAttuale = null;
     saveExportSupabase(asta);
     // NB: niente backup=true qui — l'asta è conclusa, il backup verrà eliminato subito sotto,
