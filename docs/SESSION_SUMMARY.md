@@ -5,9 +5,15 @@ non accumulato (per la cronologia vedi `git log`).
 
 ## Stato attuale
 
-- Branch `main`, allineato con `origin/main` (ultimo push: `83f1939`). Modifiche locali
-  pendenti: fix "stato morto" asta di riparazione (vedi sotto, appena completato) + Strategia
-  multi-asta (vedi sotto), non ancora committate.
+- Branch `main`, allineato con `origin/main` (ultimo push: `cc45284`). Nessuna modifica locale
+  pendente, working tree pulito.
+- **Hosting: Hostinger, non più Render** (l'utente ha corretto questa sessione un'assunzione
+  sbagliata — Render era il provider di una fase precedente del progetto). Deploy automatico al
+  push su `main`, nessun passo manuale. Vedi [PROJECT.md](PROJECT.md#hosting).
+- Ancora da verificare dal vivo: dopo il deploy automatico su Hostinger dell'ultimo push
+  (`185b4bc`/`cc45284`), confermare in produzione che la squadra "Adriano&Federico" (o
+  qualunque squadra nello stesso stato) veda ora "Max: 0cr" invece di "Max: 1cr" quando è senza
+  risorse — non ancora confermato dall'utente dopo questo secondo fix.
 - **Nota importante**: durante questa sessione, il redesign 3D di Anteprima costruito qui
   (carta FX orizzontale, stadio Three.js con importmap, fix carta Puja admin) è stato
   **scartato su richiesta esplicita dell'utente** in favore di una versione diversa già presente
@@ -96,7 +102,8 @@ File: `backend/sql/2026-08-19_strategia_tipi_asta.sql` (nuovo), `frontend/index.
 dati reali; test isolato con strategia associata a tutti e 3 i tipi, poi ripulito), e nel
 browser via mock di `supa.from` (impossibile testare con login reale, stesso limite delle
 sessioni precedenti): checkbox di default solo "iniziale", multi-selezione funzionante,
-badge multipli renderizzati correttamente nella lista strategie (screenshot). Non committato.
+badge multipli renderizzati correttamente nella lista strategie (screenshot). Committato e
+pushato (`83f1939`).
 
 ## Intervento precedente — Asta di riparazione: UI svincolo, blocco riacquisto, arrotondamento, popup Admin
 
