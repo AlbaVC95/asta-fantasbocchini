@@ -496,6 +496,16 @@ Difesa → Centrocampo → Esterni → Attacco), così il criterio resta coerent
 introdurne uno diverso solo per questo popup. Un semplice `.sort()` prima del `.map()` che genera
 l'HTML, nessuna modifica alla struttura dati o al payload del server.
 
+## Popup selezione svincolo: contatore selezionati + stato selezionato piu' visibile
+
+Richiesta esplicita dell'utente dopo aver visto lo screenshot in produzione: il popup mostrava
+"Recupero: X cr | Debito: Y cr" ma nessun conteggio di QUANTI/QUALI giocatori fossero selezionati —
+con una rosa lunga bisognava scorrere tutta la lista controllando ogni singolo checkbox. Aggiunto un
+contatore "👥 N selezionati" nella stessa riga (`aggiornaTotaleSvincolo()` in `frontend/js/app.js`,
+già eseguita ad ogni `toggleSvincolo`, nessuna nuova chiamata introdotta) e rinforzato lo stile
+`.sv-item.selezionato` (`frontend/css/style.css`): bordo 2px invece di 1px e sfondo rosso più
+opaco (`.16` invece di `.06`), praticamente impercettibile alla dimensione originale.
+
 ## Strategia ↔ tipo asta: tabella ponte additiva, non colonna array/modifica dello schema esistente
 
 `strategie.tipo_asta` era scalare (un solo valore), impedendo strutturalmente a una strategia

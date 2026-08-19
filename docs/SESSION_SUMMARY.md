@@ -5,8 +5,9 @@ non accumulato (per la cronologia vedi `git log`).
 
 ## Stato attuale
 
-- Branch `main`, allineato con `origin/main` fino al commit `8388035` (selettore tipo asta
-  nell'import Strategia, vedi sotto "Intervento precedente").
+- Branch `main`, allineato con `origin/main` fino al commit `8b34600` (rosa ordinata per ruolo nel
+  popup svincolo). **Modifica locale pendente non ancora pushata**: contatore selezionati + stato
+  selezionato più visibile nello stesso popup (vedi sotto, "Ultimo intervento").
 - **Attenzione per la prossima sessione**: nel working tree locale sono presenti modifiche NON
   committate a `frontend/css/style.css`, `frontend/index.html` e `frontend/js/app.js` che NON sono
   di questa sessione (es. un refactor di `confirm()` → `confermaAzione()` in `app.js`, ~370 righe di
@@ -36,7 +37,31 @@ non accumulato (per la cronologia vedi `git log`).
   (`d5b5b0f`). I commit precedenti di questa sessione restano con l'identità automatica
   precedente (`alba@MacBook-Air-de-Alba.local`), non riscritti.
 
-## Ultimo intervento — Popup svincolo (Asta di riparazione): rosa ordinata per ruolo
+## Ultimo intervento — Popup svincolo: contatore selezionati + stato selezionato più visibile
+
+Richiesta dell'utente dopo aver visto uno screenshot del popup in produzione (col fix precedente
+già live): "Recupero: X cr | Debito: Y cr" non diceva quanti/quali giocatori fossero selezionati,
+difficile da capire scorrendo una rosa lunga. Aggiunto "👥 N selezionati" nella stessa riga
+(`aggiornaTotaleSvincolo()`, nessuna nuova chiamata) e rinforzato `.sv-item.selezionato` (bordo
+2px, sfondo più opaco) — prima quasi impercettibile. Dettagli in [DECISIONS.md](DECISIONS.md).
+
+**Nota tecnica di sessione**: come nel fix precedente, `app.js`/`index.html`/`style.css` avevano
+altre modifiche non mie e non committate nel working tree (vedi sopra) — isolato con lo stesso
+metodo (patch mirata su copia pulita di `HEAD`, applicata all'indice con `git apply --cached`),
+E applicato separatamente anche al working tree reale (diversamente dal fix precedente, qui
+serviva vedere il risultato nel browser per verificarlo). Osservazione utile per il futuro: le 137
+righe LF-only storiche di `app.js` (vedi sopra, gotcha Edit tool) risultano ora 0 nel working tree
+attuale — le modifiche pendenti dell'altro strumento hanno normalizzato l'intero file a CRLF. Non è
+un problema introdotto da questa sessione (confermato: l'ultimo commit su `HEAD` ha ancora
+esattamente 137 righe LF-only) — ma se in futuro si riprende in mano il lavoro pendente dell'altro
+strumento, il conteggio "137" non è più un riferimento valido per quel working tree specifico.
+
+**Verificato**: `node --check` pulito. Nel browser (dev server locale): popup aperto con dati
+sintetici iniettati in console (stessa tecnica delle sessioni precedenti), screenshot prima/dopo
+selezione di 2 giocatori — contatore "0 selezionati" → "2 selezionati", righe selezionate con
+bordo/sfondo nettamente più visibili.
+
+## Intervento precedente — Popup svincolo (Asta di riparazione): rosa ordinata per ruolo
 
 Richiesta esplicita dell'utente: nel popup di selezione svincolo (bottone che appare quando una
 squadra deve liberare crediti/spazio in Asta di riparazione), i giocatori della rosa non erano

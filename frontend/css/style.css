@@ -419,7 +419,7 @@ html.theme-light .chiamata-card{
 .to-arrow{font-size:1rem;color:var(--text-muted)}.to-ricevi{font-size:1rem;font-weight:800;color:var(--success)}
 .sv-lista{max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;margin:12px 0}
 .sv-item{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg-main);border-radius:9px;border:1px solid var(--border);cursor:pointer;transition:all .15s}
-.sv-item.selezionato{border-color:var(--danger);background:rgba(255,23,68,.06)}
+.sv-item.selezionato{border-color:var(--danger);border-width:2px;background:rgba(255,23,68,.16)}
 .sv-item-nome{flex:1;font-weight:600;font-size:.85rem}.sv-item-costo{font-family:var(--font-display);font-weight:700;color:var(--gold)}
 .sv-item-avatar{width:26px;height:26px;min-width:26px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--bg-elevated)}
 .sv-item-info{flex:1;min-width:0;display:flex;align-items:center;gap:6px;flex-wrap:wrap}

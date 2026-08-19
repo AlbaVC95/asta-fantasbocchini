@@ -4289,6 +4289,7 @@ function aggiornaTotaleSvincolo(differenza) {
   }
   document.getElementById('sv-recupero').textContent = recupero;
   document.getElementById('sv-debito').textContent = debito;
+  document.getElementById('sv-selezionati').textContent = S.svincoloSel.size;
   document.getElementById('btn-sv-conferma').disabled = debito > 0 || !spazioOk || !recuperabile;
 }
 
