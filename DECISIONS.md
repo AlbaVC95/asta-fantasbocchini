@@ -421,6 +421,25 @@ la riproduzione esatta del bug reale, 4 sulla scelta di combo in `esegui-svincol
 `tipoAsta==='iniziale'` e sui casi "sotto il minimo ma ancora recuperabile" che devono restare
 permessi) — tutti PASS, nessuna regressione sui vincoli morbidi esistenti.
 
+**Secondo bug trovato subito dopo il deploy, stesso incidente**: l'utente ha riportato lo stesso
+sintomo su un'asta NUOVA (screenshot: Adriano&Federico, 28/32, 0 portieri, 0 crediti, 0/15
+svincoli, popup Admin che mostrava comunque "Max: 1cr"). Causa: `calcolaPianoSvincoloOttimale()`
+aveva un pavimento `Math.max(1, valoreGrezzo)` che garantiva SEMPRE almeno 1 credito di offerta
+consentita anche quando `valoreGrezzo` è negativo (nessuna strategia futura basta a coprire il
+deficit) — `calcolaMaxOfferta()` delega direttamente a questo valore per bloccare i rilanci nel
+handler `'rilancio'`, quindi il pavimento permetteva di vincere un'offerta "fantasma" da 1
+credito in uno stato già senza via d'uscita. `verificaCapacitaRecupero()` avrebbe rilevato
+correttamente lo stesso stato come irrecuperabile, ma non veniva mai interpellata in tempo per
+bloccare la puja: le due funzioni erano disallineate. Nessuno dei 10 test mandatori copriva
+questo ramo perché testavano `verificaCapacitaRecupero()` isolatamente, mai il valore di ritorno
+di `calcolaMaxOfferta()` con `valoreGrezzo` negativo. Fix: pavimento cambiato a
+`Math.max(0, valoreGrezzo)` (nel file reale e nello specchio client
+`_calcolaPianoSvincoloOttimaleCli`) — un'offerta pari a 0 è correttamente rifiutata a monte
+dall'handler `'rilancio'` (l'offerta minima è sempre ≥1, quindi `offerta > maxOff` scatta sempre
+quando `maxOff===0`), nessun altro punto del codice presupponeva un pavimento di 1. Verificato
+con 4 nuovi test (inclusa la riproduzione esatta dello screenshot: da "Max: 1cr" a "Max: 0cr") +
+i 29 test precedenti rieseguiti, tutti PASS (33/33 totali).
+
 ## Strategia ↔ tipo asta: tabella ponte additiva, non colonna array/modifica dello schema esistente
 
 `strategie.tipo_asta` era scalare (un solo valore), impedendo strutturalmente a una strategia

@@ -4606,7 +4606,7 @@ function _calcolaPianoSvincoloOttimaleCli(sq, giocatore, svincoliRimanenti, capM
   }
   if (!best) return { possibile: false, maxOfferta: 0, valoreGrezzo: -Infinity };
   const valoreGrezzo = sq.crediti + best.valoreNetto;
-  return { possibile: true, maxOfferta: Math.max(1, valoreGrezzo), valoreGrezzo };
+  return { possibile: true, maxOfferta: Math.max(0, valoreGrezzo), valoreGrezzo };
 }
 
 // Specchio client di verificaCapacitaRecupero() in backend/server.js — usata per dare un

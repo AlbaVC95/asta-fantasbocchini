@@ -390,11 +390,19 @@ function calcolaPianoSvincoloOttimale(asta, squadra, giocatore, svincoliRimanent
     }
   }
   if (!best) return { possibile: false, maxOfferta: 0, valoreGrezzo: -Infinity };
-  // valoreGrezzo (senza il pavimento di 1 credito): serve per sapere se la MIGLIOR strategia
-  // futura basta DAVVERO a coprire il deficit (>= 0), non solo "esiste un'offerta minima di 1
-  // credito" — usato da verificaCapacitaRecupero per rilevare stati irreversibili.
   const valoreGrezzo = squadra.crediti + best.valoreNetto;
-  return { possibile: true, maxOfferta: Math.max(1, valoreGrezzo), valoreGrezzo };
+  // BUG REALE trovato e corretto (vedi DECISIONS.md): qui c'era un pavimento
+  // "Math.max(1, valoreGrezzo)" che garantiva SEMPRE almeno 1 credito di offerta consentita,
+  // anche quando valoreGrezzo e' negativo — cioe' quando anche la MIGLIOR strategia futura non
+  // basta a coprire il deficit. calcolaMaxOfferta() delega direttamente a questo valore per
+  // bloccare i rilanci: un pavimento a 1 permetteva quindi di vincere un'offerta "fantasma" da
+  // 1 credito in uno stato gia' senza via d'uscita (verificaCapacitaRecupero lo avrebbe
+  // rilevato come irrecuperabile, ma calcolaMaxOfferta non era mai arrivato a chiamarla per
+  // bloccare la puja in tempo — le due funzioni erano disallineate). Nessun test dei 10
+  // scenari mandatori copriva questo ramo perche' verificaCapacitaRecupero era stata testata
+  // separatamente, mai il valore di ritorno di calcolaMaxOfferta in uno scenario con
+  // valoreGrezzo negativo. Il pavimento corretto e' 0 (nessuna offerta consentita), non 1.
+  return { possibile: true, maxOfferta: Math.max(0, valoreGrezzo), valoreGrezzo };
 }
 
 // Rileva uno stato SENZA VIA D'USCITA: dopo un'operazione, verifica se esiste ancora

@@ -58,8 +58,20 @@ File: `backend/server.js` (`calcolaMaxOfferta`, `calcolaPianoSvincoloOttimale`, 
 riserva), 4 sulla scelta di combo in `esegui-svincolo`, 3 su `termina-asta`, 6 di sincronia
 client↔server sugli stessi input (output identici), tutti PASS. Regressione confermata:
 `tipoAsta==='iniziale'` invariata, i casi "sotto il minimo ma ancora recuperabile" restano
-permessi (non ri-bloccati per errore). `node --check` pulito su entrambi i file. Non verificato
-in un flusso live reale nel browser (stesso limite di login Supabase delle sessioni precedenti).
+permessi (non ri-bloccati per errore). `node --check` pulito su entrambi i file.
+
+**Secondo bug trovato dall'utente subito dopo il deploy** (stesso incidente, asta nuova):
+`calcolaPianoSvincoloOttimale()` aveva un pavimento `Math.max(1, valoreGrezzo)` che permetteva
+sempre almeno 1cr di offerta anche a squadra già irrecuperabile (screenshot: Adriano&Federico
+28/32, 0 portieri, 0cr, 0/15 svincoli, popup Admin "Max: 1cr") — disallineato da
+`verificaCapacitaRecupero()`, che avrebbe detto correttamente "irrecuperabile" ma non veniva
+interpellata in tempo dall'handler `'rilancio'`. Corretto a `Math.max(0, valoreGrezzo)`
+(backend + specchio client). Dettagli in DECISIONS.md. Verificato con 4 nuovi test (incluso lo
+scenario esatto dello screenshot) + i 29 precedenti rieseguiti, 33/33 PASS.
+
+Non ancora verificato in un flusso live reale nel browser dopo QUESTO secondo fix (stesso
+limite di login Supabase delle sessioni precedenti) — solo verificato via test standalone sul
+codice reale estratto.
 
 ## Intervento precedente — Strategia associabile a più Aste (non più solo Asta iniziale)
 
