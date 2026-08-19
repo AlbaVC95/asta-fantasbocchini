@@ -4739,6 +4739,7 @@ function _normNomeFantaLab(s) {
     .normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 let _pendingImportFantaLabFile = null;
+let _pendingImportStrategiaJson = null;
 
 function setupMenu() {
   const btnStrategie = document.getElementById('btn-menu-strategie');
@@ -4812,7 +4813,27 @@ function setupStrategie() {
     inpImportaStrategia.addEventListener('change', () => {
       const file = inpImportaStrategia.files[0];
       inpImportaStrategia.value = '';
-      if (file) importaStrategiaDaFile(file);
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        let data;
+        try { data = JSON.parse(e.target.result); } catch (err) { toast('File non valido', 'error'); return; }
+        if (!data || !data.strategia || !Array.isArray(data.fasce)) { toast('File non valido: formato strategia non riconosciuto', 'error'); return; }
+        _pendingImportStrategiaJson = data;
+        _pendingImportFantaLabFile = null;
+        document.getElementById('strategia-form-nome').value = data.strategia.nome || '';
+        document.getElementById('strategia-form-crediti').value = data.strategia.crediti_totali || '';
+        // Preseleziona il tipo salvato nel file, ma resta un checkbox normale: l'utente puo'
+        // aggiungerne altri o cambiarlo prima di importare (prima il tipo veniva preso in
+        // automatico dal file, senza alcun selettore — bug segnalato dall'utente).
+        document.querySelectorAll('#strategia-form-tipi input[type="checkbox"]').forEach(chk => {
+          chk.checked = chk.value === (data.strategia.tipo_asta || 'iniziale');
+        });
+        document.getElementById('strategia-form-error').style.display = 'none';
+        document.querySelector('#screen-strategia-form .home-title').textContent = 'Importa strategia';
+        showScreen('screen-strategia-form');
+      };
+      reader.readAsText(file);
     });
   }
 
@@ -4834,6 +4855,7 @@ function setupStrategie() {
 
   if (btnNuovaStrategia) btnNuovaStrategia.addEventListener('click', () => {
     _pendingImportFantaLabFile = null;
+    _pendingImportStrategiaJson = null;
     document.getElementById('strategia-form-nome').value = '';
     document.getElementById('strategia-form-crediti').value = '';
     _resetCheckboxTipiAsta();
@@ -4844,6 +4866,7 @@ function setupStrategie() {
 
   if (btnBackFormLista) btnBackFormLista.addEventListener('click', () => {
     _pendingImportFantaLabFile = null;
+    _pendingImportStrategiaJson = null;
     showScreen('screen-strategie-lista');
   });
 
@@ -4871,6 +4894,15 @@ function setupStrategie() {
         toast('Strategia importata da FantaLab: ' + esito.importati + ' giocatori (' + esito.scartati + ' non trovati nel Listino)', 'success');
       } catch (err) {
         toast('Errore nell\'importazione da FantaLab: ' + (err.message || err), 'error');
+      }
+    } else if (_pendingImportStrategiaJson) {
+      const data = _pendingImportStrategiaJson;
+      _pendingImportStrategiaJson = null;
+      try {
+        await _importaFasceGiocatoriDaJson(data, strategia);
+        toast('Strategia importata correttamente', 'success');
+      } catch (err) {
+        toast('Errore nell\'importazione della strategia: ' + (err.message || err), 'error');
       }
     } else {
       const fasceDefault = ['Fascia 1', 'Fascia 2', 'Fascia 3', 'Fascia 4', 'Fascia 5'].map((n, i) => ({
@@ -5553,72 +5585,38 @@ function esportaStrategia() {
   toast('Strategia esportata', 'success');
 }
 
-// Crea una NUOVA strategia dal JSON esportato — non tocca mai strategie esistenti.
-// I giocatori il cui giocatore_id non esiste piu' nel Listino Ufficiale attuale
-// vengono semplicemente ignorati (listino aggiornato/diverso da un'altra lega).
-async function importaStrategiaDaFile(file) {
-  const statusEl = document.getElementById('importa-strategia-status');
-  const mostraStato = (msg, isError) => {
-    if (!statusEl) return;
-    statusEl.style.display = 'block';
-    statusEl.textContent = msg;
-    statusEl.style.color = isError ? 'var(--danger,#ff4d4d)' : '';
-  };
+// Crea fasce + strategia_giocatori per una strategia GIA' creata (nome/crediti/tipi scelti
+// dall'utente nel form) a partire dal JSON esportato in precedenza. I giocatori il cui
+// giocatore_id non esiste piu' nel Listino Ufficiale attuale vengono semplicemente ignorati
+// (listino aggiornato/diverso da un'altra lega).
+async function _importaFasceGiocatoriDaJson(data, strategia) {
+  const fasceInsert = data.fasce.map((f, i) => ({
+    strategia_id: strategia.id, nome: f.nome, colore: f.colore, ordine: i
+  }));
+  let fasceCreate = [];
+  if (fasceInsert.length) {
+    const { data: fc, error: errFasce } = await supa.from('fasce').insert(fasceInsert).select();
+    if (errFasce) throw errFasce;
+    fasceCreate = fc;
+  }
+  // L'indice nell'array esportato deve corrispondere alla fascia con lo stesso
+  // "ordine" appena assegnato (0, 1, 2, ...), non all'ordine di ritorno di Supabase.
+  const fasceOrdinate = fasceCreate.slice().sort((a, b) => a.ordine - b.ordine);
 
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    let data;
-    try { data = JSON.parse(e.target.result); } catch (err) { mostraStato('❌ File non valido', true); return; }
-    if (!data || !data.strategia || !Array.isArray(data.fasce)) { mostraStato('❌ File non valido: formato strategia non riconosciuto', true); return; }
+  await caricaListinoCache();
+  const listinoIds = new Set((S.listinoCache || []).map(g => g.id));
 
-    mostraStato('Importazione in corso...');
-    try {
-      const { data: strategia, error: errStrategia } = await supa.from('strategie').insert({
-        user_id: S.userId, nome: data.strategia.nome, crediti_totali: data.strategia.crediti_totali, tipo_asta: data.strategia.tipo_asta
-      }).select().single();
-      if (errStrategia) throw errStrategia;
-      // Il file esportato porta il vecchio tipo_asta scalare (singolo) — resta compatibile
-      // subito registrando quello stesso tipo anche nella tabella ponte, senza forzare
-      // l'utente a passare da un selettore multi-tipo per un semplice reimport 1:1.
-      if (data.strategia.tipo_asta) await _salvaTipiAstaStrategia(strategia.id, [data.strategia.tipo_asta]);
-
-      const fasceInsert = data.fasce.map((f, i) => ({
-        strategia_id: strategia.id, nome: f.nome, colore: f.colore, ordine: i
-      }));
-      let fasceCreate = [];
-      if (fasceInsert.length) {
-        const { data: fc, error: errFasce } = await supa.from('fasce').insert(fasceInsert).select();
-        if (errFasce) throw errFasce;
-        fasceCreate = fc;
-      }
-      // L'indice nell'array esportato deve corrispondere alla fascia con lo stesso
-      // "ordine" appena assegnato (0, 1, 2, ...), non all'ordine di ritorno di Supabase.
-      const fasceOrdinate = fasceCreate.slice().sort((a, b) => a.ordine - b.ordine);
-
-      await caricaListinoCache();
-      const listinoIds = new Set((S.listinoCache || []).map(g => g.id));
-
-      const righe = [];
-      (data.giocatori || []).forEach(gi => {
-        if (gi.giocatore_id == null || !listinoIds.has(gi.giocatore_id)) return;
-        const fascia = (gi.fascia_index != null) ? fasceOrdinate[gi.fascia_index] : null;
-        righe.push({
-          strategia_id: strategia.id, giocatore_id: gi.giocatore_id,
-          fascia_id: fascia ? fascia.id : null, prezzo: gi.prezzo, percentuale: gi.percentuale,
-          preferito: !!gi.preferito, titolarita: gi.titolarita || null, commento: gi.commento || null
-        });
-      });
-      if (righe.length) await supa.from('strategia_giocatori').insert(righe);
-
-      mostraStato('✅ Strategia importata');
-      toast('Strategia importata correttamente', 'success');
-      await apriEditorStrategia(strategia.id);
-    } catch (err) {
-      mostraStato('❌ Errore nell\'importazione: ' + (err.message || err), true);
-      toast('Errore nell\'importazione della strategia', 'error');
-    }
-  };
-  reader.readAsText(file);
+  const righe = [];
+  (data.giocatori || []).forEach(gi => {
+    if (gi.giocatore_id == null || !listinoIds.has(gi.giocatore_id)) return;
+    const fascia = (gi.fascia_index != null) ? fasceOrdinate[gi.fascia_index] : null;
+    righe.push({
+      strategia_id: strategia.id, giocatore_id: gi.giocatore_id,
+      fascia_id: fascia ? fascia.id : null, prezzo: gi.prezzo, percentuale: gi.percentuale,
+      preferito: !!gi.preferito, titolarita: gi.titolarita || null, commento: gi.commento || null
+    });
+  });
+  if (righe.length) await supa.from('strategia_giocatori').insert(righe);
 }
 
 // ══ IMPORT/EXPORT STRATEGIA — formato FantaLab (tool esterno) ══

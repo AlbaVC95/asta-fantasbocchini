@@ -462,6 +462,28 @@ dal tipo con cui `idFantaleghe` arriva da ciascuna fonte di import — nessuna f
 Ufficiale) viene toccata. `String(null)` non collide mai con una chiave vera (sempre popolata da un
 `giocatore_id` reale), quindi i giocatori senza id restano correttamente senza fascia.
 
+## Import Strategia da JSON: selettore tipi asta riusato dal form, non un secondo picker
+
+Bug/gap segnalato dall'utente: importando una Strategia da un file JSON esportato in precedenza
+(bottone "📥 Importa strategia"), il tipo di asta associato veniva preso in automatico dal campo
+`tipo_asta` scritto dentro il file stesso ([app.js:5577](frontend/js/app.js), versione precedente),
+senza alcun selettore — impossibile assegnare la Strategia importata a un tipo diverso (es.
+Riparazione 1) senza modificare il JSON a mano.
+
+Invece di costruire un secondo selettore ad hoc, il flusso di import JSON è stato allineato al
+flusso "Importa da FantaLab (Excel)" già esistente, che risolveva lo stesso problema riusando lo
+`screen-strategia-form` (nome/crediti/checkbox tipi multi-selezionabili, [index.html:145-151]
+(frontend/index.html)) prima di scrivere su Supabase: al posto di importare subito al `change` del
+file input, il file JSON viene letto e parsato (`FileReader`) e i suoi valori (`nome`,
+`crediti_totali`, `tipo_asta`) precompilano il form — la checkbox del tipo salvato nel file resta
+premarcata come default comodo, ma è una checkbox normale che l'utente può cambiare o integrare
+prima di premere "Crea strategia". La vecchia funzione one-shot `importaStrategiaDaFile(file)` è
+stata sostituita da `_importaFasceGiocatoriDaJson(data, strategia)`, chiamata dal click handler
+già esistente di "Crea strategia" (stesso punto dove FantaLab chiama
+`_importaGiocatoriFantaLabInStrategia`) — nessuna nuova scrittura Supabase introdotta, solo lo
+stesso inserimento di fasce/giocatori spostato dopo la creazione della strategia con i tipi scelti
+dall'utente invece che con quello letto a sua insaputa dal file.
+
 ## Strategia ↔ tipo asta: tabella ponte additiva, non colonna array/modifica dello schema esistente
 
 `strategie.tipo_asta` era scalare (un solo valore), impedendo strutturalmente a una strategia

@@ -5,9 +5,10 @@ non accumulato (per la cronologia vedi `git log`).
 
 ## Stato attuale
 
-- Branch `main`. **Modifica locale pendente non ancora committata**: fix badge fascia Strategia in
-  Asta (vedi sotto, "Ultimo intervento") in `frontend/js/app.js` — non ancora pushato, ultimo commit
-  remoto resta `7b00be2`.
+- Branch `main`, allineato con `origin/main` fino al commit `8e6f288` (fix badge fascia Strategia,
+  vedi sotto). **Modifica locale pendente non ancora committata**: selettore tipo asta nell'import
+  Strategia da JSON (vedi sotto, "Ultimo intervento") in `frontend/js/app.js` e
+  `frontend/index.html`.
 - **Hosting: Hostinger, non più Render** (l'utente ha corretto questa sessione un'assunzione
   sbagliata — Render era il provider di una fase precedente del progetto). Deploy automatico al
   push su `main`, nessun passo manuale. Vedi [PROJECT.md](PROJECT.md#hosting).
@@ -28,7 +29,35 @@ non accumulato (per la cronologia vedi `git log`).
   (`d5b5b0f`). I commit precedenti di questa sessione restano con l'identità automatica
   precedente (`alba@MacBook-Air-de-Alba.local`), non riscritti.
 
-## Ultimo intervento — Fix: badge fascia Strategia invisibili in Asta creata da JSON importato
+## Ultimo intervento — Selettore tipo asta nell'import Strategia da JSON
+
+Richiesta esplicita dell'utente, emersa parlando del fix precedente (fasce invisibili): importando
+una Strategia da JSON ("📥 Importa strategia") non c'era **alcun** modo di scegliere a quale tipo di
+asta (iniziale/riparazione1/riparazione2) associarla — veniva preso in automatico dal campo
+`tipo_asta` scritto dentro il file, senza alcun controllo visibile all'utente.
+
+**Fix**: il flusso ora riusa lo stesso `screen-strategia-form` (nome/crediti/checkbox multi-tipo)
+già usato per l'import da FantaLab, invece di importare subito al `change` del file input — il file
+JSON viene letto e parsato prima di mostrare il form, che si precompila con nome/crediti/tipo del
+file (checkbox del tipo originale premarcata come comodità, ma restano normali checkbox modificabili
+prima di "Crea strategia"). `importaStrategiaDaFile(file)` (one-shot) sostituita da
+`_importaFasceGiocatoriDaJson(data, strategia)`, chiamata dal click handler di "Crea strategia" già
+esistente (stesso punto dove FantaLab importa i giocatori) — nessuna nuova scrittura Supabase,
+stesso inserimento di fasce/giocatori di prima, solo con i tipi scelti dall'utente. Rimosso anche
+`<p id="importa-strategia-status">` in `frontend/index.html`, diventato dead code (i suoi
+aggiornamenti di stato passavano dalla vecchia funzione rimossa). Dettagli in
+[DECISIONS.md](DECISIONS.md).
+
+**Verificato**: `node --check` pulito, 137 righe LF-only preesistenti invariate (script Node a
+sostituzione di stringa/regex CRLF-aware, non Edit tool, per `app.js`/`index.html` come da
+convenzione). Nel browser (dev server locale, senza login reale — stesso limite delle sessioni
+precedenti): simulato il parsing di un JSON con `tipo_asta:"riparazione1"` iniettando i valori via
+console — screenshot conferma nome/crediti precompilati, checkbox "Riparazione 1" premarcata, e che
+l'utente può selezionare anche "Asta iniziale" in aggiunta prima di confermare. **Non verificato**
+il salvataggio reale su Supabase al click "Crea strategia" (richiede login), ma quella parte
+(`_importaFasceGiocatoriDaJson`) è codice invariato, solo spostato.
+
+## Intervento precedente — Fix: badge fascia Strategia invisibili in Asta creata da JSON importato
 
 Bug segnalato dall'utente: dopo aver creato un'asta caricando `asta_FantaSbocchini_2026-08-18.json`
 (export precedente), i giocatori restavano senza badge fascia colorato anche con una Strategia
