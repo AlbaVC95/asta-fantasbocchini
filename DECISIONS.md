@@ -440,6 +440,28 @@ quando `maxOff===0`), nessun altro punto del codice presupponeva un pavimento di
 con 4 nuovi test (inclusa la riproduzione esatta dello screenshot: da "Max: 1cr" a "Max: 0cr") +
 i 29 test precedenti rieseguiti, tutti PASS (33/33 totali).
 
+## Badge fascia Strategia in Asta: chiavi della Map normalizzate a stringa, non affidate al tipo di `idFantaleghe` in arrivo
+
+Bug reale segnalato dall'utente: le fasce Strategia non comparivano (nessun badge colorato) creando
+un'asta da un JSON esportato in precedenza (`asta_FantaSbocchini_2026-08-18.json`). Causa:
+`configByListinoId` (la Map costruita in `selezionaStrategiaAsta()`, `frontend/js/app.js`) usava come
+chiave `row.giocatore_id` così com'è da Supabase — colonna `bigint`, quindi sempre un JS `number` —
+mentre `g.idFantaleghe` sui giocatori dell'asta arriva con il tipo del file di origine: number quando
+l'asta nasce dal bottone "Usa Listino Ufficiale" (`listino_giocatori.id`, anch'esso `bigint`→number),
+ma **stringa** quando nasce da un file JSON esportato in precedenza (`idFantaleghe` salvato tra
+virgolette) o da colonne Excel formattate come testo. `Map.get()` usa uguaglianza stretta: la chiave
+numerica `7127` non combacia mai con la stringa `"7127"`, quindi il lookup falliva silenziosamente in
+tutti i 5 punti che leggono `configByListinoId` (badge fascia in Puja/Svincolati, ordinamento per
+fascia, filtro "solo preferiti") — confermato sui dati reali (Supabase: `strategia_giocatori` aveva
+effettivamente righe con `fascia_id` per i giocatori del JSON, quindi non era un problema di fasce
+mancanti in Strategia ma di lookup rotto).
+
+Fix: chiavi del Map normalizzate a `String(...)` sia in scrittura (`selezionaStrategiaAsta`) sia in
+lettura (tutti i punti che chiamano `configByListinoId.get(...)`), invece di far dipendere il match
+dal tipo con cui `idFantaleghe` arriva da ciascuna fonte di import — nessuna fonte (JSON/Excel/Listino
+Ufficiale) viene toccata. `String(null)` non collide mai con una chiave vera (sempre popolata da un
+`giocatore_id` reale), quindi i giocatori senza id restano correttamente senza fascia.
+
 ## Strategia ↔ tipo asta: tabella ponte additiva, non colonna array/modifica dello schema esistente
 
 `strategie.tipo_asta` era scalare (un solo valore), impedendo strutturalmente a una strategia

@@ -2662,7 +2662,7 @@ function _applyPlayerPhoto(url, version) {
 
 function _getChiamataStrategiaInfoHTML(g) {
   const strat = S.strategiaAsta;
-  const cfg = strat ? strat.configByListinoId.get(g.idFantaleghe) : null;
+  const cfg = strat ? strat.configByListinoId.get(String(g.idFantaleghe)) : null;
   const haFascia = !!(cfg && cfg.fascia_id && strat.fasceInfo.has(cfg.fascia_id));
   const haTitolarita = !!(cfg && cfg.titolarita);
   const haCommento = !!(cfg && cfg.commento && cfg.commento.trim());
@@ -3944,8 +3944,8 @@ function renderGiocatoriLiberi(pool) {
   };
   const strat = S.strategiaAsta;
   const byFasciaStrategia = (a, b) => {
-    const ca = strat.configByListinoId.get(a.idFantaleghe);
-    const cb = strat.configByListinoId.get(b.idFantaleghe);
+    const ca = strat.configByListinoId.get(String(a.idFantaleghe));
+    const cb = strat.configByListinoId.get(String(b.idFantaleghe));
     const oa = (ca && ca.fascia_id && strat.fasceOrdine.has(ca.fascia_id)) ? strat.fasceOrdine.get(ca.fascia_id) : 9999;
     const ob = (cb && cb.fascia_id && strat.fasceOrdine.has(cb.fascia_id)) ? strat.fasceOrdine.get(cb.fascia_id) : 9999;
     if (oa !== ob) return oa - ob;
@@ -3962,7 +3962,7 @@ function renderGiocatoriLiberi(pool) {
     return ruoli.includes(S.filtroRuolo.toLowerCase());
   });
   if (strat && S.liberiSoloPreferiti) tutti = tutti.filter(g => {
-    const cfg = strat.configByListinoId.get(g.idFantaleghe);
+    const cfg = strat.configByListinoId.get(String(g.idFantaleghe));
     return cfg && cfg.preferito;
   });
   list.innerHTML = tutti.map(g => {
@@ -3991,7 +3991,7 @@ function renderGiocatoriLiberi(pool) {
 function _getLiberiStrategiaBadgeHTML(g) {
   const strat = S.strategiaAsta;
   if (!strat) return '';
-  const cfg = strat.configByListinoId.get(g.idFantaleghe);
+  const cfg = strat.configByListinoId.get(String(g.idFantaleghe));
   if (!cfg) return '';
   const titolaritaTxt = cfg.titolarita ? ('★'.repeat(cfg.titolarita)) : '';
   if (!cfg.fascia_id || !strat.fasceInfo.has(cfg.fascia_id)) {
@@ -5863,7 +5863,7 @@ async function selezionaStrategiaAsta(strategiaId, silent) {
   // senza dover riapplicare la strategia.
   const configByListinoId = new Map();
   (sg || []).forEach(row => {
-    configByListinoId.set(row.giocatore_id, {
+    configByListinoId.set(String(row.giocatore_id), {
       fascia_id: row.fascia_id, prezzo: row.prezzo, percentuale: row.percentuale, preferito: row.preferito,
       titolarita: row.titolarita, commento: row.commento
     });

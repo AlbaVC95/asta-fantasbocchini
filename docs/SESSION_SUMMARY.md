@@ -5,8 +5,9 @@ non accumulato (per la cronologia vedi `git log`).
 
 ## Stato attuale
 
-- Branch `main`, allineato con `origin/main` (ultimo push: `cc45284`). Nessuna modifica locale
-  pendente, working tree pulito.
+- Branch `main`. **Modifica locale pendente non ancora committata**: fix badge fascia Strategia in
+  Asta (vedi sotto, "Ultimo intervento") in `frontend/js/app.js` — non ancora pushato, ultimo commit
+  remoto resta `7b00be2`.
 - **Hosting: Hostinger, non più Render** (l'utente ha corretto questa sessione un'assunzione
   sbagliata — Render era il provider di una fase precedente del progetto). Deploy automatico al
   push su `main`, nessun passo manuale. Vedi [PROJECT.md](PROJECT.md#hosting).
@@ -14,7 +15,7 @@ non accumulato (per la cronologia vedi `git log`).
   (`185b4bc`/`cc45284`), confermare in produzione che la squadra "Adriano&Federico" (o
   qualunque squadra nello stesso stato) veda ora "Max: 0cr" invece di "Max: 1cr" quando è senza
   risorse — non ancora confermato dall'utente dopo questo secondo fix.
-- **Nota importante**: durante questa sessione, il redesign 3D di Anteprima costruito qui
+- **Nota importante**: in una sessione precedente, il redesign 3D di Anteprima costruito qui
   (carta FX orizzontale, stadio Three.js con importmap, fix carta Puja admin) è stato
   **scartato su richiesta esplicita dell'utente** in favore di una versione diversa già presente
   su GitHub (`origin/main`), costruita con un altro strumento in parallelo — branding app
@@ -27,7 +28,31 @@ non accumulato (per la cronologia vedi `git log`).
   (`d5b5b0f`). I commit precedenti di questa sessione restano con l'identità automatica
   precedente (`alba@MacBook-Air-de-Alba.local`), non riscritti.
 
-## Ultimo intervento — Asta di riparazione: eliminato lo "stato morto" (sotto minimo, 0 crediti, 0 svincoli)
+## Ultimo intervento — Fix: badge fascia Strategia invisibili in Asta creata da JSON importato
+
+Bug segnalato dall'utente: dopo aver creato un'asta caricando `asta_FantaSbocchini_2026-08-18.json`
+(export precedente), i giocatori restavano senza badge fascia colorato anche con una Strategia
+applicata. Causa: `configByListinoId` (Map in `selezionaStrategiaAsta()`) usa come chiave
+`giocatore_id` da Supabase (colonna `bigint` → sempre JS `number`), ma in questo JSON `idFantaleghe`
+è salvato come **stringa** ("7127") — `Map.get()` con chiavi di tipo diverso non trova mai match,
+quindi il lookup falliva silenziosamente ovunque (badge fascia, ordinamento per fascia, filtro
+"solo preferiti"). Confermato sui dati reali via query Supabase diretta: le righe `strategia_giocatori`
+con `fascia_id` per quei giocatori esistevano davvero, quindi non era un problema di fasce mancanti.
+Dettagli completi in [DECISIONS.md](DECISIONS.md).
+
+**Fix**: chiavi del Map normalizzate a `String(...)` sia in scrittura (`selezionaStrategiaAsta`,
+`frontend/js/app.js:5866`) sia nei 5 punti di lettura (`configByListinoId.get(...)` in
+`_getChiamataStrategiaInfoHTML`, `renderGiocatoriLiberi` ×3, `_getLiberiStrategiaBadgeHTML`) — nessuna
+fonte di import (JSON/Excel/Listino Ufficiale) toccata.
+
+**Verificato**: `node --check` pulito, 137 righe LF-only preesistenti invariate (nessuna corruzione
+line-ending — modifica fatta con script Node a sostituzione di stringa, non con l'Edit tool, per
+`frontend/js/app.js` come da convenzione). Simulazione standalone Node del lookup con chiave stringa
+(JSON), numero (Listino Ufficiale) e `null` (giocatore senza id) — tutti i casi corretti. **Non
+verificato in un flusso live reale nel browser** con login e import effettivo del file: stesso limite
+di sessione già annotato per gli interventi precedenti.
+
+## Intervento precedente — Asta di riparazione: eliminato lo "stato morto" (sotto minimo, 0 crediti, 0 svincoli)
 
 Bug reale in produzione: squadra "Adriano&Federico" finita a `21/32, 🧤 0/3, 💰 0, 🔓 0/15` —
 sotto il minimo portieri, senza più alcuna risorsa per recuperare. Riprodotto con la sequenza
