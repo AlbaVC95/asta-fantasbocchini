@@ -2586,3 +2586,790 @@ body.layout-admin .asta-row-puja .cc-avatar{width:108px!important;height:140px!i
 }
 .timer-number{line-height:1}
 .timer-label-text{white-space:normal;word-break:break-word}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FANTABAR — identità visuale
+   Layer esclusivamente estetico: non modifica struttura, misure funzionali,
+   stati JS o interazioni dell'asta. L'ispirazione è un football bar italiano
+   contemporaneo: noce scuro, ottone da bancone, prato notturno e LED da stadio.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --bg-abyss:#090d0b;
+  --bg-deep:#101611;
+  --bg-main:#182119;
+  --bg-card:#202b21;
+  --bg-elevated:#2a382a;
+  --bg-glass:rgba(24,34,25,.78);
+  --panel-glass-1:rgba(35,47,36,.78);
+  --panel-glass-2:rgba(23,33,24,.84);
+  --panel-glass-3:rgba(14,21,15,.78);
+  --primary:#dc5a26;
+  --primary-bright:#ff8a4d;
+  --primary-dark:#9f3218;
+  --primary-glow:rgba(220,90,38,.34);
+  --primary-subtle:rgba(220,90,38,.12);
+  --gold:#e8bd68;
+  --gold-bright:#ffe09a;
+  --gold-deep:#aa7726;
+  --gold-glow:rgba(232,189,104,.3);
+  --gold-subtle:rgba(232,189,104,.09);
+  --fire:#d84a22;
+  --fire-bright:#ff9b5b;
+  --fire-glow:rgba(216,74,34,.38);
+  --success:#64d394;
+  --success-glow:rgba(100,211,148,.28);
+  --danger:#f1625c;
+  --danger-glow:rgba(241,98,92,.25);
+  --text-primary:#f7f1e6;
+  --text-secondary:#c5cbbd;
+  --text-muted:#8f9b8c;
+  --border:rgba(239,224,187,.13);
+  --border-light:rgba(255,226,165,.24);
+}
+
+body{
+  background:
+    radial-gradient(ellipse at 50% -15%,rgba(100,211,148,.13),transparent 44%),
+    radial-gradient(ellipse at 95% 6%,rgba(220,90,38,.11),transparent 30%),
+    linear-gradient(120deg,rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,#0c110d 0%,var(--bg-deep) 45%,#0b100c 100%);
+  background-size:auto,auto,5px 5px,auto;
+}
+body::before{
+  opacity:.9;
+  background:
+    radial-gradient(ellipse at 18% 0%,rgba(232,189,104,.075),transparent 43%),
+    radial-gradient(ellipse at 84% 92%,rgba(100,211,148,.065),transparent 48%);
+}
+::selection{background:rgba(232,189,104,.35);color:#fff}
+
+/* En pantallas de acceso y gestión, el fondo se lee como una pared de local. */
+#screen-login.active,#screen-menu-principale.active,#screen-crea-asta.active,
+#screen-strategie-lista.active,#screen-strategia-form.active,#screen-strategia-editor.active,
+.gk-planner-screen.active{
+  background:
+    linear-gradient(90deg,rgba(6,10,7,.88),rgba(13,20,14,.72),rgba(6,10,7,.9)),
+    repeating-linear-gradient(90deg,rgba(255,225,165,.023) 0 2px,transparent 2px 68px),
+    repeating-linear-gradient(0deg,rgba(255,225,165,.014) 0 1px,transparent 1px 5px);
+}
+#screen-strategie-lista.active,#screen-strategia-form.active,#screen-strategia-editor.active{
+  background:
+    linear-gradient(rgba(6,13,8,.87),rgba(8,15,9,.94)),
+    repeating-linear-gradient(135deg,rgba(44,116,70,.19) 0 72px,rgba(24,73,43,.13) 72px 144px),
+    var(--bg-deep);
+}
+
+.home-header{padding-top:58px}
+.home-logo{
+  width:64px;height:64px;margin:0 auto 14px;
+  display:grid;place-items:center;border-radius:18px;
+  font-size:2rem;
+  background:linear-gradient(145deg,#314335,#172019);
+  border:1px solid rgba(255,224,154,.32);
+  box-shadow:0 12px 32px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.12),0 0 0 5px rgba(232,189,104,.045);
+  filter:drop-shadow(0 0 13px rgba(232,189,104,.15));
+}
+.home-title{
+  letter-spacing:.035em;
+  text-transform:uppercase;
+  background:linear-gradient(105deg,#fff5d7 3%,var(--gold) 43%,var(--primary-bright) 102%);
+  -webkit-background-clip:text;background-clip:text;
+  text-shadow:none;
+}
+.home-subtitle{letter-spacing:.06em;text-transform:uppercase;font-size:.76rem;color:var(--text-muted)}
+
+.card,.tabs-panel,.panel-budget,.rilancio-box,.modal{
+  background:linear-gradient(145deg,rgba(42,55,43,.89),rgba(19,28,20,.92));
+  border-color:rgba(255,224,154,.16);
+  box-shadow:0 18px 42px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,245,215,.055);
+}
+.card{border-radius:14px}
+.card::before,.modal::before{
+  background:linear-gradient(90deg,transparent,rgba(232,189,104,.65),transparent);
+}
+.card-title,.modal-title{letter-spacing:.025em}
+.card-title::before,.modal-title::before{
+  content:'◈';color:var(--gold);font-size:.7em;margin-right:.55em;vertical-align:2px;
+}
+
+input[type=text],input[type=number],input[type=email],input[type=password],input[type=date],select,
+.editor-bulk-valore-inp,.editor-fascia-select{
+  background:rgba(8,13,9,.64);border-color:rgba(255,224,154,.18);border-radius:8px;
+}
+input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(232,189,104,.14)}
+label{color:#bac2b7}
+
+.btn{border-radius:8px;letter-spacing:.025em;border:1px solid transparent}
+.btn-primary{
+  background:linear-gradient(135deg,#e96c33,var(--primary-dark));
+  box-shadow:0 5px 15px rgba(159,50,24,.33),inset 0 1px 0 rgba(255,239,199,.28);
+}
+.btn-primary:hover{box-shadow:0 8px 22px rgba(220,90,38,.45),inset 0 1px 0 rgba(255,239,199,.28)}
+.btn-secondary{
+  background:linear-gradient(145deg,rgba(62,78,62,.86),rgba(32,43,33,.92));
+  border-color:rgba(255,224,154,.2);color:var(--text-primary);
+}
+.btn-secondary:hover{border-color:var(--gold);background:linear-gradient(145deg,#435243,#263327)}
+.btn-accent{background:linear-gradient(135deg,#f2d183,#b9822b);color:#17120a}
+.btn-success{background:linear-gradient(135deg,#83e2a8,#399a64);color:#071108}
+.btn-danger{background:linear-gradient(135deg,#eb695f,#a93b37)}
+.btn-back-sticky{background:rgba(22,31,23,.9);border-color:rgba(232,189,104,.22);backdrop-filter:blur(14px)}
+
+/* Asta: el tablero central adquiere profundidad de estadio, sin alterar el layout. */
+#screen-asta{background:transparent}
+.asta-header{
+  background:linear-gradient(90deg,rgba(12,20,13,.96),rgba(30,43,31,.95),rgba(12,20,13,.96));
+  border-bottom-color:rgba(232,189,104,.22);
+  box-shadow:0 1px 0 rgba(255,229,173,.08),0 8px 26px rgba(0,0,0,.35);
+}
+.asta-header-title{background:linear-gradient(90deg,var(--gold),#fff1c8,var(--primary-bright));-webkit-background-clip:text;background-clip:text}
+.chiamata-card{
+  background:
+    radial-gradient(circle at 82% 10%,rgba(232,189,104,.16),transparent 28%),
+    linear-gradient(145deg,#334936 0%,#1a2a1d 53%,#101a12 100%);
+  border-color:rgba(232,189,104,.42);
+  box-shadow:0 0 45px rgba(100,211,148,.09),0 25px 48px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,246,215,.13);
+}
+.chiamata-card::before{background:linear-gradient(90deg,transparent,var(--gold),transparent);box-shadow:0 0 13px 1px var(--gold-glow)}
+.cc-avatar{border-color:var(--gold-bright);box-shadow:0 0 0 3px rgba(232,189,104,.14),0 0 22px var(--gold-glow),inset 0 2px 6px rgba(0,0,0,.18)}
+.cc-offerta{color:var(--gold-bright);text-shadow:0 0 26px var(--gold-glow),0 0 55px rgba(232,189,104,.12)}
+.cc-offerta-box{border-color:rgba(232,189,104,.82);background:linear-gradient(160deg,rgba(232,189,104,.16),rgba(232,189,104,.04))}
+.timer-ring-container{background:linear-gradient(170deg,#121d14,#1d2b1e);border-color:rgba(232,189,104,.16)}
+.timer-number{color:var(--success);text-shadow:0 0 13px var(--success-glow),0 0 2px rgba(255,255,255,.4)}
+.sidebar-squadra{background:rgba(12,20,13,.5);border-left-color:rgba(232,189,104,.16)}
+.sidebar-squadra.mia-squadra{border-left-color:var(--primary);background:var(--primary-subtle)}
+.sidebar-squadra.offerente-attuale{border-left-color:var(--gold);background:var(--gold-subtle)}
+.sq-crediti{color:var(--gold-bright)}
+.tabs-nav{background:rgba(9,15,10,.46);border-bottom-color:rgba(255,224,154,.14)}
+.tab-btn.active{background:linear-gradient(135deg,#d65d2c,#9e351c);box-shadow:0 4px 18px rgba(220,90,38,.28),inset 0 1px 0 rgba(255,244,211,.22)}
+.tab-btn:hover{background:rgba(232,189,104,.09);border-color:rgba(232,189,104,.22)}
+.liberi-list li,.strategia-row,.editor-player-row,.strategia-modal-item{background:rgba(8,14,9,.48);border:1px solid rgba(255,224,154,.08)}
+.editor-player-row.selezionato{background:var(--primary-subtle);box-shadow:inset 0 0 0 1px var(--primary)}
+
+.modal-overlay{background:rgba(4,8,5,.82)}
+.toast{background:linear-gradient(135deg,#2b3a2d,#19231a);border-color:rgba(232,189,104,.24)}
+.toast.info{border-left-color:var(--primary)}
+
+/* Microdetalles de interfaz: remiten a carta de menú, no a un dashboard genérico. */
+.badge-ruolo,.cc-tipo-badge,.strategia-tipo-badge{box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+.strategia-tipo-badge{background:rgba(220,90,38,.12);border-color:rgba(255,138,77,.48);color:#ffad7c}
+.gk-grid-wrap{border:1px solid rgba(232,189,104,.13);background:rgba(6,11,7,.32);padding:8px}
+.gk-grid-corner,.gk-grid-col-header,.gk-grid-row-label{background:#202b21}
+.user-email-badge{border-color:rgba(232,189,104,.28)!important;background:rgba(22,31,23,.9)!important}
+
+@media (max-width:640px){
+  .home-logo{width:54px;height:54px;border-radius:15px;font-size:1.7rem;margin-bottom:10px}
+  .home-header{padding-top:40px}
+  .card,.modal{border-radius:13px}
+}
+
+/* Escena FantaBar: el activo existente se convierte en la identidad, no solo
+   en un detalle decorativo. El degradado oscuro conserva el contraste de los
+   formularios y deja el bar visible en los bordes, cabecera y huecos entre cards. */
+#screen-login.active,
+#screen-menu-principale.active,
+#screen-crea-asta.active,
+#screen-strategie-lista.active,
+#screen-strategia-form.active,
+#screen-strategia-editor.active,
+.gk-planner-screen.active{
+  background-image:
+    linear-gradient(90deg,rgba(3,6,5,.82) 0%,rgba(5,10,7,.62) 34%,rgba(5,9,6,.58) 66%,rgba(3,6,5,.84) 100%),
+    linear-gradient(180deg,rgba(2,5,3,.25) 0%,rgba(2,5,3,.72) 100%),
+    url('../img/backgrounds/fantabar-bg.jpg');
+  background-position:center center;
+  background-size:cover;
+  background-attachment:fixed;
+}
+#screen-login.active .card,
+#screen-menu-principale.active .card,
+#screen-crea-asta.active .card,
+#screen-strategie-lista.active .card,
+#screen-strategia-form.active .card,
+#screen-strategia-editor.active .card,
+.gk-planner-screen.active .card{
+  background:linear-gradient(145deg,rgba(30,43,32,.91),rgba(11,19,13,.94));
+  border-color:rgba(240,198,106,.28);
+  box-shadow:0 22px 50px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,242,202,.1);
+  backdrop-filter:blur(10px);
+}
+.home-logo{
+  background:linear-gradient(145deg,rgba(57,72,56,.96),rgba(19,30,20,.96));
+  border-color:rgba(240,198,106,.58);
+  box-shadow:0 0 0 6px rgba(232,189,104,.08),0 14px 35px rgba(0,0,0,.46),0 0 32px rgba(232,189,104,.18);
+}
+@media (max-width:760px){
+  #screen-login.active,
+  #screen-menu-principale.active,
+  #screen-crea-asta.active,
+  #screen-strategie-lista.active,
+  #screen-strategia-form.active,
+  #screen-strategia-editor.active,
+  .gk-planner-screen.active{background-position:56% center;background-attachment:scroll}
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FANTABAR / CASA DEL CALCIO — nueva dirección de arte
+   Interfaz editorial inspirada en una carta de bar italiano y un marcador de
+   partido nocturno. Este bloque sustituye el lenguaje anterior; sólo afecta
+   a presentación y respeta todos los IDs, layouts y estados de la aplicación.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --ink:#19120e;
+  --coffee:#271813;
+  --walnut:#4a2b20;
+  --paper:#f3ead9;
+  --paper-2:#e6d7c0;
+  --tomato:#c83f2a;
+  --tomato-dark:#8f241b;
+  --brass:#c9984b;
+  --grass:#1e5a44;
+  --chalk:#fff9ec;
+  --bg-abyss:var(--ink);
+  --bg-deep:#1b120e;
+  --bg-main:#2a1b15;
+  --bg-card:#f3ead9;
+  --bg-elevated:#3a241b;
+  --bg-glass:rgba(28,18,14,.94);
+  --panel-glass-1:rgba(39,24,18,.94);
+  --panel-glass-2:rgba(28,18,14,.96);
+  --panel-glass-3:rgba(19,13,10,.94);
+  --primary:var(--tomato);
+  --primary-bright:#ee7256;
+  --primary-dark:var(--tomato-dark);
+  --primary-glow:rgba(200,63,42,.3);
+  --primary-subtle:rgba(200,63,42,.12);
+  --gold:var(--brass);
+  --gold-bright:#edc579;
+  --gold-deep:#9b6a2e;
+  --gold-glow:rgba(201,152,75,.24);
+  --gold-subtle:rgba(201,152,75,.12);
+  --fire:var(--tomato);
+  --fire-bright:#f08365;
+  --fire-glow:rgba(200,63,42,.3);
+  --success:#63b891;
+  --success-glow:rgba(99,184,145,.22);
+  --danger:#df5847;
+  --danger-glow:rgba(223,88,71,.2);
+  --text-primary:var(--chalk);
+  --text-secondary:#d4c5b0;
+  --text-muted:#aa9582;
+  --border:rgba(233,205,153,.17);
+  --border-light:rgba(238,205,144,.34);
+  --font-main:'DM Sans',sans-serif;
+  --font-display:'DM Serif Display',Georgia,serif;
+  --font-mono:'DM Mono',monospace;
+}
+
+body{
+  color:var(--chalk);
+  background-color:var(--ink);
+  background-image:
+    linear-gradient(rgba(15,8,6,.72),rgba(15,8,6,.9)),
+    url('../img/backgrounds/fantabar-bg.jpg');
+  background-position:center;
+  background-size:cover;
+  background-attachment:fixed;
+}
+body::before{
+  width:100%;height:6px;top:0;left:0;
+  background:linear-gradient(90deg,#23734c 0 33.333%,#f4ead8 33.333% 66.666%,#c83f2a 66.666%);
+  animation:none;z-index:3000;opacity:1;
+}
+body::after{
+  content:'FANTABAR  ·  CASA DEL CALCIO  ·  SERIE A';
+  position:fixed;right:-2.5rem;bottom:7.5rem;z-index:0;
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.26em;color:rgba(255,244,219,.2);
+  transform:rotate(-90deg);pointer-events:none;
+}
+#app{z-index:1}
+
+/* Landing y zonas de gestión: pared de bar, no una pantalla de producto plana. */
+#screen-login.active,#screen-menu-principale.active,#screen-crea-asta.active,
+#screen-strategie-lista.active,#screen-strategia-form.active,#screen-strategia-editor.active,
+.gk-planner-screen.active{
+  background-image:linear-gradient(90deg,rgba(19,11,8,.75),rgba(19,11,8,.52) 50%,rgba(19,11,8,.78)),url('../img/backgrounds/fantabar-bg.jpg');
+  background-position:center;background-size:cover;background-attachment:fixed;
+}
+.home-header{padding:70px 20px 28px;text-align:left;max-width:700px;margin:auto}
+.home-logo{
+  width:58px;height:58px;margin:0 0 18px;border-radius:50%;
+  display:grid;place-items:center;position:relative;overflow:visible;
+  font-family:var(--font-display);font-size:1.6rem;line-height:1;color:var(--paper);
+  background:var(--tomato);border:3px solid var(--paper-2);
+  box-shadow:0 0 0 2px var(--tomato),0 12px 25px rgba(0,0,0,.3);
+}
+.home-logo::after{
+  content:'BAR';position:absolute;bottom:-13px;left:50%;transform:translateX(-50%);
+  font:500 8px/1 var(--font-mono);letter-spacing:.22em;color:var(--gold-bright);
+}
+.home-title{
+  font-family:var(--font-display);font-size:clamp(3.2rem,7vw,5.8rem);font-weight:400;
+  line-height:.84;letter-spacing:-.055em;text-transform:none;
+  color:var(--paper);background:none;-webkit-text-fill-color:currentColor;
+  text-shadow:0 3px 0 rgba(34,19,13,.38);margin:0 0 15px;
+}
+.home-subtitle{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.16em;color:var(--gold-bright);text-transform:uppercase}
+
+/* Tarjetas como carta de bar: papel cálido, tinta oscura, banda de vermú. */
+.card,.modal{
+  color:var(--ink);background:var(--paper);border:0;border-radius:3px;
+  box-shadow:10px 12px 0 rgba(14,8,6,.38),0 22px 44px rgba(0,0,0,.36);
+  overflow:visible;
+}
+.card{padding:30px;max-width:700px;margin:0 auto 22px}
+.card::before,.modal::before{
+  top:0;left:0;right:auto;width:100%;height:7px;
+  background:linear-gradient(90deg,var(--tomato) 0 34%,var(--brass) 34% 67%,var(--grass) 67%);
+}
+.card::after{
+  content:'';position:absolute;right:14px;bottom:13px;width:52px;height:1px;background:var(--brass);opacity:.7;
+}
+.card-title,.modal-title{font-family:var(--font-display);font-size:2rem;font-weight:400;color:var(--coffee);letter-spacing:-.025em;margin-bottom:24px}
+.card-title::before,.modal-title::before{content:'—';margin-right:.35em;color:var(--tomato);font-family:var(--font-mono)}
+.card-title-sm{color:var(--walnut);font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em}
+.card .hint-text,.modal-subtitle,.modal-body p,.strategia-row-meta{color:#725d4d}
+.card label,.modal label{color:#6a4b3b;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.11em}
+
+input[type=text],input[type=number],input[type=email],input[type=password],input[type=date],select,
+.editor-bulk-valore-inp,.editor-fascia-select{
+  background:#fffaf0;border:1px solid #cdbda3;border-radius:2px;color:var(--coffee);
+  box-shadow:inset 0 -2px 0 rgba(74,43,32,.1);font-family:var(--font-main);
+}
+input::placeholder{color:#9d8875}
+input:focus,select:focus{border-color:var(--tomato);box-shadow:0 0 0 3px rgba(200,63,42,.14),inset 0 -2px 0 rgba(74,43,32,.1)}
+
+.btn{
+  border-radius:2px;border:0;font-family:var(--font-mono);font-size:.72rem;font-weight:500;
+  letter-spacing:.075em;text-transform:uppercase;padding:12px 18px;box-shadow:none;
+}
+.btn::before{display:none}.btn:hover{transform:translateY(-2px);filter:brightness(1.05)}
+.btn-primary{background:var(--tomato);color:#fffaf0;box-shadow:4px 4px 0 var(--tomato-dark)}
+.btn-secondary{background:var(--coffee);color:var(--paper);box-shadow:4px 4px 0 #100a08}
+.btn-accent{background:var(--brass);color:#20130d;box-shadow:4px 4px 0 var(--gold-deep)}
+.btn-success{background:var(--grass);color:#fffaf0;box-shadow:4px 4px 0 #123a2a}
+.btn-danger{background:#b8362b;color:#fffaf0;box-shadow:4px 4px 0 #70221d}
+.btn-back-sticky{background:var(--paper);color:var(--coffee);border:0;border-left:5px solid var(--tomato);box-shadow:4px 4px 0 rgba(0,0,0,.34)}
+
+/* Menú: cada opción se siente como una entrada impresa, no como un botón genérico. */
+#screen-menu-principale .card{padding:0;background:transparent;box-shadow:none;overflow:visible}
+#screen-menu-principale .card::before,#screen-menu-principale .card::after{display:none}
+#screen-menu-principale .card .btn-lg{
+  justify-content:flex-start;text-align:left;min-height:72px;padding:18px 24px;
+  background:var(--paper);color:var(--coffee);box-shadow:8px 8px 0 rgba(10,6,5,.42);
+  border-left:7px solid var(--tomato);font-family:var(--font-display);font-size:1.45rem;
+  letter-spacing:-.02em;text-transform:none;
+}
+#screen-menu-principale .card:nth-of-type(even) .btn-lg{border-left-color:var(--grass)}
+#screen-menu-principale .card .btn-lg:hover{background:#fff7e8;transform:translate(3px,-2px)}
+
+/* Asta live: tablero de sobremesa en madera, información tipo marcador. */
+.asta-header{
+  height:42px;padding:0 16px;background:#21150f;border-bottom:1px solid rgba(234,192,111,.34);
+  box-shadow:0 3px 0 var(--tomato),0 8px 22px rgba(0,0,0,.35);
+}
+.asta-header-logo{font-size:1rem}.asta-header-title{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.16em;color:var(--paper);background:none;-webkit-text-fill-color:currentColor}
+.asta-row-panels,.asta-row-puja,.asta-row-tabs{gap:14px;padding-inline:16px}
+.tabs-panel,.panel-budget,.rilancio-box{
+  border:1px solid rgba(234,192,111,.2);border-radius:2px;
+  background:linear-gradient(145deg,#322019,#1e1410);box-shadow:6px 8px 0 rgba(7,4,3,.42);
+}
+.panel-budget{padding:10px}.panel-budget-hdr{font-family:var(--font-mono);letter-spacing:.11em;color:var(--gold-bright)}
+.sidebar-squadra{border-radius:1px;background:rgba(255,247,229,.045);border-left:3px solid transparent;box-shadow:none}
+.sidebar-squadra.mia-squadra{background:rgba(200,63,42,.18);border-left-color:var(--tomato)}
+.sidebar-squadra.offerente-attuale{background:rgba(201,152,75,.14);border-left-color:var(--brass)}
+.sq-nome{font-family:var(--font-mono);letter-spacing:.04em}.sq-crediti{font-family:var(--font-mono);color:var(--gold-bright);text-shadow:none}
+
+.chiamata-card{
+  border:0;border-radius:2px;padding:28px;
+  background:var(--paper);color:var(--ink);
+  box-shadow:8px 10px 0 rgba(7,4,3,.48),0 18px 38px rgba(0,0,0,.32);
+}
+.chiamata-card::before{top:0;left:0;right:0;width:100%;height:8px;animation:none;background:linear-gradient(90deg,var(--tomato) 0 37%,var(--brass) 37% 68%,var(--grass) 68%);box-shadow:none}
+.cc-nome{font-family:var(--font-display);color:var(--coffee);font-size:clamp(1.65rem,3vw,2.6rem);text-shadow:none;letter-spacing:-.04em}
+.cc-meta,.cc-offerente,.cc-offerta-label{color:#725d4d}.cc-offerente strong{color:var(--coffee)}
+.cc-avatar{border-radius:2px;border-color:var(--coffee);box-shadow:4px 4px 0 var(--tomato);background:#eadcc6}
+.cc-offerta-box{border:1px solid var(--brass);border-radius:2px;background:#fff7e8;box-shadow:none}
+.cc-offerta{font-family:var(--font-mono);color:var(--tomato);text-shadow:none}
+.timer-ring-container{background:#21150f;border-color:rgba(234,192,111,.2);border-radius:0;box-shadow:none}
+.timer-number{font-family:var(--font-mono);color:var(--gold-bright);text-shadow:none}.timer-label-text{font-family:var(--font-mono);letter-spacing:.1em}
+.rilancio-box{padding:18px}.btn-rilancia{font-size:.8rem}
+
+.tabs-nav{padding:6px;background:#17100c;border-bottom:1px solid rgba(234,192,111,.2)}
+.tab-btn{border-radius:1px;color:#ad9983;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.07em}
+.tab-btn.active{background:var(--tomato);color:#fff8e9;border-radius:1px;box-shadow:none;transform:none}.tab-btn:hover{background:#453027;color:#fff8e9;transform:none}
+.liberi-list li{border-radius:1px;background:rgba(255,247,229,.055);border-left:2px solid rgba(201,152,75,.5)}
+
+/* Estrategias, editor y modales heredan tinta/papel; los datos siguen siendo los mismos. */
+.strategia-row,.editor-player-row,.strategia-modal-item{background:#fffaf0;border:1px solid #d6c4a8;border-radius:1px;color:var(--coffee)}
+.strategia-row-nome,.editor-player-nome,.strategia-modal-item-nome{color:var(--coffee)}
+.editor-player-squadra,.editor-player-quot,.editor-player-fvm{color:#806b59}
+.editor-player-row.selezionato{background:#f7d9ce;box-shadow:inset 4px 0 0 var(--tomato)}
+.editor-bulk-bar{border-left:6px solid var(--tomato)}
+.strategia-tipo-badge{border-radius:1px;background:#f5e1b3;border-color:var(--brass);color:#51351d}
+.filtro-btn,.liberi-icon-toggle{border-radius:1px}
+
+.modal-overlay{background:rgba(15,8,6,.78);backdrop-filter:blur(6px)}
+.modal{max-width:520px}.modal-actions .btn{min-width:120px}
+.toast{border-radius:1px;background:var(--paper);color:var(--coffee);border:0;border-left:5px solid var(--tomato);box-shadow:6px 7px 0 rgba(0,0,0,.32)}
+.toast.success{border-left-color:var(--grass)}.toast.warning{border-left-color:var(--brass)}
+
+/* Planner: conserva el mecanismo de datos, pero lo presenta como mesa táctica. */
+.gk-header,.gk-toolbar{background:#21150f!important;border-color:rgba(234,192,111,.22)!important}
+.gk-card,.gk-panel{border-radius:2px!important;box-shadow:6px 8px 0 rgba(0,0,0,.32)!important}
+.gk-grid-wrap{border-radius:2px;background:#21150f;border-color:rgba(234,192,111,.18)}
+.gk-grid-corner,.gk-grid-col-header,.gk-grid-row-label{background:#342218}
+
+@media (max-width:640px){
+  body::after{display:none}
+  .home-header{padding:54px 20px 25px}.home-title{font-size:3.5rem}
+  .home-logo{width:52px;height:52px;margin-bottom:16px}
+  .card{padding:23px 20px;box-shadow:5px 6px 0 rgba(14,8,6,.38),0 18px 35px rgba(0,0,0,.32)}
+  #screen-menu-principale .card .btn-lg{min-height:62px;font-size:1.22rem}
+  .asta-row-panels,.asta-row-puja,.asta-row-tabs{padding-inline:10px}
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FANTABAR / NIGHT SHIFT — dirección final: premium, digital, futurista.
+   Sin verde, papel, textura de pub ni fotografía de fondo. El bar se expresa
+   con luz ambiental ámbar y materiales oscuros; la subasta es el protagonista.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --obsidian:#080b12;
+  --navy:#0d1421;
+  --slate:#151f30;
+  --slate-2:#1b2940;
+  --line:rgba(157,190,234,.14);
+  --line-strong:rgba(142,202,255,.3);
+  --cyan:#4cddff;
+  --cyan-soft:#94ecff;
+  --coral:#ff775f;
+  --coral-deep:#c94a42;
+  --amber:#f6bd62;
+  --white:#edf5ff;
+  --muted:#8fa1ba;
+  --bg-abyss:var(--obsidian);
+  --bg-deep:var(--navy);
+  --bg-main:#101927;
+  --bg-card:rgba(18,28,44,.84);
+  --bg-elevated:#1b2940;
+  --bg-glass:rgba(17,27,42,.74);
+  --panel-glass-1:rgba(21,32,49,.82);
+  --panel-glass-2:rgba(13,20,33,.9);
+  --panel-glass-3:rgba(8,13,22,.88);
+  --primary:var(--cyan);
+  --primary-bright:var(--cyan-soft);
+  --primary-dark:#169fbe;
+  --primary-glow:rgba(76,221,255,.22);
+  --primary-subtle:rgba(76,221,255,.1);
+  --gold:var(--amber);
+  --gold-bright:#ffda9b;
+  --gold-deep:#bb8235;
+  --gold-glow:rgba(246,189,98,.22);
+  --gold-subtle:rgba(246,189,98,.09);
+  --fire:var(--coral);
+  --fire-bright:#ff9b8c;
+  --fire-glow:rgba(255,119,95,.25);
+  --success:#56e0bd;
+  --success-glow:rgba(86,224,189,.22);
+  --danger:var(--coral);
+  --danger-glow:rgba(255,119,95,.2);
+  --text-primary:var(--white);
+  --text-secondary:#bdcbe0;
+  --text-muted:var(--muted);
+  --border:var(--line);
+  --border-light:var(--line-strong);
+  --font-main:'DM Sans',sans-serif;
+  --font-display:'DM Sans',sans-serif;
+  --font-mono:'DM Mono',monospace;
+}
+body{
+  background-color:var(--obsidian);
+  background-image:
+    radial-gradient(900px 520px at 82% -12%,rgba(52,117,189,.18),transparent 70%),
+    radial-gradient(620px 420px at 5% 92%,rgba(255,119,95,.08),transparent 72%),
+    linear-gradient(125deg,rgba(255,255,255,.022) 1px,transparent 1px),
+    linear-gradient(180deg,#0a0f19 0%,#080b12 100%);
+  background-size:auto,auto,28px 28px,auto;background-attachment:fixed;
+}
+body::before{height:1px;background:linear-gradient(90deg,transparent 0%,var(--cyan) 20%,var(--amber) 50%,var(--coral) 80%,transparent 100%);opacity:.8}
+body::after{content:'';right:auto;bottom:auto;inset:0;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.3) 100%);transform:none;z-index:0}
+
+#screen-login.active,#screen-menu-principale.active,#screen-crea-asta.active,
+#screen-strategie-lista.active,#screen-strategia-form.active,#screen-strategia-editor.active,
+.gk-planner-screen.active{
+  background-image:none;background-color:transparent;background-attachment:initial;
+}
+.home-header{padding:92px 20px 34px;max-width:700px;text-align:center}
+.home-logo{
+  width:64px;height:64px;margin:0 auto 20px;border:1px solid rgba(148,236,255,.5);border-radius:19px;
+  color:var(--white);font-family:var(--font-mono);font-size:1.25rem;font-weight:500;letter-spacing:-.1em;
+  background:linear-gradient(145deg,rgba(41,72,105,.95),rgba(13,22,35,.96));
+  box-shadow:0 0 0 5px rgba(76,221,255,.045),0 16px 38px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.18);
+}
+.home-logo::after{content:'LIVE';bottom:-15px;color:var(--cyan-soft);font-size:7px;letter-spacing:.18em}
+.home-title{font-family:var(--font-main);font-size:clamp(2.5rem,5.4vw,4.4rem);font-weight:700;letter-spacing:-.065em;line-height:.95;color:var(--white);text-shadow:none}
+.home-subtitle{font-family:var(--font-mono);font-size:.67rem;letter-spacing:.2em;color:var(--muted)}
+
+/* Cristal oscuro de alto contraste: sin estética de plantilla ni de casino. */
+.card,.modal,.tabs-panel,.panel-budget,.rilancio-box{
+  color:var(--white);background:linear-gradient(145deg,rgba(26,39,59,.82),rgba(11,18,30,.9));
+  border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 55px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+}
+.card{padding:26px;overflow:hidden}.card::before,.modal::before{height:1px;left:14%;right:14%;width:auto;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.65}.card::after{display:none}
+.card-title,.modal-title{font-family:var(--font-main);font-size:1.3rem;font-weight:700;letter-spacing:-.035em;color:var(--white);margin-bottom:20px}
+.card-title::before,.modal-title::before{content:'◆';font-family:var(--font-mono);font-size:.62em;color:var(--cyan);vertical-align:2px}
+.card-title-sm{color:var(--muted);font-family:var(--font-mono);font-size:.68rem;letter-spacing:.12em}
+.card .hint-text,.modal-subtitle,.modal-body p,.strategia-row-meta{color:var(--muted)}
+.card label,.modal label{color:var(--text-secondary);font-family:var(--font-main);font-size:.72rem;font-weight:600;letter-spacing:.065em}
+input[type=text],input[type=number],input[type=email],input[type=password],input[type=date],select,.editor-bulk-valore-inp,.editor-fascia-select{
+  background:rgba(5,10,17,.6);border:1px solid rgba(151,184,225,.18);border-radius:9px;color:var(--white);box-shadow:inset 0 1px 3px rgba(0,0,0,.35);
+}
+input::placeholder{color:#7587a0}input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(76,221,255,.12),inset 0 1px 3px rgba(0,0,0,.35)}
+
+.btn{border-radius:9px;font-family:var(--font-main);font-size:.78rem;font-weight:700;letter-spacing:.02em;text-transform:none;padding:11px 17px;box-shadow:none}
+.btn::before{display:block;background:linear-gradient(180deg,rgba(255,255,255,.14),transparent 65%)}
+.btn-primary{background:linear-gradient(135deg,#43d9f9,#248dbf);color:#061018;box-shadow:0 8px 20px rgba(76,221,255,.2)}
+.btn-primary:hover{box-shadow:0 11px 26px rgba(76,221,255,.32)}
+.btn-secondary{background:rgba(43,61,85,.7);border:1px solid rgba(151,184,225,.2);color:var(--white)}
+.btn-secondary:hover{background:rgba(61,84,115,.78);border-color:rgba(148,236,255,.45)}
+.btn-accent{background:linear-gradient(135deg,#ffd58d,#d99045);color:#1b130b}.btn-success{background:linear-gradient(135deg,#55dfbd,#2aab8d);color:#05130f}.btn-danger{background:linear-gradient(135deg,#ff8d77,#d6514a)}
+.btn-back-sticky{background:rgba(16,25,39,.92);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 25px rgba(0,0,0,.28)}
+
+/* Navegación y cards de menú: composición limpia, compacta y actual. */
+#screen-menu-principale .card{padding:0;margin-bottom:12px;background:transparent;border:0;box-shadow:none;overflow:visible;backdrop-filter:none}
+#screen-menu-principale .card .btn-lg{min-height:62px;justify-content:flex-start;padding:15px 19px;background:linear-gradient(135deg,rgba(28,43,65,.9),rgba(13,21,34,.9));color:var(--white);border:1px solid var(--line);border-radius:13px;box-shadow:0 12px 24px rgba(0,0,0,.2);font-family:var(--font-main);font-size:.98rem;font-weight:700;letter-spacing:-.015em}
+#screen-menu-principale .card:nth-of-type(even) .btn-lg{border-left-color:var(--line)}#screen-menu-principale .card .btn-lg:hover{background:linear-gradient(135deg,rgba(37,58,86,.96),rgba(16,27,43,.96));transform:translateY(-2px);border-color:rgba(148,236,255,.4)}
+
+/* Asta: terminal de subasta, información y precio con jerarquía nítida. */
+.asta-header{height:36px;background:rgba(8,13,22,.92);border-bottom-color:var(--line);box-shadow:0 1px 0 rgba(255,255,255,.04),0 8px 22px rgba(0,0,0,.25)}
+.asta-header-title{font-family:var(--font-mono);font-size:.65rem;letter-spacing:.12em;color:var(--cyan-soft);background:none;-webkit-text-fill-color:currentColor}.asta-row-panels,.asta-row-puja,.asta-row-tabs{padding-inline:12px;gap:10px}
+.panel-budget{padding:8px}.panel-budget-hdr{font-family:var(--font-mono);letter-spacing:.08em;color:var(--muted)}
+.sidebar-squadra{border-radius:8px;background:rgba(255,255,255,.025);border-left:3px solid transparent;box-shadow:none}.sidebar-squadra.mia-squadra{background:rgba(76,221,255,.1);border-left-color:var(--cyan)}.sidebar-squadra.offerente-attuale{background:rgba(246,189,98,.1);border-left-color:var(--amber)}
+.sq-nome{font-family:var(--font-main);letter-spacing:0}.sq-crediti{font-family:var(--font-mono);color:var(--gold-bright);text-shadow:0 0 10px var(--gold-glow)}
+.chiamata-card{border:1px solid var(--line);border-radius:17px;padding:24px;background:linear-gradient(145deg,rgba(30,47,70,.94),rgba(12,20,32,.98));color:var(--white);box-shadow:0 18px 44px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06)}
+.chiamata-card::before{top:0;left:12%;right:12%;width:auto;height:2px;opacity:1;background:linear-gradient(90deg,transparent,var(--cyan),transparent);box-shadow:0 0 15px rgba(76,221,255,.48)}
+.cc-nome{font-family:var(--font-main);font-weight:700;letter-spacing:-.045em;color:var(--white);text-shadow:none}.cc-meta,.cc-offerente,.cc-offerta-label{color:var(--muted)}.cc-offerente strong{color:var(--white)}
+.cc-avatar{border-radius:12px;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(76,221,255,.1),0 0 18px rgba(76,221,255,.15)}
+.cc-offerta-box{border-color:rgba(246,189,98,.58);border-radius:12px;background:rgba(246,189,98,.07);box-shadow:0 0 25px rgba(246,189,98,.08)}.cc-offerta{font-family:var(--font-mono);color:var(--gold-bright);text-shadow:0 0 22px rgba(246,189,98,.28)}
+.timer-ring-container{background:rgba(7,12,20,.58);border-color:var(--line);border-radius:0 0 17px 17px;box-shadow:none}.timer-number{font-family:var(--font-mono);color:var(--cyan-soft);text-shadow:0 0 15px rgba(76,221,255,.3)}.timer-label-text{font-family:var(--font-mono);letter-spacing:.08em}
+.tabs-nav{background:rgba(4,8,14,.46);border-bottom-color:var(--line);padding:4px}.tab-btn{border-radius:8px;font-family:var(--font-main);font-size:.71rem;letter-spacing:0}.tab-btn.active{background:rgba(76,221,255,.14);color:var(--cyan-soft);border:1px solid rgba(76,221,255,.25);box-shadow:inset 0 1px 0 rgba(255,255,255,.09);transform:none}.tab-btn:hover{background:rgba(255,255,255,.06);transform:none}
+.liberi-list li{border-radius:7px;background:rgba(255,255,255,.025);border-left:2px solid rgba(76,221,255,.42)}
+
+.strategia-row,.editor-player-row,.strategia-modal-item{background:rgba(7,12,20,.47);border-color:var(--line);border-radius:9px;color:var(--white)}.strategia-row-nome,.editor-player-nome,.strategia-modal-item-nome{color:var(--white)}.editor-player-squadra,.editor-player-quot,.editor-player-fvm{color:var(--muted)}.editor-player-row.selezionato{background:rgba(76,221,255,.1);box-shadow:inset 3px 0 0 var(--cyan)}.strategia-tipo-badge{border-radius:5px;background:rgba(76,221,255,.1);border-color:rgba(76,221,255,.3);color:var(--cyan-soft)}
+.modal-overlay{background:rgba(3,7,12,.78);backdrop-filter:blur(9px)}.toast{background:rgba(20,31,47,.96);color:var(--white);border:1px solid var(--line);border-left:3px solid var(--cyan);border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.3)}.toast.success{border-left-color:var(--success)}.toast.warning{border-left-color:var(--amber)}
+.gk-header,.gk-toolbar{background:rgba(10,16,26,.9)!important;border-color:var(--line)!important}.gk-grid-wrap{border-radius:12px;background:rgba(6,10,17,.55);border-color:var(--line)}.gk-grid-corner,.gk-grid-col-header,.gk-grid-row-label{background:#172238}
+@media (max-width:640px){.home-header{padding-top:64px}.home-logo{width:56px;height:56px}.home-title{font-size:3rem}.card{padding:20px;border-radius:13px}}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PUJA / ARENA VIOLET
+   Dirección inspirada en la referencia: arena índigo, superficies brillantes,
+   datos muy densos y precio dominante. No cambia ningún elemento ni flujo.
+   ══════════════════════════════════════════════════════════════════════════ */
+#screen-asta{
+  --primary:#9a59ff;--primary-bright:#c7a2ff;--primary-dark:#5d23d0;
+  --primary-glow:rgba(154,89,255,.34);--primary-subtle:rgba(154,89,255,.13);
+  --gold:#ffb526;--gold-bright:#ffd36d;--gold-deep:#bd7113;--gold-glow:rgba(255,181,38,.3);--gold-subtle:rgba(255,181,38,.1);
+  --success:#68e66b;--success-glow:rgba(104,230,107,.23);--danger:#ff526d;
+  --bg-main:#0d0624;--bg-card:#140a38;--bg-elevated:#231056;
+  --panel-glass-1:rgba(31,11,79,.9);--panel-glass-2:rgba(13,6,38,.94);--panel-glass-3:rgba(8,4,26,.94);
+  --text-primary:#f8f3ff;--text-secondary:#c2b3e2;--text-muted:#8576a8;
+  --border:rgba(157,93,255,.22);--border-light:rgba(199,162,255,.38);
+  background:
+    radial-gradient(900px 420px at 50% 0%,rgba(111,41,243,.22),transparent 70%),
+    radial-gradient(720px 520px at 10% 100%,rgba(36,66,184,.18),transparent 70%),
+    #09021e;
+}
+#screen-asta::before{content:'';position:fixed;inset:36px 0 0;z-index:0;pointer-events:none;background:repeating-linear-gradient(135deg,rgba(255,255,255,.014) 0 1px,transparent 1px 36px)}
+#screen-asta .asta-live-layout{position:relative;z-index:1}
+#screen-asta .asta-header{
+  background:linear-gradient(90deg,#0a031d,#15062f 48%,#08021b);
+  border-bottom:1px solid rgba(154,89,255,.28);box-shadow:0 1px 0 rgba(255,255,255,.06),0 8px 26px rgba(0,0,0,.36);
+}
+#screen-asta .asta-header-logo{display:grid;place-items:center;width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#b66eff,#5421c8);font-size:.68rem;box-shadow:0 0 14px rgba(154,89,255,.5)}
+#screen-asta .asta-header-title{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.13em;color:#e8dcff;background:none;-webkit-text-fill-color:currentColor}
+#screen-asta .asta-header-right .btn-small,#screen-asta .btn-sound{background:rgba(255,255,255,.06);border-color:rgba(199,162,255,.2);color:#ddd0ff}
+
+/* Bloques de información con volumen y diagonales de la arena. */
+#screen-asta .panel-budget,#screen-asta .admin-panel,#screen-asta .mio-panel,#screen-asta .rilancio-box,#screen-asta .tabs-panel{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,rgba(38,15,91,.92),rgba(12,6,39,.96) 67%);
+  border:1px solid rgba(154,89,255,.3);box-shadow:0 12px 30px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -18px 36px rgba(6,1,22,.28);
+}
+#screen-asta .panel-budget::before,#screen-asta .admin-panel::before,#screen-asta .mio-panel::before,#screen-asta .rilancio-box::before{
+  content:'';position:absolute;inset:0;pointer-events:none;opacity:.55;
+  background:linear-gradient(135deg,transparent 0 30%,rgba(180,116,255,.08) 30% 42%,transparent 42% 100%);
+}
+#screen-asta .panel-budget{border-radius:14px;padding:10px;min-width:190px}
+#screen-asta .panel-budget-hdr{position:relative;padding:2px 2px 8px;margin-bottom:6px;color:#cbb4ff;font-family:var(--font-mono);font-size:.62rem;letter-spacing:.11em;border-bottom-color:rgba(199,162,255,.18)}
+#screen-asta .sidebar-squadre-list{gap:5px}
+#screen-asta .sidebar-squadra{position:relative;padding:7px 8px;border:1px solid rgba(155,100,255,.14);border-left:3px solid rgba(154,89,255,.38);border-radius:7px;background:linear-gradient(100deg,rgba(53,24,110,.47),rgba(14,7,45,.4));box-shadow:none}
+#screen-asta .sidebar-squadra::after{content:'';position:absolute;right:0;top:0;border-style:solid;border-width:0 9px 9px 0;border-color:transparent rgba(190,142,255,.18) transparent transparent}
+#screen-asta .sidebar-squadra:hover{transform:translateX(3px);border-color:rgba(199,162,255,.44);background:rgba(68,32,135,.6)}
+#screen-asta .sidebar-squadra.mia-squadra{border-left-color:#70eeff;background:linear-gradient(100deg,rgba(40,96,161,.3),rgba(31,13,79,.55))}
+#screen-asta .sidebar-squadra.offerente-attuale{border-left-color:var(--gold);background:linear-gradient(100deg,rgba(149,79,10,.3),rgba(44,15,71,.6))}
+#screen-asta .sq-nome{font-family:var(--font-main);font-size:.68rem;color:#eee7ff}.sidebar-squadra.mia-squadra .sq-nome{color:#9ff3ff}.sidebar-squadra.offerente-attuale .sq-nome{color:#ffda81}
+#screen-asta .sq-crediti{font-family:var(--font-mono);font-size:.76rem;color:var(--gold-bright)}
+#screen-asta .budget-progress{height:4px;background:rgba(255,255,255,.08)}
+#screen-asta .budget-progress-fill.ok{background:linear-gradient(90deg,#5b6aff,#85ff79)}
+
+/* Ficha del jugador: el centro visual de la puja. */
+#screen-asta .chiamata-card{
+  border:1px solid rgba(162,93,255,.65);border-radius:22px 22px 14px 14px;padding:22px 26px 17px;
+  background:
+    linear-gradient(135deg,rgba(163,76,255,.22),transparent 34%),
+    linear-gradient(145deg,#351177 0%,#1c0750 58%,#100333 100%);
+  box-shadow:0 0 0 1px rgba(255,255,255,.04),0 18px 40px rgba(0,0,0,.38),0 0 32px rgba(120,45,255,.2),inset 0 1px 0 rgba(255,255,255,.1);
+}
+#screen-asta .chiamata-card::after{content:'';position:absolute;right:-20px;bottom:-40px;width:190px;height:190px;border:26px solid rgba(184,111,255,.06);border-radius:50%;pointer-events:none}
+#screen-asta .chiamata-card::before{left:8%;right:8%;height:2px;background:linear-gradient(90deg,transparent,#d2a2ff,transparent);box-shadow:0 0 16px rgba(187,113,255,.8)}
+#screen-asta .cc-header{position:relative;z-index:1}.cc-avatar{border-color:#f7f0ff;border-radius:16px;box-shadow:0 0 0 3px rgba(154,89,255,.33),0 10px 18px rgba(0,0,0,.3)}
+#screen-asta .cc-nome{font-family:var(--font-main);font-size:clamp(1.55rem,2.6vw,2.5rem);font-weight:800;letter-spacing:-.06em;color:#fff}
+#screen-asta .cc-meta{color:#cdbce9}.cc-offerente{color:#cdbce9}.cc-offerente strong{color:#fff}
+#screen-asta .cc-offerta-box{position:relative;z-index:1;border:1px solid rgba(255,191,43,.67);border-radius:13px;background:linear-gradient(145deg,rgba(255,180,33,.17),rgba(255,126,20,.04));box-shadow:0 0 24px rgba(255,174,30,.13)}
+#screen-asta .cc-offerta{font-family:var(--font-mono);font-size:clamp(2.7rem,5.6vw,4.5rem);color:#fff3be;text-shadow:0 0 22px rgba(255,187,39,.55)}
+#screen-asta .cc-offerta-label{font-family:var(--font-mono);letter-spacing:.12em;color:#d9c993}
+#screen-asta .timer-ring-container{border:1px solid rgba(154,89,255,.27);border-top:0;border-radius:0 0 14px 14px;background:linear-gradient(180deg,#140638,#0a0223);box-shadow:0 14px 26px rgba(0,0,0,.32)}
+#screen-asta .timer-number{font-family:var(--font-mono);font-size:1.85rem;color:#aaf5ff;text-shadow:0 0 14px rgba(74,228,255,.6)}
+
+/* Controles de oferta: gran CTA central y valores rápidos nítidos. */
+#screen-asta .rilancio-box{border-radius:14px;padding:13px;gap:9px;min-width:220px}
+#screen-asta .quick-bids-row{gap:7px}.btn-quick{background:rgba(255,255,255,.08);border:1px solid rgba(199,162,255,.27);border-radius:8px;color:#e8dcff;font-family:var(--font-mono);font-weight:700;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+#screen-asta .btn-rilancia{border:1px solid rgba(255,209,100,.8);border-radius:11px;background:linear-gradient(135deg,#ffb329,#e46b10);color:#221104;font-family:var(--font-main);font-size:1rem;font-weight:900;letter-spacing:.03em;box-shadow:0 7px 20px rgba(244,141,12,.3),inset 0 1px 0 rgba(255,255,255,.44)}
+#screen-asta .inp-rilancio{background:rgba(5,2,21,.65);border-color:rgba(199,162,255,.25);color:#fff;font-family:var(--font-mono)}
+#screen-asta .btn-manuale{background:linear-gradient(135deg,#9d5bff,#5824cc);border-color:#bd94ff;color:#fff}
+
+/* Barra de navegación / datos secundarios como consola de partido. */
+#screen-asta .tabs-panel{border-radius:16px;box-shadow:0 14px 32px rgba(0,0,0,.32)}
+#screen-asta .tabs-nav{padding:7px;gap:5px;background:rgba(7,2,25,.55);border-bottom-color:rgba(154,89,255,.2)}
+#screen-asta .tab-btn{min-height:36px;border-radius:10px;color:#9c8ec2;font-family:var(--font-main);font-size:.72rem;font-weight:700}
+#screen-asta .tab-btn.active{background:linear-gradient(135deg,rgba(148,71,255,.5),rgba(67,20,156,.64));border:1px solid rgba(193,154,255,.56);color:#fff;box-shadow:0 7px 15px rgba(58,13,157,.34),inset 0 1px 0 rgba(255,255,255,.17)}
+#screen-asta .tab-btn:hover{background:rgba(139,75,249,.2);color:#eee6ff}
+#screen-asta .tab-content{background:linear-gradient(135deg,rgba(12,5,38,.32),transparent)}
+#screen-asta .storico-list li,#screen-asta .liberi-list li,#screen-asta .rose-giocatore{border:1px solid rgba(154,89,255,.12);border-radius:7px;background:linear-gradient(100deg,rgba(50,23,103,.36),rgba(9,4,30,.38))}
+#screen-asta .storico-prezzo,#screen-asta .libero-costo,#screen-asta .rose-prezzo{font-family:var(--font-mono);color:var(--gold-bright)}
+#screen-asta .filtro-btn{background:rgba(255,255,255,.055);border-color:rgba(154,89,255,.2);border-radius:6px;color:#b9a9dc}#screen-asta .filtro-btn.active{background:rgba(154,89,255,.25);border-color:#b47cff;color:#fff}
+#screen-asta .mio-panel{border-radius:14px;padding:11px}.mio-nome{color:#d7c0ff;font-family:var(--font-mono)}.crediti-badge{font-family:var(--font-mono);background:rgba(255,181,38,.12);border-color:rgba(255,181,38,.35);color:var(--gold-bright)}
+#screen-asta .admin-panel{border-radius:14px;padding:12px}.admin-badge{background:rgba(154,89,255,.15);border-color:rgba(199,162,255,.37);color:#d8bfff}.admin-btn-grid .btn{border-radius:8px}
+
+@media (min-width:1100px){
+  #screen-asta .asta-live-layout{padding:12px 18px 6px;gap:14px}
+  #screen-asta .asta-row-panels{gap:12px;padding:0;align-items:stretch}
+  #screen-asta .panel-budget{flex:0 0 230px;max-height:calc(100vh - 180px)}
+  #screen-asta .asta-row-puja{padding:0;gap:14px;align-items:stretch}
+  #screen-asta .asta-row-puja .card-timer-group{max-width:660px;flex:1.3}
+  #screen-asta .asta-row-puja .rilancio-box{flex:0 0 260px;max-width:260px;align-self:center}
+  #screen-asta .asta-row-tabs{padding:0 0 4px}
+}
+@media (max-width:700px){
+  #screen-asta .panel-budget{border-radius:11px}
+  #screen-asta .chiamata-card{border-radius:15px 15px 11px 11px;padding:17px 15px 13px}
+  #screen-asta .cc-nome{font-size:1.45rem}
+  #screen-asta .tabs-nav{padding:4px}.tab-btn{min-height:34px}
+}
+
+/* Puja — controles de oferta: un único CTA y acciones secundarias limpias.
+   Estas reglas unifican las variantes admin/participante que antes heredaban
+   tamaños y grids distintos, origen de la apariencia irregular. */
+#screen-asta .rilancio-box,
+#screen-asta .puja-panel-slot .rilancio-box,
+body.layout-admin #screen-asta .asta-row-puja .rilancio-box{
+  display:flex!important;flex-direction:column!important;gap:9px!important;
+  padding:12px!important;
+}
+#screen-asta .quick-bids-row,
+#screen-asta .puja-panel-slot .quick-bids-row,
+body.layout-admin #screen-asta .asta-row-puja .quick-bids-row{
+  display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;
+  width:100%;margin:0!important;
+}
+#screen-asta .btn-quick,
+#screen-asta .puja-panel-slot .btn-quick,
+body.layout-admin #screen-asta .asta-row-puja .btn-quick{
+  min-height:36px;padding:7px 10px!important;border:1px solid rgba(199,162,255,.26)!important;
+  border-radius:8px!important;background:rgba(255,255,255,.055)!important;
+  color:#d9c8ff!important;font-family:var(--font-mono)!important;font-size:.78rem!important;
+  font-weight:500!important;letter-spacing:.02em;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important;
+}
+#screen-asta .btn-quick:hover{border-color:#c7a2ff!important;background:rgba(154,89,255,.2)!important;color:#fff!important;transform:none!important}
+#screen-asta .btn-rilancia,
+#screen-asta .puja-panel-slot .btn-rilancia,
+body.layout-admin #screen-asta .asta-row-puja .btn-rilancia{
+  order:-1;min-height:48px;width:100%!important;padding:11px 12px!important;
+  border:1px solid rgba(255,218,115,.88)!important;border-radius:10px!important;
+  background:linear-gradient(135deg,#ffcb4f,#f28a1c)!important;color:#231006!important;
+  font-family:var(--font-main)!important;font-size:.86rem!important;font-weight:900!important;
+  letter-spacing:.02em!important;box-shadow:0 8px 18px rgba(242,138,28,.26),inset 0 1px 0 rgba(255,255,255,.48)!important;
+}
+#screen-asta .btn-rilancia::after{display:none!important}
+#screen-asta .manual-bid-row,
+#screen-asta .puja-panel-slot .manual-bid-row,
+body.layout-admin #screen-asta .asta-row-puja .manual-bid-row{
+  display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:7px!important;
+  width:100%;margin:0!important;
+}
+#screen-asta .inp-rilancio,
+#screen-asta .puja-panel-slot .inp-rilancio,
+body.layout-admin #screen-asta .asta-row-puja .inp-rilancio{
+  width:100%!important;min-width:0!important;height:36px;padding:6px 10px!important;
+  border-radius:8px!important;text-align:left!important;font-family:var(--font-mono)!important;
+  font-size:.8rem!important;font-weight:500!important;
+}
+#screen-asta .btn-manuale,
+#screen-asta .puja-panel-slot .btn-manuale,
+body.layout-admin #screen-asta .asta-row-puja .btn-manuale{
+  min-width:70px!important;height:36px;padding:7px 12px!important;
+  background:linear-gradient(135deg,#8f54f5,#5d2ac4)!important;border-color:#bd96ff!important;
+  color:#fff!important;font-family:var(--font-main)!important;font-size:.76rem!important;font-weight:800!important;
+}
+@media (max-width:400px){
+  #screen-asta .rilancio-box{padding:10px!important;gap:7px!important}
+  #screen-asta .btn-rilancia{min-height:43px;font-size:.76rem!important}
+  #screen-asta .btn-manuale{min-width:62px!important;padding-inline:9px!important}
+}
+
+/* Arena FantaBar propia: conserva la jerarquía de consola, no la paleta de referencia. */
+#screen-asta{
+  --primary:#43c7e8;--primary-bright:#a5efff;--primary-dark:#197da5;
+  --primary-glow:rgba(67,199,232,.27);--primary-subtle:rgba(67,199,232,.1);
+  --gold:#ff9875;--gold-bright:#ffc1a8;--gold-deep:#c95b45;--gold-glow:rgba(255,152,117,.22);--gold-subtle:rgba(255,152,117,.1);
+  --success:#78dbc5;--success-glow:rgba(120,219,197,.2);--danger:#ff7565;
+  --bg-main:#0a1421;--bg-card:#101d2d;--bg-elevated:#172b41;
+  --panel-glass-1:rgba(19,37,57,.91);--panel-glass-2:rgba(9,18,31,.96);--panel-glass-3:rgba(6,13,24,.96);
+  --text-primary:#eff8ff;--text-secondary:#bdcfe0;--text-muted:#8198ae;
+  --border:rgba(105,184,215,.2);--border-light:rgba(133,221,246,.34);
+  background:radial-gradient(850px 460px at 53% -10%,rgba(42,134,185,.2),transparent 70%),radial-gradient(680px 500px at 0 100%,rgba(255,117,101,.08),transparent 72%),#07101c;
+}
+#screen-asta::before{background:repeating-linear-gradient(135deg,rgba(255,255,255,.012) 0 1px,transparent 1px 36px)}
+#screen-asta .asta-header{background:linear-gradient(90deg,#07101b,#0d1d2d 48%,#07101b);border-bottom-color:rgba(96,209,239,.24)}
+#screen-asta .asta-header-logo{background:linear-gradient(135deg,#55d1ed,#166c93);box-shadow:0 0 14px rgba(67,199,232,.42)}
+#screen-asta .panel-budget,#screen-asta .admin-panel,#screen-asta .mio-panel,#screen-asta .rilancio-box,#screen-asta .tabs-panel{background:linear-gradient(135deg,rgba(27,54,78,.92),rgba(7,16,29,.97) 67%);border-color:rgba(81,177,211,.27)}
+#screen-asta .panel-budget::before,#screen-asta .admin-panel::before,#screen-asta .mio-panel::before,#screen-asta .rilancio-box::before{background:linear-gradient(135deg,transparent 0 30%,rgba(86,202,232,.06) 30% 42%,transparent 42% 100%)}
+#screen-asta .panel-budget-hdr{color:#a7eafa;border-bottom-color:rgba(119,215,239,.16)}
+#screen-asta .sidebar-squadra{border-color:rgba(88,175,207,.14);border-left-color:rgba(67,199,232,.48);background:linear-gradient(100deg,rgba(26,71,96,.43),rgba(7,18,32,.42))}
+#screen-asta .sidebar-squadra::after{border-color:transparent rgba(120,221,244,.17) transparent transparent}
+#screen-asta .sidebar-squadra:hover{border-color:rgba(151,232,249,.4);background:rgba(35,83,111,.58)}
+#screen-asta .sidebar-squadra.mia-squadra{border-left-color:#88edff;background:linear-gradient(100deg,rgba(46,132,161,.3),rgba(13,39,57,.55))}
+#screen-asta .sidebar-squadra.offerente-attuale{border-left-color:#ff9c7b;background:linear-gradient(100deg,rgba(169,72,48,.3),rgba(21,38,54,.6))}
+#screen-asta .sidebar-squadra.offerente-attuale .sq-nome,#screen-asta .sq-crediti{color:#ffc1a8}
+#screen-asta .budget-progress-fill.ok{background:linear-gradient(90deg,#4cc9e8,#78dbc5)}
+#screen-asta .chiamata-card{border-color:rgba(74,204,234,.55);background:linear-gradient(135deg,rgba(50,143,182,.21),transparent 34%),linear-gradient(145deg,#173c5a 0%,#0d2238 58%,#071427 100%);box-shadow:0 0 0 1px rgba(255,255,255,.04),0 18px 40px rgba(0,0,0,.38),0 0 30px rgba(67,199,232,.15),inset 0 1px 0 rgba(255,255,255,.1)}
+#screen-asta .chiamata-card::after{border-color:rgba(105,219,244,.055)}
+#screen-asta .chiamata-card::before{background:linear-gradient(90deg,transparent,#9defff,transparent);box-shadow:0 0 16px rgba(83,211,240,.65)}
+#screen-asta .cc-avatar{box-shadow:0 0 0 3px rgba(67,199,232,.26),0 10px 18px rgba(0,0,0,.3)}
+#screen-asta .cc-offerta-box{border-color:rgba(255,152,117,.65);background:linear-gradient(145deg,rgba(255,139,99,.15),rgba(255,93,64,.04));box-shadow:0 0 24px rgba(255,117,101,.1)}
+#screen-asta .cc-offerta{color:#ffe0d2;text-shadow:0 0 22px rgba(255,143,105,.42)}
+#screen-asta .cc-offerta-label{color:#e9b9a9}
+#screen-asta .timer-ring-container{border-color:rgba(67,199,232,.24);background:linear-gradient(180deg,#0a1c2e,#06101f)}
+#screen-asta .timer-number{color:#a5efff;text-shadow:0 0 14px rgba(67,199,232,.5)}
+#screen-asta .btn-rilancia,#screen-asta .puja-panel-slot .btn-rilancia,body.layout-admin #screen-asta .asta-row-puja .btn-rilancia{border-color:rgba(255,194,169,.78)!important;background:linear-gradient(135deg,#ff9a75,#e96151)!important;color:#250b08!important;box-shadow:0 8px 18px rgba(230,97,81,.25),inset 0 1px 0 rgba(255,255,255,.42)!important}
+#screen-asta .btn-manuale,#screen-asta .puja-panel-slot .btn-manuale,body.layout-admin #screen-asta .asta-row-puja .btn-manuale{background:linear-gradient(135deg,#3cc6e5,#197da5)!important;border-color:#91edff!important;color:#061821!important}
+#screen-asta .btn-quick{border-color:rgba(119,215,239,.25)!important;color:#c6f3fc!important}.btn-quick:hover{border-color:#9defff!important;background:rgba(67,199,232,.17)!important}
+#screen-asta .tabs-nav{border-bottom-color:rgba(67,199,232,.17)}
+#screen-asta .tab-btn.active{background:linear-gradient(135deg,rgba(54,167,199,.48),rgba(18,86,122,.61));border-color:rgba(150,239,255,.48);box-shadow:0 7px 15px rgba(16,84,122,.28),inset 0 1px 0 rgba(255,255,255,.17)}
+#screen-asta .tab-btn:hover{background:rgba(67,199,232,.16)}
+#screen-asta .storico-list li,#screen-asta .liberi-list li,#screen-asta .rose-giocatore{border-color:rgba(67,199,232,.1);background:linear-gradient(100deg,rgba(23,67,93,.35),rgba(6,16,29,.38))}
+#screen-asta .storico-prezzo,#screen-asta .libero-costo,#screen-asta .rose-prezzo{color:#ffc1a8}
+#screen-asta .filtro-btn{border-color:rgba(67,199,232,.18);color:#b5d8e1}#screen-asta .filtro-btn.active{background:rgba(67,199,232,.18);border-color:#7ce2f7}
+#screen-asta .mio-nome{color:#bcefff}.crediti-badge{background:rgba(255,152,117,.1);border-color:rgba(255,152,117,.32);color:#ffc1a8}.admin-badge{background:rgba(67,199,232,.12);border-color:rgba(137,230,249,.32);color:#c2f3fc}
