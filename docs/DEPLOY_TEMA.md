@@ -19,7 +19,7 @@ di sera con una sola lampada accesa. **Nessuna regola di gioco è stata toccata.
 | `frontend/css/style.css` | modificato (solo il blocco `:root`) | la palette. Cambiano i valori, i nomi delle variabili restano identici |
 | `frontend/css/tema-serata.css` | **nuovo** | la composizione: scena della puja, griglia squadre, schede, vista Admin |
 | `frontend/js/clessidra.js` | **nuovo** | disegna la clessidra e le legge il livello. Sempre attivo, ma solo cosmetico |
-| `frontend/js/comportamenti-asta.js` | **nuovo** | i tre comportamenti nuovi — **spento di default** |
+| `frontend/js/comportamenti-asta.js` | **nuovo** | i tre comportamenti nuovi — **attivi** |
 | `frontend/index.html` | modificato (4 righe) | carica i font nuovi, il foglio del tema, la clessidra, il modulo |
 
 Backend, Socket.io, Supabase, autenticazione, `calcolaMaxOfferta()`, svincoli, backup:
@@ -50,7 +50,7 @@ git push origin main
 
 Da lì Hostinger fa il resto. Non serve altro.
 
-> Il tema è già attivo appena sale. I comportamenti no — vedi sotto.
+> Tema e comportamenti sono entrambi attivi appena sale.
 
 ## Come si torna indietro
 
@@ -81,38 +81,42 @@ git push origin main
 
 ---
 
-## I comportamenti nuovi (opzionali, spenti)
+## I comportamenti nuovi (attivi)
 
-`comportamenti-asta.js` aggiunge tre cose. **Non si accendono da sole.**
+`comportamenti-asta.js` aggiunge tre cose, ed e' **acceso**.
 
-Per provarli, in console del browser:
+Per spegnerlo, in console del browser:
 
 ```js
-localStorage.setItem('fantabar_comportamenti', '1')   // poi ricarica
-localStorage.removeItem('fantabar_comportamenti')     // per spegnerli
+localStorage.setItem('fantabar_comportamenti', '0')   // poi ricarica
+localStorage.removeItem('fantabar_comportamenti')     // per riaccenderlo
 ```
 
-| Cosa | Rischio | Perché |
+| Cosa | Rischio | Perche' |
 |---|---|---|
 | **La stanza si stringe** — sotto i 5 secondi il resto della schermata sfoca e resta solo prezzo/tempo/azione | basso | solo CSS guidato da un attributo |
-| **"Ancora in gioco"** — quante squadre possono ancora coprire l'offerta | nessuno | additivo, sola lettura, dati che il client già riceve |
-| **La leva** — RILANCIA si tiene premuto e l'importo sale | **da provare prima** | vedi sotto |
+| **"Ancora in gioco"** — quante squadre possono ancora coprire l'offerta | nessuno | additivo, sola lettura, dati che il client gia' riceve |
+| **La leva** — RILANCIA si tiene premuto e l'importo sale | contenuto (vedi sotto) | il tocco singolo resta identico a prima |
 
-### Perché la leva va provata prima
+### Come si comporta la leva, esattamente
 
-Nessuna regola viene aggirata: l'evento emesso resta `'rilancio'` e il server continua a
-validare con `calcolaMaxOfferta()`. Il rischio è **d'uso, non di correttezza** — si può
-superare l'importo voluto tenendo premuto mezzo secondo di troppo.
+- **Tocco breve** (< 260 ms): il modulo **non fa nulla**. Il rilancio lo manda il
+  click handler originale dell'app, `inviaRilancioRapido(1)`, come sempre.
+- **Tenuta**: l'importo sale accelerando; al rilascio parte un `socket.emit('rilancio')`
+  con lo stesso identico payload dell'app (`{ astaId, offerta }`), e il click dell'app
+  viene soppresso in fase di capture — cosi' **un gesto = un rilancio, mai due**.
+- L'importo e' limitato da `getMaxOfferta()`, la stessa funzione che l'app usa per
+  l'hint in UI: tenendo premuto all'infinito ci si ferma al massimo consentito.
+- Prima di emettere si passa da `canBid()`, lo stesso guard dell'app.
 
-Prima di darla alla lega, in un'asta di test: verificare che tenendo premuto a lungo
-l'importo si fermi al massimo offribile e che il rilascio mandi esattamente la cifra
-mostrata sul tasto.
+Il server continua comunque a validare ogni rilancio con `calcolaMaxOfferta()`:
+il limite lato client e' comodita', non sicurezza.
 
 ### Effetto collaterale noto
 
-Con "la stanza si stringe" attiva, negli ultimi 5 secondi i crediti dei rivali si sfocano —
-proprio quando potresti volerli guardare. È deliberato, e il contatore "ancora in gioco"
-in testata resta leggibile per compensare. Se dà fastidio, è una riga in
+Con "la stanza si stringe", negli ultimi 5 secondi i crediti dei rivali si sfocano —
+proprio quando potresti volerli guardare. E' deliberato, e il contatore "ancora in
+gioco" in testata resta leggibile per compensare. Se da' fastidio, e' una riga in
 `tema-serata.css`: cerca `[data-fase="finale"] .panel-budget`.
 
 ---

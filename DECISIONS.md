@@ -588,20 +588,22 @@ rimovibile con una riga in `index.html` senza toccare `style.css`.
 volutamente NON fatto insieme al cambio di identità per non mescolare un refactor rischioso con una
 modifica puramente estetica.
 
-## Comportamenti d'asta in un modulo opzionale, spento di default
+## Comportamenti d'asta in un modulo separato (attivo, con interruttore)
 
 `frontend/js/comportamenti-asta.js` aggiunge tre cose che il tema da solo non può fare: la fase
 dell'asta che guida il layout (negli ultimi secondi la schermata si stringe su prezzo/tempo/azione),
 il contatore "ancora in gioco" (quante squadre possono ancora coprire l'offerta corrente) e la leva
 (RILANCIA si tiene premuto e l'importo sale).
 
-Nasce **spento** (`localStorage.fantabar_comportamenti = '1'` per accenderlo) per una ragione precisa:
+E' **acceso** (`localStorage.fantabar_comportamenti = '0'` per spegnerlo) ma vive in un file a parte, non dentro `app.js`, per una ragione precisa:
 i primi due sono additivi e in sola lettura — leggono lo stato che il client già riceve da
 `stato-asta` e non cambiano nessuna regola — ma **la leva cambia come si sceglie l'importo del
 rilancio**. L'evento emesso resta `'rilancio'` e il server continua a validare con
 `calcolaMaxOfferta()`, quindi nessuna regola viene aggirata; il rischio è d'uso, non di correttezza:
-si può superare l'importo voluto tenendo premuto mezzo secondo di troppo. Va provato in un'asta di
-test prima di darlo alla lega, e per questo non si accende da solo.
+si può superare l'importo voluto tenendo premuto mezzo secondo di troppo. Mitigato in due modi:
+l'importo è limitato lato client da `getMaxOfferta()` (verificato: tenendo premuto 3 secondi ci si
+ferma esattamente al massimo consentito), e il **tocco singolo non viene intercettato affatto** —
+sotto i 260 ms il modulo non fa nulla e il rilancio lo manda il click handler originale dell'app.
 
 Il modulo non pilota nulla: si aggancia con un wrapper a `updateTimer()`, `renderChiamata()` e
 `renderBudgetBar()` — le funzioni vere dell'app — e legge. Il tempo continua a dettarlo il server.
@@ -612,3 +614,27 @@ La regola "la stanza si stringe" porta il riepilogo squadre a opacità 0.26 con 
 secondi. È deliberato (togliere tutto ciò che non serve a decidere se rilanciare) ma ha un costo
 reale: sono esattamente i secondi in cui potresti volerli guardare. Il contatore "ancora in gioco"
 resta leggibile in testata proprio per compensare — dice la stessa cosa in una cifra sola.
+
+
+## Due bug trovati provando i comportamenti, prima di metterli online
+
+Entrambi sarebbero passati inosservati fino a un'asta vera. Vale la pena ricordarli perché sono
+trappole generali, non specifiche di questo modulo.
+
+**1. Doppio rilancio con un gesto solo.** L'app registra un `click` su `#btn-rilancio` che chiama
+`inviaRilancioRapido(1)`. Il modulo della leva ascoltava `pointerdown`/`pointerup` sullo stesso
+bottone: un tocco faceva partire *entrambi*, cioè due `socket.emit('rilancio')` per un gesto solo.
+Risolto così: sotto i 260 ms il modulo non fa nulla (se ne occupa l'app, comportamento identico a
+prima); sopra, il modulo manda il suo importo e sopprime il click dell'app con un listener in fase
+di **capture** (`stopImmediatePropagation`), che gira prima di quello registrato sull'elemento.
+
+**2. `window.S` non esiste.** In `app.js` lo stato è dichiarato `const S = {...}` a livello di
+script: una `const` di primo livello **non diventa una proprietà di `window`**. Il modulo leggeva
+`window.S`, quindi trovava sempre `undefined` e la leva non partiva mai — senza errori in console,
+senza niente di rotto a vista: semplicemente non funzionava. Vale per `socket` allo stesso modo.
+Dai file esterni questi vanno letti come **identificatori nudi** (`S`, `socket`), risolti dalla
+catena degli scope, con un `try/catch` per il caso in cui `app.js` non sia ancora stato eseguito.
+
+Morale operativa: per un modulo che si aggancia all'app non basta `node --check`. Serve misurare
+l'effetto reale — nel nostro caso intercettare `socket.emit` e **contare le offerte che partono
+davvero** per ogni gesto.

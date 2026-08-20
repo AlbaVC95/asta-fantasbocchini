@@ -1,150 +1,176 @@
 // ═══════════════════════════════════════════════════════════════════
-// COMPORTAMENTI ASTA — modulo opzionale, SPENTO DI DEFAULT
+// COMPORTAMENTI ASTA
 //
-// Aggiunge tre cose che il tema da solo non fa:
-//   1. la fase dell'asta guida il LAYOUT (negli ultimi secondi la
-//      schermata si stringe su prezzo/tempo/azione)
-//   2. "ancora in gioco": quante squadre possono ancora coprire
-//      l'offerta corrente
-//   3. la leva: RILANCIA si tiene premuto e l'importo sale
+// Tre cose che il tema da solo non può fare:
+//   1. la fase dell'asta guida il LAYOUT — negli ultimi secondi la
+//      schermata si stringe su prezzo, tempo e azione
+//   2. "ancora in gioco" — quante squadre possono ancora coprire
+//      l'offerta corrente (non il patrimonio: la sopravvivenza a
+//      QUESTA puja)
+//   3. la leva — RILANCIA si può tenere premuto e l'importo sale
 //
-// COME ACCENDERLO
-//   In console, o in un <script> prima di questo file:
-//       localStorage.setItem('fantabar_comportamenti', '1')
-//   e ricaricare. Per spegnerlo: removeItem della stessa chiave.
+// COME SPEGNERLO
+//   In console del browser:
+//       localStorage.setItem('fantabar_comportamenti', '0')
+//   e ricaricare. Per riaccenderlo: removeItem della stessa chiave.
 //
 // COSA TOCCA E COSA NO
-//   (1) e (2) sono additivi e in sola lettura: non cambiano nessuna
-//   regola di gioco, leggono solo lo stato che il client gia' riceve.
-//   (3) CAMBIA come si sceglie l'importo del rilancio. L'evento
-//   emesso resta lo stesso ('rilancio') e il server continua a
-//   validare con calcolaMaxOfferta(): nessuna regola viene aggirata.
-//   Il rischio e' d'uso, non di correttezza — si puo' superare
-//   l'importo voluto tenendo premuto mezzo secondo di troppo.
-//   Per questo il modulo nasce spento: va provato in un'asta di
-//   test prima di darlo alla lega.
+//   (1) e (2) sono additivi e in sola lettura: leggono lo stato che il
+//   client già riceve da 'stato-asta' e non cambiano nessuna regola.
+//   (3) cambia solo COME si sceglie l'importo. L'evento emesso è lo
+//   stesso ('rilancio') con lo stesso payload di sempre, e il server
+//   continua a validarlo con calcolaMaxOfferta(): nessuna regola
+//   viene aggirata.
+//
+//   Il TOCCO SINGOLO resta identico a prima: non lo intercettiamo,
+//   lo gestisce il click handler originale dell'app (+1). Solo quando
+//   si TIENE premuto entriamo in gioco, e in quel caso sopprimiamo il
+//   click dell'app per non mandare due rilanci con un gesto solo.
 // ═══════════════════════════════════════════════════════════════════
 (function () {
-  if (localStorage.getItem('fantabar_comportamenti') !== '1') return;
+  if (localStorage.getItem('fantabar_comportamenti') === '0') return;
 
-// ═══════════════════════════════════════════════════════════════
-// I COMPORTAMENTI NUOVI, montati SOPRA l'app reale di FantaBar.
-// Non sostituisce nulla: riusa le funzioni vere dell'app
-// (renderChiamata, renderBudgetBar, updateTimer) e aggiunge
-// tre cose che oggi non esistono:
-//   1. la fase dell'asta guida il layout, non solo il colore
-//   2. "ancora in gioco": chi può ancora coprire QUESTA offerta
-//   3. la leva: si tiene premuta, non si clicca
-// Nessun file dell'app modificato.
-// ═══════════════════════════════════════════════════════════════
-  function attiva(opts) {
-  opts = opts || {};
-  const RIDOTTO = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const mioMax = () => {
-    try { return (typeof getMaxOfferta === 'function') ? getMaxOfferta() : 999; }
-    catch (e) { return 999; }
+  const SOGLIA_MS = 260;   // sotto questa soglia è un tocco, non una tenuta
+
+  let hold = null, holdRaf = null, sopprimiClick = false;
+
+  // NB: in app.js `S` e `socket` sono dichiarati con `const` a livello di
+  // script, quindi NON diventano proprieta' di window: vanno letti come
+  // identificatori nudi (risolti dalla catena degli scope), con un guard
+  // per il caso in cui app.js non sia ancora stato eseguito.
+  const chiamata = () => {
+    try { return (S && S.asta) ? S.asta.chiamataAttuale : null; }
+    catch (e) { return null; }
   };
-  let sec, tot = 9, loop = null, hold = null, holdRaf = null, finita = false;
-
-  // ── "ancora in gioco": va in testata, accanto ai comandi ──
-  const hdr = document.querySelector('.asta-header-right');
-  if (hdr && !document.getElementById('vivi-n')) {
-    const d = document.createElement('div');
-    d.className = 'vivi-chip';
-    d.innerHTML = '<b id="vivi-n">—</b><span>ancora in gioco</span>';
-    hdr.insertBefore(d, hdr.firstChild);
-  }
-
-  const chiamata = () => S.asta && S.asta.chiamataAttuale;
   const btn = () => document.getElementById('btn-rilancio');
+
+  // il tetto vero: la stessa funzione che l'app usa per l'hint in UI
+  function tetto() {
+    try {
+      if (typeof getMaxOfferta === 'function') {
+        const m = getMaxOfferta();
+        if (typeof m === 'number' && isFinite(m) && m > 0) return m;
+      }
+    } catch (e) {}
+    return null;
+  }
 
   function fase(f) {
     document.body.dataset.fase = f;
     document.body.classList.toggle('puja-urgente', f === 'finale');
   }
 
-  // ── chi non può più coprire l'offerta esce dal tavolo ──
+  // ── "ancora in gioco" ──────────────────────────────────────────
+  function chip() {
+    const hdr = document.querySelector('.asta-header-right');
+    if (!hdr || document.getElementById('vivi-n')) return;
+    const d = document.createElement('div');
+    d.className = 'vivi-chip';
+    d.innerHTML = '<b id="vivi-n">—</b><span>ancora in gioco</span>';
+    hdr.insertBefore(d, hdr.firstChild);
+  }
+
+  // chi non può più coprire l'offerta esce dal tavolo
   function marcaFuori() {
-    const off = chiamata() ? chiamata().offertaAttuale : 0;
+    const c = chiamata();
+    const off = c ? (c.offertaAttuale || 0) : 0;
     let vivi = 0;
     document.querySelectorAll('#budget-bar .sidebar-squadra').forEach(r => {
       const el = r.querySelector('.sq-crediti');
-      const cr = el ? parseInt(el.textContent.replace(/[^\d]/g, ''), 10) || 0 : 0;
-      const fuori = cr <= off;
+      const cr = el ? (parseInt(el.textContent.replace(/[^\d]/g, ''), 10) || 0) : 0;
+      const fuori = off > 0 && cr <= off;
       r.classList.toggle('fuori', fuori);
       if (!fuori) vivi++;
     });
-    if (mioMax() > off) vivi++;
     const v = document.getElementById('vivi-n');
     if (v) v.textContent = vivi;
   }
 
-  function ripristinaLeva() {
-    const b = btn();
-    if (!b) return;
+  function etichettaLeva() {
+    const b = btn(), c = chiamata();
+    if (!b || !c) return;
     b.textContent = 'Rilancia';
-    b.dataset.tot = (chiamata().offertaAttuale + 1);
+    b.dataset.tot = (c.offertaAttuale || 0) + 1;
     b.style.setProperty('--carica', 0);
   }
 
-  // Nell'app reale il tempo lo detta il SERVER: qui non si simula nulla,
-  // ci si aggancia a updateTimer(), che l'app chiama a ogni tick ricevuto.
-  const _updateTimer = window.updateTimer;
-  window.updateTimer = function (secondi, faseTimer) {
-    const r = _updateTimer.apply(this, arguments);
-    try {
-      if (secondi <= 4 && secondi > 0) fase('finale');
-      else if (secondi > 4) fase('asta');
-    } catch (e) {}
-    return r;
-  };
+  // ── agganci alle funzioni vere dell'app ────────────────────────
+  // Il tempo lo detta il server: non si simula nulla, si osserva.
+  function aggancia() {
+    const _t = window.updateTimer;
+    if (typeof _t === 'function' && !_t.__fantabar) {
+      window.updateTimer = function (secondi) {
+        const r = _t.apply(this, arguments);
+        try { fase(secondi <= 4 && secondi > 0 ? 'finale' : 'asta'); } catch (e) {}
+        return r;
+      };
+      window.updateTimer.__fantabar = true;
+    }
+    const _rc = window.renderChiamata;
+    if (typeof _rc === 'function' && !_rc.__fantabar) {
+      window.renderChiamata = function () {
+        const r = _rc.apply(this, arguments);
+        try { marcaFuori(); etichettaLeva(); } catch (e) {}
+        return r;
+      };
+      window.renderChiamata.__fantabar = true;
+    }
+    const _rb = window.renderBudgetBar;
+    if (typeof _rb === 'function' && !_rb.__fantabar) {
+      window.renderBudgetBar = function () {
+        const r = _rb.apply(this, arguments);
+        try { marcaFuori(); } catch (e) {}
+        return r;
+      };
+      window.renderBudgetBar.__fantabar = true;
+    }
+  }
 
-  // e a renderChiamata(), che l'app chiama a ogni cambio di offerta
-  const _renderChiamata = window.renderChiamata;
-  window.renderChiamata = function (c) {
-    const r = _renderChiamata.apply(this, arguments);
-    try { marcaFuori(); ripristinaLeva(); } catch (e) {}
-    return r;
-  };
-
-  const _renderBudgetBar = window.renderBudgetBar;
-  window.renderBudgetBar = function (sq) {
-    const r = _renderBudgetBar.apply(this, arguments);
-    try { marcaFuori(); } catch (e) {}
-    return r;
-  };
-
-  function assegna() { fase('assegnato'); }
-
-  // ── LA LEVA: tenere premuto fa salire l'offerta ──
+  // ── LA LEVA ────────────────────────────────────────────────────
   function giu(e) {
-    const b = btn();
-    if (!b || b.disabled || finita) return;
-    e.preventDefault();
-    hold = { t0: performance.now(), val: chiamata().offertaAttuale + 1 };
-    const step = () => {
+    const b = btn(), c = chiamata();
+    if (!b || b.disabled || !c) return;
+    if (typeof canBid === 'function' && !canBid()) return;   // stesso guard dell'app
+    hold = { t0: performance.now(), val: (c.offertaAttuale || 0) + 1 };
+    const passo = () => {
       if (!hold) return;
+      const cc = chiamata();
+      if (!cc) return;
+      const base = cc.offertaAttuale || 0;
       const dt = (performance.now() - hold.t0) / 1000;
       const extra = dt < 0.25 ? 0 : Math.floor(Math.pow(dt - 0.25, 1.7) * 22);
-      hold.val = Math.min(mioMax(), chiamata().offertaAttuale + 1 + extra);
+      const max = tetto();
+      hold.val = base + 1 + extra;
+      if (max !== null) hold.val = Math.min(max, hold.val);   // mai oltre il consentito
       b.dataset.tot = hold.val;
-      const base = chiamata().offertaAttuale;
-      const pct = Math.min(100, ((hold.val - base) / Math.max(1, mioMax() - base)) * 100);
-      b.style.setProperty('--carica', pct);
-      holdRaf = requestAnimationFrame(step);
+      const den = Math.max(1, (max !== null ? max : base + 60) - base);
+      b.style.setProperty('--carica', Math.min(100, ((hold.val - base) / den) * 100));
+      holdRaf = requestAnimationFrame(passo);
     };
-    step();
+    passo();
   }
+
   function su() {
     if (!hold) return;
-    const val = hold.val;
+    const { t0, val } = hold;
+    const durata = performance.now() - t0;
     hold = null;
     cancelAnimationFrame(holdRaf);
     const b = btn(); if (b) b.style.setProperty('--carica', 0);
-    if (val > chiamata().offertaAttuale) {
-      // stesso evento e stessa validazione server di sempre
-      socket.emit('rilancio', { astaId: S.astaId, squadra: S.miaSquadra, offerta: val });
-    }
+    const c = chiamata();
+    if (!c) return;
+
+    // Tocco breve: non facciamo nulla. Ci pensa il click handler
+    // originale dell'app, esattamente come prima di questo modulo.
+    if (durata < SOGLIA_MS || val <= (c.offertaAttuale || 0) + 1) return;
+
+    // Tenuta: mandiamo noi l'importo raggiunto e sopprimiamo il click
+    // dell'app, altrimenti un solo gesto manderebbe due rilanci.
+    if (typeof canBid === 'function' && !canBid()) return;
+    sopprimiClick = true;
+    setTimeout(() => { sopprimiClick = false; }, 400);
+    // stesso evento e stesso payload che usa inviaRilancioRapido()
+    socket.emit('rilancio', { astaId: S.astaId, offerta: val });
   }
 
   document.addEventListener('pointerdown', e => {
@@ -153,16 +179,23 @@
   window.addEventListener('pointerup', su);
   window.addEventListener('pointercancel', su);
 
-  // ── avvio: si aggancia e basta, non pilota nulla ──
+  // capture: gira PRIMA del listener che l'app ha messo sul bottone
+  document.addEventListener('click', e => {
+    if (!sopprimiClick) return;
+    if (e.target.closest && e.target.closest('#btn-rilancio')) {
+      sopprimiClick = false;
+      e.stopImmediatePropagation();
+      e.preventDefault();
+    }
+  }, true);
+
   function avvia() {
-    try { marcaFuori(); ripristinaLeva(); } catch (e) {}
+    aggancia();
+    chip();
+    try { marcaFuori(); etichettaLeva(); } catch (e) {}
   }
 
-  window.__fantabarComportamenti = { fase, avvia };
-  if (document.readyState === 'complete') setTimeout(avvia, 600);
-  else window.addEventListener('load', () => setTimeout(avvia, 600));
-  return 'attivo';
-  }
-
-  attiva({});
+  window.__fantabarComportamenti = { fase, avvia, marcaFuori };
+  if (document.readyState === 'complete') setTimeout(avvia, 400);
+  else window.addEventListener('load', () => setTimeout(avvia, 400));
 })();

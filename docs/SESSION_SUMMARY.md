@@ -26,8 +26,8 @@ Quattro file, di cui due nuovi:
 - `frontend/js/clessidra.js` (nuovo) — il cronometro è ora una clessidra in SVG (vetro,
   ottone, sabbia con la grana). Sempre attivo ma solo cosmetico: legge con un
   MutationObserver passivo l'avanzamento che l'app già scrive sul vecchio anello.
-- `frontend/js/comportamenti-asta.js` (nuovo) — tre comportamenti, **spenti di default**
-  (`localStorage.fantabar_comportamenti = '1'` per accenderli).
+- `frontend/js/comportamenti-asta.js` (nuovo) — tre comportamenti, **attivi**
+  (`localStorage.fantabar_comportamenti = '0'` per spegnerli).
 - `frontend/index.html` — 4 righe: font nuovi, foglio del tema, clessidra, modulo.
 
 Materie e movimento aggiunti in un secondo passaggio: insegna **al neon** (accensione a
