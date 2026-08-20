@@ -115,6 +115,24 @@ valori calcolati su 40 selettori, zero differenze). Contrasto di tutti i testi d
 schermata asta sopra soglia nel tema chiaro. Dettagli in
 [docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md).
 
+## Ultimi ritocchi alla vista partecipante
+
+- **Le tab non sono piu' un avanzo.** `.asta-row-panels` e' `flex-shrink:0` e si prendeva
+  quello che le serviva: a 1440x900 alle tab restavano 214px (142 di contenuto), a 1280x800
+  ne restavano 54. Ora la riga tab ha un minimo garantito (`clamp(420px,46vh,720px)`) e se la
+  finestra non basta e' la colonna a scorrere. Misurato: 214 -> 420px a 1440x900, 524 -> 594
+  su uno schermo 2000x1136.
+- **Riepilogo squadre molto piu' basso**: una riga sola per squadra invece di due (pallino,
+  nome, conteggi, crediti tutti in linea), colonne piu' strette percio' piu' colonne e meno
+  righe. Da 195-239px a 141-172px. Nelle colonne strette (Anteprima aperta) i conteggi
+  tornano su una seconda riga: scendono, non spariscono. Verificato che nessun nome di
+  squadra finisce nei puntini e che i conteggi ci sono tutti e 12 a ogni larghezza.
+- **Tolta "la stanza si stringe"**: negli ultimi 5 secondi squadre, tab, conto e meta' dei
+  dati del giocatore sfocavano e si spegnevano. Durante un'asta ognuno deve poter guardare
+  quello che vuole quando vuole — e i crediti dei rivali servono proprio in quei secondi.
+  Restano le luci e il rosso (fondo, miccia, sabbia, cifra del tempo, lastra RILANCIA):
+  verificato che a fase "finale" nessun pannello cambia opacity, filter o font-size.
+
 ## Regola imparata a caro prezzo: non si nasconde informazione
 
 Per far entrare il nome della squadra in colonne strette era stato messo un

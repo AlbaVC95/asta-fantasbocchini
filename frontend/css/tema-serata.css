@@ -109,7 +109,7 @@ html body .asta-row-panels>#puja-panel-slot{
 html body.layout-partecipante #puja-panel-slot,
 html body #puja-panel-slot{
   position:relative !important;overflow:hidden !important;
-  min-height:258px !important;padding:30px 34px 28px 34px !important;
+  min-height:220px !important;padding:22px 28px 20px 28px !important;
   align-items:center !important;gap:34px !important;
   border:1px solid rgba(var(--sc-carta),.10) !important;border-radius:2px !important;
   background:
@@ -556,24 +556,27 @@ html body #puja-panel-slot .badge-ruolo[class*="r-"]{
 html body.layout-partecipante .asta-row-panels>.panel-budget{
   max-height:none !important;
   max-width:none !important;overflow:visible !important;
-  padding:14px 20px 16px !important;
+  padding:8px 16px 10px !important;
 }
+/* Colonne piu' strette = piu' colonne = meno righe: con 12 squadre si
+   passa da quattro righe a tre (o due sui monitor larghi). Il riepilogo
+   e' un promemoria, non la schermata: lo spazio che libera va alle tab. */
 html body #budget-bar{
   display:grid !important;
-  grid-template-columns:repeat(auto-fit,minmax(370px,1fr)) !important;
-  gap:0 26px !important;align-content:start !important;
+  grid-template-columns:repeat(auto-fit,minmax(336px,1fr)) !important;
+  gap:0 18px !important;align-content:start !important;
 }
 html body #budget-bar .sidebar-squadra{
-  padding:9px 0 9px 10px !important;
+  padding:3px 0 4px 8px !important;
   border-bottom:1px solid rgba(var(--sc-carta),.07) !important;
 }
-html body .panel-budget-hdr{padding-bottom:8px !important;margin-bottom:8px !important}
+html body .panel-budget-hdr{padding-bottom:5px !important;margin-bottom:5px !important}
 
 /* "Il tuo conto" non è un pannello a parte: è il conto appoggiato
    sul tavolo, accanto alla puja. Stessa superficie, stessa miccia. */
 html body.layout-partecipante .asta-row-panels>#mio-panel{
-  align-self:stretch !important;margin-left:0 !important;min-height:258px !important;max-height:none !important;
-  padding:30px 26px 28px !important;border-radius:0 2px 2px 0 !important;
+  align-self:stretch !important;margin-left:0 !important;min-height:220px !important;max-height:none !important;
+  padding:22px 24px 20px !important;border-radius:0 2px 2px 0 !important;
   border:1px solid rgba(var(--sc-carta),.10) !important;border-left:none !important;
   background:
     radial-gradient(86% 110% at 104% 116%, rgba(28,91,69,.32), transparent 62%),
@@ -659,9 +662,15 @@ html body #budget-bar .sidebar-squadra.fuori .sq-crediti{
   text-decoration:line-through !important;color:var(--sc-tenue) !important;
 }
 
-/* ── LA MOSSA: negli ultimi secondi la stanza si stringe ──
-   Non cambia il colore: cambia cosa resta a fuoco. Sparisce
-   tutto ciò che non serve a decidere se rilanciare. */
+/* ── ULTIMI SECONDI: cambia la luce, non cosa si vede ──
+   Qui c'era "la stanza si stringe": sotto i 5 secondi squadre, tab,
+   conto e meta' dei dati del giocatore sfocavano e si spegnevano, per lasciare a
+   fuoco solo prezzo/tempo/azione. Tolto: durante un'asta ognuno deve
+   poter guardare quello che vuole quando vuole — i crediti dei rivali
+   servono PROPRIO negli ultimi secondi, ed erano la cosa piu' sfocata.
+   Restano le luci e il rosso: fondo, miccia, sabbia della clessidra,
+   cifra del tempo e lastra RILANCIA. Nessun pannello viene toccato.
+   Il `transition` resta perche' se lo passano i cambi di colore. */
 html body .panel-budget,
 html body #mio-panel,
 html body .tabs-panel,
@@ -671,13 +680,6 @@ html body #puja-panel-slot .cc-strategia-info,
 html body #puja-panel-slot .cc-nome{
   transition:opacity .5s ease, filter .5s ease, font-size .5s cubic-bezier(.2,.8,.2,1) !important;
 }
-html body[data-fase="finale"] .panel-budget{opacity:.26 !important;filter:blur(1.8px) !important}
-html body[data-fase="finale"] .tabs-panel{opacity:.16 !important;filter:blur(1.4px) !important}
-html body[data-fase="finale"] #mio-panel{opacity:.52 !important}
-html body[data-fase="finale"] #puja-panel-slot .cc-meta,
-html body[data-fase="finale"] #puja-panel-slot .cc-offerente,
-html body[data-fase="finale"] #puja-panel-slot .cc-strategia-info{opacity:.22 !important}
-html body[data-fase="finale"] #puja-panel-slot .cc-nome{font-size:1.85rem !important}
 
 /* ── la leva: il riempimento mentre tieni premuto ── */
 html body #puja-panel-slot .btn-rilancia{
@@ -1338,17 +1340,19 @@ html body.layout-admin .asta-row-puja .cc-nome{
    i conteggi a cedere per primi.
    ═══════════════════════════════════════════════════════════════════ */
 /* Nome e conteggi devono starci ENTRAMBI: non si nasconde niente.
-   Due righe fisse per squadra (invece delle tre originali):
-       riga 1   pallino  nome ................ crediti
-       riga 2            Tot / portieri / svincoli
-   E' una griglia, non un flex che va a capo: cosi' la seconda riga e'
-   sempre al suo posto e a cedere e' solo il nome, con i puntini. */
+   Una riga sola per squadra, come una comanda:
+       pallino  nome .........  Tot/portieri/svincoli  crediti
+   E' una griglia, non un flex che va a capo: cosi' ogni cosa sta nella
+   sua colonna e a cedere per prima e' solo la coda del nome, con i
+   puntini. Nelle colonne strette (Anteprima aperta) i conteggi tornano
+   su una seconda riga — vedi @container piu' sotto: scendono, non
+   spariscono. */
 html body #budget-bar .sidebar-squadra{
   display:grid !important;
-  grid-template-columns:auto minmax(0,1fr) auto !important;
-  grid-template-areas:"pallino nome crediti" ". conteggi conteggi" !important;
+  grid-template-columns:auto minmax(52px,1fr) auto auto !important;
+  grid-template-areas:"pallino nome conteggi crediti" !important;
   align-items:center !important;
-  column-gap:9px !important;row-gap:1px !important;
+  column-gap:8px !important;row-gap:1px !important;
 }
 html body #budget-bar .sq-dot-online{grid-area:pallino !important}
 html body #budget-bar .sq-nome{
@@ -1358,8 +1362,16 @@ html body #budget-bar .sq-nome{
 html body #budget-bar .sq-crediti{grid-area:crediti !important;justify-self:end !important}
 html body #budget-bar .sq-bottom{
   grid-area:conteggi !important;min-width:0 !important;margin:0 !important;
+  justify-self:end !important;font-size:.52rem !important;letter-spacing:.02em !important;
   overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;
 }
+/* su una riga sola il nome ha meno colonna: scende di un soffio invece
+   di finire nei puntini */
+html body #budget-bar .sq-nome{font-size:.64rem !important}
+html body #budget-bar .sq-portieri,
+html body #budget-bar .sq-svincoli{font-size:.52rem !important}
+/* la barra del budget resta un filetto in fondo alla riga */
+html body #budget-bar .budget-progress{bottom:1px !important;left:8px !important;right:0 !important}
 
 /* ═══════════════════════════════════════════════════════════════════
    LA SALA SI STRINGE — reflow reale quando Anteprima e' aperta
@@ -1476,7 +1488,15 @@ html body #budget-bar .sq-bottom{
   html body #puja-panel-slot .btn-quick{height:44px !important}
 
   /* gli amici al tavolo: due colonne invece di quattro */
-  html body #budget-bar{grid-template-columns:repeat(auto-fit,minmax(250px,1fr)) !important;gap:0 20px !important}
+  html body #budget-bar{grid-template-columns:repeat(auto-fit,minmax(250px,1fr)) !important;gap:0 18px !important}
+  /* colonne strette: nome e crediti sopra, conteggi sotto. Scendono di
+     una riga, non spariscono — la riga resta comunque piu' bassa delle
+     tre originali. */
+  html body #budget-bar .sidebar-squadra{
+    grid-template-columns:auto minmax(0,1fr) auto !important;
+    grid-template-areas:"pallino nome crediti" ". conteggi conteggi" !important;
+  }
+  html body #budget-bar .sq-bottom{justify-self:start !important}
   html body.layout-partecipante .asta-row-panels>.panel-budget{padding:12px 16px 14px !important}
 }
 
@@ -1839,4 +1859,25 @@ html body.layout-admin .asta-row-puja .chiamata-card{
 html body.layout-admin .asta-row-puja .cc-header,
 html body.layout-admin .asta-row-puja .cc-info{
   min-width:0 !important;max-width:100% !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LE TAB HANNO BISOGNO DI ALTEZZA
+
+   Misurato prima: a 1440x900 la riga delle tab riceveva 214px, di cui
+   66 di barra — 142px per Rose, Storico, Svincolati e Griglia P/A. A
+   1280x800 scendeva a 54px totali: la tab aperta era una fessura da
+   28px. Il motivo e' che .asta-row-panels e' flex-shrink:0 e si prende
+   quello che le serve, e le tab vivono di resti.
+
+   Ora la riga delle tab ha un'altezza minima garantita, e se la finestra
+   non basta e' la colonna a scorrere (lo stesso meccanismo gia' usato
+   con Anteprima aperta). Le tab non sono piu' un avanzo.
+   ═══════════════════════════════════════════════════════════════════ */
+html body.layout-partecipante .asta-row-tabs{
+  flex:1 1 auto !important;
+  min-height:clamp(420px,46vh,720px) !important;
+}
+html body.layout-partecipante #asta-main-col{
+  overflow-y:auto !important;overflow-x:hidden !important;
 }
