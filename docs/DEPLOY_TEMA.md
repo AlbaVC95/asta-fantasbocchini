@@ -153,8 +153,24 @@ sintetico iniettato in console — nessuna finta):
   annulla storico
 - Le schermate Strategie, Editor Fasce, Anteprima, Griglia P/A: ereditano la palette
   dalle variabili ma non sono state guardate una per una
-- Il tema chiaro (`html.theme-light`): esiste nel CSS ma non è stato riadattato, quindi
-  probabilmente è incoerente. Se qualcuno della lega lo usa, va sistemato o disabilitato
+- L'asta live vera con Anteprima aperta su piu' dispositivi (il reflow e' verificato in locale)
+
+## Tema chiaro — "Mattina al banco"
+
+Riadattato: bianco per i piani, argento e grigio perla per l'ombra, ottone per l'unico
+accento (lo stesso metallo della lampada del tema scuro, spento). Non c'e' piu' viola da
+nessuna parte.
+
+I colori del tema strutturale sono ora **ruoli** (`--sc-testo`, `--sc-ambra`, `--sc-carta`…)
+definiti due volte in `tema-serata.css`: `:root` per la sera, `html.theme-light` per il
+giorno. Le regole di composizione restano una serie sola. Le materie che non si possono
+capovolgere con una variabile — i fondi a gradiente, il vetro della clessidra, l'insegna —
+hanno la loro versione chiara nella sezione "MATTINA AL BANCO" in fondo al foglio.
+
+Contrasto misurato su tutti i testi della schermata asta: nessuno sotto 4.5:1 (3:1 per i
+corpi grandi). Nel tema **scuro** invece il grigio piu' tenue (`--sc-tenue`, `#6E645A`)
+resta a 3.4:1 su testi da 9-10px: e' cosi' da quando il tema e' online, non e' una
+regressione, ma se da fastidio si schiarisce cambiando una riga.
 
 **Perdita di informazione nota**: su mobile il tema nasconde `.cc-strategia-info` (l'info
 di fascia della Strategia sulla carta chiamata). È l'unico `display:none` che tocca

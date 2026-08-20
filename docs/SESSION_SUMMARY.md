@@ -85,6 +85,36 @@ per questo intervento sono in scratchpad (`apply/lib.js`) e verificano il conteg
 `['$,$,$']` (riga 293) e il file finiva corrotto. Usare sempre un replacer come **funzione**:
 `str.replace(x, () => y)`.
 
+## Ultimo intervento — Anteprima aperta: reflow vero, e tema chiaro riadattato
+
+**Il reflow.** Anteprima e' una colonna sorella di `.asta-main-col`: quando si apre, la
+finestra non cambia e a dimezzarsi e' solo la colonna dell'asta. Tutto il responsive del
+progetto e' `@media` sulla viewport, quindi non scattava. La causa vera pero' non era CSS:
+`forzaVisibilitaRilancioMobile()` scrive stili **inline `!important`** sulla scena della
+puja decidendo su `window.innerWidth` — e un inline `!important` non lo batte nessuna
+regola, ne' `@media` ne' `@container`. Ora quella funzione guarda anche la larghezza reale
+di `#asta-main-col` (soglia sulla finestra invariata, si aggiunge "colonna <=900") e
+`_antToggleDrawer()` la richiama aprendo/chiudendo il drawer. Il resto e' `@container` su
+`.asta-main-col` (attivo solo sopra i 769px: sotto, `.rilancio-box` e' `position:fixed` e
+la containment la ancorerebbe alla colonna) con tre scalini a 1200/900/620px.
+
+**Lo scroll.** `.asta-row-panels` e' `flex-shrink:0` dentro `#screen-asta` che e'
+`height:100vh; overflow:hidden`: appena la parte alta cresceva, le tab finivano fuori
+finestra senza nessuno scroll capace di raggiungerle. In colonna stretta ora scorre la
+colonna principale (schema gia' usato dal layout mobile) e dentro le tab solo
+`.tab-content`.
+
+**Bug preesistente corretto:** in vista Admin il nome del giocatore finiva sotto la
+clessidra (misurato anche nel tema scuro, dove non si vedeva). Causa: la carta era limitata
+a `max-width:420px` mentre la clessidra prendeva 652px per mostrarne 150.
+
+**Tema chiaro.** Riadattato a bianco/argento/grigio perla con l'ottone come unico accento,
+niente viola. I colori del tema strutturale sono diventati ruoli (`--sc-*`) con due valori,
+sera e mattina; verificato che il tema scuro non e' cambiato di un colore (confronto dei
+valori calcolati su 40 selettori, zero differenze). Contrasto di tutti i testi della
+schermata asta sopra soglia nel tema chiaro. Dettagli in
+[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md).
+
 ## Regola imparata a caro prezzo: non si nasconde informazione
 
 Per far entrare il nome della squadra in colonne strette era stato messo un
