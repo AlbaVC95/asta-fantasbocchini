@@ -1323,3 +1323,218 @@ html body #budget-bar .sq-bottom{
   grid-area:conteggi !important;min-width:0 !important;margin:0 !important;
   overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   LA SALA SI STRINGE — reflow reale quando Anteprima e' aperta
+
+   Anteprima non e' un pannello sopra la pagina: e' una colonna sorella
+   di .asta-main-col dentro .asta-live-layout (vedi DECISIONS.md).
+   Quando si apre, quindi, la FINESTRA non cambia di un pixel — cambia
+   solo la colonna dell'asta. Tutto il responsive del progetto e' fatto
+   di @media sulla viewport, percio' non scattava mai. Misurato prima:
+     finestra 1400 -> colonna 924 -> .chiamata-card larga 206px con
+     206px di padding sinistro = testo largo ZERO ("SOMMARIVA" spezzato
+     su 13 righe da una lettera), .asta-row-panels alta 1473px e le tab
+     a y=1527 su una finestra alta 900 — irraggiungibili, perche'
+     #screen-asta e' height:100vh + overflow:hidden.
+
+   Il pezzo decisivo del fix e' in app.js: forzaVisibilitaRilancioMobile()
+   scriveva stili inline !important (che nessun CSS puo' battere) in base
+   a window.innerWidth. Ora guarda la larghezza vera della colonna, quindi
+   con il drawer aperto la puja passa davvero alla composizione impilata.
+   Qui sotto ci sono le PROPORZIONI di quella composizione, decise sulla
+   larghezza reale del contenitore invece che su quella della finestra.
+
+   Il contenitore parte da 769px in su perche' sotto i 768px .rilancio-box
+   diventa position:fixed (barra d'azione mobile) e `container-type` la
+   ancorerebbe alla colonna invece che alla finestra. Sotto quella soglia
+   vale il layout mobile esistente, Anteprima compresa (che a 760px
+   diventa una tab normale — decisione gia' presa, non toccata).
+   ═══════════════════════════════════════════════════════════════════ */
+@media (min-width:769px){
+  html body #asta-main-col{container-type:inline-size;container-name:sala}
+}
+
+/* ── COMPATTA — colonna < 1200px ────────────────────────────────────
+   Primo cambio strutturale: "il tuo conto" smette di essere una colonna
+   fissa da 296px accanto al tavolo e diventa una fascia sotto. Solo
+   questo restituisce alla puja circa 300px di larghezza. La scena resta
+   orizzontale — ritratto e nome a sinistra, prezzo a destra, clessidra
+   accanto — ma con misure proporzionate alla colonna. */
+@container sala (max-width:1200px){
+
+  html body.layout-partecipante .asta-row-panels{
+    grid-template-columns:minmax(0,1fr) !important;
+    grid-template-areas:"tavolo" "conto" "squadre" !important;
+    row-gap:10px !important;padding:10px !important;
+  }
+  /* i tetti da @media(min-width:1500px) di style.css ragionano sulla
+     finestra: con il drawer aperto la colonna e' molto piu' stretta di
+     cosi', e quei 320px lasciavano mezza riga vuota */
+  html body.layout-partecipante .asta-row-panels>#mio-panel,
+  html body.layout-partecipante .asta-row-panels>.panel-budget,
+  html body.layout-partecipante .asta-row-panels>.puja-panel-slot{
+    max-width:none !important;flex:1 1 auto !important;
+  }
+
+  /* il conto: una fascia orizzontale, non piu' una colonna alta */
+  html body.layout-partecipante .asta-row-panels>#mio-panel{
+    min-height:0 !important;padding:14px 20px !important;
+    border-radius:2px !important;border-left:1px solid rgba(242,234,222,.10) !important;
+    flex-direction:row !important;flex-wrap:wrap !important;
+    align-items:center !important;justify-content:space-between !important;
+    gap:14px 24px !important;
+  }
+  html body #mio-panel .mio-panel-header{
+    flex:0 0 auto !important;flex-direction:row !important;align-items:baseline !important;
+    gap:12px !important;padding-bottom:0 !important;border-bottom:none !important;
+  }
+  html body #mio-panel .crediti-badge{font-size:1.9rem !important}
+  html body #mio-panel .slot-counter{
+    flex:1 1 auto !important;display:flex !important;flex-wrap:wrap !important;
+    gap:6px 20px !important;justify-content:flex-start !important;
+  }
+  html body #mio-panel .mio-panel-actions{flex:0 0 auto !important;display:flex !important;gap:8px !important}
+
+  /* il tavolo */
+  html body #puja-panel-slot{
+    min-height:0 !important;padding:20px !important;gap:20px !important;
+    flex-direction:row !important;align-items:center !important;
+  }
+  /* style.css impila card e clessidra sotto i 1200px di FINESTRA: qui la
+     finestra e' larga, e' la colonna a essere stretta, e a queste misure
+     stanno ancora benissimo affiancate */
+  html body #puja-panel-slot .card-timer-group{
+    flex-direction:row !important;flex-wrap:nowrap !important;align-items:center !important;
+    flex:1 1 auto !important;min-width:0 !important;width:auto !important;
+    gap:20px !important;padding-right:20px !important;padding-bottom:0 !important;
+    border-right:1px solid rgba(242,234,222,.10) !important;border-bottom:none !important;
+    margin-bottom:0 !important;
+  }
+  /* la carta usa la larghezza che ha: nome a sinistra, prezzo a destra */
+  html body #puja-panel-slot .chiamata-card{
+    flex-direction:row !important;align-items:center !important;
+    justify-content:space-between !important;flex-wrap:wrap !important;
+    padding:0 0 0 132px !important;min-height:150px !important;gap:10px 22px !important;
+  }
+  html body #puja-panel-slot .cc-header{flex:1 1 200px !important}
+  html body #puja-panel-slot .cc-body{
+    flex:0 0 auto !important;align-items:flex-end !important;text-align:right !important;
+  }
+  html body #puja-panel-slot .cc-offerta-box{align-items:flex-end !important}
+  html body #puja-panel-slot .cc-avatar{width:112px !important;height:146px !important}
+  html body #puja-panel-slot .cc-nome{font-size:clamp(1.15rem,3.4cqw,1.9rem) !important}
+  html body #puja-panel-slot .cc-meta{margin-top:8px !important}
+  html body #puja-panel-slot .cc-offerta{
+    font-size:clamp(2.4rem,6.4cqw,4rem) !important;white-space:nowrap !important;
+  }
+  html body #puja-panel-slot .cc-offerta-label{margin-top:6px !important}
+  html body #puja-panel-slot .cc-offerente{margin-top:6px !important}
+  html body #puja-panel-slot .clessidra{width:56px !important}
+  html body #puja-panel-slot .timer-number{font-size:2.2rem !important}
+  html body #puja-panel-slot .timer-ring-container{gap:10px !important}
+  html body #puja-panel-slot .rilancio-box{flex:0 0 226px !important;width:226px !important}
+  html body #puja-panel-slot .btn-rilancia{height:62px !important;font-size:1.16rem !important;padding:0 16px !important}
+  html body #puja-panel-slot .btn-rilancia::after{font-size:1.34rem !important;padding-left:12px !important;margin-left:12px !important}
+  html body #puja-panel-slot .btn-quick{height:44px !important}
+
+  /* gli amici al tavolo: due colonne invece di quattro */
+  html body #budget-bar{grid-template-columns:repeat(auto-fit,minmax(250px,1fr)) !important;gap:0 20px !important}
+  html body.layout-partecipante .asta-row-panels>.panel-budget{padding:12px 16px 14px !important}
+}
+
+/* ── IMPILATA — colonna < 900px ─────────────────────────────────────
+   Sotto questa soglia la scena non ci sta piu' in orizzontale: ritratto
+   e dati sopra, clessidra al centro, pulsantiera a tutta larghezza. E'
+   la stessa composizione del telefono, ed e' la stessa soglia che usa
+   forzaVisibilitaRilancioMobile() in app.js — CSS e JS dicono la stessa
+   cosa nello stesso punto, invece di contraddirsi. */
+@container sala (max-width:900px){
+  html body #puja-panel-slot{
+    flex-direction:column !important;align-items:stretch !important;
+    padding:18px !important;gap:14px !important;
+  }
+  html body #puja-panel-slot .card-timer-group{
+    flex-direction:column !important;align-items:stretch !important;width:100% !important;
+    flex:0 0 auto !important;gap:14px !important;
+    border-right:none !important;padding-right:0 !important;
+    padding-bottom:14px !important;border-bottom:1px solid rgba(242,234,222,.10) !important;
+  }
+  /* la carta resta in riga (nome a sinistra, prezzo a destra) fin quando
+     ci sta davvero: impilarla qui lasciava mezza carta vuota e la faceva
+     crescere in altezza per niente */
+  html body #puja-panel-slot .chiamata-card{
+    padding-left:116px !important;min-height:0 !important;gap:10px 18px !important;
+  }
+  html body #puja-panel-slot .cc-avatar{width:100px !important;height:130px !important}
+  html body #puja-panel-slot .cc-nome{font-size:clamp(1.1rem,5.4cqw,1.7rem) !important}
+  html body #puja-panel-slot .cc-offerta{font-size:clamp(2.4rem,10cqw,3.8rem) !important}
+  /* la clessidra sotto la scena: al centro, non appesa a sinistra */
+  html body #puja-panel-slot .timer-ring-container{
+    flex-direction:row !important;align-items:center !important;
+    justify-content:center !important;gap:14px !important;width:100% !important;
+  }
+  html body #puja-panel-slot .timer-inner{align-items:flex-start !important}
+  html body #budget-bar{grid-template-columns:repeat(auto-fit,minmax(215px,1fr)) !important;gap:0 16px !important}
+}
+
+/* ── STRETTISSIMA — colonna < 620px ─────────────────────────────────
+   Ultimo scalino prima del layout mobile vero e proprio. Il ritratto si
+   rimpicciolisce e le squadre tornano in colonna unica: nessun dato
+   sparisce, cambia solo quanto spazio occupa. */
+@container sala (max-width:620px){
+  /* qui la riga non regge piu': nome sopra, prezzo sotto */
+  html body #puja-panel-slot .chiamata-card{
+    flex-direction:column !important;align-items:flex-start !important;
+    justify-content:center !important;padding-left:98px !important;
+  }
+  html body #puja-panel-slot .cc-body{
+    align-items:flex-start !important;text-align:left !important;width:100% !important;
+  }
+  html body #puja-panel-slot .cc-offerta-box{align-items:flex-start !important}
+  html body #puja-panel-slot .cc-avatar{width:84px !important;height:110px !important}
+  html body #puja-panel-slot .cc-nome{font-size:clamp(1rem,6cqw,1.5rem) !important}
+  html body #puja-panel-slot .cc-offerta{font-size:clamp(2.1rem,12cqw,3.2rem) !important}
+  html body #puja-panel-slot .clessidra{width:46px !important}
+  html body #puja-panel-slot .timer-number{font-size:2rem !important}
+  html body #budget-bar{grid-template-columns:minmax(0,1fr) !important}
+  html body.layout-partecipante .asta-row-panels>#mio-panel{padding:12px 14px !important;gap:10px 16px !important}
+  html body #mio-panel .crediti-badge{font-size:1.6rem !important}
+}
+
+/* ── LO SCROLL ──────────────────────────────────────────────────────
+   Misurato: .asta-row-panels e' flex-shrink:0 dentro #screen-asta, che
+   e' height:100vh + overflow:hidden. Appena la parte alta cresce — e in
+   colonna stretta cresce sempre, le squadre passano da 3 righe a 6+ —
+   .asta-row-tabs viene spinta fuori dalla finestra e non esiste nessuno
+   scroll capace di raggiungerla: le tab non erano "piccole", erano
+   irraggiungibili.
+
+   La colonna principale diventa quindi lei stessa l'area che scorre —
+   lo stesso schema che il layout mobile usa gia' (`#screen-asta.active
+   {height:auto;overflow-y:auto}` in style.css). Le tab restano un blocco
+   alto abbastanza da essere usabile, e dentro di esse continua a scorrere
+   solo .tab-content, come sempre. Due aree di scorrimento in tutto — la
+   pagina e la tab aperta — non una catena annidata. */
+@container sala (max-width:1200px){
+  html body.layout-partecipante #asta-main-col{
+    overflow-y:auto !important;overflow-x:hidden !important;
+  }
+  html body.layout-partecipante .asta-row-tabs{
+    flex:0 0 auto !important;min-height:clamp(320px,54vh,600px) !important;
+  }
+  /* la lista squadre non deve mangiarsi tutta la pagina quando sono 12:
+     si ferma e scorre al suo interno, come fa gia' fuori dal tema */
+  html body.layout-partecipante .asta-row-panels>.panel-budget{
+    max-height:min(28vh,240px) !important;overflow-y:auto !important;
+  }
+}
+
+/* Il drawer di Anteprima si fermava all'altezza del suo contenuto
+   (.asta-live-layout e' align-items:flex-start): con la panchina piena la
+   coda finiva sotto il bordo della finestra, senza modo di arrivarci. Ora
+   si allunga quanto la sala e scorre al suo interno — `overflow-y:auto`
+   ce l'aveva gia', gli mancava un'altezza. */
+@media (min-width:761px){
+  html body #tab-anteprima.ant-drawer.drawer-open{align-self:stretch !important;max-height:100% !important}
+}

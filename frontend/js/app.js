@@ -1654,7 +1654,20 @@ function forzaVisibilitaRilancioMobile() {
   const strategiaInfo = document.querySelector('#chiamata-card .cc-strategia-info');
   const boxTargets = [box, quickRow, manualRow, btnRil].filter(Boolean);
   const structuralTargets = [slot, cardGroup].filter(Boolean);
-  const isMobile = window.innerWidth <= 1200;
+  // La larghezza che conta non e' quella della finestra ma quella della colonna
+  // dell'asta: Anteprima e' un drawer FRATELLO di .asta-main-col (vedi
+  // DECISIONS.md), quindi quando si apre la finestra non cambia di un pixel e
+  // la colonna si dimezza. Misurando window.innerWidth questa funzione restava
+  // in modalita' desktop e i suoi stili inline !important — che nessuna regola
+  // CSS puo' battere, ne' @media ne' @container — tenevano dentro 600px di
+  // colonna una composizione pensata per 1900px.
+  // La soglia sulla finestra resta esattamente quella di prima (nessun
+  // dispositivo perde la rete di sicurezza descritta sopra); si aggiunge
+  // solo il caso nuovo: colonna gia' stretta di suo, che sotto i 900px
+  // vuole la stessa composizione impilata del telefono.
+  const colonnaAsta = document.getElementById('asta-main-col');
+  const larghezzaUtile = (colonnaAsta && colonnaAsta.clientWidth) ? colonnaAsta.clientWidth : window.innerWidth;
+  const isMobile = window.innerWidth <= 1200 || larghezzaUtile <= 900;
 
   if (!isMobile) {
     // Desktop/tablet: revertire tutto (struttura + box), nessun forzatura JS necessaria.
@@ -3145,6 +3158,12 @@ function _antToggleDrawer() {
   const drawer = document.getElementById('tab-anteprima');
   if (!drawer) return;
   drawer.classList.toggle('drawer-open');
+  // Aprire o chiudere il drawer cambia la larghezza di .asta-main-col senza
+  // toccare quella della finestra: nessun evento 'resize' scatta, quindi la
+  // puja va ricalcolata a mano. Due volte: subito, e a transizione finita
+  // (la larghezza del drawer e' animata, .35s in style.css).
+  forzaVisibilitaRilancioMobile();
+  setTimeout(forzaVisibilitaRilancioMobile, 400);
 }
 
 // Sotto-tab interne "Vista campo 3D" / "Vista lista" — meccanismo indipendente da setupTabs()
