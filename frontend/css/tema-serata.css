@@ -36,7 +36,7 @@ body{background:#0B0908 !important;font-family:var(--font-main)}
 /* ── TESTATA ────────────────────────────────────────────────
    L'insegna del locale, non un logo di app. */
 .asta-header{
-  height:46px;padding:0 18px;background:rgba(8,7,6,.94);
+  height:54px;padding:0 20px;background:rgba(8,7,6,.94);
   border-bottom:1px solid var(--border);box-shadow:none;backdrop-filter:blur(14px);
 }
 .asta-header-logo{display:none}
@@ -109,7 +109,7 @@ html body #puja-panel-slot .chiamata-card{
   flex:1 1 auto !important;max-width:none !important;min-width:0 !important;
   padding:0 0 0 178px !important;position:relative !important;
   display:flex !important;flex-direction:row !important;align-items:center !important;
-  justify-content:flex-start !important;gap:34px !important;min-height:190px !important;
+  justify-content:flex-start !important;gap:24px !important;min-height:190px !important;
 }
 html body #puja-panel-slot .chiamata-card::before,
 html body #puja-panel-slot .cc-offerta-box::after{display:none !important}
@@ -143,13 +143,13 @@ html body #puja-panel-slot .cc-avatar-svg{width:88% !important;height:88% !impor
 /* il nome: occupa fisicamente la scena */
 html body #puja-panel-slot .cc-header{
   margin:0 !important;gap:0 !important;align-items:flex-start !important;
-  flex:1 1 auto !important;min-width:0 !important;flex-shrink:1 !important;
+  flex:1 1 300px !important;min-width:0 !important;flex-shrink:1 !important;
 }
 html body #puja-panel-slot .cc-info{min-width:0 !important;flex:1 1 auto !important}
 html body #puja-panel-slot .cc-nome{
   font-family:'Archivo',sans-serif !important;font-weight:900 !important;
   font-variation-settings:'wdth' 62 !important;
-  font-size:2.6rem !important;line-height:.86 !important;letter-spacing:.004em !important;
+  font-size:clamp(1.45rem,2.1vw,2.35rem) !important;line-height:.86 !important;letter-spacing:.004em !important;
   text-transform:uppercase !important;color:#F2EADE !important;
   white-space:normal !important;overflow:visible !important;text-overflow:clip !important;
   max-width:none !important;text-shadow:0 4px 26px rgba(0,0,0,.65) !important;
@@ -162,7 +162,7 @@ html body #puja-panel-slot .cc-meta{
 }
 
 /* il prezzo: il fatto più grande della stanza */
-html body #puja-panel-slot .cc-body{
+html body #puja-panel-slot .cc-body{ flex-shrink:1 !important;
   flex:0 0 auto !important;width:auto !important;max-width:none !important;
   display:flex !important;flex-direction:column !important;align-items:flex-start !important;
   gap:0 !important;margin:0 !important;overflow:visible !important;
@@ -498,7 +498,7 @@ html body #timer-grad-start{stop-color:#FFB04A !important}
 html body #timer-grad-end{stop-color:#C4802B !important}
 html body.puja-urgente #timer-grad-start{stop-color:#E23A2E !important}
 html body.puja-urgente #timer-grad-end{stop-color:#8E2019 !important}
-html body #puja-panel-slot .timer-progress{stroke-width:4 !important}
+/* spessore del tubo: definito piu' sotto, nel blocco neon */
 html body #puja-panel-slot .timer-ring circle:nth-of-type(2){stroke:rgba(242,234,222,.07) !important;stroke-width:4 !important}
 html body #puja-panel-slot .timer-ring circle:first-of-type{stroke:rgba(242,234,222,.14) !important}
 
@@ -523,7 +523,7 @@ html body.layout-partecipante .asta-row-panels>.panel-budget{
 }
 html body #budget-bar{
   display:grid !important;
-  grid-template-columns:repeat(auto-fit,minmax(288px,1fr)) !important;
+  grid-template-columns:repeat(auto-fit,minmax(370px,1fr)) !important;
   gap:0 26px !important;align-content:start !important;
 }
 html body #budget-bar .sidebar-squadra{
@@ -850,4 +850,386 @@ html body.layout-admin #mio-panel .crediti-badge{
   font-family:Archivo,sans-serif !important;font-weight:900 !important;
   font-variation-settings:'wdth' 104 !important;font-size:2rem !important;
   background:none !important;border:none !important;padding:0 !important;color:#F2EADE !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   L'INSEGNA AL NEON
+   In un bar il nome non è un logo stampato: è un tubo di vetro acceso
+   alla parete. Si costruisce con strati di text-shadow — nucleo bianco
+   caldo, alone ambra stretto, alone largo — e una accensione a scatti
+   all'apertura, come un neon che prende. Poi resta acceso, con un
+   respiro appena percepibile.
+   ═══════════════════════════════════════════════════════════════════ */
+html body .asta-header-title,
+html body .home-title{
+  font-family:'Instrument Serif',Georgia,serif !important;
+  font-style:italic !important;font-weight:400 !important;
+  background:none !important;-webkit-text-fill-color:#FFE9C9 !important;
+  color:#FFE9C9 !important;letter-spacing:.005em !important;
+  text-shadow:
+     0 0 2px  #FFF6E8,
+     0 0 6px  rgba(255,201,122,.95),
+     0 0 14px rgba(255,176,74,.75),
+     0 0 30px rgba(255,150,40,.45),
+     0 0 62px rgba(255,140,30,.22) !important;
+  animation:neon-accende 2.4s ease-out both !important;
+}
+html body .asta-header-title{font-size:1.5rem !important;padding-right:4px}
+html body .home-title{font-size:clamp(2.6rem,7vw,4.6rem) !important}
+
+/* l'accensione: due tentativi falliti, poi tiene */
+@keyframes neon-accende{
+  0%   {opacity:.15; text-shadow:none}
+  6%   {opacity:1}
+  9%   {opacity:.2;  text-shadow:none}
+  14%  {opacity:1}
+  17%  {opacity:.25; text-shadow:none}
+  22%  {opacity:1}
+  100% {opacity:1}
+}
+/* il respiro del tubo, quasi impercettibile */
+html body .asta-header-title::after,
+html body .home-title::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+}
+html body .asta-header-left,
+html body .home-header{position:relative}
+
+/* ═══════════════════════════════════════════════════════════════════
+   IL CRONOMETRO — un tubo al neon che si consuma
+   Non un anello di progresso qualunque: la stessa materia dell'insegna.
+   L'arco è un tubo acceso che si accorcia; la ghiera a tacche resta
+   spenta dietro, come il vetro non illuminato. Sotto i cinque secondi
+   il tubo va in crisi e sfarfalla in rosso — la stessa animazione di
+   un neon che sta per saltare.
+   ═══════════════════════════════════════════════════════════════════ */
+html body .timer-ring{overflow:visible}
+html body #puja-panel-slot .timer-progress,
+html body.layout-admin .asta-row-puja .timer-progress{
+  stroke-width:5 !important;stroke-linecap:round !important;
+  filter:drop-shadow(0 0 3px rgba(255,201,122,.95))
+         drop-shadow(0 0 9px rgba(255,176,74,.75))
+         drop-shadow(0 0 22px rgba(255,150,40,.4)) !important;
+  transition:stroke-dashoffset .9s linear !important;
+}
+/* la ghiera a tacche: il vetro spento dietro al tubo */
+html body #puja-panel-slot .timer-ring circle:first-of-type,
+html body.layout-admin .asta-row-puja .timer-ring circle:first-of-type{
+  stroke:rgba(255,176,74,.34) !important;stroke-width:2 !important;
+}
+html body #puja-panel-slot .timer-ring circle:nth-of-type(2),
+html body.layout-admin .asta-row-puja .timer-ring circle:nth-of-type(2){
+  stroke:rgba(242,234,222,.05) !important;stroke-width:5 !important;
+}
+html body #puja-panel-slot .timer-number,
+html body.layout-admin .asta-row-puja .timer-number{
+  font-family:Archivo,sans-serif !important;font-weight:900 !important;
+  font-variation-settings:'wdth' 106 !important;font-variant-numeric:tabular-nums !important;
+  color:#FFE9C9 !important;
+  text-shadow:0 0 2px #FFF6E8, 0 0 10px rgba(255,176,74,.8), 0 0 26px rgba(255,150,40,.45) !important;
+}
+html body .timer-label-text{
+  font-family:'Space Mono',monospace !important;letter-spacing:.22em !important;
+  text-transform:uppercase !important;color:#6E645A !important;
+}
+
+/* ultimi secondi: il tubo sta per saltare */
+html body .timer-ring-container.urgent{animation:none !important}
+html body #puja-panel-slot .timer-ring-container.urgent .timer-progress,
+html body.layout-admin .asta-row-puja .timer-ring-container.urgent .timer-progress{
+  filter:drop-shadow(0 0 3px rgba(255,150,140,.95))
+         drop-shadow(0 0 10px rgba(226,58,46,.85))
+         drop-shadow(0 0 26px rgba(226,58,46,.5)) !important;
+  animation:neon-crisi 1.1s steps(1,end) infinite !important;
+}
+html body #puja-panel-slot .timer-ring-container.urgent .timer-number,
+html body.layout-admin .asta-row-puja .timer-ring-container.urgent .timer-number{
+  color:#FFD9D4 !important;
+  text-shadow:0 0 2px #FFF, 0 0 10px rgba(226,58,46,.9), 0 0 28px rgba(226,58,46,.55) !important;
+  animation:neon-crisi 1.1s steps(1,end) infinite !important;
+}
+@keyframes neon-crisi{
+  0%,100%{opacity:1}
+  62%{opacity:1}
+  66%{opacity:.42}
+  70%{opacity:1}
+  86%{opacity:.55}
+  90%{opacity:1}
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOVIMENTO
+   Nessuna animazione nuova richiede JavaScript: si agganciano ai
+   punti che l'app già tocca da sola —  renderChiamata() ricostruisce
+   la carta (quindi le animazioni ripartono a ogni rilancio) e
+   updateTimer() mette e toglie la classe .urgent.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* il prezzo sale da sotto a ogni rilancio, con un lampo di luce */
+html body #puja-panel-slot .cc-offerta,
+html body.layout-admin .asta-row-puja .cc-offerta{
+  animation:prezzo-sale .46s cubic-bezier(.16,.9,.24,1) both !important;
+}
+@keyframes prezzo-sale{
+  0%  {transform:translateY(38%);opacity:0;filter:blur(5px)}
+  55% {opacity:1;filter:blur(0)}
+  100%{transform:translateY(0);opacity:1;text-shadow:0 8px 34px rgba(0,0,0,.6)}
+}
+
+/* la carta chiamata entra: niente rimbalzo elastico, una scivolata
+   secca. Sostituisce l'animazione precedente, che a ogni rilancio
+   faceva "saltare" tutta la scena. */
+html body .card-enter{
+  animation:carta-entra .34s cubic-bezier(.2,.85,.25,1) both !important;
+}
+@keyframes carta-entra{
+  0%  {opacity:.35;transform:translateY(6px)}
+  100%{opacity:1;transform:translateY(0)}
+}
+
+/* il ritratto del giocatore prende luce quando arriva */
+html body #puja-panel-slot .cc-avatar{animation:ritratto-luce .7s ease-out both !important}
+@keyframes ritratto-luce{
+  0%  {opacity:0;transform:translateY(-50%) scale(.97);filter:brightness(.3)}
+  100%{opacity:1;transform:translateY(-50%) scale(1);filter:brightness(1)}
+}
+html body.layout-admin .asta-row-puja .cc-avatar{animation:ritratto-luce-admin .7s ease-out both !important}
+@keyframes ritratto-luce-admin{
+  0%  {opacity:0;filter:brightness(.3)}
+  100%{opacity:1;filter:brightness(1)}
+}
+
+/* assegnato: la scena si spegne sul verde del banco */
+html body .chiamata-card.assegnata{animation:chiuso-verde .5s ease-out both !important}
+@keyframes chiuso-verde{
+  0%  {transform:scale(1.012)}
+  100%{transform:scale(1)}
+}
+html body .chiamata-card.assegnata .cc-esito{
+  font-family:Archivo,sans-serif !important;font-weight:900 !important;
+  font-variation-settings:'wdth' 70 !important;text-transform:uppercase !important;
+  letter-spacing:.06em !important;color:#5FCFA6 !important;
+  animation:esito-cade .34s cubic-bezier(.2,1.6,.4,1) both !important;
+}
+@keyframes esito-cade{
+  0%  {transform:scale(2.2) rotate(-6deg);opacity:0}
+  60% {opacity:1}
+  100%{transform:scale(1) rotate(-3deg);opacity:1}
+}
+
+/* la miccia pulsa piano finché l'asta è aperta */
+html body #puja-panel-slot::after{animation:miccia-viva 2.6s ease-in-out infinite}
+@keyframes miccia-viva{
+  0%,100%{opacity:1}
+  50%{opacity:.72}
+}
+
+/* ── chi ha fretta, o chi non vuole movimento ── */
+@media(prefers-reduced-motion:reduce){
+  html body .asta-header-title,
+  html body .home-title,
+  html body .timer-progress,
+  html body .timer-ring-container.urgent .timer-progress,
+  html body .timer-ring-container.urgent .timer-number,
+  html body #puja-panel-slot .cc-offerta,
+  html body.layout-admin .asta-row-puja .cc-offerta,
+  html body .card-enter,
+  html body #puja-panel-slot .cc-avatar,
+  html body.layout-admin .asta-row-puja .cc-avatar,
+  html body .chiamata-card.assegnata,
+  html body .chiamata-card.assegnata .cc-esito,
+  html body #puja-panel-slot::after{
+    animation:none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LE MATERIE DEL LOCALE
+   Finora la sala era fatta solo di luce. Qui arrivano le superfici:
+   il legno del bancone (venatura appena accennata, mai un motivo
+   riconoscibile), il riflesso del vetro sul piano lucidato, e l'ottone
+   del corrimano sotto l'insegna. Tutto a bassissimo contrasto: si
+   devono sentire, non vedere.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* il legno: venatura verticale irregolare, quasi invisibile */
+html body .panel-budget,
+html body #mio-panel,
+html body .admin-panel,
+html body .tabs-panel{
+  background-image:
+    repeating-linear-gradient(93deg,
+      rgba(255,232,200,.016) 0 2px, transparent 2px 6px,
+      rgba(0,0,0,.028) 6px 9px,  transparent 9px 17px,
+      rgba(255,232,200,.010) 17px 18px, transparent 18px 26px),
+    linear-gradient(180deg, rgba(11,9,8,.62), rgba(8,7,6,.72)) !important;
+}
+
+/* il piano del tavolo: legno + un riflesso di vetro che lo attraversa */
+html body #puja-panel-slot,
+html body.layout-admin .asta-row-puja{
+  background-image:
+    linear-gradient(104deg,
+      transparent 34%, rgba(255,246,232,.030) 45%, rgba(255,246,232,.055) 50%,
+      rgba(255,246,232,.022) 55%, transparent 66%),
+    repeating-linear-gradient(93deg,
+      rgba(255,232,200,.014) 0 2px, transparent 2px 7px,
+      rgba(0,0,0,.030) 7px 10px, transparent 10px 19px),
+    radial-gradient(42% 130% at 20% -14%, rgba(255,176,74,.20), transparent 62%),
+    radial-gradient(52% 120% at 102% 118%, rgba(28,91,69,.34), transparent 60%),
+    linear-gradient(180deg, rgba(26,21,18,.96), rgba(12,10,9,.97)) !important;
+}
+html body[data-fase="finale"] #puja-panel-slot{
+  background-image:
+    linear-gradient(104deg,
+      transparent 34%, rgba(255,236,232,.028) 45%, rgba(255,236,232,.05) 50%,
+      rgba(255,236,232,.02) 55%, transparent 66%),
+    repeating-linear-gradient(93deg,
+      rgba(255,232,200,.014) 0 2px, transparent 2px 7px,
+      rgba(0,0,0,.030) 7px 10px, transparent 10px 19px),
+    radial-gradient(46% 130% at 20% -14%, rgba(226,58,46,.26), transparent 62%),
+    radial-gradient(52% 120% at 102% 118%, rgba(28,91,69,.20), transparent 60%),
+    linear-gradient(180deg, rgba(30,19,17,.96), rgba(13,10,10,.97)) !important;
+}
+
+/* l'ottone: il corrimano sotto l'insegna, come il poggiapiedi del bancone */
+html body .asta-header{position:relative}
+html body .asta-header::after{
+  content:'';position:absolute;left:0;right:0;bottom:-2px;height:2px;pointer-events:none;
+  background:linear-gradient(90deg,
+    rgba(140,106,52,0) 0%, rgba(201,151,75,.55) 12%, rgba(232,190,118,.85) 30%,
+    rgba(201,151,75,.5) 52%, rgba(232,190,118,.8) 74%, rgba(201,151,75,.5) 90%,
+    rgba(140,106,52,0) 100%);
+  box-shadow:0 1px 5px rgba(201,151,75,.28);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RIEPILOGO SQUADRE — una riga per squadra, non tre
+   Prima ogni squadra occupava tre righe impilate (nome+crediti,
+   barra, conteggi). Su dodici squadre diventava un muro. Ora la
+   riga e' una sola, come una comanda: pallino, nome, conteggi in
+   piccolo, crediti in fondo. La barra del budget scende sotto,
+   spessa un pixel, come un sottolineato.
+   ═══════════════════════════════════════════════════════════════════ */
+html body #budget-bar .sidebar-squadra{
+  display:flex !important;align-items:center !important;gap:9px !important;
+  padding:7px 10px 9px !important;position:relative !important;
+  border-bottom:1px solid rgba(242,234,222,.07) !important;
+}
+/* i figli di .sq-top entrano nella riga del padre, cosi' si possono ordinare */
+html body #budget-bar .sq-top{display:contents !important}
+html body #budget-bar .sq-dot-online{order:1;flex:0 0 auto;font-size:.5rem !important;opacity:.75}
+html body #budget-bar .sq-nome{
+  order:2;flex:1 1 auto;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:.68rem !important;
+}
+html body #budget-bar .sq-bottom{
+  order:3;flex:0 0 auto;margin:0 !important;
+  font-family:'Space Mono',monospace !important;font-size:.54rem !important;
+  letter-spacing:.04em !important;color:#6E645A !important;white-space:nowrap;
+}
+html body #budget-bar .sq-crediti{
+  order:4;flex:0 0 auto;min-width:34px;text-align:right;
+  font-size:.92rem !important;
+}
+html body #budget-bar .budget-progress{
+  order:5;position:absolute !important;left:10px;right:10px;bottom:2px;
+  height:1px !important;margin:0 !important;background:rgba(242,234,222,.06) !important;
+}
+html body #budget-bar .sq-portieri,
+html body #budget-bar .sq-svincoli{font-size:.54rem !important}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Il nome del giocatore continuava ad andare a capo: il badge del
+   ruolo gli rubava la riga. Ora il badge sta SOPRA, come un occhiello,
+   e il nome ha tutta la colonna per se'.
+   ═══════════════════════════════════════════════════════════════════ */
+html body #puja-panel-slot .cc-nome-row{
+  flex-direction:column !important;align-items:flex-start !important;
+  gap:7px !important;flex-wrap:nowrap !important;
+}
+html body #puja-panel-slot .cc-nome{
+  white-space:nowrap !important;width:100% !important;
+  overflow:hidden !important;text-overflow:ellipsis !important;
+}
+
+@media(prefers-reduced-motion:reduce){
+  html body .asta-header::after{box-shadow:none}
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LA CLESSIDRA
+   Via l'anello di progresso: al suo posto una clessidra da tavolo, in
+   vetro con le ghiere in ottone, la sabbia illuminata dalla lampada.
+   La forma e' un solo pseudo-elemento ritagliato con clip-path; il
+   livello della sabbia arriva dalla variabile --sabbia (1 piena, 0
+   vuota) che clessidra.js copia dall'avanzamento gia' calcolato
+   dall'app. Sotto i cinque secondi la sabbia si arrossa e il getto
+   accelera.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* l'anello SVG sparisce: resta solo come sorgente del dato */
+html body #puja-panel-slot .timer-ring,
+html body.layout-admin .asta-row-puja .timer-ring{display:none !important}
+
+html body #puja-panel-slot .timer-ring-container,
+html body.layout-admin .asta-row-puja .timer-ring-container{
+  --sabbia:1;
+  --vetro:rgba(242,234,222,.055);
+  --ottone:linear-gradient(180deg,#E8BE76,#C9974B 55%,#8C6A34);
+  --granello:#FFC578;
+  display:flex !important;flex-direction:row !important;align-items:center !important;
+  justify-content:flex-start !important;gap:16px !important;
+  position:relative !important;padding:0 !important;
+  background:none !important;border:none !important;box-shadow:none !important;
+}
+
+/* la clessidra vera e' un SVG (clessidra.js): qui solo misura e getto */
+html body #puja-panel-slot .clessidra,
+html body.layout-admin .asta-row-puja .clessidra{
+  flex:0 0 auto !important;width:72px !important;height:auto !important;
+  display:block !important;overflow:visible !important;
+}
+html body #puja-panel-slot .cls-getto,
+html body.layout-admin .asta-row-puja .cls-getto{
+  animation:sabbia-scorre .7s linear infinite;transform-origin:50% 0;
+}
+@keyframes sabbia-scorre{
+  0%  {opacity:.35;transform:scaleY(.7)}
+  45% {opacity:1;  transform:scaleY(1)}
+  100%{opacity:.35;transform:scaleY(.7)}
+}
+
+/* la cifra accanto alla clessidra, non dentro */
+html body #puja-panel-slot .timer-inner,
+html body.layout-admin .asta-row-puja .timer-inner{
+  position:static !important;transform:none !important;
+  display:flex !important;flex-direction:column !important;align-items:flex-start !important;
+  width:auto !important;height:auto !important;
+}
+
+/* ultimi secondi: la sabbia si arrossa e il getto accelera */
+html body #puja-panel-slot .timer-ring-container.urgent,
+html body.layout-admin .asta-row-puja .timer-ring-container.urgent{
+  --granello:#FF8A7A;
+}
+html body .timer-ring-container.urgent .clessidra .cls-sabbia-alta,
+html body .timer-ring-container.urgent .clessidra .cls-sabbia-bassa,
+html body .timer-ring-container.urgent .clessidra .cls-getto{
+  fill:#E2503E !important;
+}
+html body .timer-ring-container.urgent .clessidra{
+  filter:drop-shadow(0 0 7px rgba(226,58,46,.45)) !important;
+}
+html body .timer-ring-container.urgent .cls-getto{animation-duration:.34s !important}
+
+@media(max-width:900px){
+  html body #puja-panel-slot .timer-ring-container::before{width:50px;height:72px}
+  html body #puja-panel-slot .timer-ring-container::after{left:24px;top:38px;height:22px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html body #puja-panel-slot .timer-ring-container::after,
+  html body.layout-admin .asta-row-puja .timer-ring-container::after{animation:none !important}
 }

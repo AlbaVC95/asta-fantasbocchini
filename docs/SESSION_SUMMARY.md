@@ -23,9 +23,19 @@ Quattro file, di cui due nuovi:
   restano identici: tutte le schermate non ridisegnate cambiano identità senza toccarne una riga.
 - `frontend/css/tema-serata.css` (nuovo) — la composizione: scena della puja a riga intera con il
   conto sul tavolo, squadre in griglia orizzontale, schede come voci di lavagna, vista Admin.
+- `frontend/js/clessidra.js` (nuovo) — il cronometro è ora una clessidra in SVG (vetro,
+  ottone, sabbia con la grana). Sempre attivo ma solo cosmetico: legge con un
+  MutationObserver passivo l'avanzamento che l'app già scrive sul vecchio anello.
 - `frontend/js/comportamenti-asta.js` (nuovo) — tre comportamenti, **spenti di default**
   (`localStorage.fantabar_comportamenti = '1'` per accenderli).
-- `frontend/index.html` — 3 righe: font nuovi, foglio del tema, modulo.
+- `frontend/index.html` — 4 righe: font nuovi, foglio del tema, clessidra, modulo.
+
+Materie e movimento aggiunti in un secondo passaggio: insegna **al neon** (accensione a
+scatti, poi fissa) in testata e sulla Home, venatura del legno sui pannelli, riflesso del
+vetro sul piano del tavolo, corrimano in ottone sotto l'insegna, e il **riepilogo squadre
+riprogettato a una riga per squadra** (con 12 squadre passa da mezza schermata a quattro
+righe). Le animazioni non richiedono JS nuovo: si agganciano ai punti che l'app già tocca
+(`renderChiamata()` ricostruisce la carta, `updateTimer()` mette e toglie `.urgent`).
 
 **Backend non toccato.** Nessuna regola di gioco modificata: `calcolaMaxOfferta()`, svincoli, timer
 server-side, backup, autenticazione restano identici.

@@ -18,11 +18,23 @@ di sera con una sola lampada accesa. **Nessuna regola di gioco è stata toccata.
 |---|---|---|
 | `frontend/css/style.css` | modificato (solo il blocco `:root`) | la palette. Cambiano i valori, i nomi delle variabili restano identici |
 | `frontend/css/tema-serata.css` | **nuovo** | la composizione: scena della puja, griglia squadre, schede, vista Admin |
+| `frontend/js/clessidra.js` | **nuovo** | disegna la clessidra e le legge il livello. Sempre attivo, ma solo cosmetico |
 | `frontend/js/comportamenti-asta.js` | **nuovo** | i tre comportamenti nuovi — **spento di default** |
-| `frontend/index.html` | modificato (3 righe) | carica i font nuovi, il foglio del tema, il modulo |
+| `frontend/index.html` | modificato (4 righe) | carica i font nuovi, il foglio del tema, la clessidra, il modulo |
 
 Backend, Socket.io, Supabase, autenticazione, `calcolaMaxOfferta()`, svincoli, backup:
 **non toccati**. Nessun file in `backend/` è stato modificato.
+
+### Sulla clessidra: perché è JavaScript e perché è sicura
+
+Il cronometro non è più un anello ma una clessidra in SVG (vetro con riflessi,
+ghiere in ottone, sabbia con la grana, mucchio che cresce in basso). Il CSS da solo
+non può sapere quanta sabbia resta, quindi serve un file JS — ma quel file **non
+calcola niente**: osserva con un `MutationObserver` passivo l'attributo
+`stroke-dashoffset` che l'app già scrive sul vecchio anello, e ne ricava la
+frazione. Non sostituisce né avvolge nessuna funzione dell'app, non tocca lo stato
+di gioco, non parla col server. Se `clessidra.js` non venisse caricato, l'asta
+funzionerebbe identica (si vedrebbe l'anello vecchio, nascosto dal CSS).
 
 ---
 
@@ -116,6 +128,12 @@ sintetico iniettato in console — nessuna finta):
 - Un modale (`Mia rosa`): contrasto corretto, fondo `#191411` su testo `#F2EADE`
 - Con 6 e con 12 squadre: la griglia orizzontale regge in entrambi i casi
 - Nessun errore JavaScript in console
+- La clessidra con la sabbia piena, a metà e agli ultimi secondi: il livello segue
+  il tempo reale dell'app (letto dall'anello nascosto), il getto si spegne a sabbia
+  finita, sotto i 5 secondi la sabbia diventa rossa e il getto accelera
+- L'insegna al neon (accensione a scatti e poi fissa) in testata e sulla Home
+- Riepilogo squadre: una riga per squadra invece di tre — con 12 squadre sta in
+  quattro righe invece di riempire mezza schermata
 - I sei `display:none` del tema colpiscono solo pseudo-elementi decorativi (il riflesso
   dorato, il glow, il pallone del cronometro, l'emoji del logo) — nessuno nasconde
   qualcosa di funzionale
