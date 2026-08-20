@@ -46,8 +46,10 @@ Quattro file, di cui due nuovi:
 Materie e movimento aggiunti in un secondo passaggio: insegna **al neon** (accensione a
 scatti, poi fissa) in testata e sulla Home, venatura del legno sui pannelli, riflesso del
 vetro sul piano del tavolo, corrimano in ottone sotto l'insegna, e il **riepilogo squadre
-riprogettato a una riga per squadra** (con 12 squadre passa da mezza schermata a quattro
-righe). Le animazioni non richiedono JS nuovo: si agganciano ai punti che l'app già tocca
+riprogettato a due righe fisse per squadra** (riga 1: pallino, nome, crediti; riga 2: `Tot: n/25`,
+portieri, svincoli) — una griglia, non un flex che va a capo, così tutte le righe hanno la stessa
+altezza e a cedere è solo il nome, con i puntini. Con 12 squadre passa da mezza schermata a un
+blocco compatto, **senza perdere un solo dato**. Le animazioni non richiedono JS nuovo: si agganciano ai punti che l'app già tocca
 (`renderChiamata()` ricostruisce la carta, `updateTimer()` mette e toglie `.urgent`).
 
 **Backend non toccato.** Nessuna regola di gioco modificata: `calcolaMaxOfferta()`, svincoli, timer
@@ -82,6 +84,14 @@ per questo intervento sono in scratchpad (`apply/lib.js`) e verificano il conteg
 `$&`, `$'`, `$1` presenti nella stringa di sostituzione come pattern. `app.js` contiene
 `['$,$,$']` (riga 293) e il file finiva corrotto. Usare sempre un replacer come **funzione**:
 `str.replace(x, () => y)`.
+
+## Regola imparata a caro prezzo: non si nasconde informazione
+
+Per far entrare il nome della squadra in colonne strette era stato messo un
+`@container (max-width:250px){ .sq-bottom{display:none} }`: spariva la riga `Tot: n/25 🧤 🔓`.
+L'utente se n'è accorto subito ("falta información que antes salía ahí, no elimines
+información"). Compattare il layout è legittimo, **eliminare un dato per far spazio no**: se due
+informazioni non stanno su una riga, si usa una riga in più. Vale per tutta l'app.
 
 ## Tasks pendenti
 

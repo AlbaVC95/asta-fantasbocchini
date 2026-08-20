@@ -136,8 +136,11 @@ sintetico iniettato in console — nessuna finta):
   il tempo reale dell'app (letto dall'anello nascosto), il getto si spegne a sabbia
   finita, sotto i 5 secondi la sabbia diventa rossa e il getto accelera
 - L'insegna al neon (accensione a scatti e poi fissa) in testata e sulla Home
-- Riepilogo squadre: una riga per squadra invece di tre — con 12 squadre sta in
-  quattro righe invece di riempire mezza schermata
+- Riepilogo squadre: due righe per squadra invece di tre (riga 1: pallino, nome, crediti;
+  riga 2: `Tot: n/25`, portieri, svincoli). È una griglia a due righe fisse, non un flex che
+  va a capo, così l'altezza è identica per tutte le squadre e a cedere è solo il nome, con i
+  puntini. Misurato con 12 squadre a 2000/1440/1100/430px, vista Admin e partecipante:
+  nome e conteggi sempre visibili, nessun dato tagliato
 - I sei `display:none` del tema colpiscono solo pseudo-elementi decorativi (il riflesso
   dorato, il glow, il pallone del cronometro, l'emoji del logo) — nessuno nasconde
   qualcosa di funzionale

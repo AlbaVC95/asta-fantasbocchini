@@ -1300,19 +1300,26 @@ html body.layout-admin .asta-row-puja .cc-nome{
    Il nome e' l'informazione principale: ora e' lui a resistere, e sono
    i conteggi a cedere per primi.
    ═══════════════════════════════════════════════════════════════════ */
-html body #budget-bar .sidebar-squadra{container-type:inline-size !important}
-/* Il nome NON si comprime: cresce se c'e' spazio, ma non cede mai.
-   A cedere sono i conteggi, che sono un dettaglio. */
+/* Nome e conteggi devono starci ENTRAMBI: non si nasconde niente.
+   Due righe fisse per squadra (invece delle tre originali):
+       riga 1   pallino  nome ................ crediti
+       riga 2            Tot / portieri / svincoli
+   E' una griglia, non un flex che va a capo: cosi' la seconda riga e'
+   sempre al suo posto e a cedere e' solo il nome, con i puntini. */
+html body #budget-bar .sidebar-squadra{
+  display:grid !important;
+  grid-template-columns:auto minmax(0,1fr) auto !important;
+  grid-template-areas:"pallino nome crediti" ". conteggi conteggi" !important;
+  align-items:center !important;
+  column-gap:9px !important;row-gap:1px !important;
+}
+html body #budget-bar .sq-dot-online{grid-area:pallino !important}
 html body #budget-bar .sq-nome{
-  flex-grow:1 !important;flex-shrink:0 !important;flex-basis:auto !important;
-  min-width:0 !important;max-width:100% !important;
+  grid-area:nome !important;min-width:0 !important;max-width:100% !important;
+  overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;
 }
+html body #budget-bar .sq-crediti{grid-area:crediti !important;justify-self:end !important}
 html body #budget-bar .sq-bottom{
-  flex-grow:0 !important;flex-shrink:1 !important;flex-basis:auto !important;
-  min-width:0 !important;overflow:hidden !important;text-overflow:clip !important;
-}
-/* e sotto una certa larghezza di colonna spariscono del tutto:
-   meglio nessun conteggio che nessun nome */
-@container (max-width: 250px){
-  html body #budget-bar .sq-bottom{display:none !important}
+  grid-area:conteggi !important;min-width:0 !important;margin:0 !important;
+  overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;
 }
