@@ -5,11 +5,15 @@ non accumulato (per la cronologia vedi `git log`).
 
 ## Stato attuale
 
-- Branch `main`, allineato con `origin/main` fino al commit `2e88f09`. **Modifica locale pendente
-  non ancora committata**: annullamento estrazioni in Asta di riparazione (rollback completo +
-  solo ordine cronologico, vedi sotto "Ultimo intervento") in `backend/server.js` e
-  `frontend/js/app.js`. Working tree altrimenti pulito (a parte `.agents/`, `.claude/skills/`,
-  `.impeccable/`, `skills-lock.json`, non tracciati, non toccati).
+- Branch `main`, allineato con `origin/main` fino al commit `72f0279` (annullamento estrazioni in
+  Asta di riparazione). **Modifica locale pendente non ancora committata**: carta di Puja
+  ingrandita su tablet/desktop (vedi sotto "Ultimo intervento") in `frontend/css/style.css`.
+  Working tree altrimenti pulito (a parte `.agents/`, `.claude/skills/`, `.impeccable/`,
+  `skills-lock.json`, non tracciati, non toccati).
+- **Bug preesistente scoperto ma NON corretto** (fuori scope, segnalato all'utente): in vista
+  Admin, tra ~900px e ~1200px di larghezza, `.rilancio-box` della carta di Puja esce
+  completamente dal viewport (verificato `x:928,width:908` su schermo di 950px). Riprodotto
+  anche disattivando ogni modifica di questa sessione — non è una regressione introdotta qui.
 - **Episodio di sessione da ricordare**: durante il lavoro, l'utente stava testando IN PARALLELO
   (altro strumento, non questa sessione) un redesign del tema (nome in codice "FantaBar Pulse":
   variabili colore, animazioni logo/card, refactor `confirm()` → `confermaAzione()`) — prima presente
@@ -44,7 +48,36 @@ non accumulato (per la cronologia vedi `git log`).
   (`d5b5b0f`). I commit precedenti di questa sessione restano con l'identità automatica
   precedente (`alba@MacBook-Air-de-Alba.local`), non riscritti.
 
-## Ultimo intervento — Asta di riparazione: annullamento come rollback completo, solo a ritroso
+## Ultimo intervento — Carta di Puja: nome/bottoni rilancio ingranditi su tablet/desktop
+
+Richiesta esplicita dell'utente (dopo aver scartato l'idea di un redesign estetico generico
+dell'app — vedi skill `redesign-existing-projects` non applicata). Nome giocatore e bottoni
++5/+10/Rilancia troppo piccoli su tablet/desktop nella carta di chiamata.
+
+Un primo tentativo di "ripulire" le regole CSS storiche sparse per questo componente ha rotto
+visivamente il nome in vista Admin (header collassato) — scartato subito con `git checkout`.
+Trovato invece che il file ha già un pattern documentato per questo esatto problema (commento
+"FIX 2026-08-13" in `style.css`): aggiungere un blocco NUOVO in fondo al file invece di
+toccare/rimuovere le regole storiche. Riapplicato lo stesso pattern: nuovo blocco
+`@media (min-width:901px)` che ingrandisce solo `.cc-nome`/bottoni rilancio (mai toccati sopra i
+900px da nessuna regola esistente) — **non tocca `.cc-avatar`**, già dimensionato adeguatamente da
+quel fix precedente. Dettagli completi in [DECISIONS.md](DECISIONS.md).
+
+**Bug di tooling reale**: durante l'implementazione, un uso per errore dell'Edit tool standard
+(invece dello script Node) su `style.css` per una correzione minore di apici ha convertito
+silenziosamente 181 righe LF-only storiche in CRLF (diff gonfiato da 29 a 391 righe) — rilevato
+subito confrontando il conteggio di righe LF-only, corretto con `git checkout` + ripetizione
+completa via script Node.
+
+**Bug preesistente scoperto ma non corretto**: vedi "Stato attuale" sopra (`.rilancio-box` fuori
+viewport in Admin tra 900-1200px, non causato da questo fix).
+
+**Verificato**: nel browser (dev server locale, dati sintetici in console) — 1280px vista
+partecipante e admin (nome/bottoni visibilmente più grandi, nessun overflow, header admin torna ad
+altezza corretta), 390px vista partecipante (identico pixel-per-pixel a prima). Non verificato in
+un flusso live reale con login: stesso limite delle sessioni precedenti.
+
+## Intervento precedente — Asta di riparazione: annullamento come rollback completo, solo a ritroso
 
 Richiesta esplicita dell'utente con specifica dettagliata (pianificato con `EnterPlanMode`,
 approvato prima di scrivere codice). Due bug/gap nello stesso meccanismo (`_annullaItem()`,
