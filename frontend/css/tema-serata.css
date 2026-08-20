@@ -107,9 +107,9 @@ html body #puja-panel-slot .chiamata-card{
   background:none !important;border:none !important;box-shadow:none !important;
   border-radius:0 !important;overflow:visible !important;
   flex:1 1 auto !important;max-width:none !important;min-width:0 !important;
-  padding:0 0 0 178px !important;position:relative !important;
-  display:flex !important;flex-direction:row !important;align-items:center !important;
-  justify-content:flex-start !important;gap:24px !important;min-height:190px !important;
+  padding:0 0 0 206px !important;position:relative !important;
+  display:flex !important;flex-direction:column !important;align-items:flex-start !important;
+  justify-content:center !important;gap:14px !important;min-height:222px !important;
 }
 html body #puja-panel-slot .chiamata-card::before,
 html body #puja-panel-slot .cc-offerta-box::after{display:none !important}
@@ -1257,4 +1257,62 @@ html body .timer-ring-container.urgent .cls-getto{animation-duration:.34s !impor
   }
   html body.layout-admin .asta-row-puja .btn-rilancia{width:100% !important}
   html body.layout-admin .asta-row-puja .inp-rilancio{min-width:0 !important}
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Ritratto e nome piu' grandi (richiesta esplicita).
+   Con il prezzo che scende sotto il nome, la colonna del nome passa da
+   ~129px a tutta la larghezza utile della carta: solo cosi' un nome
+   lungo (Kvaratskhelia) ci sta senza essere tagliato.
+   ═══════════════════════════════════════════════════════════════════ */
+html body #puja-panel-slot .cc-avatar{
+  width:178px !important;height:226px !important;
+}
+html body #puja-panel-slot .cc-header{
+  flex:0 0 auto !important;width:100% !important;min-width:0 !important;
+}
+html body #puja-panel-slot .cc-nome-row{width:100% !important;align-self:stretch !important}
+html body #puja-panel-slot .cc-nome{
+  font-size:clamp(1.7rem,3.1vw,3.4rem) !important;
+  white-space:normal !important;overflow:visible !important;text-overflow:clip !important;
+}
+html body #puja-panel-slot .cc-body{width:100% !important;flex:0 0 auto !important}
+
+/* vista Admin: la carta e' piu' stretta, quindi crescita piu' contenuta */
+html body.layout-admin .asta-row-puja .cc-avatar{
+  width:124px !important;height:158px !important;
+}
+/* il ritratto e' posizionato in assoluto: allargandolo va allargato
+   anche l'incavo della carta, altrimenti copre il nome (misurato:
+   bordo destro del ritratto a 159px, nome che partiva da 153px) */
+html body.layout-admin .asta-row-puja .chiamata-card{
+  padding-left:154px !important;min-height:170px !important;
+}
+html body.layout-admin .asta-row-puja .cc-nome{
+  font-size:clamp(1.5rem,2.5vw,2.7rem) !important;
+  white-space:normal !important;overflow:visible !important;text-overflow:clip !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BUG: in vista Admin il nome della squadra nel riepilogo collassava a
+   larghezza 0 (misurato: w=0 su "Inter Nazionale" a 1440px) — le colonne
+   sono strette e i conteggi, non comprimibili, si prendevano tutto.
+   Il nome e' l'informazione principale: ora e' lui a resistere, e sono
+   i conteggi a cedere per primi.
+   ═══════════════════════════════════════════════════════════════════ */
+html body #budget-bar .sidebar-squadra{container-type:inline-size !important}
+/* Il nome NON si comprime: cresce se c'e' spazio, ma non cede mai.
+   A cedere sono i conteggi, che sono un dettaglio. */
+html body #budget-bar .sq-nome{
+  flex-grow:1 !important;flex-shrink:0 !important;flex-basis:auto !important;
+  min-width:0 !important;max-width:100% !important;
+}
+html body #budget-bar .sq-bottom{
+  flex-grow:0 !important;flex-shrink:1 !important;flex-basis:auto !important;
+  min-width:0 !important;overflow:hidden !important;text-overflow:clip !important;
+}
+/* e sotto una certa larghezza di colonna spariscono del tutto:
+   meglio nessun conteggio che nessun nome */
+@container (max-width: 250px){
+  html body #budget-bar .sq-bottom{display:none !important}
 }
