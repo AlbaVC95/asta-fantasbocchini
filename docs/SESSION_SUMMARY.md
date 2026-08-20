@@ -5,14 +5,27 @@ non accumulato (per la cronologia vedi `git log`).
 
 ## Stato attuale
 
-- Branch di lavoro `claude/fantabar-visual-directions-64b4h6`, partito da `main` (`72f0279`).
-  Contiene il nuovo tema visivo, pronto ma **non ancora unito a `main`** (su questo repo il push
-  su `main` fa partire il deploy automatico su Hostinger — vedi [PROJECT.md](../PROJECT.md#hosting)).
-- Per portarlo online, tornare indietro o sapere cosa è stato verificato:
+- Branch `main`. Contiene il nuovo tema visivo "Serata d'Asta" (identità, clessidra,
+  comportamenti) unito dal branch `claude/fantabar-visual-directions-64b4h6`, PIÙ il fix
+  parallelo che ingrandiva nome e bottoni della carta di Puja su tablet/desktop
+  (commit `039206b`, arrivato su `origin/main` mentre questo lavoro era in corso).
+- Per portare online, tornare indietro o sapere cosa è stato verificato:
   **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)**. Per il perché delle scelte: [DECISIONS.md](../DECISIONS.md).
+- **Il fix `039206b` è ora ridondante**: `tema-serata.css` ridisegna la stessa zona con
+  specificità più alta (`html body #puja-panel-slot ...`), quindi quelle regole
+  (`@media (min-width:901px)` in fondo a `style.css`) non hanno più effetto visibile. Non
+  sono state rimosse per non cancellare lavoro altrui senza chiedere: si possono togliere
+  quando si fa la pulizia degli `!important`.
+- **Bug preesistente scoperto e NON corretto** (segnalato nel ramo parallelo, ancora da
+  verificare col tema nuovo): in vista Admin, tra ~900px e ~1200px di larghezza,
+  `.rilancio-box` della carta di Puja usciva dal viewport. Non è una regressione di questa
+  sessione — riprodotto anche senza le sue modifiche.
+- **Lezione confermata due volte su questo repo**: se un push su `main` viene rifiutato,
+  ri-`fetch`are e guardare COSA c'è di nuovo su `origin/main` prima di forzare qualunque
+  cosa. Lavoro parallelo con altri strumenti arriva senza preavviso; qui è stato risolto
+  con un merge normale, senza perdere nulla da nessuna delle due parti.
 
 ## Ultimo intervento — Nuova identità visiva "Serata d'Asta"
-
 Il tema precedente (viola neon + oro + glow) usava il vocabolario di un'app di scommesse e non
 rappresentava il nome "FantaBar". Il nuovo è una regola di illuminazione: una sola lampada calda in
 alto a sinistra, ambra come unico accento luminoso, rosso solo come stato, verde solo come superficie.

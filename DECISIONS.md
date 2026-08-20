@@ -548,6 +548,47 @@ estrazioni concatenate A→B annullate in ordine B poi A; regressione su `tipo:'
 PASS. Verificato anche nel browser con dati sintetici: solo il bottone dell'estrazione più recente è
 cliccabile in riparazione, tutti attivi in iniziale.
 
+## Carta di Puja: nome/bottoni rilancio ingranditi su tablet/desktop, stesso pattern "blocco finale" già in uso
+
+Richiesta esplicita dell'utente: nome giocatore e bottoni +5/+10/Rilancia troppo piccoli nella carta
+di chiamata (`#chiamata-card`) su tablet/desktop. Prima di scrivere codice, un tentativo di
+"ripulire" le regole CSS sparse per questo componente (`.puja-panel-slot`/
+`body.layout-admin .asta-row-puja`, decine di dichiarazioni duplicate su `.cc-avatar` accumulate in
+sessioni precedenti) ha rotto visivamente il nome in vista Admin (header collassato ad altezza 0,
+nome fuori dal contenitore) — scartato subito, `git checkout` di ripristino.
+
+Trovato invece un commento già esistente nel file (`style.css`, blocco "FIX 2026-08-13") che
+documenta lo stesso identico problema affrontato in una sessione precedente e la soluzione scelta
+apposta per NON rischiare regressioni: **non toccare/rimuovere le regole sparse storiche, aggiungere
+invece un blocco nuovo in fondo al file** che vince per ordine di apparizione a parità di
+specificità (con `!important` dove serve). Riapplicato lo stesso pattern per questo fix
+(`frontend/css/style.css`, subito dopo il blocco "FIX 2026-08-13"): nuovo blocco
+`@media (min-width:901px)` che ingrandisce SOLO `.cc-nome` (font-size, mai toccato sopra i 900px da
+nessuna regola esistente), `.btn-quick`/`.btn-rilancia`/`.quick-bids-row` (idem) — **non tocca
+`.cc-avatar`**, già dimensionato adeguatamente (86×112 partecipante, 108×140 admin, formato
+"ritratto" con `object-fit:contain`) da quello stesso fix precedente. Scope `min-width:901px`
+scelto perché sotto i 900px esiste già un trattamento dedicato (stacking dei bottoni sotto i 900px,
+carta grande con nome 1.12-1.25rem sotto i 640px) verificato funzionante e da non toccare.
+
+**Bug di tooling reale durante l'implementazione**: dopo aver inserito il blocco con lo script Node
+(corretto), è stato usato per errore l'Edit tool standard per sistemare degli apici mal-escaped nel
+commento — esattamente l'operazione vietata per questo file (vedi sopra, gotcha CRLF). Ha
+silenziosamente convertito le 181 righe LF-only storiche (tutte concentrate nella sezione finale del
+file, righe 2408-2588) in CRLF, gonfiando il diff da 29 a 391 righe cambiate. Rilevato subito
+confrontando il conteggio di righe LF-only (`awk`) tra working tree e `git show HEAD`. Corretto con
+`git checkout` di ripristino + ripetizione completa via script Node (nessuna chiamata Edit tool).
+
+**Bug preesistente scoperto durante la verifica, NON causato da questo fix**: in vista Admin, tra
+~900px e ~1200px di larghezza, `.rilancio-box` esce completamente dal viewport (verificato:
+`x:928, width:908` su un viewport di 950px). Riprodotto identico anche con questo fix disattivato
+(`git stash`) — pre-esistente, fuori scope, non corretto in questo intervento. Segnalato all'utente,
+non affrontato.
+
+**Verificato**: nel browser (dev server locale, dati sintetici in console) — 1280px vista
+partecipante e admin (nome/bottoni visibilmente più grandi, nessun overflow, header admin torna ad
+altezza 44px invece di 0), 390px vista partecipante (identico pixel-per-pixel a prima, confermato
+che il nuovo blocco non tocca il breakpoint mobile).
+
 ## Strategia ↔ tipo asta: tabella ponte additiva, non colonna array/modifica dello schema esistente
 
 `strategie.tipo_asta` era scalare (un solo valore), impedendo strutturalmente a una strategia

@@ -1233,3 +1233,28 @@ html body .timer-ring-container.urgent .cls-getto{animation-duration:.34s !impor
   html body #puja-panel-slot .timer-ring-container::after,
   html body.layout-admin .asta-row-puja .timer-ring-container::after{animation:none !important}
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   FIX: in vista Admin, tra ~900px e ~1240px, .rilancio-box finiva
+   interamente FUORI dal viewport (misurato: x=931 su schermo di 950px,
+   bordo destro a 1809px). Bug preesistente, non introdotto dal tema —
+   ma l'Admin e' chi conduce l'asta: senza quei bottoni non puo'
+   rilanciare, quindi si chiude qui.
+   Causa: i due figli della riga restano sulla stessa linea (il
+   flex-wrap non ha effetto a quella larghezza) ed entrambi rivendicano
+   la larghezza piena, sforando. Invece di insistere sul ritorno a capo
+   si danno misure che stanno dentro: la carta prende lo spazio che
+   avanza, il box dei bottoni una larghezza fissa.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (min-width:901px) and (max-width:1240px){
+  html body.layout-admin .asta-row-puja .card-timer-group{
+    flex:1 1 0% !important;min-width:0 !important;overflow:hidden !important;
+  }
+  html body.layout-admin .asta-row-puja .rilancio-box{
+    position:static !important;
+    flex:0 0 244px !important;width:244px !important;max-width:244px !important;
+    left:auto !important;right:auto !important;top:auto !important;bottom:auto !important;
+  }
+  html body.layout-admin .asta-row-puja .btn-rilancia{width:100% !important}
+  html body.layout-admin .asta-row-puja .inp-rilancio{min-width:0 !important}
+}

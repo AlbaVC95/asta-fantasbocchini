@@ -2449,6 +2449,35 @@ body.layout-admin .asta-row-puja .cc-avatar{width:108px!important;height:140px!i
   .puja-panel-slot .cc-avatar{width:46px!important;height:60px!important}
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   FIX 2026-08-19: nome giocatore e bottoni rilancio troppo piccoli in Puja
+   su tablet/desktop (901px+). Stesso pattern del blocco "FIX 2026-08-13"
+   qui sopra (avatar Puja): posto in fondo al file per vincere per ordine di
+   apparizione a parita' di specificita', senza toccare le regole sparse
+   esistenti. Scope limitato a min-width:901px perche' sotto i 900px c'e'
+   gia' un trattamento dedicato (stacking dei bottoni sotto i 900px, carta
+   grande sotto i 640px) che non va toccato.
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (min-width:901px){
+  .puja-panel-slot .cc-nome,
+  body.layout-admin .asta-row-puja .cc-nome{
+    font-size:1.3rem!important;
+  }
+  .puja-panel-slot .btn-quick{
+    padding:10px 16px!important;font-size:1rem!important;
+  }
+  .puja-panel-slot .quick-bids-row,
+  body.layout-admin .asta-row-puja .quick-bids-row{
+    gap:10px!important;
+  }
+  .puja-panel-slot .btn-rilancia{
+    padding:12px 20px!important;font-size:1.05rem!important;
+  }
+  body.layout-admin .asta-row-puja .btn-rilancia{
+    padding:9px 8px!important;font-size:.85rem!important;
+  }
+}
+
 /* ── 2) Campo Anteprima — RISCRITTA DA ZERO (2026-08-13, 2a passata):
    la catena precedente (perspective + rotateX sul campo + rotateX opposto e
    backface-visibility:hidden sulla carta, dentro piu' livelli di
