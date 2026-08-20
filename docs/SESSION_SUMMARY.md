@@ -5,83 +5,84 @@ non accumulato (per la cronologia vedi `git log`).
 
 ## Stato attuale
 
-- Branch `main`, allineato con `origin/main` fino al commit `2e88f09`. **Modifica locale pendente
-  non ancora committata**: annullamento estrazioni in Asta di riparazione (rollback completo +
-  solo ordine cronologico, vedi sotto "Ultimo intervento") in `backend/server.js` e
-  `frontend/js/app.js`. Working tree altrimenti pulito (a parte `.agents/`, `.claude/skills/`,
-  `.impeccable/`, `skills-lock.json`, non tracciati, non toccati).
-- **Episodio di sessione da ricordare**: durante il lavoro, l'utente stava testando IN PARALLELO
-  (altro strumento, non questa sessione) un redesign del tema (nome in codice "FantaBar Pulse":
-  variabili colore, animazioni logo/card, refactor `confirm()` → `confermaAzione()`) — prima presente
-  come modifiche non committate nel working tree locale, poi pushato direttamente su GitHub in 6
-  commit "Add files via upload", poi **revertito dall'utente stesso** con altri 2 commit "Add files
-  via upload" tornando esattamente al contenuto del commit `8b34600`. Nel mezzo il push di questa
-  sessione è stato rifiutato due volte (`non-fast-forward`) — ogni fix di questa sessione era stato
-  isolato con una patch mirata (`git apply --cached` su copia pulita di `HEAD`, mai un `git add` del
-  file intero) proprio per poter scartare/riallineare senza rischio quando il tema è stato revertito:
-  alla fine, working tree resettato su `origin/main` (`git checkout -B main origin/main`) +
-  cherry-pick del solo commit di questa sessione (`88e6344`→`da80113`), push pulito. **Nessun lavoro
-  perso** da nessuna delle due parti. Lezione per il futuro: se un push viene rifiutato su questo
-  repo, ri-`fetch`/controllare `origin/main` più di una volta prima di forzare qualunque merge — lo
-  stato remoto può cambiare rapidamente per lavoro in parallelo.
-- **Hosting: Hostinger, non più Render** (l'utente ha corretto questa sessione un'assunzione
-  sbagliata — Render era il provider di una fase precedente del progetto). Deploy automatico al
-  push su `main`, nessun passo manuale. Vedi [PROJECT.md](PROJECT.md#hosting).
-- Ancora da verificare dal vivo: dopo il deploy automatico su Hostinger dell'ultimo push
-  (`185b4bc`/`cc45284`), confermare in produzione che la squadra "Adriano&Federico" (o
-  qualunque squadra nello stesso stato) veda ora "Max: 0cr" invece di "Max: 1cr" quando è senza
-  risorse — non ancora confermato dall'utente dopo questo secondo fix.
-- **Nota importante**: in una sessione precedente, il redesign 3D di Anteprima costruito qui
-  (carta FX orizzontale, stadio Three.js con importmap, fix carta Puja admin) è stato
-  **scartato su richiesta esplicita dell'utente** in favore di una versione diversa già presente
-  su GitHub (`origin/main`), costruita con un altro strumento in parallelo — branding app
-  cambiato da "Asta FantaSbocchini" a "FantaBar", stadio 3D con `ant-stadio-3d` (Three.js via
-  `<script>` globale, non importmap). Il lavoro scartato resta recuperabile nel branch
-  `backup/sesion-redesign-tres-js-20260817` se mai servisse confrontarlo o riprenderlo.
-- Git: identità corretta con `git config --global user.name "AlbaVC95"` +
-  `user.email "albavicentecarragal@gmail.com"` (coerente con l'autore già usato in commit
-  precedenti del repo) e applicata con `--amend --reset-author` all'ultimo commit locale
-  (`d5b5b0f`). I commit precedenti di questa sessione restano con l'identità automatica
-  precedente (`alba@MacBook-Air-de-Alba.local`), non riscritti.
+- Branch di lavoro `claude/fantabar-visual-directions-64b4h6`, partito da `main` (`72f0279`).
+  Contiene il nuovo tema visivo, pronto ma **non ancora unito a `main`** (su questo repo il push
+  su `main` fa partire il deploy automatico su Hostinger — vedi [PROJECT.md](../PROJECT.md#hosting)).
+- Per portarlo online, tornare indietro o sapere cosa è stato verificato:
+  **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)**. Per il perché delle scelte: [DECISIONS.md](../DECISIONS.md).
 
-## Ultimo intervento — Asta di riparazione: annullamento come rollback completo, solo a ritroso
+## Ultimo intervento — Nuova identità visiva "Serata d'Asta"
 
-Richiesta esplicita dell'utente con specifica dettagliata (pianificato con `EnterPlanMode`,
-approvato prima di scrivere codice). Due bug/gap nello stesso meccanismo (`_annullaItem()`,
-handler `annulla-assegnazione-specifica`, `backend/server.js`):
+Il tema precedente (viola neon + oro + glow) usava il vocabolario di un'app di scommesse e non
+rappresentava il nome "FantaBar". Il nuovo è una regola di illuminazione: una sola lampada calda in
+alto a sinistra, ambra come unico accento luminoso, rosso solo come stato, verde solo come superficie.
 
-1. Annullare un acquisto fatto con svincolo (`tipo:'con_svincolo'`) rimetteva solo il giocatore
-   acquistato tra gli Svincolati e i crediti pagati per lui — ignorava del tutto
-   `item.svincolati`: i giocatori liberati restavano fuori rosa, i crediti recuperati dal loro
-   svincolo non venivano sottratti (crediti gonfiati), gli slot svincolo non tornavano
-   disponibili, restava un blocco fantasma in `svincoliVietati`. Fix: `_annullaItem()` ora fa un
-   rollback completo iterando `item.svincolati` (snapshot già completo salvato da
-   `esegui-svincolo`, nessuna nuova struttura dati).
-2. Si poteva annullare qualunque estrazione dello storico per `index` arbitrario, anche lasciando
-   invariate estrazioni successive che nel frattempo avevano già modificato lo stato — rischio di
-   crediti/rosa/slot incoerenti. Fix: **solo per `tipoAsta==='riparazione'`**, l'handler rifiuta
-   se `index` non è l'ultimo elemento dello storico (si annulla solo a ritroso, una alla volta).
-   Asta iniziale esplicitamente esclusa, comportamento invariato. Specchiato in UI
-   (`apriModalAnnullaStorico`): bottone disabilitato con tooltip su tutte le righe tranne la più
-   recente, solo in riparazione.
+Quattro file, di cui due nuovi:
 
-Dettagli completi (formula, snippet, motivazione di ogni scelta) in [DECISIONS.md](DECISIONS.md).
+- `frontend/css/style.css` — **solo il blocco `:root`**. Cambiano i valori, i nomi delle variabili
+  restano identici: tutte le schermate non ridisegnate cambiano identità senza toccarne una riga.
+- `frontend/css/tema-serata.css` (nuovo) — la composizione: scena della puja a riga intera con il
+  conto sul tavolo, squadre in griglia orizzontale, schede come voci di lavagna, vista Admin.
+- `frontend/js/clessidra.js` (nuovo) — il cronometro è ora una clessidra in SVG (vetro,
+  ottone, sabbia con la grana). Sempre attivo ma solo cosmetico: legge con un
+  MutationObserver passivo l'avanzamento che l'app già scrive sul vecchio anello.
+- `frontend/js/comportamenti-asta.js` (nuovo) — tre comportamenti, **attivi**
+  (`localStorage.fantabar_comportamenti = '0'` per spegnerli).
+- `frontend/index.html` — 4 righe: font nuovi, foglio del tema, clessidra, modulo.
 
-File: `backend/server.js` (`_annullaItem`, handler `annulla-assegnazione-specifica`),
-`frontend/js/app.js` (`apriModalAnnullaStorico`).
+Materie e movimento aggiunti in un secondo passaggio: insegna **al neon** (accensione a
+scatti, poi fissa) in testata e sulla Home, venatura del legno sui pannelli, riflesso del
+vetro sul piano del tavolo, corrimano in ottone sotto l'insegna, e il **riepilogo squadre
+riprogettato a una riga per squadra** (con 12 squadre passa da mezza schermata a quattro
+righe). Le animazioni non richiedono JS nuovo: si agganciano ai punti che l'app già tocca
+(`renderChiamata()` ricostruisce la carta, `updateTimer()` mette e toglie `.urgent`).
 
-**Verificato**: 30 test standalone Node sul codice REALE estratto di `_annullaItem()` — rollback
-completo di un `con_svincolo` con 2 giocatori liberati (crediti/rosa/svincoliUsati/
-svincoliVietati/poolGiocatori tutti tornano esattamente allo stato pre-operazione), rollback a
-ritroso di 2 estrazioni concatenate (A→B, annullate B poi A, stato intermedio e finale corretti),
-regressione su `tipo:'normale'`/`'scartato'` (invariati), blocco d'ordine su riparazione vs
-comportamento invariato su iniziale — tutti PASS. `node --check` pulito su entrambi i file.
-Verificato anche nel browser (dev server locale, dati sintetici iniettati in console): nel modal
-"Annulla Storico" solo il bottone dell'estrazione più recente è cliccabile quando l'asta è di
-riparazione (le altre righe disabilitate con tooltip), tutti e tre attivi quando l'asta è
-iniziale. **Non verificato in un flusso live reale** (svincolo → annullamento → ricontrollo rosa
-in un'asta di riparazione vera): stesso limite di login Supabase delle sessioni precedenti — solo
-verificato via test standalone sul codice reale estratto + verifica UI nel browser.
+**Backend non toccato.** Nessuna regola di gioco modificata: `calcolaMaxOfferta()`, svincoli, timer
+server-side, backup, autenticazione restano identici.
+
+**Verificato** (app reale da `npm run dev`, CSS letto dal disco, stato sintetico iniettato in
+console): asta partecipante desktop/mobile, asta Admin, home, lobby, fine asta, un modale
+(contrasto corretto), tenuta della griglia squadre con 6 e con 12 squadre, nessun errore JS.
+Controllato che i sei `display:none` del tema colpiscano solo pseudo-elementi decorativi.
+
+**NON verificato**: asta live vera con login Supabase e più dispositivi; i modali critici (svincolo,
+RIC, plusvalenza) con dati reali; le schermate Strategie/Anteprima/Griglia P/A una per una; il tema
+chiaro (`html.theme-light`), che non è stato riadattato ed è probabilmente incoerente.
+Elenco completo in [docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md).
+
+## Debito tecnico riconosciuto (non pagato di proposito)
+
+`style.css` difende la zona puja con ~40 regole `!important` su tutti i breakpoint, quindi
+`tema-serata.css` deve vincerle con `html body #puja-panel-slot` + `!important`. Ripulirle è il
+lavoro successivo naturale, tenuto fuori da questo intervento per non mescolare un refactor
+rischioso con una modifica estetica.
+
+## Gotcha di tooling — ancora valido
+
+**Mai l'Edit tool su `frontend/js/app.js`, `frontend/index.html`, `frontend/css/style.css`**: hanno
+righe LF-only preesistenti (181 in style.css, 19 in index.html, 137 in app.js) e l'Edit tool
+converte l'intero file a LF. Usare sempre uno script Node/Python che fa `split("\n")` (mai
+`split("\r\n")`, che disallinea gli indici) e aggiunge `\r` solo alle righe NUOVE. Gli script usati
+per questo intervento sono in scratchpad (`apply/lib.js`) e verificano il conteggio LF prima/dopo.
+
+**Bug reale trovato impacchettando l'app**: `String.replace(pattern, stringa)` interpreta le sequenze
+`$&`, `$'`, `$1` presenti nella stringa di sostituzione come pattern. `app.js` contiene
+`['$,$,$']` (riga 293) e il file finiva corrotto. Usare sempre un replacer come **funzione**:
+`str.replace(x, () => y)`.
+
+## Tasks pendenti
+
+- **Decidere se accendere i comportamenti opzionali** (soprattutto la leva) dopo una prova in
+  un'asta di test — vedi DEPLOY_TEMA.md.
+- Verificare dal vivo in un'asta reale l'intero stack (mai testato end-to-end): stadio 3D,
+  cambio modulo con ricollocamento automatico, foto giocatori, e ora anche il tema.
+- Sistemare o disabilitare il tema chiaro, non riadattato alla nuova palette.
+- Ripristinare `.cc-strategia-info` su mobile (unico `display:none` che tocca contenuto vero).
+
+## Prossimo passo
+
+Aprire un'asta di test reale (idealmente con 2+ dispositivi) e guardare, in ordine: la schermata
+asta col tema nuovo, i modali di svincolo, e — solo dopo — provare i comportamenti opzionali.
 
 ## Intervento precedente — Popup svincolo: contatore selezionati + stato selezionato più visibile
 
