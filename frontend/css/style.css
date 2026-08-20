@@ -1,38 +1,47 @@
 :root{
-  --bg-abyss:#0a0518;
-  --bg-deep:#120a24;
-  --panel-glass-1:rgba(30,17,64,.62);
-  --panel-glass-2:rgba(18,10,36,.68);
-  --panel-glass-3:rgba(10,5,24,.55);
-  --bg-main:#150c2b;
-  --bg-card:#1e1140;
-  --bg-elevated:#2a1a58;
-  --bg-glass:rgba(30,17,64,.7);
-  --primary:#8b5cf6;
-  --primary-bright:#a78bfa;
-  --primary-dark:#6d28d9;
-  --primary-glow:rgba(139,92,246,.35);
-  --primary-subtle:rgba(139,92,246,.1);
-  --gold:#ffb300;
-  --gold-bright:#ffca4d;
-  --gold-deep:#cc8a00;
-  --gold-glow:rgba(255,179,0,.35);
-  --gold-subtle:rgba(255,179,0,.08);
-  --fire:#c026d3;
-  --fire-bright:#e879f9;
-  --fire-glow:rgba(192,38,211,.4);
-  --success:#00e0a0;
-  --success-glow:rgba(0,224,160,.3);
-  --danger:#ff3860;
-  --danger-glow:rgba(255,56,96,.3);
-  --text-primary:#f3eefe;
-  --text-secondary:#b3a3d9;
-  --text-muted:#7c6a9c;
-  --border:rgba(255,255,255,.08);
-  --border-light:rgba(255,255,255,.14);
-  --font-main:Inter,-apple-system,BlinkMacSystemFont,sans-serif;
-  --font-display:Outfit,Inter,sans-serif;
-  --font-mono:JetBrains Mono,Fira Code,monospace;
+  /* ══ Tema "Serata d'Asta" ══════════════════════════════════════════
+     Una sala di sera con una sola lampada accesa. I NOMI delle variabili
+     restano identici a prima (nulla nel resto del CSS va toccato):
+     cambiano solo i valori. Ruoli:
+       - ambra  = la lampada, unico accento luminoso
+       - rosso  = solo stato (urgenza, superato), mai decorazione
+       - verde  = solo superficie (il banco), mai testo
+     ══════════════════════════════════════════════════════════════════ */
+  --bg-abyss:#080706;
+  --bg-deep:#0B0908;
+  --panel-glass-1:rgba(11,9,8,.58);
+  --panel-glass-2:rgba(11,9,8,.66);
+  --panel-glass-3:rgba(8,7,6,.5);
+  --bg-main:#14100E;
+  --bg-card:#191411;
+  --bg-elevated:#221B16;
+  --bg-glass:rgba(20,16,14,.72);
+  --primary:#FFB04A;
+  --primary-bright:#FFC578;
+  --primary-dark:#C4802B;
+  --primary-glow:rgba(255,176,74,.30);
+  --primary-subtle:rgba(255,176,74,.09);
+  --gold:#FFB04A;
+  --gold-bright:#FFC578;
+  --gold-deep:#C4802B;
+  --gold-glow:rgba(255,176,74,.28);
+  --gold-subtle:rgba(255,176,74,.07);
+  --fire:#E23A2E;
+  --fire-bright:#E23A2E;
+  --fire-glow:rgba(226,58,46,.32);
+  --success:#4FBF8F;
+  --success-glow:rgba(79,191,143,.24);
+  --danger:#E23A2E;
+  --danger-glow:rgba(226,58,46,.28);
+  --text-primary:#F2EADE;
+  --text-secondary:#A79B8B;
+  --text-muted:#6E645A;
+  --border:rgba(242,234,222,.10);
+  --border-light:rgba(242,234,222,.20);
+  --font-main:Archivo,Inter,-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-display:Archivo,Outfit,Inter,sans-serif;
+  --font-mono:Space Mono,JetBrains Mono,Fira Code,monospace;
+  --font-insegna:Instrument Serif,Georgia,serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:16px;scroll-behavior:smooth;height:100vh;overflow:hidden}

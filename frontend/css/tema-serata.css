@@ -1,0 +1,853 @@
+/* ═══════════════════════════════════════════════════════════════════
+   FANTABAR — Tema "Serata d'Asta" (parte strutturale)
+   Caricato DOPO style.css. La palette vive in style.css (:root);
+   qui c'e' solo cio' che cambia la composizione, non il colore.
+   Perche' tanti !important: il foglio storico difende la zona puja
+   con !important a ogni breakpoint. Ripulirlo e' un lavoro a parte,
+   volutamente non fatto insieme al cambio di identita'.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   FANTABAR — tema "Serata d'Asta"
+   Foglio di sola sovrascrittura: nessun file dell'app modificato.
+   Iniettato a runtime sopra style.css per vedere l'identità
+   applicata alle schermate REALI.
+   ═══════════════════════════════════════════════════════════ */
+
+
+
+
+/* ── L'AMBIENTE ─────────────────────────────────────────────
+   La foto del bar resta, ma smette di essere una foto: diventa
+   luce. Desaturata, scurita, con la lampada ambra in alto a
+   sinistra e il banco verde nell'angolo opposto. */
+.pitch-bg{
+  background-color:#0B0908 !important;
+  background-image:
+    radial-gradient(52% 44% at 22% -6%, rgba(255,176,74,.26), transparent 64%),
+    radial-gradient(66% 60% at 104% 106%, rgba(28,91,69,.42), transparent 62%),
+    linear-gradient(180deg, rgba(11,9,8,.86) 0%, rgba(11,9,8,.80) 40%, rgba(11,9,8,.93) 100%),
+    url('/img/backgrounds/fantabar-bg.jpg') !important;
+  filter:saturate(.42) contrast(1.04) brightness(.72);
+}
+body{background:#0B0908 !important;font-family:var(--font-main)}
+::selection{background:rgba(255,176,74,.28);color:#F2EADE}
+
+/* ── TESTATA ────────────────────────────────────────────────
+   L'insegna del locale, non un logo di app. */
+.asta-header{
+  height:46px;padding:0 18px;background:rgba(8,7,6,.94);
+  border-bottom:1px solid var(--border);box-shadow:none;backdrop-filter:blur(14px);
+}
+.asta-header-logo{display:none}
+.asta-header-title{
+  font-family:'Instrument Serif',Georgia,serif !important;font-style:italic;font-weight:400;
+  font-size:1.42rem;letter-spacing:-.01em;text-transform:none;
+  background:none !important;-webkit-text-fill-color:#F2EADE !important;color:#F2EADE;
+}
+.asta-header-email{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.12em;color:var(--text-muted)}
+
+/* ═══════════════════════════════════════════════════════════
+   LA PUJA — il tavolo grande
+   Il foglio originale difende questa zona con !important a ogni
+   breakpoint: qui si sale di specificità (html body + #id) per
+   poterla ricomporre senza toccare un solo file dell'app.
+   ═══════════════════════════════════════════════════════════ */
+html body.layout-partecipante .asta-row-panels{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) 296px !important;
+  grid-template-areas:"tavolo conto" "squadre squadre" !important;
+  column-gap:0 !important;row-gap:12px !important;
+  padding:12px !important;max-height:none !important;align-items:stretch !important;
+}
+html body.layout-partecipante .asta-row-panels>#puja-panel-slot{grid-area:tavolo !important}
+html body.layout-partecipante .asta-row-panels>#mio-panel{grid-area:conto !important}
+html body.layout-partecipante .asta-row-panels>.panel-budget{grid-area:squadre !important}
+
+/* riga intera, in cima: la puja non è più una striscia schiacciata */
+html body.layout-partecipante .asta-row-panels>#puja-panel-slot,
+html body .asta-row-panels>#puja-panel-slot{
+  max-width:none !important;align-self:stretch !important;height:auto !important;
+}
+html body.layout-partecipante #puja-panel-slot,
+html body #puja-panel-slot{
+  position:relative !important;overflow:hidden !important;
+  min-height:258px !important;padding:30px 34px 28px 34px !important;
+  align-items:center !important;gap:34px !important;
+  border:1px solid rgba(242,234,222,.10) !important;border-radius:2px !important;
+  background:
+    radial-gradient(42% 130% at 17% -16%, rgba(255,176,74,.22), transparent 62%),
+    radial-gradient(52% 120% at 101% 118%, rgba(28,91,69,.34), transparent 60%),
+    linear-gradient(180deg, rgba(26,21,18,.96), rgba(12,10,9,.97)) !important;
+  box-shadow:0 28px 64px rgba(0,0,0,.5), inset 0 1px 0 rgba(242,234,222,.05) !important;
+}
+/* la miccia: il timer attraversa tutta la sala */
+html body #puja-panel-slot::before{
+  content:'' !important;position:absolute !important;left:0;right:0;top:0;height:2px;
+  background:rgba(242,234,222,.08);z-index:5;
+}
+html body #puja-panel-slot::after{
+  content:'' !important;position:absolute !important;left:0;top:0;height:2px;width:64%;
+  background:#FFB04A;box-shadow:0 0 18px #FFB04A, 0 0 4px #FFB04A;z-index:6;
+}
+html body.puja-urgente #puja-panel-slot{
+  background:
+    radial-gradient(46% 130% at 17% -16%, rgba(226,58,46,.26), transparent 62%),
+    radial-gradient(52% 120% at 101% 118%, rgba(28,91,69,.20), transparent 60%),
+    linear-gradient(180deg, rgba(30,19,17,.96), rgba(13,10,10,.97)) !important;
+}
+html body.puja-urgente #puja-panel-slot::after{width:12% !important;background:#E23A2E;box-shadow:0 0 20px #E23A2E}
+
+/* la scena */
+html body #puja-panel-slot .card-timer-group{
+  gap:34px !important;align-items:center !important;flex:1 1 auto !important;min-width:0 !important;
+  border-right:1px solid rgba(242,234,222,.10) !important;padding-right:30px !important;height:auto !important;
+}
+html body #puja-panel-slot .chiamata-card{
+  background:none !important;border:none !important;box-shadow:none !important;
+  border-radius:0 !important;overflow:visible !important;
+  flex:1 1 auto !important;max-width:none !important;min-width:0 !important;
+  padding:0 0 0 178px !important;position:relative !important;
+  display:flex !important;flex-direction:row !important;align-items:center !important;
+  justify-content:flex-start !important;gap:34px !important;min-height:190px !important;
+}
+html body #puja-panel-slot .chiamata-card::before,
+html body #puja-panel-slot .cc-offerta-box::after{display:none !important}
+
+/* il giocatore: un ritratto sul muro, non un bollino */
+html body #puja-panel-slot .cc-avatar{
+  width:150px !important;height:190px !important;
+  left:0 !important;top:50% !important;transform:translateY(-50%) !important;
+  position:absolute !important;border-radius:2px !important;
+  background:linear-gradient(180deg,#1E1814,#100D0B) !important;
+  border:1px solid rgba(242,234,222,.10) !important;
+  box-shadow:0 18px 40px rgba(0,0,0,.6) !important;
+  animation:none !important;overflow:hidden !important;padding:0 !important;
+  align-items:flex-end !important;
+}
+html body #puja-panel-slot .cc-avatar-img{
+  filter:grayscale(1) contrast(1.14) brightness(.9) !important;
+  object-position:center top !important;
+}
+html body #puja-panel-slot .cc-avatar::after{
+  content:'' !important;position:absolute !important;inset:0;pointer-events:none;z-index:3;
+  background:linear-gradient(202deg, rgba(255,176,74,.55) 0%, rgba(226,58,46,.12) 46%, rgba(15,59,46,.62) 100%);
+  mix-blend-mode:color;
+}
+html body #puja-panel-slot .cc-avatar::before{
+  content:'' !important;position:absolute !important;inset:0;pointer-events:none;z-index:4;
+  background:linear-gradient(180deg, rgba(255,176,74,.10) 0%, transparent 34%, rgba(12,10,9,.80) 100%);
+}
+html body #puja-panel-slot .cc-avatar-svg{width:88% !important;height:88% !important;opacity:.5}
+
+/* il nome: occupa fisicamente la scena */
+html body #puja-panel-slot .cc-header{
+  margin:0 !important;gap:0 !important;align-items:flex-start !important;
+  flex:1 1 auto !important;min-width:0 !important;flex-shrink:1 !important;
+}
+html body #puja-panel-slot .cc-info{min-width:0 !important;flex:1 1 auto !important}
+html body #puja-panel-slot .cc-nome{
+  font-family:'Archivo',sans-serif !important;font-weight:900 !important;
+  font-variation-settings:'wdth' 62 !important;
+  font-size:2.6rem !important;line-height:.86 !important;letter-spacing:.004em !important;
+  text-transform:uppercase !important;color:#F2EADE !important;
+  white-space:normal !important;overflow:visible !important;text-overflow:clip !important;
+  max-width:none !important;text-shadow:0 4px 26px rgba(0,0,0,.65) !important;
+}
+html body #puja-panel-slot .cc-nome-row{gap:14px !important;align-items:center !important;flex-wrap:wrap !important}
+html body #puja-panel-slot .cc-meta{
+  margin-top:12px !important;gap:9px !important;
+  font-family:'Space Mono',monospace !important;font-size:.64rem !important;
+  letter-spacing:.16em !important;text-transform:uppercase !important;color:#A79B8B !important;
+}
+
+/* il prezzo: il fatto più grande della stanza */
+html body #puja-panel-slot .cc-body{
+  flex:0 0 auto !important;width:auto !important;max-width:none !important;
+  display:flex !important;flex-direction:column !important;align-items:flex-start !important;
+  gap:0 !important;margin:0 !important;overflow:visible !important;
+}
+html body #puja-panel-slot .cc-offerta-box{
+  border:none !important;background:none !important;box-shadow:none !important;
+  padding:0 !important;margin:0 !important;border-radius:0 !important;
+  align-items:flex-start !important;max-width:none !important;
+}
+html body #puja-panel-slot .cc-offerta{
+  font-family:'Archivo',sans-serif !important;font-weight:900 !important;
+  font-variation-settings:'wdth' 112 !important;font-variant-numeric:tabular-nums !important;
+  font-size:5.6rem !important;line-height:.76 !important;letter-spacing:-.032em !important;
+  color:#F2EADE !important;text-shadow:0 8px 34px rgba(0,0,0,.6) !important;
+  white-space:nowrap !important;
+}
+html body #puja-panel-slot .cc-offerta-label{
+  font-family:'Space Mono',monospace !important;font-size:.6rem !important;
+  letter-spacing:.24em !important;text-transform:uppercase !important;
+  color:#FFB04A !important;font-weight:400 !important;margin-top:12px !important;
+}
+html body.puja-urgente #puja-panel-slot .cc-offerta-label{color:#E23A2E !important}
+html body #puja-panel-slot .cc-offerente{
+  font-size:.72rem !important;color:#6E645A !important;margin-top:10px !important;
+  letter-spacing:.04em !important;white-space:nowrap !important;
+}
+html body #puja-panel-slot .cc-strategia-info{
+  font-family:'Space Mono',monospace !important;font-size:.56rem !important;
+  letter-spacing:.1em !important;color:#6E645A !important;
+  background:none !important;border:none !important;padding:8px 0 0 !important;
+}
+
+/* il cronometro: evento live, non un bollino d'angolo */
+html body #puja-panel-slot .timer-ring-container{
+  background:none !important;border:none !important;box-shadow:none !important;
+  padding:0 !important;border-radius:0 !important;flex:0 0 auto !important;width:auto !important;
+}
+html body #puja-panel-slot .timer-ring{width:132px !important;height:132px !important}
+html body .timer-ball{display:none !important}
+html body #puja-panel-slot .timer-number{
+  font-family:'Archivo',sans-serif !important;font-weight:900 !important;
+  font-variation-settings:'wdth' 106 !important;font-variant-numeric:tabular-nums !important;
+  font-size:3.1rem !important;letter-spacing:-.03em !important;
+  color:#FFB04A !important;text-shadow:0 0 30px rgba(255,176,74,.4) !important;
+}
+html body.puja-urgente #puja-panel-slot .timer-number{color:#E23A2E !important;text-shadow:0 0 32px rgba(226,58,46,.5) !important}
+html body #puja-panel-slot .timer-label-text{
+  font-family:'Space Mono',monospace !important;font-size:.56rem !important;
+  letter-spacing:.22em !important;text-transform:uppercase !important;
+  color:#6E645A !important;margin-top:6px !important;
+}
+
+/* ── L'AZIONE: un solo strumento, non tre bottoni ───────────
+   Prima erano tre linguaggi impilati (due cerchi, una lastra,
+   una coppia di riquadri). Ora sono tre fasce della stessa
+   larghezza, stesso filetto, stessa lingua: una pulsantiera. */
+html body #puja-panel-slot .rilancio-box{
+  background:none !important;border:none !important;box-shadow:none !important;
+  padding:0 !important;flex:0 0 270px !important;width:270px !important;
+  gap:9px !important;justify-content:center !important;border-radius:0 !important;
+}
+
+/* fascia 1 — gli scatti, uniti in una barra segmentata */
+html body #puja-panel-slot .quick-bids-row{
+  display:flex !important;gap:0 !important;margin:0 !important;width:100% !important;
+  border:1px solid rgba(242,234,222,.20) !important;border-radius:2px !important;
+  overflow:hidden !important;background:rgba(20,16,14,.6) !important;
+}
+html body #puja-panel-slot .btn-quick{
+  flex:1 1 0 !important;width:auto !important;height:46px !important;
+  border-radius:0 !important;border:none !important;padding:0 !important;
+  background:none !important;color:#A79B8B !important;box-shadow:none !important;
+  font-family:'Archivo',sans-serif !important;font-weight:700 !important;
+  font-variation-settings:'wdth' 90 !important;font-size:.92rem !important;
+  letter-spacing:.02em !important;transform:none !important;
+}
+html body #puja-panel-slot .btn-quick + .btn-quick{
+  border-left:1px solid rgba(242,234,222,.16) !important;
+}
+
+/* fascia 2 — la lastra: dice l'azione e il suo prezzo */
+html body #puja-panel-slot .btn-rilancia{
+  display:flex !important;align-items:center !important;justify-content:space-between !important;
+  background:#F2EADE !important;color:#14100E !important;width:100% !important;
+  font-family:'Archivo',sans-serif !important;font-weight:900 !important;
+  font-variation-settings:'wdth' 76 !important;
+  font-size:1.42rem !important;letter-spacing:.03em !important;text-transform:uppercase !important;
+  border-radius:2px !important;padding:0 20px !important;height:72px !important;border:none !important;
+  box-shadow:0 18px 38px rgba(0,0,0,.55) !important;text-shadow:none !important;
+}
+/* il totale che pagheresti, dentro il tasto: nessun dubbio su cosa succede */
+html body #puja-panel-slot .btn-rilancia::after{
+  content:attr(data-tot) !important;display:block !important;
+  font-family:'Archivo',sans-serif !important;font-weight:900 !important;
+  font-variation-settings:'wdth' 108 !important;font-variant-numeric:tabular-nums !important;
+  font-size:1.7rem !important;letter-spacing:-.02em !important;
+  padding-left:18px !important;margin-left:18px !important;
+  border-left:1px solid rgba(20,16,14,.22) !important;
+  position:static !important;background:none !important;transform:none !important;
+  width:auto !important;height:auto !important;opacity:1 !important;animation:none !important;
+}
+html body #puja-panel-slot .btn-rilancia::before{display:none !important}
+html body.puja-urgente #puja-panel-slot .btn-rilancia{
+  background:#E23A2E !important;color:#F7EFE6 !important;
+  box-shadow:0 18px 42px rgba(226,58,46,.36) !important;
+}
+html body.puja-urgente #puja-panel-slot .btn-rilancia::after{border-left-color:rgba(247,239,230,.34) !important}
+
+/* fascia 3 — l'offerta libera, stessa barra, voce più bassa */
+html body #puja-panel-slot .manual-bid-row{
+  display:flex !important;gap:0 !important;margin:0 !important;width:100% !important;
+  border:1px solid rgba(242,234,222,.14) !important;border-radius:2px !important;
+  overflow:hidden !important;
+}
+html body #puja-panel-slot .inp-rilancio{
+  flex:1 1 0 !important;width:auto !important;min-width:0 !important;
+  background:rgba(20,16,14,.6) !important;border:none !important;border-radius:0 !important;
+  color:#F2EADE !important;height:42px !important;padding:0 14px !important;
+  font-family:'Space Mono',monospace !important;font-weight:700 !important;
+  font-size:.82rem !important;text-align:left !important;
+}
+html body #puja-panel-slot .btn-manuale{
+  flex:0 0 auto !important;border-radius:0 !important;background:none !important;
+  border:none !important;border-left:1px solid rgba(242,234,222,.14) !important;
+  color:#A79B8B !important;height:42px !important;padding:0 18px !important;
+  font-family:'Space Mono',monospace !important;font-size:.64rem !important;
+  letter-spacing:.16em !important;text-transform:uppercase !important;font-weight:400 !important;
+  width:auto !important;transform:none !important;box-shadow:none !important;
+}
+
+/* ── GLI AMICI AL TAVOLO ────────────────────────────────────
+   Righe, non pillole. Chi è avanti nell'offerta è l'unico
+   illuminato: la stessa regola di luce di tutto il sistema. */
+.panel-budget,.mio-panel,.admin-panel,.tabs-panel{
+  border-radius:2px !important;
+  background:linear-gradient(180deg, rgba(11,9,8,.62), rgba(8,7,6,.72)) !important;
+  border:1px solid var(--border) !important;
+  box-shadow:0 14px 30px rgba(0,0,0,.36) !important;
+}
+.panel-budget{flex:1 1 300px}
+.panel-budget-hdr,.mio-panel-header .mio-nome,.admin-badge{
+  font-family:var(--font-mono) !important;font-size:.6rem !important;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--text-muted) !important;
+  font-weight:400 !important;background:none !important;
+}
+.sidebar-squadra{
+  background:transparent !important;border-radius:0 !important;
+  border-left:2px solid transparent !important;
+  border-bottom:1px solid rgba(242,234,222,.06) !important;
+  box-shadow:none !important;margin-bottom:0 !important;padding:6px 8px !important;
+  transform:none !important;
+}
+.sidebar-squadra.mia-squadra{border-left-color:#F2EADE !important;background:rgba(242,234,222,.035) !important}
+.sidebar-squadra.offerente-attuale{
+  border-left-color:#FFB04A !important;background:rgba(255,176,74,.09) !important;
+}
+.sidebar-squadra.critica{border-left-color:#E23A2E !important}
+.sq-nome{
+  font-family:'Archivo',sans-serif !important;font-weight:600;
+  font-variation-settings:'wdth' 80;letter-spacing:.05em;
+  text-transform:uppercase;font-size:.7rem !important;color:var(--text-secondary) !important;
+}
+.sidebar-squadra.mia-squadra .sq-nome{color:#F2EADE !important}
+.sq-crediti{
+  font-family:'Archivo',sans-serif !important;font-weight:800;
+  font-variation-settings:'wdth' 104;font-variant-numeric:tabular-nums;
+  color:#F2EADE !important;text-shadow:none !important;font-size:.9rem !important;
+}
+.sidebar-squadra.offerente-attuale .sq-crediti{color:#FFB04A !important}
+.sq-svincoli,.slot-chip,.sq-slot{
+  font-family:var(--font-mono) !important;font-size:.58rem !important;
+  letter-spacing:.08em;color:var(--text-muted) !important;background:none !important;
+  border:none !important;
+}
+.budget-progress{background:rgba(242,234,222,.07) !important;border-radius:0 !important;height:2px !important}
+.budget-progress-fill{border-radius:0 !important}
+.budget-progress-fill.ok{background:var(--text-secondary) !important}
+.budget-progress-fill.warn{background:#FFB04A !important}
+.budget-progress-fill.crit{background:#E23A2E !important}
+
+.crediti-badge{
+  background:none !important;border:1px solid rgba(255,176,74,.42) !important;
+  border-radius:0 !important;color:#FFB04A !important;
+  font-family:'Archivo',sans-serif !important;font-weight:800;
+  font-variation-settings:'wdth' 100;font-variant-numeric:tabular-nums;
+}
+.mio-nome{color:var(--text-muted) !important}
+
+/* ── I BOTTONI ──────────────────────────────────────────────
+   Nessun gradiente. Il pieno crema è riservato all'azione
+   principale; tutto il resto è contorno. */
+.btn{border-radius:2px !important;font-family:'Archivo',sans-serif !important;
+  font-variation-settings:'wdth' 84;letter-spacing:.04em;text-transform:uppercase;
+  font-weight:700 !important;box-shadow:none !important}
+.btn-primary{background:#F2EADE !important;color:#14100E !important;border:none !important}
+.btn-secondary{background:none !important;border:1px solid var(--border-light) !important;color:var(--text-secondary) !important}
+.btn-success{background:none !important;border:1px solid rgba(79,191,143,.5) !important;color:#4FBF8F !important}
+.btn-danger{background:none !important;border:1px solid rgba(226,58,46,.5) !important;color:#E23A2E !important}
+.btn-accent{background:#FFB04A !important;color:#14100E !important;border:none !important}
+.btn-sound,.btn-esci{border-radius:2px !important;border:1px solid var(--border) !important;background:none !important}
+
+/* ── LE SEZIONI ─────────────────────────────────────────────
+   Le schede diventano voci di lavagna: testo e una riga sotto
+   quella attiva. Niente pillole colorate. */
+.tabs-nav{
+  background:transparent !important;padding:0 8px !important;gap:0 !important;
+  border-bottom:1px solid var(--border) !important;backdrop-filter:none !important;
+}
+.tab-btn{
+  background:none !important;border:none !important;border-radius:0 !important;
+  box-shadow:none !important;transform:none !important;
+  font-family:var(--font-mono) !important;font-size:.66rem !important;
+  letter-spacing:.18em;text-transform:uppercase;font-weight:400 !important;
+  color:var(--text-muted) !important;padding:15px 22px !important;position:relative;
+}
+.tab-btn.active{color:#F2EADE !important;background:none !important}
+.tab-btn.active::after{
+  content:'';position:absolute;left:22px;right:22px;bottom:-1px;height:2px;background:#FFB04A;
+}
+.tab-content{background:none}
+
+/* liste e righe: solo filetti */
+.storico-list li,.rose-row,.libero-row,.storico-export-item{
+  background:transparent !important;border-radius:0 !important;
+  border-bottom:1px solid rgba(242,234,222,.06) !important;
+}
+.storico-list li strong,.rose-row strong{color:#F2EADE !important}
+.text-accent{color:#FFB04A !important}
+.storico-filtro-btn,.filtro-btn{
+  border-radius:2px !important;background:none !important;
+  border:1px solid var(--border) !important;color:var(--text-muted) !important;
+  font-family:var(--font-mono) !important;font-size:.62rem !important;
+  letter-spacing:.1em;text-transform:uppercase;
+}
+.storico-filtro-btn.active,.filtro-btn.active{
+  border-color:rgba(255,176,74,.5) !important;color:#FFB04A !important;background:none !important;
+}
+.rose-inp,input[type=text],input[type=number],select{
+  border-radius:2px !important;background:#14100E !important;
+  border:1px solid var(--border) !important;color:#F2EADE !important;
+}
+
+/* ── SOBRIETÀ: via i luccichii del tema precedente ────────── */
+.chiamata-card.attiva::before,.cc-offerta-box::before{display:none !important}
+[class*="glow"],.admin-panel{box-shadow:0 14px 30px rgba(0,0,0,.36) !important}
+
+/* ── MOBILE ─────────────────────────────────────────────────
+   Stessa stanza, in verticale. Il prezzo resta l'elemento più
+   grande dello schermo; l'azione vive dove arriva il pollice.
+   Stessa specificità del blocco desktop, altrimenti perderebbe
+   contro se stesso. */
+@media(max-width:900px){
+  html body.layout-partecipante #puja-panel-slot,
+  html body #puja-panel-slot{
+    flex-direction:column !important;align-items:stretch !important;
+    padding:20px 16px 18px !important;gap:18px !important;min-height:0 !important;
+  }
+  html body #puja-panel-slot::after{width:64% !important}
+
+  html body #puja-panel-slot .card-timer-group{
+    flex-direction:row !important;align-items:center !important;gap:14px !important;
+    border-right:none !important;padding-right:0 !important;width:100% !important;
+  }
+  html body #puja-panel-slot .chiamata-card{
+    flex-direction:column !important;align-items:flex-start !important;
+    padding:0 !important;gap:16px !important;min-height:0 !important;flex:1 1 auto !important;
+  }
+  html body #puja-panel-slot .cc-header{
+    flex-direction:row !important;align-items:center !important;
+    gap:14px !important;width:100% !important;
+  }
+  html body #puja-panel-slot .cc-avatar{
+    position:relative !important;left:auto !important;top:auto !important;
+    transform:none !important;width:76px !important;height:96px !important;flex:0 0 auto !important;
+  }
+  html body #puja-panel-slot .cc-nome{font-size:1.9rem !important;line-height:.9 !important}
+  html body #puja-panel-slot .cc-meta{margin-top:8px !important;font-size:.56rem !important;gap:6px !important}
+  html body #puja-panel-slot .cc-nome-row{gap:9px !important}
+  html body #puja-panel-slot .badge-ruolo{padding:3px 7px !important;font-size:.55rem !important}
+
+  html body #puja-panel-slot .cc-body{width:100% !important}
+  html body #puja-panel-slot .cc-offerta{font-size:3.9rem !important}
+  html body #puja-panel-slot .cc-offerta-label{margin-top:8px !important;font-size:.54rem !important}
+  html body #puja-panel-slot .cc-offerente{font-size:.68rem !important;white-space:normal !important}
+  html body #puja-panel-slot .cc-strategia-info{display:none !important}
+
+  html body #puja-panel-slot .timer-ring-container{flex:0 0 auto !important}
+  html body #puja-panel-slot .timer-ring{width:92px !important;height:92px !important}
+  html body #puja-panel-slot .timer-number{font-size:2.1rem !important}
+  html body #puja-panel-slot .timer-label-text{font-size:.5rem !important}
+
+  html body #puja-panel-slot .rilancio-box{
+    flex:0 0 auto !important;width:100% !important;gap:12px !important;
+    flex-direction:column !important;align-items:stretch !important;
+    border-top:none !important;padding-top:0 !important;margin-top:0 !important;
+  }
+  html body #puja-panel-slot .card-timer-group{
+    border-bottom:1px solid rgba(242,234,222,.10) !important;padding-bottom:16px !important;
+  }
+  /* l'ordine sul telefono: prima le fiches, poi la lastra, poi l'offerta libera */
+  html body #puja-panel-slot .quick-bids-row{order:1 !important}
+  html body #puja-panel-slot .btn-rilancia{order:2 !important}
+  html body #puja-panel-slot .manual-bid-row{order:3 !important}
+  html body #puja-panel-slot .card-timer-group{flex:0 0 auto !important;align-self:stretch !important}
+  html body #puja-panel-slot .quick-bids-row{gap:10px !important}
+  html body #puja-panel-slot .btn-quick{height:44px !important;font-size:.88rem !important}
+  html body #puja-panel-slot .btn-rilancia{font-size:1.3rem !important;height:64px !important;padding:0 18px !important}
+  html body #puja-panel-slot .btn-rilancia::after{font-size:1.5rem !important}
+  html body #puja-panel-slot .inp-rilancio{height:40px !important}
+  html body #puja-panel-slot .btn-manuale{height:40px !important}
+
+  html body .tab-btn{padding:13px 12px !important;font-size:.58rem !important;letter-spacing:.12em !important}
+  html body .tab-btn.active::after{left:12px;right:12px}
+  html body.layout-partecipante .asta-row-panels{
+    grid-template-columns:minmax(0,1fr) !important;
+    grid-template-areas:"tavolo" "conto" "squadre" !important;
+    row-gap:12px !important;
+  }
+  html body.layout-partecipante .asta-row-panels>#mio-panel{
+    margin-left:0 !important;min-height:0 !important;
+    border-left:1px solid rgba(242,234,222,.10) !important;border-radius:2px !important;
+    padding:18px 18px 16px !important;gap:16px !important;
+  }
+  html body #mio-panel .crediti-badge{font-size:2.1rem !important}
+  html body #budget-bar{grid-template-columns:1fr !important}
+}
+
+/* ── CORREZIONI FINALI ──────────────────────────────────── */
+
+/* Il cronometro è disegnato in SVG e i suoi colori sono impostati da JS
+   (verde→azzurro, poi rosso sotto i 5s). Qui li riportiamo alla lampada. */
+html body #timer-grad-start{stop-color:#FFB04A !important}
+html body #timer-grad-end{stop-color:#C4802B !important}
+html body.puja-urgente #timer-grad-start{stop-color:#E23A2E !important}
+html body.puja-urgente #timer-grad-end{stop-color:#8E2019 !important}
+html body #puja-panel-slot .timer-progress{stroke-width:4 !important}
+html body #puja-panel-slot .timer-ring circle:nth-of-type(2){stroke:rgba(242,234,222,.07) !important;stroke-width:4 !important}
+html body #puja-panel-slot .timer-ring circle:first-of-type{stroke:rgba(242,234,222,.14) !important}
+
+/* Badge ruolo: contorno, non pastiglia piena (il rosso resta uno stato) */
+html body #puja-panel-slot .badge-ruolo,
+html body #puja-panel-slot .badge-ruolo[class*="r-"]{
+  background:none !important;border:1px solid rgba(242,234,222,.28) !important;
+  color:#F2EADE !important;border-radius:0 !important;
+  font-family:'Space Mono',monospace !important;font-size:.62rem !important;
+  letter-spacing:.1em !important;padding:5px 10px !important;font-weight:400 !important;
+}
+
+/* ── IL TAVOLO: gli amici, uno accanto all'altro ────────────
+   La lista verticale lasciava mezza riga vuota accanto al
+   pannello "la mia squadra". Le squadre diventano una griglia
+   orizzontale: occupano la larghezza che hanno, e le due
+   colonne finiscono alla stessa altezza. */
+html body.layout-partecipante .asta-row-panels>.panel-budget{
+  max-height:none !important;
+  max-width:none !important;overflow:visible !important;
+  padding:14px 20px 16px !important;
+}
+html body #budget-bar{
+  display:grid !important;
+  grid-template-columns:repeat(auto-fit,minmax(288px,1fr)) !important;
+  gap:0 26px !important;align-content:start !important;
+}
+html body #budget-bar .sidebar-squadra{
+  padding:9px 0 9px 10px !important;
+  border-bottom:1px solid rgba(242,234,222,.07) !important;
+}
+html body .panel-budget-hdr{padding-bottom:8px !important;margin-bottom:8px !important}
+
+/* "Il tuo conto" non è un pannello a parte: è il conto appoggiato
+   sul tavolo, accanto alla puja. Stessa superficie, stessa miccia. */
+html body.layout-partecipante .asta-row-panels>#mio-panel{
+  align-self:stretch !important;margin-left:0 !important;min-height:258px !important;max-height:none !important;
+  padding:30px 26px 28px !important;border-radius:0 2px 2px 0 !important;
+  border:1px solid rgba(242,234,222,.10) !important;border-left:none !important;
+  background:
+    radial-gradient(86% 110% at 104% 116%, rgba(28,91,69,.32), transparent 62%),
+    linear-gradient(180deg, rgba(26,21,18,.96), rgba(12,10,9,.97)) !important;
+  box-shadow:0 28px 64px rgba(0,0,0,.5) !important;
+  display:flex !important;flex-direction:column !important;
+  justify-content:space-between !important;overflow:visible !important;position:relative !important;
+}
+html body #mio-panel::before{
+  content:'' !important;position:absolute !important;left:0;right:-1px;top:-1px;height:2px;
+  background:rgba(242,234,222,.08);z-index:5;
+}
+html body #mio-panel .mio-panel-header{
+  flex-direction:column !important;align-items:flex-start !important;gap:10px !important;
+  padding-bottom:16px !important;margin-bottom:0 !important;
+  border-bottom:1px solid rgba(242,234,222,.09) !important;
+}
+html body #mio-panel .mio-nome{
+  font-family:'Space Mono',monospace !important;font-size:.58rem !important;
+  letter-spacing:.22em !important;text-transform:uppercase !important;color:#6E645A !important;
+}
+html body #mio-panel .crediti-badge{
+  display:block !important;
+  font-family:'Archivo',sans-serif !important;font-weight:900 !important;
+  font-variation-settings:'wdth' 106 !important;font-variant-numeric:tabular-nums !important;
+  font-size:2.7rem !important;line-height:.88 !important;letter-spacing:-.028em !important;
+  color:#F2EADE !important;background:none !important;border:none !important;padding:0 !important;
+}
+html body #mio-panel .slot-counter{
+  display:grid !important;grid-template-columns:1fr 1fr !important;gap:12px !important;
+  margin:0 !important;
+}
+html body #mio-panel .mio-panel-actions{margin:0 !important;padding-top:0 !important}
+html body #mio-panel .mio-panel-actions .btn{
+  padding:12px 10px !important;font-size:.66rem !important;letter-spacing:.12em !important;
+}
+
+/* Barre di budget: filetti, non sottolineature accese */
+html body .budget-progress{height:2px !important;background:rgba(242,234,222,.06) !important;margin-top:5px !important}
+html body .budget-progress-fill{opacity:.5 !important}
+html body .sidebar-squadra.offerente-attuale .budget-progress-fill{opacity:1 !important}
+
+/* La sala si intravede appena: la foto è luce, non soggetto */
+html body .pitch-bg{filter:saturate(.38) contrast(1.02) brightness(.82) !important}
+
+/* Storico: cifre in tabellone */
+html body .storico-list li{padding:11px 10px !important;font-size:.8rem !important}
+html body .storico-list li .text-accent{
+  font-family:'Archivo',sans-serif !important;font-weight:800 !important;
+  font-variation-settings:'wdth' 100 !important;font-variant-numeric:tabular-nums !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   I COMPORTAMENTI — la parte che non è pelle
+   Queste regole non colorano: cambiano cosa vedi, e quando.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── "ancora in gioco" in testata ── */
+html body .vivi-chip{
+  display:flex !important;flex-direction:column !important;align-items:flex-end !important;
+  line-height:1 !important;margin-right:14px !important;padding-right:14px !important;
+  border-right:1px solid rgba(242,234,222,.12) !important;
+}
+html body .vivi-chip b{
+  font-family:'Archivo',sans-serif !important;font-weight:900 !important;
+  font-variation-settings:'wdth' 104 !important;font-variant-numeric:tabular-nums !important;
+  font-size:1.05rem !important;color:#FFB04A !important;
+}
+html body .vivi-chip span{
+  font-family:'Space Mono',monospace !important;font-size:.5rem !important;
+  letter-spacing:.16em !important;text-transform:uppercase !important;color:#6E645A !important;margin-top:2px !important;
+}
+html body[data-fase="finale"] .vivi-chip b{color:#E23A2E !important}
+
+/* ── chi non può più coprire l'offerta esce dal tavolo ── */
+html body #budget-bar .sidebar-squadra{
+  transition:opacity .45s ease, transform .45s ease, filter .45s ease !important;
+}
+html body #budget-bar .sidebar-squadra.fuori{
+  opacity:.24 !important;transform:translateX(-5px) !important;
+}
+html body #budget-bar .sidebar-squadra.fuori .sq-crediti{
+  text-decoration:line-through !important;color:#6E645A !important;
+}
+
+/* ── LA MOSSA: negli ultimi secondi la stanza si stringe ──
+   Non cambia il colore: cambia cosa resta a fuoco. Sparisce
+   tutto ciò che non serve a decidere se rilanciare. */
+html body .panel-budget,
+html body #mio-panel,
+html body .tabs-panel,
+html body #puja-panel-slot .cc-meta,
+html body #puja-panel-slot .cc-offerente,
+html body #puja-panel-slot .cc-strategia-info,
+html body #puja-panel-slot .cc-nome{
+  transition:opacity .5s ease, filter .5s ease, font-size .5s cubic-bezier(.2,.8,.2,1) !important;
+}
+html body[data-fase="finale"] .panel-budget{opacity:.26 !important;filter:blur(1.8px) !important}
+html body[data-fase="finale"] .tabs-panel{opacity:.16 !important;filter:blur(1.4px) !important}
+html body[data-fase="finale"] #mio-panel{opacity:.52 !important}
+html body[data-fase="finale"] #puja-panel-slot .cc-meta,
+html body[data-fase="finale"] #puja-panel-slot .cc-offerente,
+html body[data-fase="finale"] #puja-panel-slot .cc-strategia-info{opacity:.22 !important}
+html body[data-fase="finale"] #puja-panel-slot .cc-nome{font-size:1.85rem !important}
+
+/* ── la leva: il riempimento mentre tieni premuto ── */
+html body #puja-panel-slot .btn-rilancia{
+  background-image:linear-gradient(90deg,
+    rgba(255,176,74,.55) 0 calc(var(--carica,0) * 1%),
+    transparent calc(var(--carica,0) * 1%)) !important;
+  background-color:#F2EADE !important;
+  transition:background-color .3s ease, box-shadow .3s ease !important;
+  cursor:pointer;
+}
+html body[data-fase="finale"] #puja-panel-slot .btn-rilancia{background-color:#E23A2E !important}
+html body #puja-panel-slot .btn-rilancia:active{transform:translateY(2px)}
+html body #puja-panel-slot .btn-rilancia[disabled]{opacity:.3 !important;box-shadow:none !important}
+
+/* ── il colpo sul tavolo quando qualcuno rilancia ── */
+@keyframes colpo-tavolo{
+  0%{transform:translateY(0)}
+  22%{transform:translateY(3px)}
+  100%{transform:translateY(0)}
+}
+@keyframes lampo-sala{
+  0%{opacity:.55}
+  100%{opacity:0}
+}
+html body #puja-panel-slot.colpo{animation:colpo-tavolo .26s ease-out}
+html body #puja-panel-slot.colpo::before{
+  animation:lampo-sala .6s ease-out;
+  background:radial-gradient(60% 140% at 22% -20%, rgba(255,176,74,.9), transparent 62%) !important;
+  height:100% !important;top:0 !important;pointer-events:none;
+}
+
+/* ── assegnato: il timbro cade sulla scena ── */
+html body[data-fase="assegnato"] #puja-panel-slot{
+  background:
+    radial-gradient(52% 120% at 30% -14%, rgba(20,110,80,.40), transparent 64%),
+    linear-gradient(180deg, rgba(16,32,26,.96), rgba(10,15,13,.97)) !important;
+}
+html body .timbro-preso{
+  position:absolute !important;inset:0 !important;z-index:20 !important;
+  display:flex !important;flex-direction:column !important;
+  align-items:center !important;justify-content:center !important;gap:12px !important;
+  pointer-events:none !important;
+}
+html body .timbro-preso span{
+  font-family:'Archivo',sans-serif !important;font-weight:900 !important;
+  font-variation-settings:'wdth' 70 !important;font-size:3.4rem !important;
+  text-transform:uppercase !important;letter-spacing:.05em !important;
+  color:#5FCFA6 !important;border:4px solid #5FCFA6 !important;padding:10px 34px !important;
+  transform:rotate(-6deg) !important;animation:timbro-cade .34s cubic-bezier(.2,1.6,.4,1) !important;
+}
+@keyframes timbro-cade{
+  0%{transform:rotate(-6deg) scale(2.6);opacity:0}
+  60%{opacity:1}
+  100%{transform:rotate(-6deg) scale(1);opacity:1}
+}
+html body .timbro-preso em{
+  font-family:'Space Mono',monospace !important;font-style:normal !important;
+  font-size:.72rem !important;letter-spacing:.2em !important;text-transform:uppercase !important;
+  color:#F2EADE !important;
+}
+
+@media(prefers-reduced-motion:reduce){
+  html body *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+/* ═══════════════════════════════════════════════════════════
+   VISTA ADMIN — la stessa scena, sull'altro ramo di layout
+   Il foglio originale governa la puja dell'admin con
+   `body.layout-admin .asta-row-puja`, un ramo separato da
+   `#puja-panel-slot`. Qui gli si applica la stessa identita',
+   altrimenti l'admin resterebbe col tema vecchio.
+   ═══════════════════════════════════════════════════════════ */
+html body.layout-admin .asta-row-puja{
+  position:relative !important;overflow:hidden !important;
+  padding:22px 26px 20px !important;gap:26px !important;align-items:center !important;
+  border:1px solid rgba(242,234,222,.10) !important;border-radius:2px !important;
+  background:
+    radial-gradient(42% 130% at 18% -16%, rgba(255,176,74,.20), transparent 62%),
+    radial-gradient(52% 120% at 102% 118%, rgba(28,91,69,.32), transparent 60%),
+    linear-gradient(180deg, rgba(26,21,18,.96), rgba(12,10,9,.97)) !important;
+  box-shadow:0 24px 56px rgba(0,0,0,.5) !important;
+}
+html body.layout-admin .asta-row-puja::before{
+  content:'' !important;position:absolute !important;left:0;right:0;top:0;height:2px;
+  background:rgba(242,234,222,.08);z-index:3;
+}
+html body.layout-admin .asta-row-puja .chiamata-card{
+  background:none !important;border:none !important;box-shadow:none !important;border-radius:0 !important;
+}
+html body.layout-admin .asta-row-puja .cc-nome{
+  font-family:Archivo,sans-serif !important;font-weight:900 !important;
+  font-variation-settings:'wdth' 62 !important;
+  font-size:2.2rem !important;line-height:.88 !important;text-transform:uppercase !important;
+  color:#F2EADE !important;white-space:normal !important;
+}
+html body.layout-admin .asta-row-puja .cc-offerta{
+  font-family:Archivo,sans-serif !important;font-weight:900 !important;
+  font-variation-settings:'wdth' 112 !important;font-variant-numeric:tabular-nums !important;
+  font-size:3.6rem !important;line-height:.8 !important;letter-spacing:-.03em !important;
+  color:#F2EADE !important;text-shadow:none !important;
+}
+html body.layout-admin .asta-row-puja .cc-offerta-box{
+  border:none !important;background:none !important;box-shadow:none !important;padding:0 !important;
+}
+html body.layout-admin .asta-row-puja .cc-offerta-label{
+  font-family:'Space Mono',monospace !important;font-size:.6rem !important;
+  letter-spacing:.22em !important;text-transform:uppercase !important;color:#FFB04A !important;
+}
+html body.layout-admin .asta-row-puja .cc-avatar{
+  width:96px !important;height:122px !important;border-radius:2px !important;
+  background:linear-gradient(180deg,#1E1814,#100D0B) !important;
+  border:1px solid rgba(242,234,222,.10) !important;animation:none !important;
+}
+html body.layout-admin .asta-row-puja .timer-ring{width:104px !important;height:104px !important}
+html body.layout-admin .asta-row-puja .timer-number{
+  font-family:Archivo,sans-serif !important;font-weight:900 !important;
+  font-variation-settings:'wdth' 106 !important;font-size:2.4rem !important;
+  color:#FFB04A !important;text-shadow:none !important;
+}
+html body.layout-admin .asta-row-puja .rilancio-box{
+  background:none !important;border:none !important;box-shadow:none !important;
+}
+html body.layout-admin .asta-row-puja .quick-bids-row{
+  display:flex !important;gap:0 !important;
+  border:1px solid rgba(242,234,222,.20) !important;border-radius:2px !important;overflow:hidden !important;
+}
+html body.layout-admin .asta-row-puja .btn-quick{
+  flex:1 1 0 !important;border:none !important;border-radius:0 !important;background:none !important;
+  color:#A79B8B !important;height:42px !important;
+}
+html body.layout-admin .asta-row-puja .btn-quick + .btn-quick{border-left:1px solid rgba(242,234,222,.16) !important}
+html body.layout-admin .asta-row-puja .btn-rilancia{
+  background:#F2EADE !important;color:#14100E !important;border-radius:2px !important;
+  font-family:Archivo,sans-serif !important;font-weight:900 !important;
+  font-variation-settings:'wdth' 76 !important;text-transform:uppercase !important;
+  box-shadow:0 12px 28px rgba(0,0,0,.5) !important;
+}
+html body.layout-admin[data-fase="finale"] .asta-row-puja .btn-rilancia{background:#E23A2E !important;color:#F7EFE6 !important}
+
+/* pannello Admin: comandi sobri, niente pastiglie colorate */
+html body .admin-panel{
+  background:linear-gradient(180deg, rgba(11,9,8,.62), rgba(8,7,6,.72)) !important;
+  border:1px solid rgba(242,234,222,.10) !important;border-radius:2px !important;
+}
+html body .admin-badge{
+  background:none !important;border:1px solid rgba(255,176,74,.42) !important;
+  border-radius:0 !important;color:#FFB04A !important;
+  font-family:'Space Mono',monospace !important;font-size:.58rem !important;
+  letter-spacing:.18em !important;text-transform:uppercase !important;
+}
+html body .admin-btn-grid .btn{border-radius:2px !important;font-size:.72rem !important}
+html body .admin-conferma-box{
+  background:rgba(20,16,14,.7) !important;border:1px solid rgba(255,176,74,.3) !important;
+  border-radius:2px !important;
+}
+html body .conferma-titolo{font-family:'Space Mono',monospace !important;letter-spacing:.14em !important;
+  text-transform:uppercase !important;font-size:.66rem !important;color:#FFB04A !important}
+
+/* ═══════════════════════════════════════════════════════════
+   PORTA D'INGRESSO — home, login, lobby, fine asta
+   Qui basta poco: il grosso lo fanno gia' le variabili in
+   style.css. Si sostituisce solo il gradiente viola->oro del
+   titolo, che ora sarebbe piatto (i due colori coincidono).
+   ═══════════════════════════════════════════════════════════ */
+html body .home-title{
+  font-family:'Instrument Serif',Georgia,serif !important;
+  font-style:italic !important;font-weight:400 !important;
+  background:none !important;-webkit-text-fill-color:#F2EADE !important;color:#F2EADE !important;
+  letter-spacing:-.015em !important;
+}
+html body .home-logo{filter:grayscale(1) opacity(.5)}
+html body .card{
+  background:linear-gradient(180deg, rgba(25,20,17,.9), rgba(13,11,10,.94)) !important;
+  border:1px solid rgba(242,234,222,.10) !important;border-radius:2px !important;
+}
+html body .card-title{
+  font-family:'Space Mono',monospace !important;font-size:.7rem !important;
+  letter-spacing:.2em !important;text-transform:uppercase !important;
+  font-weight:400 !important;color:#6E645A !important;
+}
+html body .link-share{background:rgba(20,16,14,.7) !important;border-radius:2px !important}
+html body .link-text{color:#FFB04A !important}
+html body .squadre-list li{background:transparent !important;border-radius:0 !important;
+  border-bottom:1px solid rgba(242,234,222,.07) !important}
+html body .file-drop{border-radius:2px !important;border-color:rgba(242,234,222,.2) !important}
+html body .riepilogo-grid .card{border-radius:2px !important}
+
+/* ── Vista Admin: le squadre su due colonne ──────────────────
+   In Admin la riga alta ospita anche il pannello comandi, quindi
+   la griglia del partecipante non si applica. Basta spezzare la
+   lista in due colonne perche' non diventi una colonna infinita. */
+html body.layout-admin #budget-bar{
+  display:grid !important;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr)) !important;
+  gap:0 18px !important;align-content:start !important;
+}
+html body.layout-admin .asta-row-panels>.panel-budget{
+  flex:1.4 1 380px !important;max-height:clamp(200px,32vh,300px) !important;
+}
+html body.layout-admin .asta-row-panels>#admin-panel,
+html body.layout-admin .asta-row-panels>#mio-panel{
+  max-height:clamp(200px,32vh,300px) !important;
+}
+html body.layout-admin #mio-panel{
+  display:flex !important;flex-direction:column !important;
+}
+html body.layout-admin #mio-panel .crediti-badge{
+  font-family:Archivo,sans-serif !important;font-weight:900 !important;
+  font-variation-settings:'wdth' 104 !important;font-size:2rem !important;
+  background:none !important;border:none !important;padding:0 !important;color:#F2EADE !important;
+}

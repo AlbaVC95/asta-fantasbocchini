@@ -559,3 +559,56 @@ subquery su `strategie.user_id`, non hanno una colonna `user_id` propria). `stra
 resta intatta come dato storico/fallback, mai più letta dal codice; un backfill iniziale crea
 una riga ponte per ogni strategia esistente così le strategie già create restano compatibili
 senza bisogno di reimportarle.
+
+
+## Identità visiva "Serata d'Asta": palette nelle variabili, struttura in un foglio a parte
+
+Il tema precedente ("FantaBar Pulse": viola neon + oro + glow) usava il vocabolario visivo di una app
+di scommesse, non di un prodotto sportivo, e non rappresentava in alcun modo il nome "FantaBar".
+La nuova identità è una regola di illuminazione, non una tavolozza: **una sola sorgente calda in alto
+a sinistra**, come la lampada sopra il tavolo di un locale. Ambra = la lampada (unico accento
+luminoso), rosso = solo stato (urgenza), verde = solo superficie (il banco), mai testo. Verde e rosso
+non si toccano mai: è ciò che tiene la palette lontana dalla bandiera italiana.
+
+Implementata in **due punti separati, di proposito**:
+
+1. `frontend/css/style.css` → blocco `:root`. Cambiano solo i VALORI, i nomi delle variabili restano
+   identici: così tutte le schermate che non sono state ridisegnate (login, lobby, strategie,
+   anteprima, griglia P/A, fine asta, modali) cambiano identità senza toccarne una riga.
+2. `frontend/css/tema-serata.css` (nuovo, caricato dopo) → solo ciò che cambia la COMPOSIZIONE:
+   la scena della puja, la griglia delle squadre, le schede, la vista Admin.
+
+Perché non un unico file: la palette è una modifica chirurgica e reversibile in un punto solo; la
+parte strutturale è voluminosa e piena di `!important`, e tenerla separata la rende leggibile e
+rimovibile con una riga in `index.html` senza toccare `style.css`.
+
+**Debito riconosciuto e non pagato**: `style.css` difende la zona puja con circa 40 regole
+`!important` sparse su tutti i breakpoint, quindi il foglio nuovo deve a sua volta usare
+`html body #puja-panel-slot` + `!important` per vincere. Ripulire quelle regole è un lavoro a parte,
+volutamente NON fatto insieme al cambio di identità per non mescolare un refactor rischioso con una
+modifica puramente estetica.
+
+## Comportamenti d'asta in un modulo opzionale, spento di default
+
+`frontend/js/comportamenti-asta.js` aggiunge tre cose che il tema da solo non può fare: la fase
+dell'asta che guida il layout (negli ultimi secondi la schermata si stringe su prezzo/tempo/azione),
+il contatore "ancora in gioco" (quante squadre possono ancora coprire l'offerta corrente) e la leva
+(RILANCIA si tiene premuto e l'importo sale).
+
+Nasce **spento** (`localStorage.fantabar_comportamenti = '1'` per accenderlo) per una ragione precisa:
+i primi due sono additivi e in sola lettura — leggono lo stato che il client già riceve da
+`stato-asta` e non cambiano nessuna regola — ma **la leva cambia come si sceglie l'importo del
+rilancio**. L'evento emesso resta `'rilancio'` e il server continua a validare con
+`calcolaMaxOfferta()`, quindi nessuna regola viene aggirata; il rischio è d'uso, non di correttezza:
+si può superare l'importo voluto tenendo premuto mezzo secondo di troppo. Va provato in un'asta di
+test prima di darlo alla lega, e per questo non si accende da solo.
+
+Il modulo non pilota nulla: si aggancia con un wrapper a `updateTimer()`, `renderChiamata()` e
+`renderBudgetBar()` — le funzioni vere dell'app — e legge. Il tempo continua a dettarlo il server.
+
+## Effetto collaterale accettato: negli ultimi secondi i crediti dei rivali si sfocano
+
+La regola "la stanza si stringe" porta il riepilogo squadre a opacità 0.26 con sfocatura sotto i 5
+secondi. È deliberato (togliere tutto ciò che non serve a decidere se rilanciare) ma ha un costo
+reale: sono esattamente i secondi in cui potresti volerli guardare. Il contatore "ancora in gioco"
+resta leggibile in testata proprio per compensare — dice la stessa cosa in una cifra sola.
