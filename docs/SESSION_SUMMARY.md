@@ -65,6 +65,19 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Correzione del punto sopra: l'utente ha chiarito che il problema era in vista UTENTE
+  (Partecipante/allenatore), non Admin — "PERO ES EN LA VISTA UTENTE, TIENEN QUE SALIR
+  DESPLEGADOS, SI EL ENTRENADOR QUIERE YA LO ENCOJE EL".** Aggiunto lo stesso accordion anche
+  li' (stesso meccanismo/classe `acc-open`), ma **al contrario**: default sempre espanso (come
+  oggi), l'allenatore lo stringe lui se vuole — non parte mai chiuso. Stessa classe `acc-open`
+  ma significato invertito rispetto ad Admin/mobile (li' vuol dire "aperto", qui "l'utente lo ha
+  chiuso") — commentato a dovere nel CSS per non confondere in futuro. **Bug trovato durante
+  l'implementazione**: `#mio-panel` in vista Partecipante ha una regola separata
+  (`html body.layout-partecipante .asta-row-panels > #mio-panel`, la "vetrina" della carta) con
+  `min-height:220px !important` — e min-height vince sempre su max-height quando confliggono,
+  quindi il pannello non si chiudeva mai sotto 220px finche' non si e' azzerato anche
+  `min-height` nella regola di chiusura. Verificato nei 3 temi, apri/chiudi funzionante,
+  `.panel-budget` (senza questo min-height concorrente) non ne aveva bisogno.
 - **Riepilogo squadre e Mio team, collassabili anche su desktop in vista Admin.** L'utente ha
   segnalato che occupavano troppo spazio verticale, lasciando le tab sotto (Storico/Rose/
   Svincolati/Griglia P/A/Anteprima) a malapena raggiungibili senza scroll. Esisteva gia' un
