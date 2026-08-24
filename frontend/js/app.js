@@ -1475,6 +1475,10 @@ function handleExcelFile(file) {
       const colFm = findCol('FM');
       const colFvmp600 = findCol('FVMp600');
       const colQam = findCol('QAM');
+      // QUOT. (quotazione): assente in questo formato Excel (a differenza del Listino
+      // Ufficiale) finche' l'utente non aggiorna il proprio export — richiesta esplicita per
+      // farla comparire sempre in Svincolati quando c'e', qui come nell'altro importatore.
+      const colQuot = findCol('QUOT.', 'QUOT', 'Quotazione');
       const colFantaSquadra = findCol('FantaSquadra');
       const colCosto = findCol('Costo');
       const colRP = findCol('R/P', 'RP');
@@ -1504,6 +1508,7 @@ function handleExcelFile(file) {
           fm: colFm && row[colFm] !== '' ? row[colFm] : null,
           fvmp600: colFvmp600 && row[colFvmp600] !== '' ? row[colFvmp600] : null,
           qam: colQam && row[colQam] !== '' ? row[colQam] : null,
+          quotazione: colQuot && row[colQuot] !== '' ? Number(row[colQuot]) : null,
           tipo: (row[colRP] || 'NN').toString().toUpperCase(),
           costo: row[colCosto] || 1,
           squadraOriginale: fantaSquadra || null,
@@ -3104,6 +3109,18 @@ function _antLineaIndex(ruoloComposito) {
 // dove gareggia di nuovo solo per FMV. Tocca SOLO gli slot vuoti al momento del click (mai
 // quelli gia' piazzati a mano) ma ricalcola sempre da zero sulla Panchina attuale — nessuna
 // cache, due click di seguito senza cambi alla rosa non spostano nulla.
+// Valore di riferimento per il confronto FMV in Autorellenar: QUOT. (quotazione, dal Listino
+// Ufficiale o da un Excel che la include) prima di tutto se e' presente — richiesta esplicita
+// dell'utente, non l'FM che spesso manca del tutto a seconda di come e' stata creata l'asta.
+// A cascata: Valore (Valore Algoritmico, dal JSON) -> FM -> MV -> nessun dato (ultima priorita').
+// 0/null/non numerico sono trattati come "assente", non come valore reale basso.
+function _antValoreRiferimento(g) {
+  if (typeof g.quotazione === 'number' && g.quotazione > 0) return g.quotazione;
+  if (typeof g.valore === 'number' && g.valore > 0) return g.valore;
+  if (typeof g.fm === 'number') return g.fm;
+  if (typeof g.mv === 'number') return g.mv;
+  return -Infinity;
+}
 function _antAutoRiempi(nomeSquadra) {
   const selModulo = document.getElementById('ant-modulo-select');
   if (!selModulo) return;
@@ -3134,9 +3151,9 @@ function _antAutoRiempi(nomeSquadra) {
         if (s.occupato) return;
         panchina.forEach(g => {
           if (!_ruoliCompatibili(s.ruolo, g.ruolo)) return;
-          const fmG = typeof g.fm === 'number' ? g.fm : -Infinity;
-          const fmBest = (best && typeof best.fm === 'number') ? best.fm : -Infinity;
-          if (!best || fmG > fmBest) { best = g; bestSlot = s; }
+          const vG = _antValoreRiferimento(g);
+          const vBest = best ? _antValoreRiferimento(best) : -Infinity;
+          if (!best || vG > vBest) { best = g; bestSlot = s; }
         });
       });
       if (best && bestSlot) {

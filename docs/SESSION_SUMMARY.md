@@ -65,6 +65,25 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Autorellenar sceglieva i PEGGIORI, non i migliori — bug reale nel valore di riferimento.**
+  Segnalato dall'utente subito dopo il rilascio del punto sotto. Causa: l'algoritmo confrontava
+  solo `g.fm`, ma FM e' un campo opzionale (dipende dalla colonna nel file caricato) — quando
+  manca su quasi tutti i giocatori, il confronto e' sempre un pareggio a `-Infinity` e vince
+  semplicemente il primo della lista, non il migliore. **Sostituito con una catena di priorita'**
+  (`_antValoreRiferimento()`, richiesta esplicita e chiarita dall'utente in piu' passate):
+  `quotazione` (QUOT.) prima di tutto se presente, poi `valore` (Valore Algoritmico, dal JSON),
+  poi `fm`, poi `mv` — mai `prezzo`/`costo` (scartato esplicitamente dall'utente: quanto pagato
+  in asta dipende da troppi fattori estranei alla qualita' del giocatore). 0/null/non numerico
+  sempre trattati come "assente", mai come valore basso reale.
+  **Gap trovato e chiuso di rimando**: il secondo importatore Excel (roster di una lega esistente,
+  usato per avviare un'asta di riparazione — diverso dal Listino Ufficiale) non cercava affatto
+  una colonna QUOT./Quotazione, a differenza del primo — aggiunta con lo stesso alias-matching
+  gia' in uso altrove.
+  **Svincolati**: gia' mostra "Quot." in automatico appena `g.quotazione` e' presente, da
+  qualunque fonte (verificato con dati sintetici, nessun cambio necessario li').
+  **Nota per l'utente**: se importa un JSON generato da uno strumento esterno, il campo deve
+  chiamarsi esattamente `quotazione` (minuscolo) per ogni giocatore — l'upload diretto di JSON
+  non fa alcun mapping di alias di colonna come invece fa l'Excel.
 - **Anteprima: drag & drop + "Autorellenar" (miglior 11 per FMV), richiesta esplicita
   dell'utente con specifica dettagliata.** Nuove funzioni in `app.js`, nessuna esistente
   toccata nella logica:
