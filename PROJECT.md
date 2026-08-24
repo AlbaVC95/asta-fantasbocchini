@@ -82,3 +82,8 @@ Senza di esse il server parte comunque ma tutte le funzionalità legate a Supaba
 - **`String.replace(x, stringa)` corrompe `app.js`**: le sequenze `$&`, `$'`, `$1` nella stringa di
   sostituzione vengono interpretate come pattern, e `app.js` contiene `['$,$,$']` (riga 293). Usare
   sempre un replacer come **funzione**: `str.replace(x, () => y)`.
+- **Cache-busting su CSS/JS**: `frontend/index.html` carica `style.css`/`tema-serata.css`/`app.js`/…
+  con `?v=timestamp` (vedi commento in `backend/server.js`, funzione che serve `frontend/`
+  staticamente). Dopo qualunque modifica a uno di questi file, bisogna aggiornare a mano il suo
+  `?v=` in `index.html` — altrimenti browser/CDN possono continuare a servire la versione vecchia
+  sotto la stessa URL anche dopo il deploy.

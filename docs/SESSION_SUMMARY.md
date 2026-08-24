@@ -6,8 +6,9 @@ non accumulato. La cronologia sta in `git log`, il *perché* delle scelte in
 
 ## Stato attuale
 
-Branch `main`, non ancora pushato con l'ultimo cambio (vedi sotto). Su Hostinger il deploy è
-automatico al push su `main`, quindi **quello che c'è su `main` è quello che è online**.
+Branch `main`, pushato e allineato con `origin/main` (redesign tema chiaro + fix cache-busting,
+vedi sotto). Su Hostinger il deploy è automatico al push su `main`, quindi **quello che c'è su
+`main` è quello che è online**.
 
 L'app gira col tema **"Serata d'Asta"** in due versioni: sera (default, lampada ambra su sala
 scura, invariata) e mattina (`html.theme-light`, ora **"Cuoio"**: banco di cuoio e pergamena
@@ -48,6 +49,11 @@ ancora la vecchia palette bianco/argento).
   renderizzata con carte vere — servirebbe uno stato sintetico più elaborato), Griglia P/A (eredita
   i token ma non è stata guardata), modali (svincolo, conferma RIC, ecc. — stesso limite di sempre,
   nessuna asta reale disponibile).
+- **Fix cache-busting**: il commit del redesign non aveva aggiornato `?v=` di
+  `style.css`/`tema-serata.css` in `index.html` (convenzione del progetto, vedi PROJECT.md) —
+  browser/CDN potevano continuare a servire il CSS precedente sotto la stessa URL. Bumpato in un
+  commit separato subito dopo. Se in futuro un cambio a un file statico "non si vede" dopo il
+  deploy, controllare per primo questo.
 - **Bug preesistente scoperto e corretto durante questo lavoro** (non introdotto da questo cambio):
   `html body .card{background:linear-gradient(rgba(25,20,17,.9),...)!important}` in
   `tema-serata.css` non era scoperto per tema — le card di Home/Login/Lobby/Fine asta restavano
