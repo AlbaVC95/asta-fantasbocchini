@@ -1627,13 +1627,17 @@ html body #budget-bar .budget-progress{bottom:1px !important;left:8px !important
 /* ── L'ambiente: pergamena, luce da vetrina ── */
 html[data-tema="cuoio"] body{background:#F3E7D0 !important}
 html[data-tema="cuoio"] .pitch-bg{
+  /* Foto vera di pergamena con impronte di pallone (fornita dall'utente), non piu' la
+     foto del bar sfumata via filtri per sembrare carta. */
   background-color:#F3E7D0 !important;
   background-image:
-    radial-gradient(52% 44% at 22% -6%, rgba(107,68,35,.14), transparent 64%),
-    radial-gradient(66% 60% at 104% 106%, rgba(47,107,63,.10), transparent 62%),
-    linear-gradient(180deg, rgba(250,242,227,.93) 0%, rgba(243,231,208,.90) 40%, rgba(233,217,187,.95) 100%),
-    url('/img/backgrounds/fantabar-bg.jpg') !important;
-  filter:saturate(.22) sepia(.12) contrast(1.02) brightness(1.14) !important;
+    radial-gradient(52% 44% at 22% -6%, rgba(107,68,35,.10), transparent 64%),
+    radial-gradient(66% 60% at 104% 106%, rgba(47,107,63,.08), transparent 62%),
+    url('/img/backgrounds/fondo-cuoio.jpeg') !important;
+  background-size:100% 100%, 100% 100%, cover !important;
+  background-position:center, center, center !important;
+  background-repeat:no-repeat, no-repeat, no-repeat !important;
+  filter:none !important;
 }
 html[data-tema="cuoio"] ::selection{background:rgba(107,68,35,.24);color:#2B1B10}
 

@@ -65,6 +65,16 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Sfondo di pagina Cuoio: anche questo ora e' una foto vera.** L'utente ha fornito una terza
+  foto (pergamena con impronte di pallone sbiadite, `fondoCuero.jpeg` → salvata come
+  `frontend/img/backgrounds/fondo-cuoio.jpeg`). Sostituiva la vecchia `fantabar-bg.jpg` (foto
+  del bar, resa "pergamena" solo con `filter:saturate(.22) sepia(.12)...` a mano) nella regola
+  che vince davvero la cascata per `.pitch-bg` in Cuoio (`tema-serata.css`, non l'omonima in
+  `style.css` — stesso file/riga gia' noti da regressioni precedenti). Tolti i filtri, restano
+  solo due bagliori radiali leggeri sopra la foto. Verificato: texture visibile nei margini
+  attorno alle carte a finestra larga, Lavagna/Serata non toccati (controllato lo stesso
+  screenshot per errore — la vista non cambiava perche' lo screenshot del browser di test era
+  in ritardo di un frame, confermato invece corretto via `getComputedStyle` prima di riprovare).
 - **Pallone Cuoio e lavagna Lavagna: da disegno CSS a foto reale.** L'utente ha confrontato
   l'ultimo tentativo (un SVG fatto a mano, gradiente sferico + cuciture a gajos, tecnica
   `feTurbulence` gia' usata per la sabbia della clessidra) con la foto vera e ha chiesto di
