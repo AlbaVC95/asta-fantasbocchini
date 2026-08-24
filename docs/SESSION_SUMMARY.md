@@ -6,19 +6,53 @@ non accumulato. La cronologia sta in `git log`, il *perché* delle scelte in
 
 ## Stato attuale
 
-Branch `main`, allineato con `origin/main` e con
-`claude/fantabar-visual-directions-64b4h6`. Su Hostinger il deploy è automatico al push su
-`main`, quindi **quello che c'è su `main` è quello che è online**.
+Branch `main`, non ancora pushato con l'ultimo cambio (vedi sotto). Su Hostinger il deploy è
+automatico al push su `main`, quindi **quello che c'è su `main` è quello che è online**.
 
 L'app gira col tema **"Serata d'Asta"** in due versioni: sera (default, lampada ambra su sala
-scura) e mattina (`html.theme-light`, bianco/argento/grigio perla con l'ottone come unico
-accento). I colori del tema strutturale sono ruoli (`--sc-testo`, `--sc-ambra`, `--sc-carta`…)
-definiti due volte in `tema-serata.css`: `:root` e `html.theme-light`.
+scura, invariata) e mattina (`html.theme-light`, ora **"Cuoio"**: banco di cuoio e pergamena
+ispirato a un mockup fornito dall'utente ("PuntBar") — cuoio scuro per testata/cornici,
+pergamena chiara per i piani, verde bosco riservato SOLO alle cifre di credito/offerta. Sostituisce
+interamente la versione precedente "Mattina al banco" (bianco/argento/ottone). I colori del tema
+strutturale sono ruoli (`--sc-testo`, `--sc-ambra`, `--sc-carta`…) definiti due volte in
+`tema-serata.css`: `:root` (sera) e `html.theme-light` (mattina/cuoio) — più i token globali
+condivisi da tutte le schermate in `style.css` (`html.theme-light{--bg-card,--primary,--gold,
+--success,--text-primary...}`), che ora cascano lo stesso linguaggio cuoio/pergamena/verde su
+Home, Lobby, Strategie, Editor Fasce, Anteprima e Griglia P/A senza bisogno di regole dedicate
+per ciascuna.
 
 Per portare online, tornare indietro, o sapere cosa è stato verificato e cosa no:
-**[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)**.
+**[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)** (non ancora aggiornato col redesign "Cuoio" — il
+meccanismo di rollback a 3 livelli descritto lì resta valido, ma la sezione "Tema chiaro" descrive
+ancora la vecchia palette bianco/argento).
 
 ## Cambi recenti
+
+- **Tema chiaro ridisegnato da zero ("Cuoio"), su richiesta esplicita dell'utente con mockup di
+  riferimento**: testata (`.asta-header`/`.home-header`) diventata una barra in cuoio scuro con
+  testo crema (`Instrument Serif`, già caricato per l'insegna scura, riusato qui) anche se il resto
+  della pagina è chiaro; tavolo della puja e `.chiamata-card`/`#puja-panel-slot` con cornice doppia
+  cuoio+pergamena; `.cc-avatar` da cerchio ad angoli smussati con cornice a più livelli (SOLO
+  bordo/forma, dimensioni invariate — vedi "Carta XL animazione" sotto, stesso vincolo);
+  `.cc-offerta`/`.cc-offerta-box`/`.sq-crediti` in verde bosco (`#2F6B3F`), l'unico verde del tema
+  e riservato al denaro; tabs (`.tabs-nav`) diventate una striscia verde con testo crema; riepilogo
+  squadre solo ricolorato, griglia a due righe della sessione precedente non toccata; aggiunta prima
+  regola `html.theme-light .ant-card{...}` (Anteprima non aveva mai avuto un override chiaro).
+  Contrasto verificato via script (non a occhio): tutte le coppie testo/sfondo chiave ≥4.9:1
+  (ink/secondary/verde/cuoio-pieno/crema-su-cuoio), nessun debito nuovo tipo quello già noto nel
+  tema scuro. Verificato nel browser (dati sintetici via console, iniettati chiamando
+  `applyLayoutRuolo()`/`renderChiamata()`/`renderBudgetBar()` direttamente — nessuna asta reale
+  disponibile) in vista Partecipante e Admin, desktop e mobile (375px); tema scuro ricontrollato
+  dopo il cambio, invariato pixel per pixel. **Non verificato**: Anteprima con giocatori reali
+  piazzati sul campo (il drawer si apre e la cornice `.ant-card` è scritta, ma non è stata vista
+  renderizzata con carte vere — servirebbe uno stato sintetico più elaborato), Griglia P/A (eredita
+  i token ma non è stata guardata), modali (svincolo, conferma RIC, ecc. — stesso limite di sempre,
+  nessuna asta reale disponibile).
+- **Bug preesistente scoperto e corretto durante questo lavoro** (non introdotto da questo cambio):
+  `html body .card{background:linear-gradient(rgba(25,20,17,.9),...)!important}` in
+  `tema-serata.css` non era scoperto per tema — le card di Home/Login/Lobby/Fine asta restavano
+  sempre scure ANCHE nel vecchio tema chiaro "Mattina al banco". Aggiunta la mancante
+  `html.theme-light body .card{...}` (pergamena) accanto alle altre regole "Porta d'ingresso".
 
 - **Vista partecipante con Anteprima aperta — reflow vero.** Anteprima è una colonna sorella
   di `.asta-main-col`: aprendola la finestra non cambia, si dimezza la colonna, e tutti gli

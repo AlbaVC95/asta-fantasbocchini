@@ -679,3 +679,41 @@ catena degli scope, con un `try/catch` per il caso in cui `app.js` non sia ancor
 Morale operativa: per un modulo che si aggancia all'app non basta `node --check`. Serve misurare
 l'effetto reale — nel nostro caso intercettare `socket.emit` e **contare le offerte che partono
 davvero** per ogni gesto.
+
+## Tema chiaro "Cuoio": sostituisce "Mattina al banco", verde riservato al denaro
+
+Su richiesta esplicita dell'utente (mockup di riferimento "PuntBar"), il tema chiaro
+(`html.theme-light`) è stato riscritto da zero — non è più "il tema scuro schiarito" in argento/
+ottone, ma un banco di cuoio e pergamena. Decisioni non ovvie, per chi tocca queste regole in
+futuro:
+
+- **Verde riservato SOLO alle cifre di credito/offerta** (`.cc-offerta`, `.cc-offerta-box`,
+  `.sq-crediti`), mai a superfici larghe o testo generico — a differenza del mockup, dove il verde
+  compare anche come sfondo di header/tab. Compromesso deliberato: il verde resta leggibile come
+  "questo è denaro" invece di diventare un secondo accento generico che competerebbe con il cuoio.
+  L'unica eccezione è la barra `.tabs-nav`, resa verde bosco con testo crema per riprendere il
+  tratto più riconoscibile del mockup (la striscia verde delle tab) — un'eccezione dichiarata, non
+  un'incoerenza.
+- **`.sq-crediti` in stato `offerente-attuale` resta cuoio, non verde**: segnala "chi sta vincendo
+  ora" (uno stato), non "quanto vale" (un dato) — stessa distinzione semantica, nessuna regola
+  nuova aggiunta apposta, solo la cascata naturale delle regole `.offerente-attuale` già esistenti.
+- **`.cc-avatar` cambia forma (cerchio → angoli smussati con cornice) SOLO sotto `html.theme-light`,
+  e SOLO bordo/border-radius — mai width/height/aspect-ratio.** C'è un bug storico documentato sopra
+  ("Carta XL dell'animazione") legato proprio a `.cc-avatar` che cambia forma tra contesti (circle
+  84×84 vs rect 118×auto in admin): la cornice ornata del nuovo tema è puramente decorativa apposta
+  per non riaprire quella fragilità.
+- **La testata (`.asta-header`/`.home-header`) resta in cuoio scuro anche nel tema "chiaro"**: il
+  resto della pagina è pergamena, ma il banco (l'header) è sempre scuro — è il tratto più
+  riconoscibile del mockup, e l'unico punto dove "tema chiaro" non significa "tutto chiaro".
+  Richiede colori di testo/bottoni espliciti nella testata (crema fisso), non ereditati dai ruoli
+  `--sc-testo`/`--text-primary` (che nel resto della pagina sono scuri, corretti per fondo chiaro
+  ma invisibili su fondo cuoio scuro).
+- **Bug preesistente trovato e corretto, non introdotto da questo cambio**: `html body .card` in
+  `tema-serata.css` (usata da Home/Login/Lobby/Fine asta) aveva un gradiente scuro hardcoded SENZA
+  scoping per tema — le card di quelle schermate restavano scure anche nel vecchio tema chiaro.
+  Aggiunta la `html.theme-light body .card{...}` mancante.
+- **Verifica**: contrasto testo/sfondo calcolato via script (non a occhio) su tutte le coppie
+  chiave, tutte ≥4.9:1. Verificato in browser con stato sintetico iniettato via console (nessuna
+  asta reale disponibile, stesso limite di sempre) in vista Partecipante/Admin, desktop/mobile;
+  tema scuro ricontrollato invariato. **Non verificato**: Anteprima con carte reali sul campo,
+  Griglia P/A, modali con dati veri — vedi [docs/SESSION_SUMMARY.md](docs/SESSION_SUMMARY.md).

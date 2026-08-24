@@ -26,8 +26,9 @@
    sotto restano una sola serie: cambia la luce, non la composizione.
 
    SERA (default) — una lampada ambra in una sala scura.
-   MATTINA (html.theme-light) — bianco, argento e grigio perla; l'unico
-   accento e' l'ottone del banco, lo stesso metallo della sera.
+   MATTINA (html.theme-light) — "Cuoio": banco di cuoio e pergamena, come
+   un registro d'asta d'altri tempi. L'accento e' il cuoio del banco, il
+   verde e' riservato alle cifre di credito (il denaro sul tavolo).
    ═══════════════════════════════════════════════════════════════════ */
 :root{
   --sc-carta:242,234,222;    /* il chiaro: testo e filetti sul fondo scuro */
@@ -42,16 +43,16 @@
   --sc-fondo:#14100E;
 }
 html.theme-light{
-  --sc-carta:23,26,31;       /* sul bianco il "chiaro" diventa inchiostro */
-  --sc-ambra:150,101,32;
-  --sc-brace:178,44,34;
-  --sc-testo:#171A1F;
-  --sc-medio:#565C66;
-  --sc-tenue:#646A73;      /* misurato: #8A9099 dava 3.2:1 sul bianco */
-  --sc-ambra-piena:#8C5E1E;   /* ottone scuro: #966520 restava sotto 4.5:1 */
-  --sc-ambra-alta:#70481A;
-  --sc-brace-piena:#B22C22;
-  --sc-fondo:#FFFFFF;
+  --sc-carta:58,36,20;       /* sulla pergamena il "chiaro" diventa inchiostro di cuoio */
+  --sc-ambra:107,68,35;      /* il cuoio del banco, non piu' l'ottone */
+  --sc-brace:168,58,42;
+  --sc-testo:#2B1B10;
+  --sc-medio:#5C4A3A;
+  --sc-tenue:#6B5A48;      /* misurato ~4.7:1 sulla pergamena piu' chiara */
+  --sc-ambra-piena:#6E431F;   /* cuoio scuro, leggibile come testo/bordo */
+  --sc-ambra-alta:#8F5A2C;
+  --sc-brace-piena:#A83A2A;
+  --sc-fondo:#F3E7D0;
 }
 
 /* ── L'AMBIENTE ─────────────────────────────────────────────
@@ -1597,12 +1598,12 @@ html body #budget-bar .budget-progress{bottom:1px !important;left:8px !important
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   MATTINA AL BANCO — la versione chiara
+   MATTINA AL BANCO — "Cuoio", la versione chiara
 
-   Non e' il tema scuro schiarito: e' la stessa stanza a un'altra ora.
-   Bianco per i piani, argento e grigio perla per l'ombra, ottone per
-   l'unico accento — lo stesso metallo della lampada della sera, solo
-   spento. Il rosso resta uno stato, il verde resta una superficie.
+   Non e' il tema scuro schiarito: e' il banco visto di giorno. Pergamena
+   per i piani, cuoio per la testata e le cornici, verde bosco riservato
+   SOLO alle cifre di credito (il denaro sul tavolo) — mai a superfici
+   larghe ne' a testo generico. Il rosso resta uno stato.
 
    Le regole di composizione (griglie, misure, container query) sono
    una sola serie per tutti e due i temi: qui cambiano solo le materie,
@@ -1610,179 +1611,211 @@ html body #budget-bar .budget-progress{bottom:1px !important;left:8px !important
    nessuna variabile puo' capovolgere da sola.
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ── L'ambiente: la sala di giorno ── */
-html.theme-light body{background:#EDEFF2 !important}
+/* ── L'ambiente: pergamena, luce da vetrina ── */
+html.theme-light body{background:#F3E7D0 !important}
 html.theme-light .pitch-bg{
-  background-color:#EDEFF2 !important;
+  background-color:#F3E7D0 !important;
   background-image:
-    radial-gradient(52% 44% at 22% -6%, rgba(176,122,43,.10), transparent 64%),
-    radial-gradient(66% 60% at 104% 106%, rgba(47,125,91,.10), transparent 62%),
-    linear-gradient(180deg, rgba(247,248,250,.93) 0%, rgba(240,242,245,.90) 40%, rgba(233,236,240,.95) 100%),
+    radial-gradient(52% 44% at 22% -6%, rgba(107,68,35,.14), transparent 64%),
+    radial-gradient(66% 60% at 104% 106%, rgba(47,107,63,.10), transparent 62%),
+    linear-gradient(180deg, rgba(250,242,227,.93) 0%, rgba(243,231,208,.90) 40%, rgba(233,217,187,.95) 100%),
     url('/img/backgrounds/fantabar-bg.jpg') !important;
-  filter:saturate(.20) contrast(1.02) brightness(1.28) !important;
+  filter:saturate(.22) sepia(.12) contrast(1.02) brightness(1.14) !important;
 }
-html.theme-light ::selection{background:rgba(176,122,43,.20);color:#171A1F}
+html.theme-light ::selection{background:rgba(107,68,35,.24);color:#2B1B10}
 
-/* ── La testata: bianco e una riga d'argento ── */
+/* ── La testata: cuoio scuro, anche di giorno — e' il banco, non la sala ── */
 html.theme-light .asta-header{
-  background:rgba(255,255,255,.92) !important;
-  border-bottom:1px solid rgba(23,26,31,.12) !important;
-  box-shadow:0 1px 0 rgba(255,255,255,.9), 0 6px 18px rgba(23,26,31,.06) !important;
+  background:linear-gradient(180deg,#6B4423 0%,#4A2E17 100%) !important;
+  border-bottom:1px solid rgba(0,0,0,.35) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 6px 18px rgba(58,36,20,.30) !important;
 }
-/* L'insegna di giorno non e' accesa: e' ottone inciso sul vetro.
-   Niente aloni — su bianco un alone e' solo una macchia. */
+/* Il logo di giorno resta cuoio inciso su pergamena: crema, niente alone. */
 html.theme-light body .asta-header-title,
 html.theme-light body .home-title{
-  color:#8C5E1E !important;-webkit-text-fill-color:#8C5E1E !important;
-  text-shadow:0 1px 0 rgba(255,255,255,.9), 0 1px 2px rgba(23,26,31,.16) !important;
+  color:#F2E4C9 !important;-webkit-text-fill-color:#F2E4C9 !important;
+  text-shadow:0 1px 2px rgba(0,0,0,.4) !important;
   animation:none !important;
 }
-html.theme-light .asta-header-email{color:#646A73 !important}
+html.theme-light .asta-header-email{color:rgba(242,228,201,.72) !important}
 html.theme-light .btn-sound,
-html.theme-light .asta-header-right .btn-secondary{color:#565C66 !important;border-color:rgba(23,26,31,.18) !important}
+html.theme-light .asta-header-right .btn-secondary{
+  background:#F2E4C9 !important;color:#4A2E17 !important;
+  border:1px solid rgba(0,0,0,.22) !important;border-radius:10px !important;
+}
 html.theme-light .btn-sound:hover,
-html.theme-light .asta-header-right .btn-secondary:hover{color:#8C5E1E !important;border-color:#8C5E1E !important}
+html.theme-light .asta-header-right .btn-secondary:hover{color:#6B4423 !important;border-color:#6B4423 !important}
+html.theme-light .home-header{
+  background:linear-gradient(180deg,#6B4423 0%,#4A2E17 100%) !important;
+  border-radius:0 0 18px 18px;
+  box-shadow:0 6px 18px rgba(58,36,20,.28);
+}
+html.theme-light .home-header .btn-logout-link{color:rgba(242,228,201,.85) !important}
+html.theme-light .home-header .btn-logout-link:hover{color:#F2E4C9 !important}
+/* "Porta d'ingresso" (home/login/lobby/fine asta): .card e' scuro fisso
+   per il tema serale (html body .card, riga ~854) — di giorno diventa
+   pergamena, altrimenti resta buio sotto la testata di cuoio chiara. */
+html.theme-light body .card{
+  background:linear-gradient(180deg, #FAF2E3, #F0E3C8) !important;
+  border:1px solid rgba(58,36,20,.14) !important;
+}
+html.theme-light body .home-logo{filter:none !important}
 
-/* ── I piani: bianco su perla ── */
+/* ── I piani: pergamena chiara ── */
 html.theme-light .panel-budget,
 html.theme-light .mio-panel,
 html.theme-light .admin-panel,
 html.theme-light .tabs-panel{
-  background:linear-gradient(180deg, rgba(255,255,255,.97), rgba(250,251,252,.97)) !important;
-  border:1px solid rgba(23,26,31,.10) !important;
-  box-shadow:0 1px 2px rgba(23,26,31,.05), 0 10px 24px rgba(23,26,31,.06) !important;
+  background:linear-gradient(180deg, rgba(250,242,227,.97), rgba(243,231,208,.97)) !important;
+  border:1px solid rgba(58,36,20,.14) !important;
+  box-shadow:0 1px 2px rgba(58,36,20,.06), 0 10px 24px rgba(58,36,20,.08) !important;
 }
 
-/* ── Il tavolo della puja ── */
+/* ── Il tavolo della puja: pergamena con cornice di cuoio ── */
 html.theme-light body.layout-partecipante #puja-panel-slot,
 html.theme-light body #puja-panel-slot{
   background:
-    radial-gradient(42% 130% at 17% -16%, rgba(176,122,43,.13), transparent 62%),
-    radial-gradient(52% 120% at 101% 118%, rgba(47,125,91,.10), transparent 60%),
-    linear-gradient(180deg, #FFFFFF, #F7F8FA) !important;
-  border:1px solid rgba(23,26,31,.10) !important;
-  box-shadow:0 1px 2px rgba(23,26,31,.05), 0 16px 36px rgba(23,26,31,.08) !important;
+    radial-gradient(42% 130% at 17% -16%, rgba(107,68,35,.14), transparent 62%),
+    radial-gradient(52% 120% at 101% 118%, rgba(47,107,63,.08), transparent 60%),
+    linear-gradient(180deg, #FAF2E3, #F0E3C8) !important;
+  border:2px solid #6B4423 !important;
+  box-shadow:0 0 0 4px #F6ECD9, 0 1px 2px rgba(58,36,20,.06), 0 16px 36px rgba(58,36,20,.14) !important;
 }
 html.theme-light body.puja-urgente #puja-panel-slot{
   background:
-    radial-gradient(46% 130% at 17% -16%, rgba(178,44,34,.12), transparent 62%),
-    radial-gradient(52% 120% at 101% 118%, rgba(47,125,91,.06), transparent 60%),
-    linear-gradient(180deg, #FFFFFF, #FBF6F5) !important;
+    radial-gradient(46% 130% at 17% -16%, rgba(168,58,42,.14), transparent 62%),
+    radial-gradient(52% 120% at 101% 118%, rgba(47,107,63,.06), transparent 60%),
+    linear-gradient(180deg, #FAF2E3, #F2DAD3) !important;
+  border-color:#A83A2A !important;
 }
 /* la miccia in alto */
-html.theme-light body #puja-panel-slot::before{background:rgba(23,26,31,.10) !important}
+html.theme-light body #puja-panel-slot::before{background:rgba(58,36,20,.12) !important}
 html.theme-light body #puja-panel-slot::after{
-  background:#B07A2B !important;box-shadow:none !important;
+  background:#6B4423 !important;box-shadow:none !important;
 }
-html.theme-light body.puja-urgente #puja-panel-slot::after{background:#B22C22 !important;box-shadow:none !important}
+html.theme-light body.puja-urgente #puja-panel-slot::after{background:#A83A2A !important;box-shadow:none !important}
 
 /* il conto sul tavolo */
 html.theme-light body.layout-partecipante .asta-row-panels>#mio-panel{
   background:
-    radial-gradient(86% 110% at 104% 116%, rgba(47,125,91,.10), transparent 62%),
-    linear-gradient(180deg, #FFFFFF, #F7F8FA) !important;
-  border:1px solid rgba(23,26,31,.10) !important;
-  box-shadow:0 1px 2px rgba(23,26,31,.05), 0 16px 36px rgba(23,26,31,.08) !important;
+    radial-gradient(86% 110% at 104% 116%, rgba(47,107,63,.10), transparent 62%),
+    linear-gradient(180deg, #FAF2E3, #F0E3C8) !important;
+  border:1px solid rgba(58,36,20,.14) !important;
+  box-shadow:0 1px 2px rgba(58,36,20,.06), 0 16px 36px rgba(58,36,20,.14) !important;
 }
-html.theme-light body #mio-panel::before{background:rgba(23,26,31,.10) !important}
+html.theme-light body #mio-panel::before{background:rgba(58,36,20,.12) !important}
 
-/* ── Il ritratto: cornice di perla, niente notte ── */
+/* ── Il ritratto: cornice di cuoio, come una foto in una teca ── */
 html.theme-light body #puja-panel-slot .cc-avatar{
-  background:linear-gradient(180deg,#F4F5F7,#E7E9ED) !important;
-  border:1px solid rgba(23,26,31,.14) !important;
-  box-shadow:0 8px 20px rgba(23,26,31,.14) !important;
+  background:linear-gradient(180deg,#FAF2E3,#EDDCBC) !important;
+  border:2px solid #4A2E17 !important;border-radius:14px !important;
+  box-shadow:0 0 0 4px #F6ECD9, 0 0 0 6px #8F5A2C, 0 8px 20px rgba(58,36,20,.26) !important;
 }
 html.theme-light body #puja-panel-slot .cc-avatar-img{
-  filter:grayscale(1) contrast(1.04) brightness(1.06) !important;
+  filter:contrast(1.04) brightness(1.02) sepia(.08) !important;
 }
 html.theme-light body #puja-panel-slot .cc-avatar::after{
-  background:linear-gradient(202deg, rgba(176,122,43,.34) 0%, rgba(178,44,34,.08) 46%, rgba(47,125,91,.30) 100%) !important;
+  background:linear-gradient(202deg, rgba(107,68,35,.30) 0%, rgba(168,58,42,.08) 46%, rgba(47,107,63,.22) 100%) !important;
 }
 html.theme-light body #puja-panel-slot .cc-avatar::before{
-  background:linear-gradient(180deg, rgba(255,255,255,.30) 0%, transparent 38%, rgba(23,26,31,.24) 100%) !important;
+  background:linear-gradient(180deg, rgba(255,255,255,.28) 0%, transparent 38%, rgba(58,36,20,.22) 100%) !important;
 }
 
-/* ── Le ombre di testo del tema scuro, su bianco, sporcano ── */
+/* ── Le ombre di testo del tema scuro, su pergamena, sporcano ── */
 html.theme-light body #puja-panel-slot .cc-nome,
 html.theme-light body #puja-panel-slot .cc-offerta,
 html.theme-light body #puja-panel-slot .timer-number,
 html.theme-light body.puja-urgente #puja-panel-slot .timer-number{text-shadow:none !important}
 
-/* ── La lastra dell'azione: inchiostro su bianco ── */
+/* ── Il denaro sul tavolo: l'unico verde del tema, e solo qui ── */
+html.theme-light body #puja-panel-slot .cc-offerta,
+html.theme-light body.layout-admin .asta-row-puja .cc-offerta{
+  color:#2F6B3F !important;
+}
+html.theme-light body #puja-panel-slot .cc-offerta-box,
+html.theme-light body.layout-admin .asta-row-puja .cc-offerta-box{
+  border-color:#2F6B3F !important;
+  background:linear-gradient(160deg, rgba(47,107,63,.14) 0%, rgba(47,107,63,.04) 100%) !important;
+  box-shadow:0 0 24px rgba(47,107,63,.14), inset 0 1px 0 rgba(255,255,255,.5) !important;
+}
+html.theme-light .sq-crediti{color:#2F6B3F !important;text-shadow:none !important}
+
+/* ── La lastra dell'azione: inchiostro su pergamena ── */
 html.theme-light body #puja-panel-slot .btn-rilancia{
-  box-shadow:0 10px 22px rgba(23,26,31,.20) !important;
+  box-shadow:0 10px 22px rgba(58,36,20,.22) !important;
 }
 html.theme-light body.puja-urgente #puja-panel-slot .btn-rilancia{
-  box-shadow:0 10px 24px rgba(178,44,34,.28) !important;
+  box-shadow:0 10px 24px rgba(168,58,42,.30) !important;
 }
 html.theme-light body #puja-panel-slot .quick-bids-row,
 html.theme-light body #puja-panel-slot .inp-rilancio{
-  background:#FAFBFC !important;
+  background:#FAF2E3 !important;
 }
 html.theme-light body #puja-panel-slot .btn-quick,
-html.theme-light body #puja-panel-slot .btn-manuale{color:#565C66 !important}
+html.theme-light body #puja-panel-slot .btn-manuale{color:#5C4A3A !important}
 
 /* ── La clessidra: il vetro va disegnato al contrario ──
    L'SVG di clessidra.js costruisce riflessi e profilo con bianco a bassa
-   opacita': su fondo bianco sparirebbero. Qui gli stessi tratti passano
-   ad argento scuro. La sabbia resta ottone: e' l'accento del tema. */
-html.theme-light .clessidra use[stroke]{stroke:rgba(23,26,31,.34) !important}
-html.theme-light .clessidra use[fill^="url(#cls-vetro"]{fill:rgba(23,26,31,.045) !important}
-html.theme-light .clessidra path[stroke="#fff"]{stroke:rgba(23,26,31,.14) !important}
+   opacita': su fondo chiaro sparirebbero. Qui gli stessi tratti passano
+   a inchiostro di cuoio. La sabbia resta cuoio: e' l'accento del tema. */
+html.theme-light .clessidra use[stroke]{stroke:rgba(58,36,20,.36) !important}
+html.theme-light .clessidra use[fill^="url(#cls-vetro"]{fill:rgba(58,36,20,.05) !important}
+html.theme-light .clessidra path[stroke="#fff"]{stroke:rgba(58,36,20,.16) !important}
 html.theme-light .clessidra{filter:none !important}
 
-/* ── Le tab e lo storico ── */
+/* ── Le tab: la striscia verde del banco ── */
 html.theme-light .tabs-nav{
-  background:linear-gradient(180deg, rgba(250,251,252,.98), rgba(243,245,247,.98)) !important;
-  border-bottom:1px solid rgba(23,26,31,.10) !important;
+  background:linear-gradient(180deg, #34774B 0%, #2A5D34 100%) !important;
+  border-bottom:1px solid rgba(0,0,0,.22) !important;
 }
-html.theme-light .tab-btn{color:#565C66 !important}
-html.theme-light .tab-btn.active{color:#171A1F !important;background:#FFFFFF !important}
-html.theme-light .storico-list li{border-bottom:1px solid rgba(23,26,31,.08) !important;color:#171A1F !important}
-html.theme-light .tab-content{color:#171A1F}
+html.theme-light .tab-btn{color:rgba(255,255,255,.72) !important}
+html.theme-light .tab-btn.active{color:#FFFFFF !important;background:rgba(255,255,255,.14) !important}
+html.theme-light .storico-list li{border-bottom:1px solid rgba(58,36,20,.10) !important;color:#2B1B10 !important}
+html.theme-light .tab-content{color:#2B1B10}
 
 /* ── Le squadre al tavolo ── */
-html.theme-light .sidebar-squadra.mia-squadra{background:rgba(23,26,31,.045) !important;border-left-color:#171A1F !important}
-html.theme-light .sidebar-squadra.offerente-attuale{background:rgba(176,122,43,.10) !important;border-left-color:#B07A2B !important}
-html.theme-light .sidebar-squadra:hover{background:rgba(23,26,31,.035) !important}
+html.theme-light .sidebar-squadra.mia-squadra{background:rgba(58,36,20,.05) !important;border-left-color:#2B1B10 !important}
+html.theme-light .sidebar-squadra.offerente-attuale{background:rgba(107,68,35,.12) !important;border-left-color:#6B4423 !important}
+html.theme-light .sidebar-squadra:hover{background:rgba(58,36,20,.04) !important}
 
 /* ── Il drawer di Anteprima ── */
 html.theme-light #tab-anteprima.ant-drawer{
-  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(250,251,252,.98)) !important;
-  border:1px solid rgba(23,26,31,.10) !important;
+  background:linear-gradient(180deg, rgba(250,242,227,.98), rgba(243,231,208,.98)) !important;
+  border:1px solid rgba(58,36,20,.14) !important;
 }
-html.theme-light .ant-drawer-close{background:#F1F2F4 !important;border-color:rgba(23,26,31,.16) !important;color:#565C66 !important}
+html.theme-light .ant-drawer-close{background:#F0E3C8 !important;border-color:rgba(58,36,20,.20) !important;color:#5C4A3A !important}
 
 /* ── Bottoni ── */
-html.theme-light .btn-primary{background:#171A1F !important;color:#FFFFFF !important}
+html.theme-light .btn-primary{background:#2B1B10 !important;color:#F6ECD9 !important}
 html.theme-light .btn-secondary{
-  background:#FFFFFF !important;color:#3A4048 !important;border:1px solid rgba(23,26,31,.18) !important;
+  background:#FAF2E3 !important;color:#3A2A1D !important;border:1px solid rgba(58,36,20,.20) !important;
 }
-html.theme-light .btn-secondary:hover{border-color:#8C5E1E !important;color:#8C5E1E !important}
+html.theme-light .btn-secondary:hover{border-color:#6B4423 !important;color:#6B4423 !important}
 
 /* ── La luce di fondo della pagina: di giorno non c'e' faro ── */
 html.theme-light body::before{opacity:.35}
 
 /* ── Le cifre del cronometro e i timbri: nati per brillare al buio ──
-   Misurato: #FFE9C9 (il crema dell'insegna) su bianco fa 1.2:1, cioe'
-   invisibile. Di giorno la cifra e' inchiostro e il tubo non e' acceso. */
+   Misurato: #FFE9C9 (il crema dell'insegna) su pergamena chiara fa un
+   contrasto insufficiente. Di giorno la cifra e' inchiostro di cuoio e
+   il tubo non e' acceso. */
 html.theme-light body #puja-panel-slot .timer-number,
 html.theme-light body.layout-admin .asta-row-puja .timer-number{
-  color:#171A1F !important;text-shadow:none !important;
+  color:#2B1B10 !important;text-shadow:none !important;
 }
 html.theme-light body.puja-urgente #puja-panel-slot .timer-number,
 html.theme-light body #puja-panel-slot .timer-ring-container.urgent .timer-number{
-  color:#B22C22 !important;text-shadow:none !important;
+  color:#A83A2A !important;text-shadow:none !important;
 }
 html.theme-light body .timbro-preso span,
 html.theme-light body .chiamata-card.assegnata .cc-esito{
-  color:#2F7D5B !important;
+  color:#2F6B3F !important;
 }
-html.theme-light body .timbro-preso span{border-color:#2F7D5B !important}
+html.theme-light body .timbro-preso span{border-color:#2F6B3F !important}
 /* l'ottone della clessidra, di giorno, e' piu' scuro del vetro che lo tiene */
 html.theme-light body #puja-panel-slot .timer-ring-container,
 html.theme-light body.layout-admin .asta-row-puja .timer-ring-container{
-  --ottone:linear-gradient(180deg,#C9A163,#A87C38 55%,#6E5222);
+  --ottone:linear-gradient(180deg,#B98038,#8F5A2C 55%,#5C3719);
 }
 
 /* ── Le materie del bancone, di giorno ───────────────────────────────
@@ -1790,56 +1823,57 @@ html.theme-light body.layout-admin .asta-row-puja .timer-ring-container{
    su selettori con id (`html body #mio-panel`, `html body
    #puja-panel-slot`): battono qualunque regola piu' generica anche a
    parita' di !important. Qui gli stessi selettori, con lo stesso peso,
-   dicono la versione chiara — venatura appena accennata su bianco, e
-   il riflesso che diventa un velo invece di una luce. */
+   dicono la versione chiara — venatura di cuoio appena accennata sulla
+   pergamena, e il riflesso che diventa un velo invece di una luce. */
 html.theme-light body .panel-budget,
 html.theme-light body #mio-panel,
 html.theme-light body .admin-panel,
 html.theme-light body .tabs-panel{
-  background-color:#FFFFFF !important;
+  background-color:#FAF2E3 !important;
   background-image:
     repeating-linear-gradient(93deg,
-      rgba(23,26,31,.007) 0 2px, transparent 2px 6px,
-      rgba(23,26,31,.012) 6px 9px,  transparent 9px 17px,
-      rgba(23,26,31,.005) 17px 18px, transparent 18px 26px),
-    linear-gradient(180deg, rgba(255,255,255,.97), rgba(249,250,251,.97)) !important;
+      rgba(58,36,20,.010) 0 2px, transparent 2px 6px,
+      rgba(58,36,20,.016) 6px 9px,  transparent 9px 17px,
+      rgba(58,36,20,.007) 17px 18px, transparent 18px 26px),
+    linear-gradient(180deg, rgba(250,242,227,.97), rgba(243,231,208,.97)) !important;
 }
 html.theme-light body #puja-panel-slot,
 html.theme-light body.layout-admin .asta-row-puja{
-  background-color:#FFFFFF !important;
+  background-color:#FAF2E3 !important;
   background-image:
     linear-gradient(104deg,
-      transparent 34%, rgba(23,26,31,.016) 45%, rgba(23,26,31,.028) 50%,
-      rgba(23,26,31,.012) 55%, transparent 66%),
+      transparent 34%, rgba(58,36,20,.020) 45%, rgba(58,36,20,.034) 50%,
+      rgba(58,36,20,.015) 55%, transparent 66%),
     repeating-linear-gradient(93deg,
-      rgba(23,26,31,.006) 0 2px, transparent 2px 7px,
-      rgba(23,26,31,.013) 7px 10px, transparent 10px 19px),
-    radial-gradient(42% 130% at 20% -14%, rgba(176,122,43,.13), transparent 62%),
-    radial-gradient(52% 120% at 102% 118%, rgba(47,125,91,.10), transparent 60%),
-    linear-gradient(180deg, #FFFFFF, #F7F8FA) !important;
-  border:1px solid rgba(23,26,31,.10) !important;
-  box-shadow:0 1px 2px rgba(23,26,31,.05), 0 16px 36px rgba(23,26,31,.08) !important;
+      rgba(58,36,20,.008) 0 2px, transparent 2px 7px,
+      rgba(58,36,20,.016) 7px 10px, transparent 10px 19px),
+    radial-gradient(42% 130% at 20% -14%, rgba(107,68,35,.14), transparent 62%),
+    radial-gradient(52% 120% at 102% 118%, rgba(47,107,63,.08), transparent 60%),
+    linear-gradient(180deg, #FAF2E3, #F0E3C8) !important;
+  border:2px solid #6B4423 !important;
+  box-shadow:0 0 0 4px #F6ECD9, 0 1px 2px rgba(58,36,20,.06), 0 16px 36px rgba(58,36,20,.14) !important;
 }
 html.theme-light body[data-fase="finale"] #puja-panel-slot{
-  background-color:#FFFFFF !important;
+  background-color:#FAF2E3 !important;
   background-image:
     linear-gradient(104deg,
-      transparent 34%, rgba(23,26,31,.016) 45%, rgba(23,26,31,.028) 50%,
-      rgba(23,26,31,.012) 55%, transparent 66%),
+      transparent 34%, rgba(58,36,20,.020) 45%, rgba(58,36,20,.034) 50%,
+      rgba(58,36,20,.015) 55%, transparent 66%),
     repeating-linear-gradient(93deg,
-      rgba(23,26,31,.006) 0 2px, transparent 2px 7px,
-      rgba(23,26,31,.013) 7px 10px, transparent 10px 19px),
-    radial-gradient(46% 130% at 20% -14%, rgba(178,44,34,.14), transparent 62%),
-    radial-gradient(52% 120% at 102% 118%, rgba(47,125,91,.06), transparent 60%),
-    linear-gradient(180deg, #FFFFFF, #FBF6F5) !important;
+      rgba(58,36,20,.008) 0 2px, transparent 2px 7px,
+      rgba(58,36,20,.016) 7px 10px, transparent 10px 19px),
+    radial-gradient(46% 130% at 20% -14%, rgba(168,58,42,.16), transparent 62%),
+    radial-gradient(52% 120% at 102% 118%, rgba(47,107,63,.06), transparent 60%),
+    linear-gradient(180deg, #FAF2E3, #F2DAD3) !important;
+  border-color:#A83A2A !important;
 }
-/* il corrimano in ottone sotto l'insegna: di giorno e' un filo, non una luce */
+/* il filo di ottone/cuoio sotto la testata: la cucitura del banco */
 html.theme-light body .asta-header::after{
   background:linear-gradient(90deg,
-    rgba(140,106,52,0) 0%, rgba(176,122,43,.30) 12%, rgba(176,122,43,.55) 30%,
-    rgba(176,122,43,.28) 52%, rgba(176,122,43,.50) 74%, rgba(176,122,43,.28) 90%,
-    rgba(140,106,52,0) 100%) !important;
-  box-shadow:none !important;
+    rgba(143,90,44,0) 0%, rgba(143,90,44,.55) 12%, rgba(143,90,44,.85) 30%,
+    rgba(143,90,44,.5) 52%, rgba(143,90,44,.8) 74%, rgba(143,90,44,.5) 90%,
+    rgba(143,90,44,0) 100%) !important;
+  box-shadow:0 0 8px rgba(143,90,44,.4) !important;
 }
 
 /* ── Vista Admin: il nome finiva sotto la clessidra ──────────────────

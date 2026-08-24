@@ -203,7 +203,8 @@ body:has(#screen-crea-asta.active) #btn-back-home{display:inline-flex}
   box-shadow:0 0 60px rgba(255,176,74,.18),0 24px 50px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08);
   position:relative;overflow:hidden;transition:border-color .3s,box-shadow .3s}
 html.theme-light .chiamata-card{
-  background:linear-gradient(170deg,#F2EADE 0%,#E4DACB 100%);
+  background:linear-gradient(170deg,#FAF2E3 0%,#F0E3C8 100%);
+  border-color:#6B4423;
 }
 .chiamata-card::before{content:'';position:absolute;top:0;left:10%;right:10%;height:2px;background:linear-gradient(90deg,transparent,var(--primary),transparent);border-radius:2px;box-shadow:0 0 14px 1px var(--primary-glow);animation:cc-topbar-pulse 3s ease-in-out infinite}
 .chiamata-card .chiamata-stato{color:var(--text-muted);font-size:1rem;padding:20px 0}
@@ -1278,37 +1279,37 @@ body::before{display:none}
    loro versione chiara in tema-serata.css, sezione "MATTINA AL BANCO".
    ══════════════════════════════════════════════════════════ */
 html.theme-light{
-  --bg-abyss:#E4E7EB;
-  --bg-deep:#EDEFF2;
-  --panel-glass-1:rgba(255,255,255,.97);
-  --panel-glass-2:rgba(250,251,252,.97);
-  --panel-glass-3:rgba(244,246,248,.95);
-  --bg-main:#ffffff;
-  --bg-card:#ffffff;
-  --bg-elevated:#F1F2F4;
-  --bg-glass:rgba(255,255,255,.94);
-  --primary:#B07A2B;
-  --primary-bright:#8C5E1E;
-  --primary-dark:#6E4815;
-  --primary-glow:rgba(176,122,43,.22);
-  --primary-subtle:rgba(176,122,43,.09);
-  --gold:#8C5E1E;
-  --gold-bright:#6E4815;
-  --gold-deep:#5A3A10;
-  --gold-glow:rgba(140,94,30,.20);
-  --gold-subtle:rgba(140,94,30,.08);
-  --fire:#B22C22;
+  --bg-abyss:#E9DCC0;
+  --bg-deep:#F3E7D0;
+  --panel-glass-1:rgba(250,242,227,.97);
+  --panel-glass-2:rgba(245,235,215,.97);
+  --panel-glass-3:rgba(240,227,200,.95);
+  --bg-main:#FAF2E3;
+  --bg-card:#FAF2E3;
+  --bg-elevated:#F3E8D3;
+  --bg-glass:rgba(250,242,227,.94);
+  --primary:#7A4A22;
+  --primary-bright:#8F5A2C;
+  --primary-dark:#5C3719;
+  --primary-glow:rgba(122,74,34,.22);
+  --primary-subtle:rgba(122,74,34,.09);
+  --gold:#8F5A2C;
+  --gold-bright:#6B4423;
+  --gold-deep:#4A2E17;
+  --gold-glow:rgba(143,90,44,.20);
+  --gold-subtle:rgba(143,90,44,.08);
+  --fire:#A83A2A;
   --fire-bright:#8E2019;
-  --fire-glow:rgba(178,44,34,.22);
-  --success:#2F7D5B;
-  --success-glow:rgba(47,125,91,.20);
-  --danger:#B22C22;
-  --danger-glow:rgba(178,44,34,.20);
-  --text-primary:#171A1F;
-  --text-secondary:#565C66;
-  --text-muted:#646A73;
-  --border:rgba(23,26,31,.10);
-  --border-light:rgba(23,26,31,.18);
+  --fire-glow:rgba(168,58,42,.22);
+  --success:#2F6B3F;
+  --success-glow:rgba(47,107,63,.20);
+  --danger:#A83A2A;
+  --danger-glow:rgba(168,58,42,.20);
+  --text-primary:#2B1B10;
+  --text-secondary:#5C4A3A;
+  --text-muted:#6B5A48;
+  --border:rgba(58,36,20,.14);
+  --border-light:rgba(58,36,20,.22);
 }
 html.theme-light .card,
 html.theme-light .chiamata-card,
@@ -1318,27 +1319,27 @@ html.theme-light .mio-panel,
 html.theme-light .rilancio-box,
 html.theme-light .panel-budget,
 html.theme-light .modal-content{
-  box-shadow:0 10px 24px rgba(23,26,31,.06),0 1px 2px rgba(23,26,31,.05)!important;
+  box-shadow:0 10px 24px rgba(58,36,20,.08),0 1px 2px rgba(58,36,20,.06)!important;
 }
-html.theme-light .cc-avatar{background:radial-gradient(circle at 35% 28%,#ffffff 0%,#F1F2F4 55%,#E1E4E8 100%)}
-/* Testata chiara: bianco e una riga d'argento. Il resto (insegna in ottone,
-   bottoni) sta in tema-serata.css, sezione "MATTINA AL BANCO". */
+html.theme-light .cc-avatar{background:radial-gradient(circle at 35% 28%,#FAF2E3 0%,#F0E3C8 55%,#E4D5B8 100%);border-radius:14px}
+/* Testata chiara: cuoio scuro, non bianco. Il resto (bottoni, tab, cornici)
+   sta in tema-serata.css, sezione "MATTINA AL BANCO". */
 html.theme-light .asta-header{
-  background:rgba(255,255,255,.92);
-  border-bottom:1px solid rgba(23,26,31,.12);
-  box-shadow:0 1px 0 rgba(255,255,255,.9),0 6px 18px rgba(23,26,31,.06);
+  background:linear-gradient(180deg,#6B4423 0%,#4A2E17 100%);
+  border-bottom:1px solid rgba(0,0,0,.35);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 6px 18px rgba(58,36,20,.30);
 }
-html.theme-light .home-header{color:var(--text-primary)}
+html.theme-light .home-header{color:#F2E4C9}
 html.theme-light .home-logo{filter:none}
 html.theme-light #screen-strategie-lista.active,
 html.theme-light #screen-strategia-form.active,
 html.theme-light #screen-strategia-editor.active{
   background:
-    linear-gradient(rgba(237,239,242,.92), rgba(237,239,242,.95)),
-    repeating-linear-gradient(125deg, rgba(47,125,91,.06) 0px 70px, rgba(23,26,31,.03) 70px 140px),
+    linear-gradient(rgba(243,231,208,.92), rgba(243,231,208,.95)),
+    repeating-linear-gradient(125deg, rgba(47,107,63,.07) 0px 70px, rgba(58,36,20,.04) 70px 140px),
     var(--bg-deep);
 }
-html.theme-light .badge-ruolo.r-XX{background:#EDEFF2;color:var(--text-muted)}
+html.theme-light .badge-ruolo.r-XX{background:#F0E3C8;color:var(--text-muted)}
 
 /* ══ Bottoni toggle tema (icona ☀️/🌙) — versione integrata nell'header asta ══ */
 .theme-toggle-btn{font-size:.85rem!important}
@@ -1378,9 +1379,9 @@ body.layout-admin .asta-row-puja .chiamata-card{
 }
 html.theme-light .puja-panel-slot,
 html.theme-light body.layout-admin .asta-row-puja{
-  background:linear-gradient(170deg,#FFFFFF 0%,#F4F6F8 100%)!important;
-  border:1px solid rgba(23,26,31,.12)!important;
-  box-shadow:0 1px 2px rgba(23,26,31,.05),0 14px 30px rgba(23,26,31,.07)!important;
+  background:linear-gradient(170deg,#FAF2E3 0%,#F0E3C8 100%)!important;
+  border:2px solid #6B4423!important;
+  box-shadow:0 0 0 4px #F6ECD9,0 1px 2px rgba(58,36,20,.06),0 14px 30px rgba(58,36,20,.12)!important;
 }
 
 /* ══ Fix: tabs-nav (Storico/Rose/Liberi/Griglia P/A) se cortaba en el borde derecho en movil ══ */
@@ -1649,6 +1650,11 @@ html.theme-light body.layout-admin .asta-row-puja{
   transform-style:preserve-3d;flex-shrink:0}
 .ant-card.size-bench{width:54px;height:74px}
 .ant-card.size-pitch{width:12.5cqw;height:17cqw}
+html.theme-light .ant-card{
+  background:linear-gradient(180deg,#FAF2E3,#EDDCBC);
+  border:2px solid #4A2E17;
+  box-shadow:0 0 0 3px #F6ECD9,0 10px 18px -6px rgba(58,36,20,.45);
+}
 .ant-card.size-xl{width:110px;height:152px}
 
 .ant-card-photo{position:absolute;inset:0;background-size:100% auto;background-position:center top;background-repeat:no-repeat;background-color:#1e1140}
