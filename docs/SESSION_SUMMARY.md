@@ -54,6 +54,14 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Cuoio, seconda passata su feedback dell'utente col mockup alla mano**: (1) pallone di sfondo
+  ridisegnato con le stringhe incrociate (prima solo una cucitura dritta); (2) stessa eco del
+  pallone, in piccolo e a bassa opacità, dentro `.chiamata-card::after` — non solo sullo sfondo;
+  (3) cornice CUCITA sui ritratti (`.cc-avatar` e `.ant-card`): la prima versione aveva due anelli
+  pieni, mancava la cucitura a vista del mockup — aggiunta con `outline:dashed` (proprietà separata
+  da `border`, non consuma i due pseudo-elementi `::before`/`::after` già usati per il riflesso),
+  fascia di cuoio allargata apposta per fargli spazio. Verificato: dashed assente su `serata`
+  (`outline:none`), nessun errore console.
 - **Pallone di cuoio decorativo in Cuoio** (`.pitch-bg::after`, riquesta esplicita dell'utente
   col mockup "PuntBar" alla mano): fregio in un angolo dello sfondo, disegnato solo in CSS
   (nessun asset nuovo), non dentro la carta di chiamata — nel mockup il pallone compare solo nel

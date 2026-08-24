@@ -1718,11 +1718,18 @@ html[data-tema="cuoio"] body.layout-partecipante .asta-row-panels>#mio-panel{
 }
 html[data-tema="cuoio"] body #mio-panel::before{background:rgba(58,36,20,.12) !important}
 
-/* ── Il ritratto: cornice di cuoio, come una foto in una teca ── */
+/* ── Il ritratto: cornice di cuoio CUCITA, come nel mockup ─────────────
+   La prima versione aveva solo due anelli pieni (box-shadow): l'utente ha
+   fatto notare che nel mockup la cornice ha una cucitura a vista, non un
+   bordo liscio. Aggiunta con `outline` (proprieta' a parte da border, non
+   consuma i due pseudo-elementi ::before/::after gia' usati sotto per il
+   riflesso) tratteggiato, incassato dentro la fascia di cuoio allargata
+   apposta per fargli spazio (prima 2px, ora 7px). */
 html[data-tema="cuoio"] body #puja-panel-slot .cc-avatar{
   background:linear-gradient(180deg,#FAF2E3,#EDDCBC) !important;
   border:2px solid #4A2E17 !important;border-radius:14px !important;
-  box-shadow:0 0 0 4px #F6ECD9, 0 0 0 6px #8F5A2C, 0 8px 20px rgba(58,36,20,.26) !important;
+  outline:2px dashed rgba(246,236,217,.6) !important;outline-offset:4px !important;
+  box-shadow:0 0 0 3px #F6ECD9, 0 0 0 10px #8F5A2C, 0 8px 20px rgba(58,36,20,.28) !important;
 }
 html[data-tema="cuoio"] body #puja-panel-slot .cc-avatar-img{
   filter:contrast(1.04) brightness(1.02) sepia(.08) !important;
