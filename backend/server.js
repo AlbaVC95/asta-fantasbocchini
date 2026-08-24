@@ -1288,6 +1288,12 @@ io.on('connection', (socket) => {
     const asta = aste.get(astaId);
     if (!asta || asta.stato !== 'in_corso' || !isAdmin(asta, socket.id)) return;
     if (asta.chiamataAttuale) return socket.emit('errore', { msg: 'Chiamata già in corso' });
+    // Una decisione pendente (svincolo per pagare l'offerta vinta, o plusvalenza/recompra del
+    // proprietario precedente) blocca l'estrazione: altrimenti l'asta continua mentre una
+    // squadra deve ancora liberare crediti/spazio che non ha, o un diritto non e' stato
+    // ancora esercitato — segnalato dall'utente, la chiamata successiva non deve MAI partire
+    // prima che questa sia risolta (dal giocatore o dall'Admin per suo conto).
+    if (asta.popupAttivo) return socket.emit('errore', { msg: 'C\'è una decisione in sospeso (svincolo o conferma) da risolvere prima di continuare' });
     const disp = asta.poolGiocatori.filter(g => !g.estratto && !g.assegnato && !g.scartato);
     if (disp.length === 0) return socket.emit('errore', { msg: 'Nessun giocatore disponibile' });
     avviaChiamata(astaId, disp[Math.floor(Math.random() * disp.length)]);
@@ -1297,6 +1303,7 @@ io.on('connection', (socket) => {
     const asta = aste.get(astaId);
     if (!asta || asta.stato !== 'in_corso' || !isAdmin(asta, socket.id)) return;
     if (asta.chiamataAttuale) return socket.emit('errore', { msg: 'Chiamata già in corso' });
+    if (asta.popupAttivo) return socket.emit('errore', { msg: 'C\'è una decisione in sospeso (svincolo o conferma) da risolvere prima di continuare' });
     let giocatore;
     if (giocatoreId) {
       giocatore = asta.poolGiocatori.find(g => g.id === giocatoreId && !g.estratto && !g.assegnato && !g.scartato);
@@ -1312,6 +1319,7 @@ io.on('connection', (socket) => {
     const asta = aste.get(astaId);
     if (!asta || asta.stato !== 'in_corso' || !isAdmin(asta, socket.id)) return;
     if (asta.chiamataAttuale) return socket.emit('errore', { msg: 'Chiamata già in corso, termina prima' });
+    if (asta.popupAttivo) return socket.emit('errore', { msg: 'C\'è una decisione in sospeso (svincolo o conferma) da risolvere prima di continuare' });
     const giocatore = asta.poolGiocatori.find(g => g.id === giocatoreId && !g.assegnato && (!g.estratto || g.scartato));
     const squadra = getSquadra(asta, squadraNome);
     if (!giocatore) return socket.emit('errore', { msg: 'Giocatore non trovato o non disponibile' });

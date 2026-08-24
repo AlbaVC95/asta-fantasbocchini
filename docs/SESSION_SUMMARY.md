@@ -65,6 +65,18 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Bug di logica (non tema): l'asta proseguiva mentre una squadra aveva uno svincolo/decisione
+  pendente.** Segnalato dall'utente: nel popup "Svincola giocatori", il bottone NASCONDI chiude
+  solo la vista (comportamento voluto, per poter controllare "Svincolati" e tornare — vedi
+  `nascondiSvincolo`/`riprendiSvincolo` in `app.js`), ma l'Admin poteva comunque estrarre/chiamare
+  altri giocatori nel frattempo — mai dovrebbe essere possibile finché quella squadra (o l'Admin
+  per conto suo) non risolve. Causa: `estrai-giocatore`/`chiama-giocatore`/`assegna-manuale`
+  (`backend/server.js`) controllavano solo `asta.chiamataAttuale` (rilancio in corso), non
+  `asta.popupAttivo` (svincolo O plusvalenza/recompra pendenti — entrambi mettono
+  `chiamataAttuale` a `null`). Aggiunto lo stesso controllo ai tre handler. Dettagli e perché non
+  serve un override separato in [DECISIONS.md](../DECISIONS.md). Verificato solo staticamente
+  (`node --check`) e leggendo i punti di clear di `popupAttivo` — **non testato end-to-end con
+  2 client reali** (limite noto di tutte le sessioni, nessuna asta di test disponibile).
 - **Bug grave: il nome del giocatore andava a capo lettera per lettera (o spariva del
   tutto) in vista Admin con Anteprima aperta e nomi lunghi (es. "KOUTSOUPIAS")** —
   segnalato dall'utente con screenshot reale, "esto NUNCA puede pasar". Due cause

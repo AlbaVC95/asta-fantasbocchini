@@ -851,3 +851,16 @@ screenshot dell'utente: "KOUTSOUPIAS" in vista Admin con Anteprima aperta). Tre 
 Partecipante usavano già correttamente `cqw` — è la stessa disattenzione, non un pattern voluto.
 Prima di aggiungere una nuova regola di font-size in questa zona, copiare da una vicina che usa già
 `cqw`, non da una a caso.
+
+## Una decisione pendente (`asta.popupAttivo`) blocca anche l'estrazione, non solo il rilancio
+
+`estrai-giocatore`/`chiama-giocatore`/`assegna-manuale` controllavano solo `asta.chiamataAttuale`
+(un rilancio in corso), non `asta.popupAttivo` (svincolo obbligatorio per pagare un'offerta vinta,
+o scelta plusvalenza/recompra del proprietario precedente — entrambi mettono `chiamataAttuale` a
+`null` e aspettano una risposta). Risultato: l'Admin poteva continuare a chiamare/estrarre nuovi
+giocatori mentre una squadra doveva ancora risolvere un obbligo pendente — segnalato dall'utente
+("NASCONDI" nel popup di svincolo nascondeva solo la vista, l'asta intanto proseguiva). Bloccato
+aggiungendo lo stesso controllo `if (asta.popupAttivo) return ...` usato per `chiamataAttuale`, su
+tutti e tre gli handler. Nessun rischio di bloccare l'asta senza via d'uscita: l'Admin ha già un
+percorso per risolvere lui stesso lo svincolo per conto della squadra (`popup-svincolo-admin`,
+esistente da prima), quindi non serve un override separato per sbloccare.
