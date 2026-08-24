@@ -2203,26 +2203,31 @@ html[data-tema="lavagna"] body .tabs-panel{
 }
 html[data-tema="lavagna"] body #puja-panel-slot,
 html[data-tema="lavagna"] body.layout-admin .asta-row-puja{
-  background-color:#111318 !important;
+  /* Fondo un filo piu' chiaro (#181B21 non #111318): sul nero pieno anche le sbavature
+     luminose restano poco leggibili, serve un grigio ardesia vero perche' ci si veda
+     sopra — segnalato dall'utente ("non vedo ancora la lavagna qui"). */
+  background-color:#181B21 !important;
   background-image:
-    /* le sbavature del cancellino — nuvole grandi, non solo polvere fine */
-    radial-gradient(36% 26% at 16% 20%, rgba(240,244,248,.09), transparent 70%),
-    radial-gradient(28% 22% at 80% 65%, rgba(240,244,248,.07), transparent 70%),
-    radial-gradient(1px 1px at 12% 30%, rgba(240,244,248,.17), transparent 60%),
-    radial-gradient(1px 1px at 48% 70%, rgba(240,244,248,.13), transparent 60%),
-    radial-gradient(1px 1px at 78% 22%, rgba(240,244,248,.15), transparent 60%),
-    radial-gradient(1px 1px at 90% 80%, rgba(240,244,248,.11), transparent 60%),
+    /* le sbavature del cancellino — nuvole grandi, ben visibili, non solo polvere fine */
+    radial-gradient(40% 30% at 18% 22%, rgba(240,244,248,.20), transparent 72%),
+    radial-gradient(32% 26% at 78% 30%, rgba(240,244,248,.16), transparent 72%),
+    radial-gradient(30% 24% at 30% 78%, rgba(240,244,248,.15), transparent 72%),
+    radial-gradient(26% 22% at 82% 72%, rgba(240,244,248,.14), transparent 70%),
+    radial-gradient(1px 1px at 12% 30%, rgba(240,244,248,.24), transparent 60%),
+    radial-gradient(1px 1px at 48% 70%, rgba(240,244,248,.20), transparent 60%),
+    radial-gradient(1px 1px at 78% 22%, rgba(240,244,248,.22), transparent 60%),
+    radial-gradient(1px 1px at 90% 80%, rgba(240,244,248,.18), transparent 60%),
     linear-gradient(104deg,
-      transparent 34%, rgba(240,244,248,.05) 45%, rgba(240,244,248,.08) 50%,
-      rgba(240,244,248,.035) 55%, transparent 66%),
+      transparent 34%, rgba(240,244,248,.08) 45%, rgba(240,244,248,.12) 50%,
+      rgba(240,244,248,.06) 55%, transparent 66%),
     repeating-linear-gradient(93deg,
-      rgba(240,244,248,.02) 0 2px, transparent 2px 7px,
-      rgba(240,244,248,.035) 7px 10px, transparent 10px 19px),
-    radial-gradient(42% 130% at 20% -14%, rgba(34,211,238,.14), transparent 62%),
-    radial-gradient(52% 120% at 102% 118%, rgba(255,60,172,.08), transparent 60%),
-    linear-gradient(180deg, #111318, #0B0B0F) !important;
-  background-size:100% 100%, 100% 100%, 90px 90px, 110px 110px, 130px 130px, 100px 100px, auto, auto, cover, cover, cover !important;
-  background-repeat:no-repeat, no-repeat, repeat, repeat, repeat, repeat, repeat, repeat, no-repeat, no-repeat, no-repeat !important;
+      rgba(240,244,248,.03) 0 2px, transparent 2px 7px,
+      rgba(240,244,248,.05) 7px 10px, transparent 10px 19px),
+    radial-gradient(42% 130% at 20% -14%, rgba(34,211,238,.16), transparent 62%),
+    radial-gradient(52% 120% at 102% 118%, rgba(255,60,172,.10), transparent 60%),
+    linear-gradient(180deg, #181B21, #101318) !important;
+  background-size:100% 100%, 100% 100%, 100% 100%, 100% 100%, 90px 90px, 110px 110px, 130px 130px, 100px 100px, auto, auto, cover, cover, cover !important;
+  background-repeat:no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat, repeat, repeat, repeat, repeat, no-repeat, no-repeat, no-repeat !important;
   border:2px solid #22D3EE !important;
   box-shadow:0 0 0 4px #050508, 0 0 26px rgba(34,211,238,.22), 0 16px 36px rgba(0,0,0,.5) !important;
 }

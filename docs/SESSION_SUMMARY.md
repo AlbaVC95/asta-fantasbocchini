@@ -54,6 +54,24 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Lavagna, terza passata: tutti i fregi dentro la carta di puja, non solo sullo sfondo**.
+  L'utente ha chiarito che voleva vedere texture/cancellino/cocktail/scintilla proprio dove
+  sta la foto/il nome del giocatore in puja, non genericamente sulla pagina. Texture di
+  `#puja-panel-slot` alzata ancora (nuvole piu' grandi, fondo un filo piu' chiaro #181B21
+  invece di #111318 — sul nero pieno anche le sbavature chiare restavano poco leggibili).
+  Cancellino+scintilla spostati dentro `.chiamata-card::after` (un solo pseudo-elemento esteso
+  a tutta la carta, due fregi come layer di sfondo separati, niente clip-path li' perche'
+  taglierebbe l'intero pseudo-elemento). Bicchiere da cocktail su `.chiamata-card::before`,
+  che nel foglio storico era gia' usato (la linea animata in cima) ma disattivato con
+  `display:none` da un'altra regola con `#puja-panel-slot` (ID): serviva un selettore con lo
+  stesso ID per avere abbastanza specificita', un normale `.puja-panel-slot` (classe) non
+  bastava — stesso tipo di bug di specificita' del punto sotto, trovato con la stessa tecnica
+  (`document.styleSheets`/`cssRules`). **Errore di tooling durante l'implementazione**: un
+  primo tentativo ha usato per sbaglio l'Edit tool standard su `style.css` (vietato, ha righe
+  LF-only preesistenti) invece dello script Python — rilevato subito confrontando il conteggio
+  di righe LF-only (era sceso a 0), corretto con `git checkout` di ripristino + ripetizione via
+  script. **Lezione ripetuta da altre sessioni**: controllare SEMPRE il conteggio LF-only prima
+  di editare questi 3 file, non fidarsi della memoria di "quale tool ho usato l'ultima volta".
 - **Lavagna: bug reale di specificita' CSS trovato, texture/cancellino/cocktail/scintilla
   aggiunti**. L'utente ha segnalato che la texture "polvere di gesso" non si vedeva nella carta
   di puja nonostante il codice ci fosse: causa reale (non a occhio, isolata con

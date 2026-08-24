@@ -1408,15 +1408,32 @@ html[data-tema="cuoio"] .chiamata-card::after{
   box-shadow:inset 0 3px 8px rgba(255,255,255,.18), inset 0 -6px 10px rgba(0,0,0,.35);
   opacity:.28;pointer-events:none;z-index:0;
 }
-/* Il cancellino, in piccolo, dentro la carta di chiamata — l'equivalente lavagna
-   dell'eco del pallone sopra: qui deve essere SEMPRE visibile (l'utente lo aveva
-   messo solo sullo sfondo di pagina, dove restava coperto dai pannelli). */
+/* Cancellino + scintilla, dentro la carta di chiamata — dove sta la foto/il nome, non solo
+   sullo sfondo di pagina (li' restavano coperti dai pannelli, segnalato dall'utente). Un solo
+   pseudo-elemento esteso a tutta la carta (`inset:0`) con due fregi come layer di sfondo
+   separati (niente clip-path qui: taglierebbe l'intero pseudo-elemento, non solo una forma —
+   il bicchiere sotto usa invece ::before apposta, da solo, per poterlo usare). */
 html[data-tema="lavagna"] .chiamata-card::after{
-  content:'';position:absolute;right:10px;bottom:8px;width:48px;height:22px;
-  border-radius:4px;transform:rotate(-6deg);
-  background:linear-gradient(180deg, #8A6A4A 0%, #8A6A4A 52%, #E4DED2 52%, #EFEAE1 100%);
-  box-shadow:0 3px 6px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.18);
-  opacity:.4;pointer-events:none;z-index:0;
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(100deg, rgba(138,106,74,.55) 0%, rgba(138,106,74,.55) 52%, rgba(228,222,210,.55) 52%, rgba(239,234,225,.55) 100%),
+    linear-gradient(90deg, transparent 42%, rgba(255,111,196,.8) 42%, rgba(255,111,196,.8) 58%, transparent 58%),
+    linear-gradient(0deg, transparent 42%, rgba(255,111,196,.8) 42%, rgba(255,111,196,.8) 58%, transparent 58%);
+  background-position:right 10px bottom 8px, right 30px top 10px, right 30px top 10px;
+  background-size:44px 20px, 13px 13px, 13px 13px;
+  background-repeat:no-repeat, no-repeat, no-repeat;
+}
+/* Il bicchiere da cocktail, vicino al ritratto — riusa .chiamata-card::before, disattivato
+   qui apposta dal foglio storico (era la linea animata in cima, nascosta dentro il tavolo
+   della puja): un content diverso in un contesto piu' specifico non e' in conflitto. */
+html[data-tema="lavagna"] body #puja-panel-slot .chiamata-card::before,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .chiamata-card::before{
+  content:'';position:absolute;right:74px;bottom:10px;width:22px;height:30px;
+  display:block !important;animation:none !important;
+  background:linear-gradient(160deg, rgba(34,211,238,.7), rgba(255,60,172,.6));
+  clip-path:polygon(5% 6%,95% 6%,54% 54%,54% 82%,68% 96%,32% 96%,46% 82%,46% 54%);
+  filter:drop-shadow(0 0 4px rgba(255,60,172,.7));
+  pointer-events:none;z-index:2;
 }
 html[data-tema="cuoio"] #screen-strategie-lista.active,
 html[data-tema="cuoio"] #screen-strategia-form.active,
