@@ -65,6 +65,11 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Tolto il pallone piccolo dentro la carta di chiamata (Cuoio)**: l'utente ha detto che
+  "queda mal" li' dentro — rimossa `html[data-tema="cuoio"] .chiamata-card::after` (`style.css`),
+  nessuna regola generica sotto da far riemergere (era l'unico `::after` di quel tema).
+  Resta il pallone grande sullo sfondo di pagina (`.pitch-bg::after`, angolo, fuori dalla carta) —
+  non menzionato dall'utente, non toccato.
 - **Sfondo di pagina Cuoio: anche questo ora e' una foto vera.** L'utente ha fornito una terza
   foto (pergamena con impronte di pallone sbiadite, `fondoCuero.jpeg` → salvata come
   `frontend/img/backgrounds/fondo-cuoio.jpeg`). Sostituiva la vecchia `fantabar-bg.jpg` (foto

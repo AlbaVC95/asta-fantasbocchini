@@ -1395,16 +1395,6 @@ html[data-tema="cuoio"] .pitch-bg::after{
   box-shadow:0 20px 30px rgba(58,36,20,.35);
   opacity:.85;
 }
-/* La stessa foto del pallone, in piccolo, dentro la carta di chiamata — un'eco discreta
-   invece di una copia grande: la carta e' gia' densa di numeri. */
-html[data-tema="cuoio"] .chiamata-card::after{
-  content:'';position:absolute;right:8px;bottom:6px;width:48px;height:48px;
-  border-radius:50%;
-  background-image:url("../img/backgrounds/pelota-cuoio.jpeg");
-  background-size:160% 160%;background-position:50% 40%;background-repeat:no-repeat;
-  box-shadow:0 4px 8px rgba(0,0,0,.3);
-  opacity:.9;pointer-events:none;z-index:0;
-}
 /* Cancellino + scintilla, dentro la carta di chiamata — dove sta la foto/il nome, non solo
    sullo sfondo di pagina (li' restavano coperti dai pannelli, segnalato dall'utente). Un solo
    pseudo-elemento esteso a tutta la carta (`inset:0`) con due fregi come layer di sfondo
