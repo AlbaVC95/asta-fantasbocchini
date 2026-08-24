@@ -2136,47 +2136,68 @@ html[data-tema="lavagna"] body .chiamata-card.assegnata .cc-esito{
 }
 html[data-tema="lavagna"] body .timbro-preso span{border-color:#39FF88 !important}
 
-/* ── Le materie della lavagna: polvere di gesso appena accennata ── */
+/* ── Le materie della lavagna: gesso vero, non un accenno ──────────────
+   Prima qui c'era la stessa grana leggerissima di Cuoio (opacita' .007-.03):
+   sulla pergamena chiara si vedeva, sul nero quasi no — la lavagna sembrava
+   plastica scura invece che ardesia. Stessa tecnica (radial-gradient a
+   tile multipli per la polvere, riusata da .pitch-bg) ma con opacita' 3-4
+   volte piu' alte, apposta per il fondo scuro. */
 html[data-tema="lavagna"] body .panel-budget,
 html[data-tema="lavagna"] body #mio-panel,
 html[data-tema="lavagna"] body .admin-panel,
 html[data-tema="lavagna"] body .tabs-panel{
   background-color:#111318 !important;
   background-image:
+    radial-gradient(1px 1px at 15% 25%, rgba(240,244,248,.16), transparent 60%),
+    radial-gradient(1px 1px at 55% 65%, rgba(240,244,248,.13), transparent 60%),
+    radial-gradient(1px 1px at 80% 20%, rgba(240,244,248,.11), transparent 60%),
     repeating-linear-gradient(93deg,
-      rgba(240,244,248,.010) 0 2px, transparent 2px 6px,
-      rgba(240,244,248,.016) 6px 9px,  transparent 9px 17px,
-      rgba(240,244,248,.007) 17px 18px, transparent 18px 26px),
+      rgba(240,244,248,.035) 0 2px, transparent 2px 6px,
+      rgba(240,244,248,.05) 6px 9px,  transparent 9px 17px,
+      rgba(240,244,248,.025) 17px 18px, transparent 18px 26px),
     linear-gradient(180deg, rgba(17,19,24,.97), rgba(11,11,15,.97)) !important;
+  background-size:80px 80px, 100px 100px, 120px 120px, auto, cover !important;
+  background-repeat:repeat, repeat, repeat, repeat, no-repeat !important;
 }
 html[data-tema="lavagna"] body #puja-panel-slot,
 html[data-tema="lavagna"] body.layout-admin .asta-row-puja{
   background-color:#111318 !important;
   background-image:
+    radial-gradient(1px 1px at 12% 30%, rgba(240,244,248,.17), transparent 60%),
+    radial-gradient(1px 1px at 48% 70%, rgba(240,244,248,.13), transparent 60%),
+    radial-gradient(1px 1px at 78% 22%, rgba(240,244,248,.15), transparent 60%),
+    radial-gradient(1px 1px at 90% 80%, rgba(240,244,248,.11), transparent 60%),
     linear-gradient(104deg,
-      transparent 34%, rgba(240,244,248,.018) 45%, rgba(240,244,248,.03) 50%,
-      rgba(240,244,248,.014) 55%, transparent 66%),
+      transparent 34%, rgba(240,244,248,.05) 45%, rgba(240,244,248,.08) 50%,
+      rgba(240,244,248,.035) 55%, transparent 66%),
     repeating-linear-gradient(93deg,
-      rgba(240,244,248,.007) 0 2px, transparent 2px 7px,
-      rgba(240,244,248,.014) 7px 10px, transparent 10px 19px),
+      rgba(240,244,248,.02) 0 2px, transparent 2px 7px,
+      rgba(240,244,248,.035) 7px 10px, transparent 10px 19px),
     radial-gradient(42% 130% at 20% -14%, rgba(34,211,238,.14), transparent 62%),
     radial-gradient(52% 120% at 102% 118%, rgba(255,60,172,.08), transparent 60%),
     linear-gradient(180deg, #111318, #0B0B0F) !important;
+  background-size:90px 90px, 110px 110px, 130px 130px, 100px 100px, auto, auto, cover, cover, cover !important;
+  background-repeat:repeat, repeat, repeat, repeat, repeat, repeat, no-repeat, no-repeat, no-repeat !important;
   border:2px solid #22D3EE !important;
   box-shadow:0 0 0 4px #050508, 0 0 26px rgba(34,211,238,.22), 0 16px 36px rgba(0,0,0,.5) !important;
 }
 html[data-tema="lavagna"] body[data-fase="finale"] #puja-panel-slot{
   background-color:#181114 !important;
   background-image:
+    radial-gradient(1px 1px at 12% 30%, rgba(240,244,248,.17), transparent 60%),
+    radial-gradient(1px 1px at 48% 70%, rgba(240,244,248,.13), transparent 60%),
+    radial-gradient(1px 1px at 78% 22%, rgba(240,244,248,.15), transparent 60%),
     linear-gradient(104deg,
-      transparent 34%, rgba(240,244,248,.018) 45%, rgba(240,244,248,.03) 50%,
-      rgba(240,244,248,.014) 55%, transparent 66%),
+      transparent 34%, rgba(240,244,248,.05) 45%, rgba(240,244,248,.08) 50%,
+      rgba(240,244,248,.035) 55%, transparent 66%),
     repeating-linear-gradient(93deg,
-      rgba(240,244,248,.007) 0 2px, transparent 2px 7px,
-      rgba(240,244,248,.014) 7px 10px, transparent 10px 19px),
+      rgba(240,244,248,.02) 0 2px, transparent 2px 7px,
+      rgba(240,244,248,.035) 7px 10px, transparent 10px 19px),
     radial-gradient(46% 130% at 20% -14%, rgba(255,45,45,.18), transparent 62%),
     radial-gradient(52% 120% at 102% 118%, rgba(255,60,172,.08), transparent 60%),
     linear-gradient(180deg, #181114, #0B0B0F) !important;
+  background-size:90px 90px, 110px 110px, 130px 130px, auto, auto, cover, cover, cover !important;
+  background-repeat:repeat, repeat, repeat, repeat, repeat, no-repeat, no-repeat, no-repeat !important;
   border-color:#FF2D2D !important;
 }
 /* la trave in ottone sotto la testata: la cornice fisica della lavagna */

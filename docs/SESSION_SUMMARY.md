@@ -54,6 +54,14 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Rifinitura texture lavagna + Anteprima, su feedback diretto dell'utente col mockup alla
+  mano**: la grana "polvere di gesso" era tarata come quella di Cuoio (opacità .007-.03), pensata
+  per un fondo chiaro — sul nero era quasi invisibile, la lavagna sembrava plastica scura invece
+  che ardesia. Opacità alzate 3-4× + aggiunti pallini di polvere (radial-gradient a tile) su
+  `#puja-panel-slot`/`.panel-budget`/`.admin-panel`/`.tabs-panel`, stessa tecnica di `.pitch-bg`.
+  Trovato e sistemato un secondo glow viola hardcoded, stavolta su `.ant-slot3d-empty` (stessa
+  causa di `.ant-pitch-stage` sopra — riga isolata tra le ~10 duplicate col cascade-winner
+  verificato). Verificato nei 3 temi, nessuna regressione.
 - **Orologio, texture e Anteprima specifici per tema** (rifinitura sul lavoro sotto). La
   clessidra usava materiali hardcoded nell'SVG (`clessidra.js`, gradienti `stop-color` fissi):
   nessuna variabile CSS puo' capovolgerli, quindi aggiunto `MATERIALI` (serata=ottone/ambra
