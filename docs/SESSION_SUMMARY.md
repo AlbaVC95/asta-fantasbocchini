@@ -54,6 +54,23 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Il campo di Anteprima, non solo la cornice, ridisegnato per tema**: l'utente ha fatto notare
+  (due volte, con screenshot reali) che il prato restava sempre verde-neon a prescindere dal
+  tema — avevo toccato solo `.ant-pitch-stage` (cornice esterna) in un giro precedente, non
+  `.ant-pitch` (il prato/le linee, un'unica regola con 7 gradienti solidi + box-shadow, colore
+  neon `#38FFC4` hardcoded ovunque — trovata leggendo `getComputedStyle` reale, non a occhio).
+  Ora: **Cuoio** = campo vecchio, verde oliva spento, linee crema piene senza alcun glow (un
+  pallone vintage, non un'insegna); **Lavagna** = non e' piu' un prato per niente, e' un
+  diagramma tattico disegnato col gesso su ardesia (fondo nero con polvere di gesso, linee
+  bianche, glow ciano ridotto e non verde). Stessa geometria esatta (`background-size`/
+  `background-position` identici all'originale) in entrambi, cambiano solo le materie — nessun
+  rischio di rompere il posizionamento delle porte/cerchio di centrocampo. `Serata` non toccato
+  (nessuna lamentela, il verde-neon ci sta gia' bene in un bar di sera). **Gotcha di debug**: il
+  browser di test aveva la vecchia `style.css` in cache dalla sessione (stesso `?v=` riusato per
+  test multipli nello stesso pomeriggio) — il fix sembrava non funzionare finche' non si e'
+  forzato un fetch fresco; ricordarsene se in futuro un cambio CSS "non si vede" durante i test
+  ravvicinati nella STESSA sessione di debug (diverso dal bug di cache-busting sul deploy, gia'
+  noto).
 - **Cuoio, seconda passata su feedback dell'utente col mockup alla mano**: (1) pallone di sfondo
   ridisegnato con le stringhe incrociate (prima solo una cucitura dritta); (2) stessa eco del
   pallone, in piccolo e a bassa opacità, dentro `.chiamata-card::after` — non solo sullo sfondo;
