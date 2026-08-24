@@ -6,59 +6,70 @@ non accumulato. La cronologia sta in `git log`, il *perché* delle scelte in
 
 ## Stato attuale
 
-Branch `main`, pushato e allineato con `origin/main` (redesign tema chiaro + fix cache-busting,
-vedi sotto). Su Hostinger il deploy è automatico al push su `main`, quindi **quello che c'è su
-`main` è quello che è online**.
+Branch `main`, allineato con `origin/main` fino al redesign tema chiaro "Cuoio" + fix
+cache-busting (vedi sotto) — **il selettore multi-tema e il terzo tema "Lavagna al Neon" sono
+implementati e verificati in locale ma non ancora committati/pushati**, prossimo passo di questa
+sessione. Su Hostinger il deploy è automatico al push su `main`, quindi finché non si pusha
+quest'ultimo lavoro non è online.
 
-L'app gira col tema **"Serata d'Asta"** in due versioni: sera (default, lampada ambra su sala
-scura, invariata) e mattina (`html.theme-light`, ora **"Cuoio"**: banco di cuoio e pergamena
-ispirato a un mockup fornito dall'utente ("PuntBar") — cuoio scuro per testata/cornici,
-pergamena chiara per i piani, verde bosco riservato SOLO alle cifre di credito/offerta. Sostituisce
-interamente la versione precedente "Mattina al banco" (bianco/argento/ottone). I colori del tema
-strutturale sono ruoli (`--sc-testo`, `--sc-ambra`, `--sc-carta`…) definiti due volte in
-`tema-serata.css`: `:root` (sera) e `html.theme-light` (mattina/cuoio) — più i token globali
-condivisi da tutte le schermate in `style.css` (`html.theme-light{--bg-card,--primary,--gold,
---success,--text-primary...}`), che ora cascano lo stesso linguaggio cuoio/pergamena/verde su
-Home, Lobby, Strategie, Editor Fasce, Anteprima e Griglia P/A senza bisogno di regole dedicate
-per ciascuna.
+**Architettura tema, cambiata in questa sessione**: non più un toggle binario chiaro/scuro
+(`html.theme-light`), ma un selettore multi-tema vero — `document.documentElement` porta un
+attributo `data-tema="<id>"` (`serata`/`cuoio`/`lavagna`), gestito da `TEMI` (registro id→nome→
+swatch) e `setTema(id)` in [app.js:1-90 ca.](frontend/js/app.js). Un menu a tendina (icona 🎨,
+classi `.tema-picker*` in `style.css`, generiche/theme-agnostic) sostituisce il vecchio bottone
+sole/luna nei due punti di sempre (`.asta-header-right`, ogni `.home-header`). Migrazione
+automatica e silenziosa dal vecchio `localStorage['tema']='light'/'dark'` al nuovo id
+(`'cuoio'`/`'serata'`), poi si salva direttamente l'id.
+
+Tre temi attivi, tutti seguono lo stesso pattern (ruoli `--sc-*` in `tema-serata.css` + token
+base in `style.css`, entrambi con blocco `:root`/`[data-tema="cuoio"]`/`[data-tema="lavagna"]`, +
+una sezione di "materie" per tema in fondo a `tema-serata.css`):
+- **`serata`** (scuro, default) — lampada ambra su sala scura, invariato dall'origine.
+- **`cuoio`** (chiaro) — banco di cuoio e pergamena (mockup utente "PuntBar"), verde bosco SOLO
+  per le cifre di credito/offerta. Ex "Mattina al banco" (bianco/argento/ottone), sostituito
+  interamente.
+- **`lavagna`** (scuro) — lavagna nera + gesso, cornice fisica in ottone attorno alla testata,
+  due neon come accenti: ciano per la struttura (bordi, cornici, tab attiva — il ruolo che
+  altrove ha l'ambra/il cuoio), magenta riservato al brand e al denaro (nome "FantaBar" in
+  font Pacifico con glow, cifra di offerta/credito). Rosso resta solo allarme. Mockup utente
+  fornito, secondo tema scuro dell'app.
+
+I token globali in `style.css` (`--bg-card`,`--primary`,`--gold`,`--success`,`--text-primary`...)
+cascano automaticamente su Home, Lobby, Strategie, Editor Fasce, Anteprima e Griglia P/A per
+tutti e tre i temi senza bisogno di regole dedicate per schermata — stesso meccanismo di leva già
+sfruttato per "Cuoio", ora esteso.
 
 Per portare online, tornare indietro, o sapere cosa è stato verificato e cosa no:
-**[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)** (non ancora aggiornato col redesign "Cuoio" — il
-meccanismo di rollback a 3 livelli descritto lì resta valido, ma la sezione "Tema chiaro" descrive
-ancora la vecchia palette bianco/argento).
+**[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)** (non aggiornato da nessuno dei due redesign recenti —
+descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere quando si pusha
+"Lavagna al Neon").
 
 ## Cambi recenti
 
-- **Tema chiaro ridisegnato da zero ("Cuoio"), su richiesta esplicita dell'utente con mockup di
-  riferimento**: testata (`.asta-header`/`.home-header`) diventata una barra in cuoio scuro con
-  testo crema (`Instrument Serif`, già caricato per l'insegna scura, riusato qui) anche se il resto
-  della pagina è chiaro; tavolo della puja e `.chiamata-card`/`#puja-panel-slot` con cornice doppia
-  cuoio+pergamena; `.cc-avatar` da cerchio ad angoli smussati con cornice a più livelli (SOLO
-  bordo/forma, dimensioni invariate — vedi "Carta XL animazione" sotto, stesso vincolo);
-  `.cc-offerta`/`.cc-offerta-box`/`.sq-crediti` in verde bosco (`#2F6B3F`), l'unico verde del tema
-  e riservato al denaro; tabs (`.tabs-nav`) diventate una striscia verde con testo crema; riepilogo
-  squadre solo ricolorato, griglia a due righe della sessione precedente non toccata; aggiunta prima
-  regola `html.theme-light .ant-card{...}` (Anteprima non aveva mai avuto un override chiaro).
-  Contrasto verificato via script (non a occhio): tutte le coppie testo/sfondo chiave ≥4.9:1
-  (ink/secondary/verde/cuoio-pieno/crema-su-cuoio), nessun debito nuovo tipo quello già noto nel
-  tema scuro. Verificato nel browser (dati sintetici via console, iniettati chiamando
-  `applyLayoutRuolo()`/`renderChiamata()`/`renderBudgetBar()` direttamente — nessuna asta reale
-  disponibile) in vista Partecipante e Admin, desktop e mobile (375px); tema scuro ricontrollato
-  dopo il cambio, invariato pixel per pixel. **Non verificato**: Anteprima con giocatori reali
-  piazzati sul campo (il drawer si apre e la cornice `.ant-card` è scritta, ma non è stata vista
-  renderizzata con carte vere — servirebbe uno stato sintetico più elaborato), Griglia P/A (eredita
-  i token ma non è stata guardata), modali (svincolo, conferma RIC, ecc. — stesso limite di sempre,
-  nessuna asta reale disponibile).
-- **Fix cache-busting**: il commit del redesign non aveva aggiornato `?v=` di
-  `style.css`/`tema-serata.css` in `index.html` (convenzione del progetto, vedi PROJECT.md) —
-  browser/CDN potevano continuare a servire il CSS precedente sotto la stessa URL. Bumpato in un
-  commit separato subito dopo. Se in futuro un cambio a un file statico "non si vede" dopo il
-  deploy, controllare per primo questo.
-- **Bug preesistente scoperto e corretto durante questo lavoro** (non introdotto da questo cambio):
-  `html body .card{background:linear-gradient(rgba(25,20,17,.9),...)!important}` in
-  `tema-serata.css` non era scoperto per tema — le card di Home/Login/Lobby/Fine asta restavano
-  sempre scure ANCHE nel vecchio tema chiaro "Mattina al banco". Aggiunta la mancante
-  `html.theme-light body .card{...}` (pergamena) accanto alle altre regole "Porta d'ingresso".
+- **Selettore multi-tema + terzo tema "Lavagna al Neon"** (architettura descritta sopra in "Stato
+  attuale"). Verificato via script di contrasto (tutte le coppie chiave del nuovo tema ≥5.3:1,
+  margine ampio) e nel browser con dati sintetici (stesso metodo del punto sotto): menu a tendina
+  funzionante nei 3 temi, vista Partecipante/Admin desktop e mobile (375px) per Lavagna, `serata`
+  e `cuoio` ricontrollati invariati dopo il refactor del selettore, preferenza persistita dopo
+  reload. **Da fare prima del prossimo push**: aggiornare `?v=` cache-busting (vedi sotto — questa
+  volta già incluso nel lavoro, non dimenticare comunque di ricontrollarlo prima di committere se
+  si continua a toccare questi file). **Non verificato** (stesso limite di sempre): asta reale,
+  Anteprima/Griglia P/A/modali col nuovo tema.
+- **Tema chiaro "Cuoio"** (mockup utente "PuntBar"): sostituisce interamente il vecchio "Mattina
+  al banco" (bianco/argento/ottone). Cuoio scuro per testata/cornici anche a pagina chiara,
+  pergamena per i piani, verde bosco riservato SOLO al denaro (`.cc-offerta`/`.sq-crediti`),
+  `.cc-avatar` da cerchio a cornice smussata (solo bordo/forma, dimensioni invariate — vedi "Carta
+  XL animazione" sotto, stesso vincolo). Contrasto verificato via script, tutte le coppie ≥4.9:1.
+  **Non verificato**: Anteprima con giocatori reali sul campo, Griglia P/A, modali con dati veri.
+- **Fix cache-busting dimenticato dopo "Cuoio"**: il commit del redesign non aveva aggiornato `?v=`
+  di `style.css`/`tema-serata.css` in `index.html` (convenzione del progetto, vedi PROJECT.md) —
+  browser/CDN potevano continuare a servire il CSS precedente sotto la stessa URL, con residui
+  visivi del tema viola pre-Serata d'Asta ancora in cache. Se in futuro un cambio a un file statico
+  "non si vede" dopo il deploy, controllare per primo questo.
+- **Bug preesistente scoperto e corretto** (non introdotto da questi cambi): `html body .card` in
+  `tema-serata.css` aveva un gradiente scuro hardcoded senza scoping per tema — le card di
+  Home/Login/Lobby/Fine asta restavano scure anche nel vecchio tema chiaro. Corretto aggiungendo
+  l'override mancante per tema chiaro accanto alle altre regole "Porta d'ingresso".
 
 - **Vista partecipante con Anteprima aperta — reflow vero.** Anteprima è una colonna sorella
   di `.asta-main-col`: aprendola la finestra non cambia, si dimezza la colonna, e tutti gli
@@ -96,7 +107,9 @@ strumento): è ridondante da quando il tema ridisegna la stessa zona con specifi
   (svincolo, conferma RIC, plusvalenza/recompra, annulla storico) con dati reali. È il limite
   noto di tutte le sessioni finora — non ci sono credenziali di test.
 - Schermate Strategie, Editor Fasce, Anteprima e Griglia P/A: ereditano la palette ma non sono
-  state guardate una per una, in nessuno dei due temi.
+  state guardate una per una, in nessuno dei tre temi.
+- [docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md) descrive ancora il vecchio toggle binario e la palette
+  chiara precedente — da riscrivere per i 3 temi/selettore prima del prossimo deploy importante.
 - Ripristinare `.cc-strategia-info` su mobile: è l'unico `display:none` del tema che tocca
   contenuto vero e non decorazione.
 - Nel tema **scuro** il grigio più tenue (`--sc-tenue`) resta a 3.4:1 su testi da 9-10px. È così

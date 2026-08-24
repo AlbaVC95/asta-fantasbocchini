@@ -717,3 +717,47 @@ futuro:
   asta reale disponibile, stesso limite di sempre) in vista Partecipante/Admin, desktop/mobile;
   tema scuro ricontrollato invariato. **Non verificato**: Anteprima con carte reali sul campo,
   Griglia P/A, modali con dati veri — vedi [docs/SESSION_SUMMARY.md](docs/SESSION_SUMMARY.md).
+
+## Toggle binario chiaro/scuro sostituito da selettore multi-tema (`data-tema`)
+
+Richiesta esplicita dell'utente: poter creare più temi chiari E più temi scuri, con l'utente che
+sceglie il preferito — non più una singola coppia sì/no. La `html.theme-light` (classe booleana)
+non poteva rappresentare un terzo/quarto tema, quindi sostituita con `data-tema="<id>"` su
+`<html>`: ogni tema è un id, non un bit. Migrazione **rinominando meccanicamente** (sostituzione
+di stringa esatta, 107 occorrenze identiche di `html.theme-light` → `html[data-tema="cuoio"]`) —
+scelta deliberata invece di riscrivere le regole: **zero righe del tema scuro `:root` toccate**,
+nessun rischio di regressione sui due temi già esistenti. Ogni tema nuovo si aggiunge con lo stesso
+pattern già rodato (ruoli `--sc-*` in `tema-serata.css` + token base in `style.css`, entrambi con
+un blocco `[data-tema="<id>"]`, + una sezione "materie" dedicata in fondo a `tema-serata.css`) —
+nessuna riscrittura strutturale richiesta per aggiungere il quarto, quinto tema in futuro.
+
+`localStorage['tema']` migrato in modo silenzioso e automatico (`'light'`→`'cuoio'`,
+`'dark'`/mancante→`'serata'`) al primo caricamento dopo l'aggiornamento: nessun utente perde la
+propria preferenza, nessuna chiave di migrazione separata (idempotente ad ogni load).
+
+Il selettore (icona 🎨, menu a tendina) sostituisce il vecchio bottone sole/luna negli stessi due
+punti di aggancio (`.asta-header-right`, ogni `.home-header`) — nessun nuovo punto di iniezione
+nel DOM. Le regole `.tema-picker*` sono scritte SOLO sui token base condivisi (`--bg-card`,
+`--border-light`, `--text-primary`...), mai su colori hardcoded: il pannello si adatta da solo a
+qualunque tema presente e futuro senza bisogno di una regola per tema.
+
+## "Lavagna al Neon": due accenti neon con ruoli distinti, non un solo colore come negli altri temi
+
+Terzo tema (scuro), mockup fornito dall'utente. Gli altri due temi seguono la regola "un solo
+accento diffuso + un colore riservato al denaro" (ambra/verde per Serata-Cuoio); qui il mockup
+stesso usa DUE neon appaiati (ciano+magenta, tipico dell'estetica synthwave/insegna anni '80) senza
+separazione semantica netta nella fonte. Scelta per restare coerenti con l'app invece di riprodurre
+alla lettera: **ciano** = accento strutturale (bordi, cornici, tab attiva, stato "in gioco" — lo
+stesso ruolo che altrove ha l'ambra/il cuoio); **magenta** = riservato al brand (nome "FantaBar",
+unico punto con un font diverso, Pacifico via Google Fonts) E al denaro (`.cc-offerta`/
+`.sq-crediti`) — stessa filosofia restrittiva del verde in Cuoio, solo esteso a due usi invece di
+uno perché il mockup lo richiedeva esplicitamente per il brand. Rosso tenuto volutamente diverso
+dal magenta (mai la stessa tinta) per non confondere "allarme" con "brand/decorazione". La cornice
+fisica in ottone (`#C9A227`) attorno alla testata è un QUARTO colore, deliberatamente caldo contro
+la palette fredda ciano/magenta/nero: rappresenta la struttura fisica (le travi della lavagna), mai
+un accento diffuso — stesso trattamento riservato che Cuoio applica al filo di cuoio sotto la
+testata.
+
+A differenza di Cuoio (tema chiaro, servivano ombre/glow RIMOSSI perché sporcavano su fondo
+bianco), Lavagna resta scuro come il default: i glow neon sui testi (`text-shadow`) sono stati
+AGGIUNTI apposta invece che rimossi — è l'effetto voluto, non un residuo da ripulire.

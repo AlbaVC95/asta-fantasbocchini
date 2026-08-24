@@ -26,7 +26,7 @@
    sotto restano una sola serie: cambia la luce, non la composizione.
 
    SERA (default) — una lampada ambra in una sala scura.
-   MATTINA (html.theme-light) — "Cuoio": banco di cuoio e pergamena, come
+   MATTINA (html[data-tema="cuoio"]) — "Cuoio": banco di cuoio e pergamena, come
    un registro d'asta d'altri tempi. L'accento e' il cuoio del banco, il
    verde e' riservato alle cifre di credito (il denaro sul tavolo).
    ═══════════════════════════════════════════════════════════════════ */
@@ -42,7 +42,7 @@
   --sc-brace-piena:#E23A2E;
   --sc-fondo:#14100E;
 }
-html.theme-light{
+html[data-tema="cuoio"]{
   --sc-carta:58,36,20;       /* sulla pergamena il "chiaro" diventa inchiostro di cuoio */
   --sc-ambra:107,68,35;      /* il cuoio del banco, non piu' l'ottone */
   --sc-brace:168,58,42;
@@ -54,6 +54,19 @@ html.theme-light{
   --sc-brace-piena:#A83A2A;
   --sc-fondo:#F3E7D0;
 }
+html[data-tema="lavagna"]{
+  --sc-carta:240,244,248;    /* il gesso: testo e filetti sulla lavagna nera */
+  --sc-ambra:34,211,238;     /* il tubo al neon ciano, l'accento strutturale */
+  --sc-brace:255,45,45;      /* rosso neon, solo allarme — mai il magenta del denaro */
+  --sc-testo:#F0F4F8;
+  --sc-medio:#B8C4D0;
+  --sc-tenue:#8A96A3;
+  --sc-ambra-piena:#22D3EE;
+  --sc-ambra-alta:#7DE8F7;
+  --sc-brace-piena:#FF2D2D;
+  --sc-fondo:#0B0B0F;
+}
+
 
 /* ── L'AMBIENTE ─────────────────────────────────────────────
    La foto del bar resta, ma smette di essere una foto: diventa
@@ -1612,8 +1625,8 @@ html body #budget-bar .budget-progress{bottom:1px !important;left:8px !important
    ═══════════════════════════════════════════════════════════════════ */
 
 /* ── L'ambiente: pergamena, luce da vetrina ── */
-html.theme-light body{background:#F3E7D0 !important}
-html.theme-light .pitch-bg{
+html[data-tema="cuoio"] body{background:#F3E7D0 !important}
+html[data-tema="cuoio"] .pitch-bg{
   background-color:#F3E7D0 !important;
   background-image:
     radial-gradient(52% 44% at 22% -6%, rgba(107,68,35,.14), transparent 64%),
@@ -1622,58 +1635,58 @@ html.theme-light .pitch-bg{
     url('/img/backgrounds/fantabar-bg.jpg') !important;
   filter:saturate(.22) sepia(.12) contrast(1.02) brightness(1.14) !important;
 }
-html.theme-light ::selection{background:rgba(107,68,35,.24);color:#2B1B10}
+html[data-tema="cuoio"] ::selection{background:rgba(107,68,35,.24);color:#2B1B10}
 
 /* ── La testata: cuoio scuro, anche di giorno — e' il banco, non la sala ── */
-html.theme-light .asta-header{
+html[data-tema="cuoio"] .asta-header{
   background:linear-gradient(180deg,#6B4423 0%,#4A2E17 100%) !important;
   border-bottom:1px solid rgba(0,0,0,.35) !important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 6px 18px rgba(58,36,20,.30) !important;
 }
 /* Il logo di giorno resta cuoio inciso su pergamena: crema, niente alone. */
-html.theme-light body .asta-header-title,
-html.theme-light body .home-title{
+html[data-tema="cuoio"] body .asta-header-title,
+html[data-tema="cuoio"] body .home-title{
   color:#F2E4C9 !important;-webkit-text-fill-color:#F2E4C9 !important;
   text-shadow:0 1px 2px rgba(0,0,0,.4) !important;
   animation:none !important;
 }
-html.theme-light .asta-header-email{color:rgba(242,228,201,.72) !important}
-html.theme-light .btn-sound,
-html.theme-light .asta-header-right .btn-secondary{
+html[data-tema="cuoio"] .asta-header-email{color:rgba(242,228,201,.72) !important}
+html[data-tema="cuoio"] .btn-sound,
+html[data-tema="cuoio"] .asta-header-right .btn-secondary{
   background:#F2E4C9 !important;color:#4A2E17 !important;
   border:1px solid rgba(0,0,0,.22) !important;border-radius:10px !important;
 }
-html.theme-light .btn-sound:hover,
-html.theme-light .asta-header-right .btn-secondary:hover{color:#6B4423 !important;border-color:#6B4423 !important}
-html.theme-light .home-header{
+html[data-tema="cuoio"] .btn-sound:hover,
+html[data-tema="cuoio"] .asta-header-right .btn-secondary:hover{color:#6B4423 !important;border-color:#6B4423 !important}
+html[data-tema="cuoio"] .home-header{
   background:linear-gradient(180deg,#6B4423 0%,#4A2E17 100%) !important;
   border-radius:0 0 18px 18px;
   box-shadow:0 6px 18px rgba(58,36,20,.28);
 }
-html.theme-light .home-header .btn-logout-link{color:rgba(242,228,201,.85) !important}
-html.theme-light .home-header .btn-logout-link:hover{color:#F2E4C9 !important}
+html[data-tema="cuoio"] .home-header .btn-logout-link{color:rgba(242,228,201,.85) !important}
+html[data-tema="cuoio"] .home-header .btn-logout-link:hover{color:#F2E4C9 !important}
 /* "Porta d'ingresso" (home/login/lobby/fine asta): .card e' scuro fisso
    per il tema serale (html body .card, riga ~854) — di giorno diventa
    pergamena, altrimenti resta buio sotto la testata di cuoio chiara. */
-html.theme-light body .card{
+html[data-tema="cuoio"] body .card{
   background:linear-gradient(180deg, #FAF2E3, #F0E3C8) !important;
   border:1px solid rgba(58,36,20,.14) !important;
 }
-html.theme-light body .home-logo{filter:none !important}
+html[data-tema="cuoio"] body .home-logo{filter:none !important}
 
 /* ── I piani: pergamena chiara ── */
-html.theme-light .panel-budget,
-html.theme-light .mio-panel,
-html.theme-light .admin-panel,
-html.theme-light .tabs-panel{
+html[data-tema="cuoio"] .panel-budget,
+html[data-tema="cuoio"] .mio-panel,
+html[data-tema="cuoio"] .admin-panel,
+html[data-tema="cuoio"] .tabs-panel{
   background:linear-gradient(180deg, rgba(250,242,227,.97), rgba(243,231,208,.97)) !important;
   border:1px solid rgba(58,36,20,.14) !important;
   box-shadow:0 1px 2px rgba(58,36,20,.06), 0 10px 24px rgba(58,36,20,.08) !important;
 }
 
 /* ── Il tavolo della puja: pergamena con cornice di cuoio ── */
-html.theme-light body.layout-partecipante #puja-panel-slot,
-html.theme-light body #puja-panel-slot{
+html[data-tema="cuoio"] body.layout-partecipante #puja-panel-slot,
+html[data-tema="cuoio"] body #puja-panel-slot{
   background:
     radial-gradient(42% 130% at 17% -16%, rgba(107,68,35,.14), transparent 62%),
     radial-gradient(52% 120% at 101% 118%, rgba(47,107,63,.08), transparent 60%),
@@ -1681,7 +1694,7 @@ html.theme-light body #puja-panel-slot{
   border:2px solid #6B4423 !important;
   box-shadow:0 0 0 4px #F6ECD9, 0 1px 2px rgba(58,36,20,.06), 0 16px 36px rgba(58,36,20,.14) !important;
 }
-html.theme-light body.puja-urgente #puja-panel-slot{
+html[data-tema="cuoio"] body.puja-urgente #puja-panel-slot{
   background:
     radial-gradient(46% 130% at 17% -16%, rgba(168,58,42,.14), transparent 62%),
     radial-gradient(52% 120% at 101% 118%, rgba(47,107,63,.06), transparent 60%),
@@ -1689,132 +1702,132 @@ html.theme-light body.puja-urgente #puja-panel-slot{
   border-color:#A83A2A !important;
 }
 /* la miccia in alto */
-html.theme-light body #puja-panel-slot::before{background:rgba(58,36,20,.12) !important}
-html.theme-light body #puja-panel-slot::after{
+html[data-tema="cuoio"] body #puja-panel-slot::before{background:rgba(58,36,20,.12) !important}
+html[data-tema="cuoio"] body #puja-panel-slot::after{
   background:#6B4423 !important;box-shadow:none !important;
 }
-html.theme-light body.puja-urgente #puja-panel-slot::after{background:#A83A2A !important;box-shadow:none !important}
+html[data-tema="cuoio"] body.puja-urgente #puja-panel-slot::after{background:#A83A2A !important;box-shadow:none !important}
 
 /* il conto sul tavolo */
-html.theme-light body.layout-partecipante .asta-row-panels>#mio-panel{
+html[data-tema="cuoio"] body.layout-partecipante .asta-row-panels>#mio-panel{
   background:
     radial-gradient(86% 110% at 104% 116%, rgba(47,107,63,.10), transparent 62%),
     linear-gradient(180deg, #FAF2E3, #F0E3C8) !important;
   border:1px solid rgba(58,36,20,.14) !important;
   box-shadow:0 1px 2px rgba(58,36,20,.06), 0 16px 36px rgba(58,36,20,.14) !important;
 }
-html.theme-light body #mio-panel::before{background:rgba(58,36,20,.12) !important}
+html[data-tema="cuoio"] body #mio-panel::before{background:rgba(58,36,20,.12) !important}
 
 /* ── Il ritratto: cornice di cuoio, come una foto in una teca ── */
-html.theme-light body #puja-panel-slot .cc-avatar{
+html[data-tema="cuoio"] body #puja-panel-slot .cc-avatar{
   background:linear-gradient(180deg,#FAF2E3,#EDDCBC) !important;
   border:2px solid #4A2E17 !important;border-radius:14px !important;
   box-shadow:0 0 0 4px #F6ECD9, 0 0 0 6px #8F5A2C, 0 8px 20px rgba(58,36,20,.26) !important;
 }
-html.theme-light body #puja-panel-slot .cc-avatar-img{
+html[data-tema="cuoio"] body #puja-panel-slot .cc-avatar-img{
   filter:contrast(1.04) brightness(1.02) sepia(.08) !important;
 }
-html.theme-light body #puja-panel-slot .cc-avatar::after{
+html[data-tema="cuoio"] body #puja-panel-slot .cc-avatar::after{
   background:linear-gradient(202deg, rgba(107,68,35,.30) 0%, rgba(168,58,42,.08) 46%, rgba(47,107,63,.22) 100%) !important;
 }
-html.theme-light body #puja-panel-slot .cc-avatar::before{
+html[data-tema="cuoio"] body #puja-panel-slot .cc-avatar::before{
   background:linear-gradient(180deg, rgba(255,255,255,.28) 0%, transparent 38%, rgba(58,36,20,.22) 100%) !important;
 }
 
 /* ── Le ombre di testo del tema scuro, su pergamena, sporcano ── */
-html.theme-light body #puja-panel-slot .cc-nome,
-html.theme-light body #puja-panel-slot .cc-offerta,
-html.theme-light body #puja-panel-slot .timer-number,
-html.theme-light body.puja-urgente #puja-panel-slot .timer-number{text-shadow:none !important}
+html[data-tema="cuoio"] body #puja-panel-slot .cc-nome,
+html[data-tema="cuoio"] body #puja-panel-slot .cc-offerta,
+html[data-tema="cuoio"] body #puja-panel-slot .timer-number,
+html[data-tema="cuoio"] body.puja-urgente #puja-panel-slot .timer-number{text-shadow:none !important}
 
 /* ── Il denaro sul tavolo: l'unico verde del tema, e solo qui ── */
-html.theme-light body #puja-panel-slot .cc-offerta,
-html.theme-light body.layout-admin .asta-row-puja .cc-offerta{
+html[data-tema="cuoio"] body #puja-panel-slot .cc-offerta,
+html[data-tema="cuoio"] body.layout-admin .asta-row-puja .cc-offerta{
   color:#2F6B3F !important;
 }
-html.theme-light body #puja-panel-slot .cc-offerta-box,
-html.theme-light body.layout-admin .asta-row-puja .cc-offerta-box{
+html[data-tema="cuoio"] body #puja-panel-slot .cc-offerta-box,
+html[data-tema="cuoio"] body.layout-admin .asta-row-puja .cc-offerta-box{
   border-color:#2F6B3F !important;
   background:linear-gradient(160deg, rgba(47,107,63,.14) 0%, rgba(47,107,63,.04) 100%) !important;
   box-shadow:0 0 24px rgba(47,107,63,.14), inset 0 1px 0 rgba(255,255,255,.5) !important;
 }
-html.theme-light .sq-crediti{color:#2F6B3F !important;text-shadow:none !important}
+html[data-tema="cuoio"] .sq-crediti{color:#2F6B3F !important;text-shadow:none !important}
 
 /* ── La lastra dell'azione: inchiostro su pergamena ── */
-html.theme-light body #puja-panel-slot .btn-rilancia{
+html[data-tema="cuoio"] body #puja-panel-slot .btn-rilancia{
   box-shadow:0 10px 22px rgba(58,36,20,.22) !important;
 }
-html.theme-light body.puja-urgente #puja-panel-slot .btn-rilancia{
+html[data-tema="cuoio"] body.puja-urgente #puja-panel-slot .btn-rilancia{
   box-shadow:0 10px 24px rgba(168,58,42,.30) !important;
 }
-html.theme-light body #puja-panel-slot .quick-bids-row,
-html.theme-light body #puja-panel-slot .inp-rilancio{
+html[data-tema="cuoio"] body #puja-panel-slot .quick-bids-row,
+html[data-tema="cuoio"] body #puja-panel-slot .inp-rilancio{
   background:#FAF2E3 !important;
 }
-html.theme-light body #puja-panel-slot .btn-quick,
-html.theme-light body #puja-panel-slot .btn-manuale{color:#5C4A3A !important}
+html[data-tema="cuoio"] body #puja-panel-slot .btn-quick,
+html[data-tema="cuoio"] body #puja-panel-slot .btn-manuale{color:#5C4A3A !important}
 
 /* ── La clessidra: il vetro va disegnato al contrario ──
    L'SVG di clessidra.js costruisce riflessi e profilo con bianco a bassa
    opacita': su fondo chiaro sparirebbero. Qui gli stessi tratti passano
    a inchiostro di cuoio. La sabbia resta cuoio: e' l'accento del tema. */
-html.theme-light .clessidra use[stroke]{stroke:rgba(58,36,20,.36) !important}
-html.theme-light .clessidra use[fill^="url(#cls-vetro"]{fill:rgba(58,36,20,.05) !important}
-html.theme-light .clessidra path[stroke="#fff"]{stroke:rgba(58,36,20,.16) !important}
-html.theme-light .clessidra{filter:none !important}
+html[data-tema="cuoio"] .clessidra use[stroke]{stroke:rgba(58,36,20,.36) !important}
+html[data-tema="cuoio"] .clessidra use[fill^="url(#cls-vetro"]{fill:rgba(58,36,20,.05) !important}
+html[data-tema="cuoio"] .clessidra path[stroke="#fff"]{stroke:rgba(58,36,20,.16) !important}
+html[data-tema="cuoio"] .clessidra{filter:none !important}
 
 /* ── Le tab: la striscia verde del banco ── */
-html.theme-light .tabs-nav{
+html[data-tema="cuoio"] .tabs-nav{
   background:linear-gradient(180deg, #34774B 0%, #2A5D34 100%) !important;
   border-bottom:1px solid rgba(0,0,0,.22) !important;
 }
-html.theme-light .tab-btn{color:rgba(255,255,255,.72) !important}
-html.theme-light .tab-btn.active{color:#FFFFFF !important;background:rgba(255,255,255,.14) !important}
-html.theme-light .storico-list li{border-bottom:1px solid rgba(58,36,20,.10) !important;color:#2B1B10 !important}
-html.theme-light .tab-content{color:#2B1B10}
+html[data-tema="cuoio"] .tab-btn{color:rgba(255,255,255,.72) !important}
+html[data-tema="cuoio"] .tab-btn.active{color:#FFFFFF !important;background:rgba(255,255,255,.14) !important}
+html[data-tema="cuoio"] .storico-list li{border-bottom:1px solid rgba(58,36,20,.10) !important;color:#2B1B10 !important}
+html[data-tema="cuoio"] .tab-content{color:#2B1B10}
 
 /* ── Le squadre al tavolo ── */
-html.theme-light .sidebar-squadra.mia-squadra{background:rgba(58,36,20,.05) !important;border-left-color:#2B1B10 !important}
-html.theme-light .sidebar-squadra.offerente-attuale{background:rgba(107,68,35,.12) !important;border-left-color:#6B4423 !important}
-html.theme-light .sidebar-squadra:hover{background:rgba(58,36,20,.04) !important}
+html[data-tema="cuoio"] .sidebar-squadra.mia-squadra{background:rgba(58,36,20,.05) !important;border-left-color:#2B1B10 !important}
+html[data-tema="cuoio"] .sidebar-squadra.offerente-attuale{background:rgba(107,68,35,.12) !important;border-left-color:#6B4423 !important}
+html[data-tema="cuoio"] .sidebar-squadra:hover{background:rgba(58,36,20,.04) !important}
 
 /* ── Il drawer di Anteprima ── */
-html.theme-light #tab-anteprima.ant-drawer{
+html[data-tema="cuoio"] #tab-anteprima.ant-drawer{
   background:linear-gradient(180deg, rgba(250,242,227,.98), rgba(243,231,208,.98)) !important;
   border:1px solid rgba(58,36,20,.14) !important;
 }
-html.theme-light .ant-drawer-close{background:#F0E3C8 !important;border-color:rgba(58,36,20,.20) !important;color:#5C4A3A !important}
+html[data-tema="cuoio"] .ant-drawer-close{background:#F0E3C8 !important;border-color:rgba(58,36,20,.20) !important;color:#5C4A3A !important}
 
 /* ── Bottoni ── */
-html.theme-light .btn-primary{background:#2B1B10 !important;color:#F6ECD9 !important}
-html.theme-light .btn-secondary{
+html[data-tema="cuoio"] .btn-primary{background:#2B1B10 !important;color:#F6ECD9 !important}
+html[data-tema="cuoio"] .btn-secondary{
   background:#FAF2E3 !important;color:#3A2A1D !important;border:1px solid rgba(58,36,20,.20) !important;
 }
-html.theme-light .btn-secondary:hover{border-color:#6B4423 !important;color:#6B4423 !important}
+html[data-tema="cuoio"] .btn-secondary:hover{border-color:#6B4423 !important;color:#6B4423 !important}
 
 /* ── La luce di fondo della pagina: di giorno non c'e' faro ── */
-html.theme-light body::before{opacity:.35}
+html[data-tema="cuoio"] body::before{opacity:.35}
 
 /* ── Le cifre del cronometro e i timbri: nati per brillare al buio ──
    Misurato: #FFE9C9 (il crema dell'insegna) su pergamena chiara fa un
    contrasto insufficiente. Di giorno la cifra e' inchiostro di cuoio e
    il tubo non e' acceso. */
-html.theme-light body #puja-panel-slot .timer-number,
-html.theme-light body.layout-admin .asta-row-puja .timer-number{
+html[data-tema="cuoio"] body #puja-panel-slot .timer-number,
+html[data-tema="cuoio"] body.layout-admin .asta-row-puja .timer-number{
   color:#2B1B10 !important;text-shadow:none !important;
 }
-html.theme-light body.puja-urgente #puja-panel-slot .timer-number,
-html.theme-light body #puja-panel-slot .timer-ring-container.urgent .timer-number{
+html[data-tema="cuoio"] body.puja-urgente #puja-panel-slot .timer-number,
+html[data-tema="cuoio"] body #puja-panel-slot .timer-ring-container.urgent .timer-number{
   color:#A83A2A !important;text-shadow:none !important;
 }
-html.theme-light body .timbro-preso span,
-html.theme-light body .chiamata-card.assegnata .cc-esito{
+html[data-tema="cuoio"] body .timbro-preso span,
+html[data-tema="cuoio"] body .chiamata-card.assegnata .cc-esito{
   color:#2F6B3F !important;
 }
-html.theme-light body .timbro-preso span{border-color:#2F6B3F !important}
+html[data-tema="cuoio"] body .timbro-preso span{border-color:#2F6B3F !important}
 /* l'ottone della clessidra, di giorno, e' piu' scuro del vetro che lo tiene */
-html.theme-light body #puja-panel-slot .timer-ring-container,
-html.theme-light body.layout-admin .asta-row-puja .timer-ring-container{
+html[data-tema="cuoio"] body #puja-panel-slot .timer-ring-container,
+html[data-tema="cuoio"] body.layout-admin .asta-row-puja .timer-ring-container{
   --ottone:linear-gradient(180deg,#B98038,#8F5A2C 55%,#5C3719);
 }
 
@@ -1825,10 +1838,10 @@ html.theme-light body.layout-admin .asta-row-puja .timer-ring-container{
    parita' di !important. Qui gli stessi selettori, con lo stesso peso,
    dicono la versione chiara — venatura di cuoio appena accennata sulla
    pergamena, e il riflesso che diventa un velo invece di una luce. */
-html.theme-light body .panel-budget,
-html.theme-light body #mio-panel,
-html.theme-light body .admin-panel,
-html.theme-light body .tabs-panel{
+html[data-tema="cuoio"] body .panel-budget,
+html[data-tema="cuoio"] body #mio-panel,
+html[data-tema="cuoio"] body .admin-panel,
+html[data-tema="cuoio"] body .tabs-panel{
   background-color:#FAF2E3 !important;
   background-image:
     repeating-linear-gradient(93deg,
@@ -1837,8 +1850,8 @@ html.theme-light body .tabs-panel{
       rgba(58,36,20,.007) 17px 18px, transparent 18px 26px),
     linear-gradient(180deg, rgba(250,242,227,.97), rgba(243,231,208,.97)) !important;
 }
-html.theme-light body #puja-panel-slot,
-html.theme-light body.layout-admin .asta-row-puja{
+html[data-tema="cuoio"] body #puja-panel-slot,
+html[data-tema="cuoio"] body.layout-admin .asta-row-puja{
   background-color:#FAF2E3 !important;
   background-image:
     linear-gradient(104deg,
@@ -1853,7 +1866,7 @@ html.theme-light body.layout-admin .asta-row-puja{
   border:2px solid #6B4423 !important;
   box-shadow:0 0 0 4px #F6ECD9, 0 1px 2px rgba(58,36,20,.06), 0 16px 36px rgba(58,36,20,.14) !important;
 }
-html.theme-light body[data-fase="finale"] #puja-panel-slot{
+html[data-tema="cuoio"] body[data-fase="finale"] #puja-panel-slot{
   background-color:#FAF2E3 !important;
   background-image:
     linear-gradient(104deg,
@@ -1868,12 +1881,268 @@ html.theme-light body[data-fase="finale"] #puja-panel-slot{
   border-color:#A83A2A !important;
 }
 /* il filo di ottone/cuoio sotto la testata: la cucitura del banco */
-html.theme-light body .asta-header::after{
+html[data-tema="cuoio"] body .asta-header::after{
   background:linear-gradient(90deg,
     rgba(143,90,44,0) 0%, rgba(143,90,44,.55) 12%, rgba(143,90,44,.85) 30%,
     rgba(143,90,44,.5) 52%, rgba(143,90,44,.8) 74%, rgba(143,90,44,.5) 90%,
     rgba(143,90,44,0) 100%) !important;
   box-shadow:0 0 8px rgba(143,90,44,.4) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LAVAGNA AL NEON — terzo tema, scuro
+
+   Non e' "Serata d'Asta" ritinta: e' un locale diverso. Lavagna nera e
+   gesso al posto del legno, cornice in ottone attorno alla testata (la
+   struttura fisica, non un accento diffuso), due tubi al neon per gli
+   accenti — ciano per la struttura (bordi, cornici, stato attivo, il
+   ruolo che altrove ha l'ambra/il cuoio), magenta riservato al brand e
+   al denaro (nome del locale, cifra di offerta/credito). Il rosso resta
+   solo allarme, mai confuso col magenta. Le regole di composizione sono
+   le stesse di sempre: qui cambiano solo le materie.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── L'ambiente: la lavagna nera, polvere di gesso ── */
+html[data-tema="lavagna"] body{background:#0B0B0F !important}
+html[data-tema="lavagna"] .pitch-bg{
+  background-color:#0B0B0F !important;
+  background-image:
+    radial-gradient(52% 44% at 22% -6%, rgba(34,211,238,.12), transparent 64%),
+    radial-gradient(66% 60% at 104% 106%, rgba(255,60,172,.10), transparent 62%),
+    linear-gradient(180deg, rgba(11,11,15,.90) 0%, rgba(11,11,15,.82) 40%, rgba(11,11,15,.93) 100%),
+    url('/img/backgrounds/fantabar-bg.jpg') !important;
+  filter:saturate(.30) contrast(1.08) brightness(.62) !important;
+}
+html[data-tema="lavagna"] ::selection{background:rgba(34,211,238,.28);color:#F0F4F8}
+
+/* ── La testata: lavagna incorniciata d'ottone, insegna al neon magenta ── */
+html[data-tema="lavagna"] .asta-header{
+  background:linear-gradient(180deg,#111318 0%,#050508 100%) !important;
+  border-bottom:2px solid #C9A227 !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 6px 22px rgba(0,0,0,.6) !important;
+}
+html[data-tema="lavagna"] body .asta-header-title,
+html[data-tema="lavagna"] body .home-title{
+  font-family:'Pacifico',var(--font-display) !important;font-style:normal !important;font-weight:400 !important;
+  background:none !important;-webkit-text-fill-color:#FF6FC4 !important;color:#FF6FC4 !important;
+  text-shadow:0 0 8px rgba(255,60,172,.7), 0 0 22px rgba(255,60,172,.4) !important;
+  animation:none !important;letter-spacing:0 !important;
+}
+html[data-tema="lavagna"] .asta-header-email{color:rgba(240,244,248,.72) !important}
+html[data-tema="lavagna"] .btn-sound,
+html[data-tema="lavagna"] .asta-header-right .btn-secondary{
+  background:#111318 !important;color:#7DE8F7 !important;
+  border:1px solid rgba(34,211,238,.4) !important;border-radius:10px !important;
+}
+html[data-tema="lavagna"] .btn-sound:hover,
+html[data-tema="lavagna"] .asta-header-right .btn-secondary:hover{color:#FF6FC4 !important;border-color:#FF6FC4 !important}
+html[data-tema="lavagna"] .home-header{
+  background:linear-gradient(180deg,#111318 0%,#050508 100%) !important;
+  border-radius:0 0 18px 18px;
+  border-bottom:2px solid #C9A227;
+  box-shadow:0 6px 22px rgba(0,0,0,.55);
+}
+html[data-tema="lavagna"] .home-header .btn-logout-link{color:rgba(240,244,248,.8) !important}
+html[data-tema="lavagna"] .home-header .btn-logout-link:hover{color:#FF6FC4 !important}
+html[data-tema="lavagna"] body .card{
+  background:linear-gradient(180deg, #111318, #0B0B0F) !important;
+  border:1px solid rgba(34,211,238,.22) !important;
+}
+html[data-tema="lavagna"] body .home-logo{filter:none !important}
+
+/* ── I piani: lavagna scura, filo ciano ── */
+html[data-tema="lavagna"] .panel-budget,
+html[data-tema="lavagna"] .mio-panel,
+html[data-tema="lavagna"] .admin-panel,
+html[data-tema="lavagna"] .tabs-panel{
+  background:linear-gradient(180deg, rgba(17,19,24,.97), rgba(11,11,15,.97)) !important;
+  border:1px solid rgba(34,211,238,.18) !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.5) !important;
+}
+
+/* ── Il tavolo della puja: lavagna con cornice al neon ciano ── */
+html[data-tema="lavagna"] body.layout-partecipante #puja-panel-slot,
+html[data-tema="lavagna"] body #puja-panel-slot{
+  background:
+    radial-gradient(42% 130% at 17% -16%, rgba(34,211,238,.14), transparent 62%),
+    radial-gradient(52% 120% at 101% 118%, rgba(255,60,172,.10), transparent 60%),
+    linear-gradient(180deg, #111318, #0B0B0F) !important;
+  border:2px solid #22D3EE !important;
+  box-shadow:0 0 0 4px #050508, 0 0 26px rgba(34,211,238,.22), 0 16px 36px rgba(0,0,0,.5) !important;
+}
+html[data-tema="lavagna"] body.puja-urgente #puja-panel-slot{
+  background:
+    radial-gradient(46% 130% at 17% -16%, rgba(255,45,45,.18), transparent 62%),
+    radial-gradient(52% 120% at 101% 118%, rgba(255,60,172,.08), transparent 60%),
+    linear-gradient(180deg, #181114, #0B0B0F) !important;
+  border-color:#FF2D2D !important;
+  box-shadow:0 0 0 4px #050508, 0 0 30px rgba(255,45,45,.30), 0 16px 36px rgba(0,0,0,.5) !important;
+}
+/* la miccia in alto */
+html[data-tema="lavagna"] body #puja-panel-slot::before{background:rgba(34,211,238,.20) !important}
+html[data-tema="lavagna"] body #puja-panel-slot::after{
+  background:#22D3EE !important;box-shadow:0 0 12px #22D3EE !important;
+}
+html[data-tema="lavagna"] body.puja-urgente #puja-panel-slot::after{background:#FF2D2D !important;box-shadow:0 0 14px #FF2D2D !important}
+
+/* il conto sul tavolo */
+html[data-tema="lavagna"] body.layout-partecipante .asta-row-panels>#mio-panel{
+  background:
+    radial-gradient(86% 110% at 104% 116%, rgba(255,60,172,.10), transparent 62%),
+    linear-gradient(180deg, #111318, #0B0B0F) !important;
+  border:1px solid rgba(34,211,238,.18) !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 36px rgba(0,0,0,.5) !important;
+}
+html[data-tema="lavagna"] body #mio-panel::before{background:rgba(34,211,238,.20) !important}
+
+/* ── Il ritratto: cornice al neon ciano, come una foto sotto vetro ── */
+html[data-tema="lavagna"] body #puja-panel-slot .cc-avatar{
+  background:linear-gradient(180deg,#191C22,#0B0B0F) !important;
+  border:2px solid #22D3EE !important;border-radius:14px !important;
+  box-shadow:0 0 0 4px #050508, 0 0 0 6px rgba(34,211,238,.35), 0 0 22px rgba(34,211,238,.25) !important;
+}
+html[data-tema="lavagna"] body #puja-panel-slot .cc-avatar-img{
+  filter:contrast(1.08) brightness(.98) saturate(1.05) !important;
+}
+html[data-tema="lavagna"] body #puja-panel-slot .cc-avatar::after{
+  background:linear-gradient(202deg, rgba(34,211,238,.28) 0%, rgba(255,45,45,.06) 46%, rgba(255,60,172,.24) 100%) !important;
+}
+html[data-tema="lavagna"] body #puja-panel-slot .cc-avatar::before{
+  background:linear-gradient(180deg, rgba(255,255,255,.14) 0%, transparent 38%, rgba(0,0,0,.30) 100%) !important;
+}
+
+/* ── Il nome del giocatore: gesso col riflesso del tubo ── */
+html[data-tema="lavagna"] body #puja-panel-slot .cc-nome{
+  color:#F0F4F8 !important;text-shadow:0 0 10px rgba(34,211,238,.35) !important;
+}
+
+/* ── Il denaro sul tavolo: l'unico magenta del tema, insieme al brand ── */
+html[data-tema="lavagna"] body #puja-panel-slot .cc-offerta,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-offerta{
+  color:#FF6FC4 !important;text-shadow:0 0 12px rgba(255,60,172,.5) !important;
+}
+html[data-tema="lavagna"] body #puja-panel-slot .cc-offerta-box,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-offerta-box{
+  border-color:#FF3CAC !important;
+  background:linear-gradient(160deg, rgba(255,60,172,.14) 0%, rgba(255,60,172,.04) 100%) !important;
+  box-shadow:0 0 26px rgba(255,60,172,.18), inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+html[data-tema="lavagna"] .sq-crediti{color:#FF6FC4 !important;text-shadow:0 0 8px rgba(255,60,172,.35) !important}
+
+/* ── La lastra dell'azione ── */
+html[data-tema="lavagna"] body #puja-panel-slot .btn-rilancia{
+  box-shadow:0 0 22px rgba(34,211,238,.30), 0 10px 22px rgba(0,0,0,.4) !important;
+}
+html[data-tema="lavagna"] body.puja-urgente #puja-panel-slot .btn-rilancia{
+  box-shadow:0 0 24px rgba(255,45,45,.35), 0 10px 24px rgba(0,0,0,.4) !important;
+}
+html[data-tema="lavagna"] body #puja-panel-slot .quick-bids-row,
+html[data-tema="lavagna"] body #puja-panel-slot .inp-rilancio{
+  background:#111318 !important;
+}
+html[data-tema="lavagna"] body #puja-panel-slot .btn-quick,
+html[data-tema="lavagna"] body #puja-panel-slot .btn-manuale{color:#B8C4D0 !important}
+
+/* ── La clessidra: stessa lettura al buio, solo la ghiera cambia metallo ── */
+html[data-tema="lavagna"] body #puja-panel-slot .timer-ring-container,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .timer-ring-container{
+  --ottone:linear-gradient(180deg,#7DE8F7,#22D3EE 55%,#0EA5C7);
+}
+
+/* ── Le tab: bordo magenta, testo ciano ── */
+html[data-tema="lavagna"] .tabs-nav{
+  background:linear-gradient(180deg, #111318 0%, #0B0B0F 100%) !important;
+  border-bottom:2px solid rgba(255,60,172,.5) !important;
+}
+html[data-tema="lavagna"] .tab-btn{color:#8A96A3 !important}
+html[data-tema="lavagna"] .tab-btn.active{color:#7DE8F7 !important;background:rgba(34,211,238,.10) !important}
+html[data-tema="lavagna"] .storico-list li{border-bottom:1px solid rgba(240,244,248,.08) !important;color:#F0F4F8 !important}
+html[data-tema="lavagna"] .tab-content{color:#F0F4F8}
+
+/* ── Le squadre al tavolo ── */
+html[data-tema="lavagna"] .sidebar-squadra.mia-squadra{background:rgba(34,211,238,.06) !important;border-left-color:#7DE8F7 !important}
+html[data-tema="lavagna"] .sidebar-squadra.offerente-attuale{background:rgba(34,211,238,.12) !important;border-left-color:#22D3EE !important}
+html[data-tema="lavagna"] .sidebar-squadra:hover{background:rgba(240,244,248,.04) !important}
+
+/* ── Il drawer di Anteprima ── */
+html[data-tema="lavagna"] #tab-anteprima.ant-drawer{
+  background:linear-gradient(180deg, rgba(17,19,24,.98), rgba(11,11,15,.98)) !important;
+  border:1px solid rgba(34,211,238,.18) !important;
+}
+html[data-tema="lavagna"] .ant-drawer-close{background:#191C22 !important;border-color:rgba(34,211,238,.22) !important;color:#B8C4D0 !important}
+
+/* ── Bottoni ── */
+html[data-tema="lavagna"] .btn-primary{background:#22D3EE !important;color:#050508 !important}
+html[data-tema="lavagna"] .btn-secondary{
+  background:#111318 !important;color:#B8C4D0 !important;border:1px solid rgba(34,211,238,.28) !important;
+}
+html[data-tema="lavagna"] .btn-secondary:hover{border-color:#FF6FC4 !important;color:#FF6FC4 !important}
+
+/* ── Le cifre del cronometro e i timbri: ritinte, non rifatte — restano al buio ── */
+html[data-tema="lavagna"] body #puja-panel-slot .timer-number,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .timer-number{
+  color:#7DE8F7 !important;text-shadow:0 0 16px rgba(34,211,238,.4) !important;
+}
+html[data-tema="lavagna"] body.puja-urgente #puja-panel-slot .timer-number,
+html[data-tema="lavagna"] body #puja-panel-slot .timer-ring-container.urgent .timer-number{
+  color:#FF2D2D !important;text-shadow:0 0 18px rgba(255,45,45,.5) !important;
+}
+html[data-tema="lavagna"] body .timbro-preso span,
+html[data-tema="lavagna"] body .chiamata-card.assegnata .cc-esito{
+  color:#39FF88 !important;text-shadow:0 0 10px rgba(57,255,136,.4) !important;
+}
+html[data-tema="lavagna"] body .timbro-preso span{border-color:#39FF88 !important}
+
+/* ── Le materie della lavagna: polvere di gesso appena accennata ── */
+html[data-tema="lavagna"] body .panel-budget,
+html[data-tema="lavagna"] body #mio-panel,
+html[data-tema="lavagna"] body .admin-panel,
+html[data-tema="lavagna"] body .tabs-panel{
+  background-color:#111318 !important;
+  background-image:
+    repeating-linear-gradient(93deg,
+      rgba(240,244,248,.010) 0 2px, transparent 2px 6px,
+      rgba(240,244,248,.016) 6px 9px,  transparent 9px 17px,
+      rgba(240,244,248,.007) 17px 18px, transparent 18px 26px),
+    linear-gradient(180deg, rgba(17,19,24,.97), rgba(11,11,15,.97)) !important;
+}
+html[data-tema="lavagna"] body #puja-panel-slot,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja{
+  background-color:#111318 !important;
+  background-image:
+    linear-gradient(104deg,
+      transparent 34%, rgba(240,244,248,.018) 45%, rgba(240,244,248,.03) 50%,
+      rgba(240,244,248,.014) 55%, transparent 66%),
+    repeating-linear-gradient(93deg,
+      rgba(240,244,248,.007) 0 2px, transparent 2px 7px,
+      rgba(240,244,248,.014) 7px 10px, transparent 10px 19px),
+    radial-gradient(42% 130% at 20% -14%, rgba(34,211,238,.14), transparent 62%),
+    radial-gradient(52% 120% at 102% 118%, rgba(255,60,172,.08), transparent 60%),
+    linear-gradient(180deg, #111318, #0B0B0F) !important;
+  border:2px solid #22D3EE !important;
+  box-shadow:0 0 0 4px #050508, 0 0 26px rgba(34,211,238,.22), 0 16px 36px rgba(0,0,0,.5) !important;
+}
+html[data-tema="lavagna"] body[data-fase="finale"] #puja-panel-slot{
+  background-color:#181114 !important;
+  background-image:
+    linear-gradient(104deg,
+      transparent 34%, rgba(240,244,248,.018) 45%, rgba(240,244,248,.03) 50%,
+      rgba(240,244,248,.014) 55%, transparent 66%),
+    repeating-linear-gradient(93deg,
+      rgba(240,244,248,.007) 0 2px, transparent 2px 7px,
+      rgba(240,244,248,.014) 7px 10px, transparent 10px 19px),
+    radial-gradient(46% 130% at 20% -14%, rgba(255,45,45,.18), transparent 62%),
+    radial-gradient(52% 120% at 102% 118%, rgba(255,60,172,.08), transparent 60%),
+    linear-gradient(180deg, #181114, #0B0B0F) !important;
+  border-color:#FF2D2D !important;
+}
+/* la trave in ottone sotto la testata: la cornice fisica della lavagna */
+html[data-tema="lavagna"] body .asta-header::after{
+  background:linear-gradient(90deg,
+    rgba(201,162,39,0) 0%, rgba(201,162,39,.55) 12%, rgba(201,162,39,.85) 30%,
+    rgba(201,162,39,.5) 52%, rgba(201,162,39,.8) 74%, rgba(201,162,39,.5) 90%,
+    rgba(201,162,39,0) 100%) !important;
+  box-shadow:0 0 8px rgba(201,162,39,.4) !important;
 }
 
 /* ── Vista Admin: il nome finiva sotto la clessidra ──────────────────

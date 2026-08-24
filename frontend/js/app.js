@@ -1,56 +1,102 @@
 // ASTA FANTASBOCCHINI — CLIENT v2
 
-// == TEMA CHIARO/SCURO ==================================
+// == TEMI (selettore multi-tema) ==================================
 // Applicato subito (prima del resto) per evitare flash del tema sbagliato al caricamento.
+// Ogni tema è un attributo data-tema sull'<html> (non più una singola classe booleana
+// chiaro/scuro): scala a N temi, chiari e scuri, invece di una sola coppia sì/no.
+const TEMI = [
+  { id: 'serata',  nome: "Serata d'Asta",  tipo: 'scuro',  swatch: '#FFB04A' },
+  { id: 'cuoio',   nome: 'Cuoio',          tipo: 'chiaro', swatch: '#7A4A22' },
+  { id: 'lavagna', nome: 'Lavagna al Neon', tipo: 'scuro',  swatch: '#22D3EE' }
+];
+const TEMA_DEFAULT = 'serata';
+function _temaValido(id) { return TEMI.some(function(t) { return t.id === id; }); }
+function _temaIniziale() {
+  // Migrazione dal vecchio schema booleano ('light'/'dark') al nuovo id di tema: una tantum,
+  // poi da qui in avanti localStorage['tema'] contiene sempre direttamente un id valido.
+  try {
+    const v = localStorage.getItem('tema');
+    if (v === 'light') return 'cuoio';
+    if (v === 'dark') return 'serata';
+    if (_temaValido(v)) return v;
+  } catch (e) {}
+  return TEMA_DEFAULT;
+}
 (function initTema() {
   try {
-    if (localStorage.getItem('tema') === 'light') {
-      document.documentElement.classList.add('theme-light');
-    }
+    const id = _temaIniziale();
+    document.documentElement.setAttribute('data-tema', id);
+    localStorage.setItem('tema', id);
   } catch (e) {}
 })();
-window.toggleTema = function() {
-  const isLight = document.documentElement.classList.toggle('theme-light');
-  try { localStorage.setItem('tema', isLight ? 'light' : 'dark'); } catch (e) {}
-  document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
-    btn.textContent = isLight ? '☀️' : '🌙';
-    btn.title = isLight ? 'Passa al tema scuro' : 'Passa al tema chiaro';
-    btn.classList.toggle('muted', isLight);
-  });
+window.setTema = function(id) {
+  if (!_temaValido(id)) return;
+  document.documentElement.setAttribute('data-tema', id);
+  try { localStorage.setItem('tema', id); } catch (e) {}
+  document.querySelectorAll('.tema-picker-menu').forEach(_renderTemaMenu);
+  document.querySelectorAll('.tema-picker.open').forEach(function(p) { p.classList.remove('open'); });
 };
-function _creaThemeToggleBottoni() {
-  const isLight = document.documentElement.classList.contains('theme-light');
-  const icon = isLight ? '☀️' : '🌙';
-  const titolo = isLight ? 'Passa al tema scuro' : 'Passa al tema chiaro';
-  // 1) Dentro alla barra icone dell'header dell'asta live (accanto a suono/impostazioni)
+function _renderTemaMenu(menu) {
+  const attuale = document.documentElement.getAttribute('data-tema') || TEMA_DEFAULT;
+  menu.innerHTML = TEMI.map(function(t) {
+    return '<button type="button" class="tema-picker-item' + (t.id === attuale ? ' active' : '') + '" data-tema-id="' + t.id + '">' +
+      '<span class="tema-picker-swatch" style="background:' + t.swatch + '"></span>' +
+      '<span class="tema-picker-nome">' + t.nome + '</span>' +
+      (t.id === attuale ? '<span class="tema-picker-check">✓</span>' : '') +
+    '</button>';
+  }).join('');
+  menu.querySelectorAll('.tema-picker-item').forEach(function(btn) {
+    btn.onclick = function() { window.setTema(btn.dataset.temaId); };
+  });
+}
+function _creaThemePicker(container, triggerClass, wrapExtraClass) {
+  if (!container || container.querySelector('.tema-picker')) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'tema-picker' + (wrapExtraClass ? ' ' + wrapExtraClass : '');
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = triggerClass + ' tema-picker-trigger';
+  trigger.title = 'Cambia tema';
+  trigger.textContent = '🎨';
+  trigger.onclick = function(e) {
+    e.stopPropagation();
+    const wasOpen = wrap.classList.contains('open');
+    document.querySelectorAll('.tema-picker.open').forEach(function(p) { p.classList.remove('open'); });
+    if (!wasOpen) wrap.classList.add('open');
+  };
+  const menu = document.createElement('div');
+  menu.className = 'tema-picker-menu';
+  wrap.appendChild(trigger);
+  wrap.appendChild(menu);
+  container.appendChild(wrap);
+  _renderTemaMenu(menu);
+}
+function _creaThemeSelettori() {
+  // 1) Dentro alla barra icone dell'header dell'asta live (accanto a suono/impostazioni),
+  //    prima posizione cosi' resta dove stava il vecchio toggle sole/luna.
   const headerRight = document.querySelector('.asta-header-right');
-  if (headerRight && !headerRight.querySelector('.theme-toggle-btn')) {
-    const btn = document.createElement('button');
-    btn.className = 'btn-sound theme-toggle-btn';
-    btn.type = 'button';
-    btn.id = 'btn-theme';
-    btn.textContent = icon;
-    btn.title = titolo;
-    btn.onclick = window.toggleTema;
+  if (headerRight && !headerRight.querySelector('.tema-picker')) {
     const btnSound = document.getElementById('btn-sound');
-    if (btnSound && btnSound.parentNode === headerRight) headerRight.insertBefore(btn, btnSound);
-    else headerRight.insertBefore(btn, headerRight.firstChild);
+    const anchor = document.createElement('div');
+    anchor.style.display = 'contents';
+    if (btnSound && btnSound.parentNode === headerRight) headerRight.insertBefore(anchor, btnSound);
+    else headerRight.insertBefore(anchor, headerRight.firstChild);
+    _creaThemePicker(anchor, 'btn-sound', 'tema-picker-header');
   }
   // 2) In ogni header delle schermate home/lobby/strategie (in alto a sinistra, per non
   //    sovrapporsi al link "Esci"/"← Menu" che sta sempre in alto a destra)
-  document.querySelectorAll('.home-header').forEach(header => {
-    if (header.querySelector('.theme-toggle-btn')) return;
-    const btn = document.createElement('button');
-    btn.className = 'theme-toggle-home theme-toggle-btn';
-    btn.type = 'button';
-    btn.textContent = icon;
-    btn.title = titolo;
-    btn.onclick = window.toggleTema;
-    header.appendChild(btn);
+  document.querySelectorAll('.home-header').forEach(function(header) {
+    _creaThemePicker(header, 'theme-toggle-home', 'tema-picker-home');
   });
 }
-if (document.body) { _creaThemeToggleBottoni(); }
-else { document.addEventListener('DOMContentLoaded', _creaThemeToggleBottoni); }
+document.addEventListener('click', function() {
+  document.querySelectorAll('.tema-picker.open').forEach(function(p) { p.classList.remove('open'); });
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') document.querySelectorAll('.tema-picker.open').forEach(function(p) { p.classList.remove('open'); });
+});
+if (document.body) { _creaThemeSelettori(); }
+else { document.addEventListener('DOMContentLoaded', _creaThemeSelettori); }
 
 const socket = io({
 
