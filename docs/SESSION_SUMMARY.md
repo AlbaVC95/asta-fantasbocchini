@@ -54,6 +54,14 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Lavagna, quinta passata: texture ridisegnata su foto di riferimento reale fornita
+  dall'utente** (una lavagna vera, con le sbavature ampie e direzionali del cancellino e una
+  grana fitta e irregolare — non nuvole rotonde, non un pattern che ripete). Nuova ricetta
+  applicata a `.pitch-bg`, `#puja-panel-slot` (tutti gli stati) e
+  `.panel-budget`/`#mio-panel`/`.admin-panel`/`.tabs-panel`: 2-3 bande diagonali UNICHE (non
+  ripetute, ognuna con angolo/ampiezza propria — cosi' non si leggono come un motivo), 2-3
+  macchie di tono ampie e irregolari (chiare E scure, non solo chiare), grana fine piu' fitta
+  (6 tile invece di 3-5). Cuoio non toccato.
 - **Lavagna, quarta passata: tolte le righe diagonali ripetute**. L'utente ha segnalato che il
   `repeating-linear-gradient` diagonale (pensato per imitare i segni del cancellino) all'opacità
   alzata nel giro precedente si leggeva come un tessuto/pattern regolare, non come lavagna —
