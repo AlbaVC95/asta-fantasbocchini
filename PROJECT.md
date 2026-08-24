@@ -88,3 +88,11 @@ Senza di esse il server parte comunque ma tutte le funzionalità legate a Supaba
   staticamente). Dopo qualunque modifica a uno di questi file, bisogna aggiornare a mano il suo
   `?v=` in `index.html` — altrimenti browser/CDN possono continuare a servire la versione vecchia
   sotto la stessa URL anche dopo il deploy.
+- **Cache-busting sulle immagini referenziate nei CSS (`url(...)`)**: Hostinger serve gli statici
+  con `cache-control: public, max-age=2592000, immutable` — un browser che ha gia' scaricato una
+  di queste immagini non la richiede piu' per 30 giorni, nemmeno con hard refresh (`immutable`).
+  Le foto vere in `frontend/img/backgrounds/` (`pizarra-lavagna.jpeg`, `pelota-cuoio.jpeg`,
+  `fondo-cuoio.jpeg`, usate in `tema-serata.css`/`style.css`) hanno percio' anche loro un
+  `?v=N` manuale nell'`url(...)`. Se si sostituisce il contenuto di uno di questi file (stesso
+  nome), bisogna alzare `?v=` in OGNI punto dove il file e' referenziato (`grep` il nome del
+  file nei due CSS), altrimenti il cambio resta invisibile a chi l'ha gia' visitato.

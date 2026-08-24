@@ -65,10 +65,20 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
-- **Foto della lavagna sostituita con una piu' nitida**: l'utente ha detto che la prima
-  (`pizarra.jpeg`) era sfocata — sostituita con `lavagna.jpeg` fornita dall'utente, stesso nome
-  di file nel progetto (`frontend/img/backgrounds/pizarra-lavagna.jpeg`), quindi nessuna riga
-  CSS da toccare. Verificato via network (fetch fresco, 200 OK).
+- **Foto della lavagna sostituita con una piu' nitida — e bug di cache-busting sulle immagini,
+  non solo su CSS/JS, scoperto qui.** L'utente ha detto che la prima (`pizarra.jpeg`) era
+  sfocata — sostituita con `lavagna.jpeg` fornita dall'utente, stesso nome di file nel progetto
+  (`pizarra-lavagna.jpeg`). Dopo il deploy l'utente continuava a vedere la foto vecchia: causa
+  reale, non la solita cache CDN generica, ma `cache-control: public, max-age=2592000, immutable`
+  su Hostinger per le immagini statiche — un browser che ha gia' scaricato l'URL una volta non
+  la richiede piu' per 30 giorni, **nemmeno con hard refresh**, perche' `immutable` dice al
+  browser di non rivalidare mai entro il max-age. La convenzione `?v=` di questo progetto
+  (PROJECT.md) copriva solo i `<link>`/`<script>` in `index.html`, non i `url(...)` dentro i CSS:
+  aggiunta la stessa tecnica li', **`?v=N` manuale sulle 3 foto vere** (`pizarra-lavagna.jpeg?v=2`,
+  `pelota-cuoio.jpeg?v=1`, `fondo-cuoio.jpeg?v=1` — 4 punti in `tema-serata.css`/`style.css`,
+  vedi grep `pizarra-lavagna\|pelota-cuoio\|fondo-cuoio` in entrambi i file per trovarli tutti).
+  **Se in futuro si sostituisce di nuovo una di queste foto (stesso nome file)**: alzare il
+  numero dopo `?v=` in OGNI punto dove compare quel file, altrimenti il bug si ripete identico.
 - **Tolto il pallone piccolo dentro la carta di chiamata (Cuoio)**: l'utente ha detto che
   "queda mal" li' dentro — rimossa `html[data-tema="cuoio"] .chiamata-card::after` (`style.css`),
   nessuna regola generica sotto da far riemergere (era l'unico `::after` di quel tema).

@@ -1633,7 +1633,7 @@ html[data-tema="cuoio"] .pitch-bg{
   background-image:
     radial-gradient(52% 44% at 22% -6%, rgba(107,68,35,.10), transparent 64%),
     radial-gradient(66% 60% at 104% 106%, rgba(47,107,63,.08), transparent 62%),
-    url('/img/backgrounds/fondo-cuoio.jpeg') !important;
+    url('/img/backgrounds/fondo-cuoio.jpeg?v=1') !important;
   background-size:100% 100%, 100% 100%, cover !important;
   background-position:center, center, center !important;
   background-repeat:no-repeat, no-repeat, no-repeat !important;
@@ -1926,7 +1926,7 @@ html[data-tema="lavagna"] .pitch-bg{
     radial-gradient(52% 44% at 22% -6%, rgba(34,211,238,.10), transparent 64%),
     radial-gradient(66% 60% at 104% 106%, rgba(255,60,172,.08), transparent 62%),
     radial-gradient(120% 120% at 50% 50%, transparent 55%, rgba(0,0,0,.35) 100%),
-    url("../img/backgrounds/pizarra-lavagna.jpeg") !important;
+    url("../img/backgrounds/pizarra-lavagna.jpeg?v=2") !important;
   background-size:100% 100%, 100% 100%, 100% 100%, cover !important;
   background-repeat:no-repeat, no-repeat, no-repeat, no-repeat !important;
   background-position:center, center, center, center !important;
@@ -2203,7 +2203,7 @@ html[data-tema="lavagna"] body.layout-admin .asta-row-puja{
     radial-gradient(42% 130% at 20% -14%, rgba(34,211,238,.18), transparent 62%),
     radial-gradient(52% 120% at 102% 118%, rgba(255,60,172,.12), transparent 60%),
     radial-gradient(115% 115% at 50% 50%, transparent 50%, rgba(0,0,0,.3) 100%),
-    url("../img/backgrounds/pizarra-lavagna.jpeg") !important;
+    url("../img/backgrounds/pizarra-lavagna.jpeg?v=2") !important;
   background-size:100% 100%, 100% 100%, 100% 100%, cover !important;
   background-repeat:no-repeat, no-repeat, no-repeat, no-repeat !important;
   background-position:center, center, center, center !important;
@@ -2216,7 +2216,7 @@ html[data-tema="lavagna"] body[data-fase="finale"] #puja-panel-slot{
     radial-gradient(46% 130% at 20% -14%, rgba(255,45,45,.22), transparent 62%),
     radial-gradient(52% 120% at 102% 118%, rgba(255,60,172,.10), transparent 60%),
     radial-gradient(115% 115% at 50% 50%, transparent 50%, rgba(20,0,0,.4) 100%),
-    url("../img/backgrounds/pizarra-lavagna.jpeg") !important;
+    url("../img/backgrounds/pizarra-lavagna.jpeg?v=2") !important;
   background-size:100% 100%, 100% 100%, 100% 100%, cover !important;
   background-repeat:no-repeat, no-repeat, no-repeat, no-repeat !important;
   background-position:center, center, center, center !important;
