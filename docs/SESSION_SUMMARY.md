@@ -65,6 +65,18 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Riepilogo squadre e Mio team, collassabili anche su desktop in vista Admin.** L'utente ha
+  segnalato che occupavano troppo spazio verticale, lasciando le tab sotto (Storico/Rose/
+  Svincolati/Griglia P/A/Anteprima) a malapena raggiungibili senza scroll. Esisteva gia' un
+  accordion identico per mobile (`setupAstaMobileAccordion()` in `app.js`, handler di click gia'
+  agganciati SEMPRE, non solo sotto i 640px — leggeva un commento che diceva "su desktop questa
+  classe non ha alcun effetto visivo", vero solo perche' mancava la CSS, non l'handler). Aggiunto
+  lo stesso meccanismo (stessa classe `acc-open`, stesso trigger) anche `@media (min-width:641px)`
+  scoped a `body.layout-admin`: default chiuso (44px, solo header) per `.panel-budget` e
+  `#mio-panel`, tap sull'header per espandere. **Non tocca `#admin-panel`** (ha i controlli
+  Backup/Termina dell'Admin, devono restare sempre visibili) ne' la vista Partecipante (nessuna
+  lamentela li', nessuna regola aggiunta). Verificato nei 3 temi, click di apertura/chiusura,
+  `#admin-panel` e vista Partecipante confermati invariati.
 - **Bug di logica (non tema): l'asta proseguiva mentre una squadra aveva uno svincolo/decisione
   pendente.** Segnalato dall'utente: nel popup "Svincola giocatori", il bottone NASCONDI chiude
   solo la vista (comportamento voluto, per poter controllare "Svincolati" e tornare — vedi

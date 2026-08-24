@@ -899,6 +899,29 @@ html body.layout-admin .asta-row-panels>#admin-panel,
 html body.layout-admin .asta-row-panels>#mio-panel{
   max-height:clamp(200px,32vh,300px) !important;
 }
+/* Riepilogo squadre e Mio team, collassabili anche su desktop in Admin — stesso
+   meccanismo dell'accordion mobile (stessi handler di click, gia' agganciati da
+   setupAstaMobileAccordion() indipendentemente dalla larghezza), qui esteso oltre
+   i 640px. Default chiuso: sono le due sezioni meno urgenti quando la card di
+   chiamata e le tab sotto (Storico/Rose/...) devono restare raggiungibili senza
+   scorrere troppo — segnalato dall'utente, non tocca #admin-panel (ha i controlli
+   Backup/Termina, quelli restano sempre visibili). */
+@media (min-width:641px){
+  html body.layout-admin .panel-budget-hdr{
+    cursor:pointer !important;display:flex !important;align-items:center !important;
+    justify-content:space-between !important;
+  }
+  html body.layout-admin .panel-budget-hdr::after{content:'▾' !important;font-size:.9em !important;transition:transform .25s !important;opacity:.7 !important}
+  html body.layout-admin .panel-budget.acc-open .panel-budget-hdr::after{transform:rotate(180deg) !important}
+  html body.layout-admin .asta-row-panels>.panel-budget{max-height:44px !important;overflow:hidden !important}
+  html body.layout-admin .asta-row-panels>.panel-budget.acc-open{max-height:clamp(200px,32vh,300px) !important;overflow-y:auto !important}
+
+  html body.layout-admin .mio-panel-header{cursor:pointer !important;position:relative !important}
+  html body.layout-admin .mio-panel-header::after{content:'▾' !important;font-size:.9em !important;transition:transform .25s !important;opacity:.7 !important;margin-left:8px !important}
+  html body.layout-admin #mio-panel.acc-open .mio-panel-header::after{transform:rotate(180deg) !important}
+  html body.layout-admin .asta-row-panels>#mio-panel{max-height:44px !important;overflow:hidden !important}
+  html body.layout-admin .asta-row-panels>#mio-panel.acc-open{max-height:clamp(200px,32vh,300px) !important;overflow-y:auto !important}
+}
 html body.layout-admin #mio-panel{
   display:flex !important;flex-direction:column !important;
 }
