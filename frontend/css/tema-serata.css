@@ -1915,37 +1915,17 @@ html[data-tema="lavagna"] body{background:#0B0B0F !important}
    Cuoio, qui bianco su nero invece di bruno su crema. */
 html[data-tema="lavagna"] .pitch-bg{
   background-color:#0B0B0F !important;
-  /* Non piu' nuvole rotonde ne' un pattern ripetuto (bocciati entrambi dall'utente, con foto
-     di riferimento di una lavagna vera): tre ingredienti diversi — strisciate larghe e OGNUNA
-     diversa dall'altra (il cancellino passato in direzioni/ampiezze diverse, non un motivo),
-     macchie di tono irregolari (dove si vede il "prima" sotto il cancellato), e una grana
-     fine piu' fitta della polvere di prima. */
+  /* Non piu' un disegno CSS: la foto vera di una lavagna fornita dall'utente, con solo due
+     bagliori colorati sovrapposti (ciano/magenta, i due ruoli neon del tema) e una vignetta
+     scura ai margini per far risaltare il centro. */
   background-image:
-    linear-gradient(112deg, transparent 2%, rgba(240,244,248,.05) 10%, rgba(240,244,248,.02) 20%, transparent 34%),
-    linear-gradient(106deg, transparent 44%, rgba(240,244,248,.04) 53%, transparent 64%),
-    linear-gradient(122deg, transparent 68%, rgba(240,244,248,.045) 77%, transparent 88%),
-    radial-gradient(46% 34% at 20% 24%, rgba(240,244,248,.05), transparent 72%),
-    radial-gradient(38% 30% at 78% 62%, rgba(0,0,0,.20), transparent 70%),
-    radial-gradient(34% 42% at 62% 18%, rgba(0,0,0,.14), transparent 70%),
-    radial-gradient(1px 1px at 12% 18%, rgba(240,244,248,.20), transparent 55%),
-    radial-gradient(1px 1px at 62% 12%, rgba(240,244,248,.15), transparent 55%),
-    radial-gradient(1px 1px at 32% 58%, rgba(240,244,248,.18), transparent 55%),
-    radial-gradient(1px 1px at 82% 42%, rgba(240,244,248,.14), transparent 55%),
-    radial-gradient(1px 1px at 46% 82%, rgba(240,244,248,.16), transparent 55%),
-    radial-gradient(1px 1px at 92% 78%, rgba(240,244,248,.12), transparent 55%),
-    radial-gradient(52% 44% at 22% -6%, rgba(34,211,238,.09), transparent 64%),
-    radial-gradient(66% 60% at 104% 106%, rgba(255,60,172,.07), transparent 62%),
-    linear-gradient(180deg, #14161B 0%, #0F1015 55%, #08080B 100%) !important;
-  background-size:
-    100% 100%, 100% 100%, 100% 100%,
-    100% 100%, 100% 100%, 100% 100%,
-    70px 70px, 85px 85px, 65px 65px, 95px 95px, 75px 75px, 110px 110px,
-    cover, cover, cover !important;
-  background-repeat:
-    no-repeat, no-repeat, no-repeat,
-    no-repeat, no-repeat, no-repeat,
-    repeat, repeat, repeat, repeat, repeat, repeat,
-    no-repeat, no-repeat, no-repeat !important;
+    radial-gradient(52% 44% at 22% -6%, rgba(34,211,238,.10), transparent 64%),
+    radial-gradient(66% 60% at 104% 106%, rgba(255,60,172,.08), transparent 62%),
+    radial-gradient(120% 120% at 50% 50%, transparent 55%, rgba(0,0,0,.35) 100%),
+    url("../img/backgrounds/pizarra-lavagna.jpeg") !important;
+  background-size:100% 100%, 100% 100%, 100% 100%, cover !important;
+  background-repeat:no-repeat, no-repeat, no-repeat, no-repeat !important;
+  background-position:center, center, center, center !important;
   filter:none !important;
 }
 /* Il cancellino, come nel mockup: un blocchetto di legno e feltro appoggiato nell'angolo.
@@ -2213,48 +2193,29 @@ html[data-tema="lavagna"] body.layout-admin .asta-row-puja{
      luminose restano poco leggibili, serve un grigio ardesia vero perche' ci si veda
      sopra — segnalato dall'utente ("non vedo ancora la lavagna qui"). */
   background-color:#181B21 !important;
-  /* Stessa ricetta di .pitch-bg (vedi commento li'): strisciate larghe irregolari, macchie di
-     tono, grana fine — non piu' nuvole rotonde ne' un pattern ripetuto. */
+  /* Stessa foto vera di .pitch-bg (vedi commento li'), qui con bagliori un filo piu' intensi
+     perche' e' il pannello sotto i riflettori della puja. */
   background-image:
-    linear-gradient(112deg, transparent 2%, rgba(240,244,248,.06) 10%, rgba(240,244,248,.025) 20%, transparent 34%),
-    linear-gradient(106deg, transparent 44%, rgba(240,244,248,.05) 53%, transparent 64%),
-    linear-gradient(122deg, transparent 68%, rgba(240,244,248,.055) 77%, transparent 88%),
-    radial-gradient(46% 34% at 20% 24%, rgba(240,244,248,.06), transparent 72%),
-    radial-gradient(38% 30% at 78% 62%, rgba(0,0,0,.22), transparent 70%),
-    radial-gradient(34% 42% at 62% 18%, rgba(0,0,0,.16), transparent 70%),
-    radial-gradient(1px 1px at 12% 18%, rgba(240,244,248,.24), transparent 55%),
-    radial-gradient(1px 1px at 62% 12%, rgba(240,244,248,.18), transparent 55%),
-    radial-gradient(1px 1px at 32% 58%, rgba(240,244,248,.22), transparent 55%),
-    radial-gradient(1px 1px at 82% 42%, rgba(240,244,248,.17), transparent 55%),
-    radial-gradient(1px 1px at 46% 82%, rgba(240,244,248,.19), transparent 55%),
-    radial-gradient(1px 1px at 92% 78%, rgba(240,244,248,.15), transparent 55%),
-    radial-gradient(42% 130% at 20% -14%, rgba(34,211,238,.16), transparent 62%),
-    radial-gradient(52% 120% at 102% 118%, rgba(255,60,172,.10), transparent 60%),
-    linear-gradient(180deg, #181B21, #101318) !important;
-  background-size:
-    100% 100%, 100% 100%, 100% 100%,
-    100% 100%, 100% 100%, 100% 100%,
-    70px 70px, 85px 85px, 65px 65px, 95px 95px, 75px 75px, 110px 110px,
-    cover, cover, cover !important;
-  background-repeat:
-    no-repeat, no-repeat, no-repeat,
-    no-repeat, no-repeat, no-repeat,
-    repeat, repeat, repeat, repeat, repeat, repeat,
-    no-repeat, no-repeat, no-repeat !important;
+    radial-gradient(42% 130% at 20% -14%, rgba(34,211,238,.18), transparent 62%),
+    radial-gradient(52% 120% at 102% 118%, rgba(255,60,172,.12), transparent 60%),
+    radial-gradient(115% 115% at 50% 50%, transparent 50%, rgba(0,0,0,.3) 100%),
+    url("../img/backgrounds/pizarra-lavagna.jpeg") !important;
+  background-size:100% 100%, 100% 100%, 100% 100%, cover !important;
+  background-repeat:no-repeat, no-repeat, no-repeat, no-repeat !important;
+  background-position:center, center, center, center !important;
   border:2px solid #22D3EE !important;
   box-shadow:0 0 0 4px #050508, 0 0 26px rgba(34,211,238,.22), 0 16px 36px rgba(0,0,0,.5) !important;
 }
 html[data-tema="lavagna"] body[data-fase="finale"] #puja-panel-slot{
   background-color:#181114 !important;
   background-image:
-    radial-gradient(1px 1px at 12% 30%, rgba(240,244,248,.17), transparent 60%),
-    radial-gradient(1px 1px at 48% 70%, rgba(240,244,248,.13), transparent 60%),
-    radial-gradient(1px 1px at 78% 22%, rgba(240,244,248,.15), transparent 60%),
-    radial-gradient(46% 130% at 20% -14%, rgba(255,45,45,.18), transparent 62%),
-    radial-gradient(52% 120% at 102% 118%, rgba(255,60,172,.08), transparent 60%),
-    linear-gradient(180deg, #181114, #0B0B0F) !important;
-  background-size:90px 90px, 110px 110px, 130px 130px, cover, cover, cover !important;
-  background-repeat:repeat, repeat, repeat, no-repeat, no-repeat, no-repeat !important;
+    radial-gradient(46% 130% at 20% -14%, rgba(255,45,45,.22), transparent 62%),
+    radial-gradient(52% 120% at 102% 118%, rgba(255,60,172,.10), transparent 60%),
+    radial-gradient(115% 115% at 50% 50%, transparent 50%, rgba(20,0,0,.4) 100%),
+    url("../img/backgrounds/pizarra-lavagna.jpeg") !important;
+  background-size:100% 100%, 100% 100%, 100% 100%, cover !important;
+  background-repeat:no-repeat, no-repeat, no-repeat, no-repeat !important;
+  background-position:center, center, center, center !important;
   border-color:#FF2D2D !important;
 }
 /* la trave in ottone sotto la testata: la cornice fisica della lavagna */

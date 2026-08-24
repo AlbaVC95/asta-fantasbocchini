@@ -7,9 +7,20 @@ non accumulato. La cronologia sta in `git log`, il *perché* delle scelte in
 ## Stato attuale
 
 Branch `main`, allineato con `origin/main` fino al selettore multi-tema + "Lavagna al Neon" — i
-**rifiniment successivi (orologio per tema, texture lavagna, Anteprima ritinta) sono fatti e
-verificati in locale ma non ancora committati/pushati**, prossimo passo di questa sessione. Su
-Hostinger il deploy è automatico al push su `main`.
+**rifiniment successivi (orologio per tema, texture lavagna, Anteprima ritinta, foto reali per
+pallone Cuoio e lavagna) sono fatti e verificati in locale ma non ancora committati/pushati**,
+prossimo passo di questa sessione. Su Hostinger il deploy è automatico al push su `main`.
+
+**Novità: due texture non sono più disegnate in CSS, sono foto vere.** L'utente ha fornito due
+foto reali (pallone di cuoio vintage, lavagna vera) e ha chiesto di usarle tali e quali, non
+un'imitazione — cosa impossibile finché le foto restavano solo "viste" nella chat (nessun
+tool di Claude Code può salvare un'immagine incollata in chat come file su disco). Risolto
+facendo salvare all'utente le foto in `~/Downloads` (`pelota.jpeg`, `pizarra.jpeg`) e copiandole
+poi in `frontend/img/backgrounds/pelota-cuoio.jpeg` e `frontend/img/backgrounds/pizarra-lavagna.jpeg`
+— da lì sono file del progetto come gli altri in quella cartella, referenziabili in CSS con
+`url(...)`. **Se in futuro serve un'altra foto reale (non un'imitazione)**: stesso percorso,
+farla salvare all'utente su disco (Downloads o direttamente nella cartella giusta) e chiedere
+il nome del file — non esiste un modo per Claude Code di esportare un'immagine incollata in chat.
 
 **Bug di produzione trovato e corretto in questa sessione, non un bug di tema**: la tabella
 Supabase `theme_overrides` (usata da un "Editor Visuale di Stile" nascosto, `?editor=CHIAVE`,
@@ -54,6 +65,32 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Pallone Cuoio e lavagna Lavagna: da disegno CSS a foto reale.** L'utente ha confrontato
+  l'ultimo tentativo (un SVG fatto a mano, gradiente sferico + cuciture a gajos, tecnica
+  `feTurbulence` gia' usata per la sabbia della clessidra) con la foto vera e ha chiesto di
+  usare quella, non un'imitazione — vedi "Novità" sopra in "Stato attuale" per come si sono
+  ottenuti i file. Cambiato **solo** `background-image` nelle regole gia' esistenti (nessuna
+  nuova regola): `html[data-tema="cuoio"] .pitch-bg::after`/`.chiamata-card::after` (`style.css`)
+  ora puntano a `url("../img/backgrounds/pelota-cuoio.jpeg")` dentro un cerchio (`border-radius:
+  50%` — il browser ritaglia lo sfondo alla forma arrotondata, quindi gli angoli bianchi della
+  foto originale non si vedono; niente `clip-path` necessario), zoomata e posizionata
+  (`background-size:160% 160%; background-position:50% 40%`) per inquadrare solo la palla,
+  senza il riflesso in basso nella foto originale. `html[data-tema="lavagna"] .pitch-bg` e
+  `#puja-panel-slot` (tutti gli stati, incluso `data-fase="finale"`) in `tema-serata.css` ora
+  usano `url("../img/backgrounds/pizarra-lavagna.jpeg")` con `background-size:cover`, sopra solo
+  due bagliori radiali ciano/magenta e una vignetta scura ai bordi — tolti tutti gli strati
+  CSS a mano (bande diagonali, macchie, pallini di grana) delle passate precedenti, non piu'
+  necessari. **Bug trovato subito dopo dall'utente**: `.chiamata-card` (dove stanno foto/nome
+  del giocatore) aveva un `background` proprio, opaco, sopra `#puja-panel-slot` — la foto della
+  lavagna sul pannello restava coperta esattamente dove serviva vederla di piu'. Aggiunta la
+  stessa foto anche su `html[data-tema="lavagna"] .chiamata-card` (con un velo scuro sopra per
+  la leggibilita' del testo). **Errore di tooling durante il fix**: un'edit su `style.css` e'
+  passata per sbaglio dall'Edit tool standard invece dello script Python (vietato, righe LF-only
+  preesistenti) — rilevato subito (conteggio LF-only sceso da 210 a 0), risolto con `git stash`
+  (che ha ripristinato la versione pulita dell'ultimo commit) e poi ririapplicando via script sia
+  questo fix sia le due modifiche precedenti (foto pallone) sulla stessa base pulita — nessun
+  lavoro perso. Verificato nei 3 temi con dati sintetici (nessun'asta reale disponibile, limite
+  noto), nessun errore console, foto caricate con 200 OK.
 - **Lavagna, quinta passata: texture ridisegnata su foto di riferimento reale fornita
   dall'utente** (una lavagna vera, con le sbavature ampie e direzionali del cancellino e una
   grana fitta e irregolare — non nuvole rotonde, non un pattern che ripete). Nuova ricetta
