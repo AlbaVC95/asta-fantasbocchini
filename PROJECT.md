@@ -44,9 +44,14 @@ backend/data/*.json         ← snapshot di backup locale delle aste attive (ret
 frontend/index.html        ← SPA a singolo file: tutte le "screen" sono <section> nascoste/mostrate via JS
 frontend/js/app.js         ← TUTTA la logica client + WebSocket (1 file, ~4700 righe)
 frontend/js/gk-planner-*.js← modulo indipendente "Griglia Portieri/Attaccanti" (vedi ARCHITECTURE.md)
-frontend/css/style.css     ← tema scuro, mobile-first
+frontend/css/style.css     ← foglio storico: palette (:root), layout, tutti i breakpoint
+frontend/css/tema-serata.css← tema "Serata d'Asta": composizione, materie, versione chiara (caricato DOPO style.css)
+frontend/js/clessidra.js   ← la clessidra del cronometro (SVG); legge il tempo, non lo calcola
+frontend/js/comportamenti-asta.js ← comportamenti aggiuntivi della puja (leva, "ancora in gioco")
 frontend/data/*.json       ← dati statici (calendario placeholder, index foto giocatori, override nomi)
 frontend/img/players/<Squadra>/<Nome>.jpg  ← foto giocatori locali, organizzate per squadra reale
+                           (`player_name_overrides.json` serve per le eccezioni mirate:
+                            giocatore archiviato sotto la squadra sbagliata, senza spostare file)
 ```
 
 ## Variabili d'ambiente
@@ -70,3 +75,10 @@ Senza di esse il server parte comunque ma tutte le funzionalità legate a Supaba
   [DECISIONS.md](DECISIONS.md).
 - Nel frontend (`app.js`), le sezioni principali del file sono individuabili dai commenti `══` che le
   separano.
+- **Fine riga miste — mai l'Edit tool su `frontend/js/app.js`, `frontend/index.html`,
+  `frontend/css/style.css`**: hanno righe LF-only preesistenti (rispettivamente 137, 19 e 210) e
+  l'Edit tool converte tutto il file a LF, producendo un diff enorme. Usare uno script Node/Python
+  che legge il file grezzo e sostituisce stringhe esatte, e ricontare le righe LF-only prima e dopo.
+- **`String.replace(x, stringa)` corrompe `app.js`**: le sequenze `$&`, `$'`, `$1` nella stringa di
+  sostituzione vengono interpretate come pattern, e `app.js` contiene `['$,$,$']` (riga 293). Usare
+  sempre un replacer come **funzione**: `str.replace(x, () => y)`.
