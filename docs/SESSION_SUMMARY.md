@@ -54,6 +54,13 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Lavagna, quarta passata: tolte le righe diagonali ripetute**. L'utente ha segnalato che il
+  `repeating-linear-gradient` diagonale (pensato per imitare i segni del cancellino) all'opacità
+  alzata nel giro precedente si leggeva come un tessuto/pattern regolare, non come lavagna —
+  tolto ovunque in Lavagna (`.pitch-bg`, `.panel-budget`/`.admin-panel`/`.tabs-panel`,
+  `#puja-panel-slot`, stato finale), tenute solo le nuvole di sbavatura organiche
+  (radial-gradient) e la polvere fine. Cuoio non toccato (nessuna lamentela, li' allo stesso
+  livello resta leggibile perché il fondo e' chiaro).
 - **Lavagna, terza passata: tutti i fregi dentro la carta di puja, non solo sullo sfondo**.
   L'utente ha chiarito che voleva vedere texture/cancellino/cocktail/scintilla proprio dove
   sta la foto/il nome del giocatore in puja, non genericamente sulla pagina. Texture di

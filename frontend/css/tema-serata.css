@@ -1926,18 +1926,17 @@ html[data-tema="lavagna"] .pitch-bg{
     radial-gradient(1.2px 1.2px at 40% 70%, rgba(240,244,248,.20), transparent 60%),
     radial-gradient(1px 1px at 85% 55%, rgba(240,244,248,.14), transparent 60%),
     radial-gradient(1px 1px at 10% 85%, rgba(240,244,248,.18), transparent 60%),
-    repeating-linear-gradient(115deg, rgba(240,244,248,.03) 0 2px, transparent 2px 90px),
     radial-gradient(52% 44% at 22% -6%, rgba(34,211,238,.10), transparent 64%),
     radial-gradient(66% 60% at 104% 106%, rgba(255,60,172,.08), transparent 62%),
     linear-gradient(180deg, #0F1015 0%, #0B0B0F 55%, #08080B 100%) !important;
   background-size:
     100% 100%, 100% 100%, 100% 100%,
     90px 90px, 110px 110px, 130px 130px, 100px 100px, 140px 140px,
-    auto, cover, cover, cover !important;
+    cover, cover, cover !important;
   background-repeat:
     no-repeat, no-repeat, no-repeat,
     repeat, repeat, repeat, repeat, repeat,
-    repeat, no-repeat, no-repeat, no-repeat !important;
+    no-repeat, no-repeat, no-repeat !important;
   filter:none !important;
 }
 /* Il cancellino, come nel mockup: un blocchetto di legno e feltro appoggiato nell'angolo.
@@ -2193,13 +2192,9 @@ html[data-tema="lavagna"] body .tabs-panel{
     radial-gradient(1px 1px at 15% 25%, rgba(240,244,248,.16), transparent 60%),
     radial-gradient(1px 1px at 55% 65%, rgba(240,244,248,.13), transparent 60%),
     radial-gradient(1px 1px at 80% 20%, rgba(240,244,248,.11), transparent 60%),
-    repeating-linear-gradient(93deg,
-      rgba(240,244,248,.035) 0 2px, transparent 2px 6px,
-      rgba(240,244,248,.05) 6px 9px,  transparent 9px 17px,
-      rgba(240,244,248,.025) 17px 18px, transparent 18px 26px),
     linear-gradient(180deg, rgba(17,19,24,.97), rgba(11,11,15,.97)) !important;
-  background-size:100% 100%, 100% 100%, 80px 80px, 100px 100px, 120px 120px, auto, cover !important;
-  background-repeat:no-repeat, no-repeat, repeat, repeat, repeat, repeat, no-repeat !important;
+  background-size:100% 100%, 100% 100%, 80px 80px, 100px 100px, 120px 120px, cover !important;
+  background-repeat:no-repeat, no-repeat, repeat, repeat, repeat, no-repeat !important;
 }
 html[data-tema="lavagna"] body #puja-panel-slot,
 html[data-tema="lavagna"] body.layout-admin .asta-row-puja{
@@ -2217,17 +2212,11 @@ html[data-tema="lavagna"] body.layout-admin .asta-row-puja{
     radial-gradient(1px 1px at 48% 70%, rgba(240,244,248,.20), transparent 60%),
     radial-gradient(1px 1px at 78% 22%, rgba(240,244,248,.22), transparent 60%),
     radial-gradient(1px 1px at 90% 80%, rgba(240,244,248,.18), transparent 60%),
-    linear-gradient(104deg,
-      transparent 34%, rgba(240,244,248,.08) 45%, rgba(240,244,248,.12) 50%,
-      rgba(240,244,248,.06) 55%, transparent 66%),
-    repeating-linear-gradient(93deg,
-      rgba(240,244,248,.03) 0 2px, transparent 2px 7px,
-      rgba(240,244,248,.05) 7px 10px, transparent 10px 19px),
     radial-gradient(42% 130% at 20% -14%, rgba(34,211,238,.16), transparent 62%),
     radial-gradient(52% 120% at 102% 118%, rgba(255,60,172,.10), transparent 60%),
     linear-gradient(180deg, #181B21, #101318) !important;
-  background-size:100% 100%, 100% 100%, 100% 100%, 100% 100%, 90px 90px, 110px 110px, 130px 130px, 100px 100px, auto, auto, cover, cover, cover !important;
-  background-repeat:no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat, repeat, repeat, repeat, repeat, no-repeat, no-repeat, no-repeat !important;
+  background-size:100% 100%, 100% 100%, 100% 100%, 100% 100%, 90px 90px, 110px 110px, 130px 130px, 100px 100px, cover, cover, cover !important;
+  background-repeat:no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat, repeat, repeat, no-repeat, no-repeat, no-repeat !important;
   border:2px solid #22D3EE !important;
   box-shadow:0 0 0 4px #050508, 0 0 26px rgba(34,211,238,.22), 0 16px 36px rgba(0,0,0,.5) !important;
 }
@@ -2237,17 +2226,11 @@ html[data-tema="lavagna"] body[data-fase="finale"] #puja-panel-slot{
     radial-gradient(1px 1px at 12% 30%, rgba(240,244,248,.17), transparent 60%),
     radial-gradient(1px 1px at 48% 70%, rgba(240,244,248,.13), transparent 60%),
     radial-gradient(1px 1px at 78% 22%, rgba(240,244,248,.15), transparent 60%),
-    linear-gradient(104deg,
-      transparent 34%, rgba(240,244,248,.05) 45%, rgba(240,244,248,.08) 50%,
-      rgba(240,244,248,.035) 55%, transparent 66%),
-    repeating-linear-gradient(93deg,
-      rgba(240,244,248,.02) 0 2px, transparent 2px 7px,
-      rgba(240,244,248,.035) 7px 10px, transparent 10px 19px),
     radial-gradient(46% 130% at 20% -14%, rgba(255,45,45,.18), transparent 62%),
     radial-gradient(52% 120% at 102% 118%, rgba(255,60,172,.08), transparent 60%),
     linear-gradient(180deg, #181114, #0B0B0F) !important;
-  background-size:90px 90px, 110px 110px, 130px 130px, auto, auto, cover, cover, cover !important;
-  background-repeat:repeat, repeat, repeat, repeat, repeat, no-repeat, no-repeat, no-repeat !important;
+  background-size:90px 90px, 110px 110px, 130px 130px, cover, cover, cover !important;
+  background-repeat:repeat, repeat, repeat, no-repeat, no-repeat, no-repeat !important;
   border-color:#FF2D2D !important;
 }
 /* la trave in ottone sotto la testata: la cornice fisica della lavagna */
