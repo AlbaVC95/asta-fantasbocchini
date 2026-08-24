@@ -836,3 +836,18 @@ per tema: **una riga sola** ha sistemato tutti e tre i temi, senza bisogno di re
 dedicate. Controllato anche il resto della chrome (RESET, toggle Vista, drawer, zoom): già su
 token generici, nessun altro intervento necessario — il viola era isolato a quella singola
 proprietà.
+
+## Font-size nella zona puja: sempre `cqw` (container "sala"), mai `vw`
+
+`#asta-main-col{container-type:inline-size;container-name:sala}` esiste apposta perché Anteprima è
+un drawer **fratello** di `.asta-main-col`, non sovrapposto: aprirlo dimezza la colonna senza
+cambiare la finestra (vedi sezione sotto, "Vista partecipante con Anteprima aperta"). Qualunque
+`font-size:clamp(...)` scoped a `#puja-panel-slot`/`.asta-row-puja` che misura `vw` invece di `cqw`
+ignora questo dimezzamento e resta tarato sulla finestra intera — con un nome lungo e
+`white-space:normal` per permettere più righe, il risultato è testo enorme in uno spazio ormai
+stretto, che nella peggiore delle ipotesi va a capo lettera per lettera (bug reale, trovato con
+screenshot dell'utente: "KOUTSOUPIAS" in vista Admin con Anteprima aperta). Tre regole in
+`tema-serata.css` erano rimaste a `vw` mentre i tre scalini `@container sala` della vista
+Partecipante usavano già correttamente `cqw` — è la stessa disattenzione, non un pattern voluto.
+Prima di aggiungere una nuova regola di font-size in questa zona, copiare da una vicina che usa già
+`cqw`, non da una a caso.

@@ -200,7 +200,10 @@ html body #puja-panel-slot .cc-info{min-width:0 !important;flex:1 1 auto !import
 html body #puja-panel-slot .cc-nome{
   font-family:'Archivo',sans-serif !important;font-weight:900 !important;
   font-variation-settings:'wdth' 62 !important;
-  font-size:clamp(1.45rem,2.1vw,2.35rem) !important;line-height:.86 !important;letter-spacing:.004em !important;
+  /* cqw (larghezza del container #asta-main-col, non della finestra): con
+     Anteprima aperta la finestra non cambia ma la colonna si dimezza, un vw
+     qui lascerebbe il nome enorme in uno spazio ridotto. */
+  font-size:clamp(1.2rem,3.2cqw,2.35rem) !important;line-height:.86 !important;letter-spacing:.004em !important;
   text-transform:uppercase !important;color:var(--sc-testo) !important;
   white-space:normal !important;overflow:visible !important;text-overflow:clip !important;
   max-width:none !important;text-shadow:0 4px 26px rgba(0,0,0,.65) !important;
@@ -1326,7 +1329,8 @@ html body #puja-panel-slot .cc-header{
 }
 html body #puja-panel-slot .cc-nome-row{width:100% !important;align-self:stretch !important}
 html body #puja-panel-slot .cc-nome{
-  font-size:clamp(1.7rem,3.1vw,3.4rem) !important;
+  /* Stesso bug/fix di sopra: vw->cqw, misura la colonna reale non la finestra. */
+  font-size:clamp(1.3rem,4.4cqw,3.4rem) !important;
   white-space:normal !important;overflow:visible !important;text-overflow:clip !important;
 }
 html body #puja-panel-slot .cc-body{width:100% !important;flex:0 0 auto !important}
@@ -1342,8 +1346,16 @@ html body.layout-admin .asta-row-puja .chiamata-card{
   padding-left:154px !important;min-height:170px !important;
 }
 html body.layout-admin .asta-row-puja .cc-nome{
-  font-size:clamp(1.5rem,2.5vw,2.7rem) !important;
-  white-space:normal !important;overflow:visible !important;text-overflow:clip !important;
+  /* Era clamp(...,2.5vw,...): il vw misura la finestra, non la colonna — con
+     Anteprima aperta la finestra non cambia ma la colonna si dimezza, quindi il
+     nome restava enorme in uno spazio ridotto e (con white-space:normal, niente
+     limite di riga) andava a capo lettera per lettera invece di restare leggibile.
+     cqw misura invece #asta-main-col (container "sala", dichiarato piu' sotto),
+     la larghezza vera. white-space:nowrap+ellipsis come tutte le altre regole
+     di .cc-nome in Admin (mai state a rischio di questo bug) invece di
+     white-space:normal, che qui non aveva una vera gestione multi-riga sotto. */
+  font-size:clamp(1.15rem,4.2cqw,2.7rem) !important;
+  white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -2248,6 +2260,16 @@ html body.layout-admin .asta-row-puja .chiamata-card{
 html body.layout-admin .asta-row-puja .cc-header,
 html body.layout-admin .asta-row-puja .cc-info{
   min-width:0 !important;max-width:100% !important;
+}
+/* Bug trovato con Anteprima aperta + nome lungo: .cc-header e' l'unico figlio
+   di .chiamata-card (colonna flex) con flex-shrink concesso (style.css lo mette
+   a flex:1 1 auto) — quando badge+prezzo+"In attesa 1a offerta..." non ci stanno
+   piu' negli spazio della carta, e' lui a farsi schiacciare, fino quasi a 0px di
+   altezza: il nome (dentro) spariva del tutto, ritagliato a una sottile riga.
+   flex-shrink:0 + un'altezza minima leggibile spostano il problema sulla carta
+   (che puo' crescere, non e' height-capped) invece che sul nome del giocatore. */
+html body.layout-admin .asta-row-puja .cc-header{
+  flex-shrink:0 !important;min-height:32px !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════

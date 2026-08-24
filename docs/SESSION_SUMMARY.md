@@ -65,6 +65,36 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Bug grave: il nome del giocatore andava a capo lettera per lettera (o spariva del
+  tutto) in vista Admin con Anteprima aperta e nomi lunghi (es. "KOUTSOUPIAS")** —
+  segnalato dall'utente con screenshot reale, "esto NUNCA puede pasar". Due cause
+  distinte, entrambe in `tema-serata.css`, trovate misurando (non a occhio) larghezza
+  reale della colonna via `getBoundingClientRect`/`getComputedStyle` a piu' finestre:
+  1) **`.cc-nome` usava `vw` (viewport) invece di `cqw` (container)** in tre punti —
+     `html body #puja-panel-slot .cc-nome` (2 varianti, righe ~203 e ~1329) e
+     `html body.layout-admin .asta-row-puja .cc-nome` (riga ~1345). Con Anteprima
+     aperta la FINESTRA non cambia ma la COLONNA si dimezza: il font restava enorme
+     (fino a 2.2rem fissi) in uno spazio ormai stretto, e (con `white-space:normal`
+     per permettere nomi lunghi su piu' righe) il browser andava a capo lettera per
+     lettera per starci. Il container "sala" (`#asta-main-col{container-type:inline-size}`)
+     esisteva gia' ed e' usato correttamente altrove (i tre scalini `@container sala`
+     per la vista Partecipante) — mancava solo su questi tre punti rimasti a `vw`.
+     Passati tutti a `cqw`, e per Admin anche `white-space:nowrap+ellipsis` (come tutte
+     le ALTRE regole `.cc-nome` di Admin, mai state a rischio — questa era l'unica
+     eccezione con `white-space:normal` senza una vera gestione multi-riga sotto).
+  2) **`.cc-header` (badge+nome+meta) era l'unico figlio shrinkabile di `.chiamata-card`**
+     (colonna flex, `flex:1 1 auto` da `style.css`): quando testo/badge non ci stavano
+     piu' nell'altezza della carta, era lui a farsi schiacciare fino a ~4px — il nome
+     (dentro) spariva del tutto, ritagliato a una sottile riga. Aggiunto
+     `flex-shrink:0;min-height:32px` su `html body.layout-admin .asta-row-puja
+     .cc-header` cosi' e' la carta (height:auto, non height-capped) a crescere se serve
+     piu' spazio, non il nome a sparire.
+  Verificato nei 3 temi, vista Admin, larghezze 700/1050/1300/1990px, con/senza
+  Anteprima aperta: il nome resta sempre leggibile su una riga (troncato con "…" se
+  davvero non c'e' posto, mai a capo lettera per lettera). **Nota per il prossimo
+  intervento su `.cc-nome`/`#asta-main-col`**: qualunque nuova regola di font-size
+  scoped a `#puja-panel-slot`/`.asta-row-puja` deve usare `cqw`, mai `vw` — e' facile
+  sbagliare copiando una regola vicina.
 - **Nome di chi offre (`.cc-offerente`) e "In attesa 1ª offerta..." (`.chiamata-stato`)
   ingranditi ovunque**: l'utente ha segnalato che non si leggeva bene. Trovata via
   `getComputedStyle` (non a occhio, tra le ~15 regole `font-size` sparse su `.cc-offerente` nei
