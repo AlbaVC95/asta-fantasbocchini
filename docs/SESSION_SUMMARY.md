@@ -65,6 +65,10 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Foto della lavagna sostituita con una piu' nitida**: l'utente ha detto che la prima
+  (`pizarra.jpeg`) era sfocata — sostituita con `lavagna.jpeg` fornita dall'utente, stesso nome
+  di file nel progetto (`frontend/img/backgrounds/pizarra-lavagna.jpeg`), quindi nessuna riga
+  CSS da toccare. Verificato via network (fetch fresco, 200 OK).
 - **Tolto il pallone piccolo dentro la carta di chiamata (Cuoio)**: l'utente ha detto che
   "queda mal" li' dentro — rimossa `html[data-tema="cuoio"] .chiamata-card::after` (`style.css`),
   nessuna regola generica sotto da far riemergere (era l'unico `::after` di quel tema).
