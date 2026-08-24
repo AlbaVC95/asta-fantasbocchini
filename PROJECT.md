@@ -80,6 +80,10 @@ Senza di esse il server parte comunque ma tutte le funzionalità legate a Supaba
   `frontend/css/style.css`**: hanno righe LF-only preesistenti (rispettivamente 137, 19 e 210) e
   l'Edit tool converte tutto il file a LF, producendo un diff enorme. Usare uno script Node/Python
   che legge il file grezzo e sostituisce stringhe esatte, e ricontare le righe LF-only prima e dopo.
+  **Lo stile non e' uniforme in tutto il file**: alcune zone (es. le funzioni 3D dello stadio in
+  `app.js`, dentro `_antAssicuraStadio3D`) sono a loro volta LF-only anziche' CRLF — prima di
+  scrivere l'`old_string`/`new_string` dello script, verificare lo stile REALE del punto preciso
+  d'inserimento (es. `sed -n 'N,Mp' file | od -c`), non assumerlo uniforme.
 - **`String.replace(x, stringa)` corrompe `app.js`**: le sequenze `$&`, `$'`, `$1` nella stringa di
   sostituzione vengono interpretate come pattern, e `app.js` contiene `['$,$,$']` (riga 293). Usare
   sempre un replacer come **funzione**: `str.replace(x, () => y)`.

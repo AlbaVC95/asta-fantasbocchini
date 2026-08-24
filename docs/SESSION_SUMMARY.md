@@ -65,6 +65,45 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Anteprima: drag & drop + "Autorellenar" (miglior 11 per FMV), richiesta esplicita
+  dell'utente con specifica dettagliata.** Nuove funzioni in `app.js`, nessuna esistente
+  toccata nella logica:
+  - **Drag & drop** (`_antSetupDragDrop`/`_antGestisciDrop`/`_antGestisciDropInPanchina`,
+    richiamate da `renderAnteprimaPitch()`): alternativa al click esistente su
+    `_antOpenPicker` (mai toccato, eventi diversi — dragstart/dragover/drop vs click — nessun
+    conflitto, un drag nativo non fa scattare click dopo il drop). Panchina→campo,
+    campo→panchina (rimuove), campo→campo (sposta, o scambia se lo slot d'arrivo e' occupato
+    — solo se l'occupante e' a sua volta compatibile con lo slot di partenza, altrimenti
+    l'intero scambio e' annullato: mai un ruolo scorretto piazzato per far posto). Riusa
+    `_ruoliCompatibili()` gia' esistente per la validazione. Carte draggable via
+    `draggable="true"` in `_antCardHTML` (esclusa la carta 'xl' del clone volante
+    dell'animazione assegnazione). Feedback visivo in `style.css`
+    (`.dragging`/`.drag-over`, generico/theme-agnostic).
+  - **Autorellenar** (`_antAutoRiempi`, bottone `#ant-autofill-btn` accanto a Reset): riempie
+    SOLO gli slot vuoti (mai quelli piazzati a mano), ricalcolando sempre da zero sulla
+    Panchina attuale (idempotente — due click senza cambi alla rosa non spostano nulla).
+    Algoritmo chiarito a fondo dall'utente in due passate: processa le "linee" del campo dalla
+    piu' difensiva alla piu' offensiva — `P → (DS/DC/B/DD) → M → (C/E) → (W/T) → (A/PC)`
+    (`ANT_LINEE_ORDINE`/`_antLineaIndex`, indipendente dalle righe di
+    `ANTEPRIMA_FORMAZIONI`, che mischiano piu' linee sulla stessa riga visiva, es. `M/C`).
+    Per ogni linea, assegna ripetutamente il paio (slot vuoto, giocatore compatibile) di FMV
+    (`g.fm`) piu' alto fino a esaurire slot o candidati di quella linea. Un giocatore
+    multi-ruolo (es. `DD/E`) viene cosi' "conteso" per primo sugli slot della sua linea piu'
+    difensiva — se non e' il migliore li', resta disponibile per una linea piu' avanzata.
+    Verificato con roster sintetico (incluso un caso DD/E) che il risultato combacia esattamente
+    col comportamento atteso, passo per passo.
+  - **Errore di tooling ripetuto durante l'implementazione**: modifiche fatte con l'Edit tool
+    standard su `app.js`/`index.html` invece dello script Python (vietato, righe LF-only
+    preesistenti — vedi PROJECT.md) — rilevato dal conteggio LF-only sceso a 0, corretto con
+    `git stash` di entrambi i file + riapplicazione degli stessi 7 cambi via script,
+    stavolta rilevando per ciascun punto lo stile di fine riga REALE del punto d'inserimento
+    (non assumendolo uniforme: una parte di `app.js`, dentro le funzioni tridimensionali dello
+    stadio, e' essa stessa LF-only anziche' CRLF). **Lezione aggiuntiva**: non basta sapere
+    "questo file e' nella lista dei 3 pericolosi", bisogna anche verificare lo stile ESATTO
+    del punto preciso in cui si inserisce, non assumerlo uniforme in tutto il file.
+  - Verificato nei 3 temi: selezione a click intatta, drag nelle 4 combinazioni (banco→campo,
+    campo→banco, sposta, scambio valido/rifiutato), autorellenar idempotente, nessun errore
+    console.
 - **Correzione del punto sopra: l'utente ha chiarito che il problema era in vista UTENTE
   (Partecipante/allenatore), non Admin — "PERO ES EN LA VISTA UTENTE, TIENEN QUE SALIR
   DESPLEGADOS, SI EL ENTRENADOR QUIERE YA LO ENCOJE EL".** Aggiunto lo stesso accordion anche

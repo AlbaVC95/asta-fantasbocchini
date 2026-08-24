@@ -3082,6 +3082,75 @@ function _ruoliCompatibili(ruoloSlot, ruoloGiocatore) {
   return slotRoles.some(sr => gioRoles.includes(sr));
 }
 
+// Autorellenar: ordine delle "linee" del campo dalla piu' difensiva alla piu' offensiva —
+// richiesta esplicita dell'utente, indipendente dalle righe di ANTEPRIMA_FORMAZIONI (che
+// mischiano ruoli di linee diverse sulla stessa riga visiva, es. 'M/C' nella riga centrocampo
+// e' meta' linea M meta' linea C/E). Un ruolo composito (di uno slot o di un giocatore, es.
+// 'DD/E') appartiene alla linea PIU' DIFENSIVA tra le sue opzioni.
+const ANT_LINEE_ORDINE = [['P'], ['DS', 'DC', 'B', 'DD'], ['M'], ['C', 'E'], ['W', 'T'], ['A', 'PC']];
+function _antLineaIndex(ruoloComposito) {
+  const tokens = (ruoloComposito || '').split('/').map(x => x.trim().toUpperCase()).map(x => x === 'POR' ? 'P' : x).filter(Boolean);
+  let min = ANT_LINEE_ORDINE.length; // ruolo sconosciuto: ultima priorita'
+  tokens.forEach(t => {
+    const idx = ANT_LINEE_ORDINE.findIndex(linea => linea.includes(t));
+    if (idx !== -1 && idx < min) min = idx;
+  });
+  return min;
+}
+// Il miglior 11 possibile per FMV, riempiendo prima le linee piu' difensive: uno slot di
+// linea N viene processato prima di uno slot di linea N+1, quindi un giocatore multi-ruolo
+// (es. 'DD/E') viene "conteso" per primo sugli slot della sua linea piu' difensiva (DD) — se
+// non e' il migliore per nessuno di quelli, resta disponibile per una linea piu' avanzata (E)
+// dove gareggia di nuovo solo per FMV. Tocca SOLO gli slot vuoti al momento del click (mai
+// quelli gia' piazzati a mano) ma ricalcola sempre da zero sulla Panchina attuale — nessuna
+// cache, due click di seguito senza cambi alla rosa non spostano nulla.
+function _antAutoRiempi(nomeSquadra) {
+  const selModulo = document.getElementById('ant-modulo-select');
+  if (!selModulo) return;
+  const modulo = selModulo.value;
+  const rows = ANTEPRIMA_FORMAZIONI[modulo];
+  if (!rows) return;
+  const state = _antGetSquadraState(nomeSquadra);
+  const squadra = ((S.asta && S.asta.squadre) || []).find(sq => sq.nome === nomeSquadra);
+  const rosa = (squadra && squadra.rosa) || [];
+  const assegnati = new Set(Object.values(state.slots));
+  let panchina = rosa.filter(g => !assegnati.has(g.nome));
+
+  const slotVuoti = [];
+  rows.forEach((row, ri) => row.forEach((ruolo, ci) => {
+    const slotKey = ri + '-' + ci;
+    if (!state.slots[slotKey]) slotVuoti.push({ slotKey, ruolo, occupato: false });
+  }));
+  if (!slotVuoti.length || !panchina.length) return;
+
+  ANT_LINEE_ORDINE.forEach((_, tierIdx) => {
+    const slotLinea = slotVuoti.filter(s => !s.occupato && _antLineaIndex(s.ruolo) === tierIdx);
+    if (!slotLinea.length) return;
+    let cambiato = true;
+    while (cambiato) {
+      cambiato = false;
+      let best = null, bestSlot = null;
+      slotLinea.forEach(s => {
+        if (s.occupato) return;
+        panchina.forEach(g => {
+          if (!_ruoliCompatibili(s.ruolo, g.ruolo)) return;
+          const fmG = typeof g.fm === 'number' ? g.fm : -Infinity;
+          const fmBest = (best && typeof best.fm === 'number') ? best.fm : -Infinity;
+          if (!best || fmG > fmBest) { best = g; bestSlot = s; }
+        });
+      });
+      if (best && bestSlot) {
+        state.slots[bestSlot.slotKey] = best.nome;
+        bestSlot.occupato = true;
+        panchina = panchina.filter(g => g.nome !== best.nome);
+        cambiato = true;
+      }
+    }
+  });
+  _antSetSquadraState(nomeSquadra, state);
+  renderAnteprimaPitch();
+}
+
 // Cambio modulo in Anteprima: richiesta esplicita dell'utente di NON svuotare piu' gli slot,
 // ma di ricollocare automaticamente il massimo numero possibile di giocatori gia' piazzati nel
 // nuovo modulo, riusando la STESSA _ruoliCompatibili() gia' usata dal picker (nessuna nuova
@@ -3230,6 +3299,7 @@ function setupAnteprima() {
   const selSquadra = document.getElementById('ant-squadra-select');
   const selModulo = document.getElementById('ant-modulo-select');
   const btnReset = document.getElementById('ant-reset-btn');
+  const btnAutofill = document.getElementById('ant-autofill-btn');
   const btnZoomIn = document.getElementById('ant-zoom-in');
   const btnZoomOut = document.getElementById('ant-zoom-out');
   const btnDrawerClose = document.getElementById('ant-drawer-close');
@@ -3288,6 +3358,13 @@ function setupAnteprima() {
       state.slots = {};
       _antSetSquadraState(nome, state);
       renderAnteprimaPitch();
+    });
+  }
+  if (btnAutofill) {
+    btnAutofill.addEventListener('click', () => {
+      const nome = selSquadra.value;
+      if (!nome) return;
+      _antAutoRiempi(nome);
     });
   }
 }
@@ -3445,7 +3522,10 @@ function _antCardHTML(g, size, onPitch) {
   const sizeClass = size === 'xl' ? 'size-xl' : (onPitch ? 'size-pitch' : 'size-bench');
   const stato = onPitch ? 'on-pitch' : 'in-bench';
   const u21Badge = g.u21 === true ? '<div class="ant-card-u21">U21</div>' : '';
-  let html = '<div class="ant-card ' + stato + ' ' + sizeClass + ' ' + accentClass + '" data-nome="' + _escAttr(g.nome) + '">' +
+  // draggable solo sulle carte reali (panchina/campo), non sul clone volante dell'animazione
+  // di assegnazione (size 'xl') — quello non e' mai dentro un contesto di drop valido.
+  const draggableAttr = size === 'xl' ? '' : ' draggable="true"';
+  let html = '<div class="ant-card ' + stato + ' ' + sizeClass + ' ' + accentClass + '"' + draggableAttr + ' data-nome="' + _escAttr(g.nome) + '">' +
     '<div class="ant-card-photo"></div>' +
     '<div class="ant-card-role">' + _getRuoloBadgeHTML(g.ruolo) + '</div>' +
     u21Badge;
@@ -3714,6 +3794,109 @@ function _antAssicuraStadio3D() {
   const osservatore=new ResizeObserver(ridimensiona); osservatore.observe(contenitore); window.addEventListener('resize',ridimensiona); _antStadio3D={ridimensiona,osservatore}; requestAnimationFrame(ridimensiona);
 }
 
+// Drag & drop: mecanica ALTERNATIVA al selettore per click (_antOpenPicker), che resta
+// intatto -- sono eventi diversi (dragstart/dragover/drop vs click), non c'e' conflitto, e un
+// gesto di drag nativo non fa scattare un click sull'elemento dopo il drop. Panchina -> campo,
+// campo -> panchina (rimuove), campo -> campo (sposta, o scambia se lo slot di arrivo e' gia'
+// occupato -- solo se l'occupante e' a sua volta compatibile con lo slot di partenza, altrimenti
+// l'intero scambio viene annullato: mai un ruolo scorretto piazzato per far posto).
+function _antSetupDragDrop(pitch, nomeSquadra) {
+  const panchina = document.getElementById('ant-panchina');
+  if (!panchina) return;
+  let dragNome = null;
+  function onDragStart(e) {
+    dragNome = e.currentTarget.dataset.nome;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', dragNome);
+    e.currentTarget.classList.add('dragging');
+  }
+  function onDragEnd(e) {
+    e.currentTarget.classList.remove('dragging');
+    dragNome = null;
+    pitch.querySelectorAll('.ant-slot3d.drag-over').forEach(s => s.classList.remove('drag-over'));
+    panchina.classList.remove('drag-over');
+  }
+  pitch.querySelectorAll('.ant-card[data-nome]').forEach(card => {
+    card.addEventListener('dragstart', onDragStart);
+    card.addEventListener('dragend', onDragEnd);
+  });
+  panchina.querySelectorAll('.ant-card[data-nome]').forEach(card => {
+    card.addEventListener('dragstart', onDragStart);
+    card.addEventListener('dragend', onDragEnd);
+  });
+  pitch.querySelectorAll('.ant-slot3d').forEach(slotEl => {
+    slotEl.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      slotEl.classList.add('drag-over');
+    });
+    slotEl.addEventListener('dragleave', () => slotEl.classList.remove('drag-over'));
+    slotEl.addEventListener('drop', (e) => {
+      e.preventDefault();
+      slotEl.classList.remove('drag-over');
+      const nome = e.dataTransfer.getData('text/plain') || dragNome;
+      if (!nome) return;
+      _antGestisciDrop(nomeSquadra, nome, slotEl.dataset.slotkey, slotEl.dataset.ruolo);
+    });
+  });
+  panchina.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    panchina.classList.add('drag-over');
+  });
+  panchina.addEventListener('dragleave', (e) => {
+    if (e.target === panchina) panchina.classList.remove('drag-over');
+  });
+  panchina.addEventListener('drop', (e) => {
+    e.preventDefault();
+    panchina.classList.remove('drag-over');
+    const nome = e.dataTransfer.getData('text/plain') || dragNome;
+    if (!nome) return;
+    _antGestisciDropInPanchina(nomeSquadra, nome);
+  });
+}
+
+function _antGestisciDrop(nomeSquadra, nomeGiocatore, slotKeyTarget, ruoloSlotTarget) {
+  const selModulo = document.getElementById('ant-modulo-select');
+  const modulo = selModulo ? selModulo.value : null;
+  const rows = modulo ? ANTEPRIMA_FORMAZIONI[modulo] : null;
+  const squadra = ((S.asta && S.asta.squadre) || []).find(sq => sq.nome === nomeSquadra);
+  const rosa = (squadra && squadra.rosa) || [];
+  const giocatore = rosa.find(g => g.nome === nomeGiocatore);
+  if (!giocatore || !_ruoliCompatibili(ruoloSlotTarget, giocatore.ruolo)) return;
+
+  const state = _antGetSquadraState(nomeSquadra);
+  const slotKeyOrigine = Object.keys(state.slots).find(k => state.slots[k] === nomeGiocatore) || null;
+  if (slotKeyOrigine === slotKeyTarget) return;
+
+  const occupanteAttuale = state.slots[slotKeyTarget];
+  if (occupanteAttuale && occupanteAttuale !== nomeGiocatore) {
+    if (slotKeyOrigine && rows) {
+      const [ri, ci] = slotKeyOrigine.split('-').map(Number);
+      const ruoloOrigine = rows[ri] && rows[ri][ci];
+      const occupanteObj = rosa.find(g => g.nome === occupanteAttuale);
+      if (!occupanteObj || !ruoloOrigine || !_ruoliCompatibili(ruoloOrigine, occupanteObj.ruolo)) return;
+      state.slots[slotKeyOrigine] = occupanteAttuale;
+    } else {
+      delete state.slots[slotKeyTarget];
+    }
+  } else if (slotKeyOrigine) {
+    delete state.slots[slotKeyOrigine];
+  }
+  state.slots[slotKeyTarget] = nomeGiocatore;
+  _antSetSquadraState(nomeSquadra, state);
+  renderAnteprimaPitch();
+}
+
+function _antGestisciDropInPanchina(nomeSquadra, nomeGiocatore) {
+  const state = _antGetSquadraState(nomeSquadra);
+  const slotKeyOrigine = Object.keys(state.slots).find(k => state.slots[k] === nomeGiocatore);
+  if (!slotKeyOrigine) return;
+  delete state.slots[slotKeyOrigine];
+  _antSetSquadraState(nomeSquadra, state);
+  renderAnteprimaPitch();
+}
+
 function renderAnteprimaPitch() {
   const pitch = document.getElementById('ant-pitch');
   const selSquadra = document.getElementById('ant-squadra-select');
@@ -3776,6 +3959,7 @@ function renderAnteprimaPitch() {
   _antFitEtichetteCampo(pitch);
   _antRenderPanchina(nomeSquadra);
   _antRenderLista(nomeSquadra);
+  _antSetupDragDrop(pitch, nomeSquadra);
 }
 
 function _antOpenPicker(slotEl, nomeSquadra) {

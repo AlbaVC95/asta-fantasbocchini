@@ -1844,6 +1844,14 @@ html[data-tema="lavagna"] .ant-slot:hover .ant-slot-player{box-shadow:0 0 14px r
 .ant-slot3d:hover .ant-card{transform:rotateX(-50deg) translateZ(58px) scale(1.12)}
 .ant-slot3d-empty{width:12.5cqw;height:17cqw;border-radius:8px;border:2px dashed rgba(255,255,255,.32);display:flex;align-items:center;justify-content:center;font-size:1rem;color:rgba(255,255,255,.5);background:rgba(0,0,0,.28);transform:rotateX(-50deg) translateZ(34px);cursor:pointer;transition:transform .25s ease,border-color .2s}
 .ant-slot3d:hover .ant-slot3d-empty{border-color:var(--gold);color:var(--gold);transform:rotateX(-50deg) translateZ(58px) scale(1.12)}
+/* Drag & drop (alternativa al click di _antOpenPicker, non lo sostituisce): stato visivo
+   durante il trascinamento — carta trascinata semitrasparente, slot/panchina sotto il
+   puntatore evidenziati. */
+.ant-card[draggable]{cursor:grab}
+.ant-card.dragging{opacity:.35;cursor:grabbing}
+.ant-slot3d.drag-over .ant-slot3d-empty,
+.ant-slot3d.drag-over .ant-card{outline:2px solid var(--gold);outline-offset:2px}
+.ant-panchina.drag-over{outline:2px dashed var(--gold);outline-offset:-2px;border-radius:12px}
 /* Stesso angolo/piano della carta (translateZ), non piu' il piano del prato: prima il
    nome, senza translateZ, restava sullo stesso Z del campo e finiva coperto dalla carta
    (che invece "galleggia" sopra) — ora condivide il piano della carta, leggermente piu'
