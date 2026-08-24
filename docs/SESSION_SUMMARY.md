@@ -54,6 +54,11 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Pallone di cuoio decorativo in Cuoio** (`.pitch-bg::after`, riquesta esplicita dell'utente
+  col mockup "PuntBar" alla mano): fregio in un angolo dello sfondo, disegnato solo in CSS
+  (nessun asset nuovo), non dentro la carta di chiamata — nel mockup il pallone compare solo nel
+  pannello vetrina, non nella UI reale, per non affollare una carta già densa di numeri.
+  Verificato: visibile solo su `cuoio`, assente su `serata`/`lavagna`.
 - **Rifinitura texture lavagna + Anteprima, su feedback diretto dell'utente col mockup alla
   mano**: la grana "polvere di gesso" era tarata come quella di Cuoio (opacità .007-.03), pensata
   per un fondo chiaro — sul nero era quasi invisibile, la lavagna sembrava plastica scura invece

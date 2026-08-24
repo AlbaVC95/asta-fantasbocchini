@@ -1373,6 +1373,21 @@ html[data-tema="cuoio"] .asta-header{
 }
 html[data-tema="cuoio"] .home-header{color:#F2E4C9}
 html[data-tema="cuoio"] .home-logo{filter:none}
+/* Il pallone di cuoio del mockup ("PuntBar"): un fregio decorativo in un angolo dello
+   sfondo, non dentro le carte funzionali (nel mockup compare solo nel pannello vetrina,
+   non nella UI reale della schermata 2) — cosi' non affolla la carta di chiamata, gia'
+   densa di numeri sotto il timer. Disegnato solo in CSS: nessun asset immagine nuovo,
+   stessa convenzione delle texture di questo tema. */
+html[data-tema="cuoio"] .pitch-bg::after{
+  content:'';position:absolute;right:-30px;bottom:-30px;width:220px;height:170px;
+  border-radius:50%;
+  background:
+    linear-gradient(100deg, transparent 46%, rgba(58,36,20,.5) 48%, rgba(58,36,20,.5) 52%, transparent 54%),
+    repeating-linear-gradient(10deg, transparent 0 18px, rgba(58,36,20,.35) 18px 20px),
+    radial-gradient(120% 130% at 32% 22%, #D9B98C 0%, #A87C4E 42%, #6B4423 75%, #3A2414 100%);
+  box-shadow:inset 0 8px 20px rgba(255,255,255,.18), inset 0 -14px 26px rgba(0,0,0,.4), 0 20px 40px rgba(58,36,20,.3);
+  opacity:.5;
+}
 html[data-tema="cuoio"] #screen-strategie-lista.active,
 html[data-tema="cuoio"] #screen-strategia-form.active,
 html[data-tema="cuoio"] #screen-strategia-editor.active{
