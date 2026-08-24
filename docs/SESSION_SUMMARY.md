@@ -65,6 +65,21 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Nome di chi offre (`.cc-offerente`) e "In attesa 1ª offerta..." (`.chiamata-stato`)
+  ingranditi ovunque**: l'utente ha segnalato che non si leggeva bene. Trovata via
+  `getComputedStyle` (non a occhio, tra le ~15 regole `font-size` sparse su `.cc-offerente` nei
+  due file — stesso "debito tecnico" gia' noto, vedi sezione omonima piu' sotto) quali regole
+  vincono DAVVERO la cascata nei 4 contesti (Partecipante/Admin × largo/stretto): la maggior
+  parte delle regole in `style.css` era **morta** (classi, mai vincenti contro l'id
+  `#puja-panel-slot` di `tema-serata.css` che ha sempre la meglio quando il layout e'
+  Partecipante). Alzate le 2 regole vincenti per Partecipante in `tema-serata.css`
+  (`.72rem`→`.95rem` normale, `.68rem`→`.85rem` sotto i 900px) e le regole vincenti per Admin in
+  `style.css` (`.76rem`→`.95rem` largo, `.62rem`→`.78rem` e `.52rem`→`.68rem` nei due breakpoint
+  stretti, `.78rem`→`.92rem` sotto i 640px — quest'ultima condivisa con `.cc-meta`, **separata**
+  in due regole per non ingrandire anche quella, non richiesta). Le altre gia' morte sono state
+  comunque alzate per coerenza (nessun effetto visivo, ma se in futuro cambia la cascata non
+  regrediscono a valori minuscoli). Verificato nei 4 contesti via `getComputedStyle` +
+  screenshot, nessuna regressione nei 3 temi (regole non scoped per tema).
 - **Foto della lavagna sostituita con una piu' nitida — e bug di cache-busting sulle immagini,
   non solo su CSS/JS, scoperto qui.** L'utente ha detto che la prima (`pizarra.jpeg`) era
   sfocata — sostituita con `lavagna.jpeg` fornita dall'utente, stesso nome di file nel progetto

@@ -233,7 +233,7 @@ html[data-tema="lavagna"] .chiamata-card{
 .cc-nome{font-family:var(--font-display);font-size:clamp(1.3rem,3vw,2rem);font-weight:800;color:var(--text-primary);text-transform:uppercase;letter-spacing:-.01em;line-height:1.1;text-shadow:0 2px 10px rgba(0,0,0,.45)}
 .cc-offerta{font-family:var(--font-display);font-size:clamp(2.5rem,6vw,3.8rem);font-weight:900;color:var(--gold);letter-spacing:-.03em;text-shadow:0 0 30px var(--gold-glow),0 0 60px rgba(255,184,0,.15);line-height:1.18}
 .cc-offerta-label{font-size:.75rem;font-weight:600;text-transform:uppercase;color:var(--text-muted);letter-spacing:.08em;margin-top:2px}
-.cc-body{margin-bottom:8px}.cc-offerente{font-size:.85rem;color:var(--text-secondary)}.cc-offerta-box{display:inline-flex;flex-direction:column;align-items:center;border:2px solid var(--gold);border-radius:16px;padding:6px 20px 10px;background:linear-gradient(160deg,rgba(255,202,77,.16) 0%,rgba(255,179,0,.05) 100%);box-shadow:0 0 32px rgba(255,179,0,.16),inset 0 1px 0 rgba(255,255,255,.15),inset 0 -8px 18px rgba(255,179,0,.06);margin-bottom:6px;position:relative;overflow-x:hidden;overflow-y:visible}.cc-offerta-box::after{content:'';position:absolute;top:0;left:-60%;width:35%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-15deg);animation:cc-offerta-shimmer 3.6s ease-in-out infinite}.puja-panel-slot .cc-offerta-box,body.layout-admin .asta-row-puja .cc-offerta-box{border-width:1.5px;padding:3px 12px 6px;border-radius:12px;margin-bottom:0}
+.cc-body{margin-bottom:8px}.cc-offerente{font-size:.95rem;color:var(--text-secondary)}.cc-offerta-box{display:inline-flex;flex-direction:column;align-items:center;border:2px solid var(--gold);border-radius:16px;padding:6px 20px 10px;background:linear-gradient(160deg,rgba(255,202,77,.16) 0%,rgba(255,179,0,.05) 100%);box-shadow:0 0 32px rgba(255,179,0,.16),inset 0 1px 0 rgba(255,255,255,.15),inset 0 -8px 18px rgba(255,179,0,.06);margin-bottom:6px;position:relative;overflow-x:hidden;overflow-y:visible}.cc-offerta-box::after{content:'';position:absolute;top:0;left:-60%;width:35%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-15deg);animation:cc-offerta-shimmer 3.6s ease-in-out infinite}.puja-panel-slot .cc-offerta-box,body.layout-admin .asta-row-puja .cc-offerta-box{border-width:1.5px;padding:3px 12px 6px;border-radius:12px;margin-bottom:0}
 .cc-offerente strong{color:var(--text-primary);font-weight:700}
 .chiamata-card.assegnata{border-color:rgba(0,230,118,.4);box-shadow:0 0 40px var(--success-glow),0 20px 40px rgba(0,0,0,.4)}
 .chiamata-card.assegnata::before{background:linear-gradient(90deg,transparent,var(--success),transparent)}
@@ -565,7 +565,7 @@ html,body{height:auto!important;min-height:100vh;overflow:auto!important}
 .puja-panel-slot .rilancio-box{width:auto;flex:0 0 220px;min-width:0;display:flex;flex-direction:column;justify-content:center}
 /* La card diventa orizzontale (badge+nome+meta a sinistra, offerta a destra) come nel layout admin, per restare bassa */
 .puja-panel-slot .chiamata-card{flex:1 1 0%;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-radius:14px;text-align:left;overflow:hidden}
-.puja-panel-slot .chiamata-card .chiamata-stato{padding:0;font-size:.88rem}
+.puja-panel-slot .chiamata-card .chiamata-stato{padding:0;font-size:1.05rem}
 .puja-panel-slot .cc-header{margin-bottom:0;align-items:center;gap:8px;flex:0 0 auto;min-width:0;overflow:visible;flex-shrink:0;min-height:24px}
 .puja-panel-slot .cc-avatar{width:56px;height:56px}.puja-panel-slot .cc-avatar-icon{font-size:1.15rem}.puja-panel-slot .cc-avatar-initial{font-size:1rem}.puja-panel-slot .cc-avatar-svg{width:78%;height:78%}
 .puja-panel-slot .cc-nome{font-size:.94rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -573,7 +573,7 @@ html,body{height:auto!important;min-height:100vh;overflow:auto!important}
 .puja-panel-slot .cc-body{margin-bottom:0;display:flex;align-items:center;gap:8px;flex:0 0 auto;white-space:nowrap}
 .puja-panel-slot .cc-offerta{font-size:1.7rem;color:var(--gold);text-shadow:0 0 20px var(--gold-glow)}
 .puja-panel-slot .cc-offerta-label{font-size:.68rem;margin-top:0;font-weight:700}
-.puja-panel-slot .cc-offerente{font-size:.68rem}
+.puja-panel-slot .cc-offerente{font-size:.95rem}
 .puja-panel-slot .timer-ring-container{padding:0;flex:0 0 auto;width:auto;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .puja-panel-slot .timer-ring{width:56px;height:56px}
 .puja-panel-slot .timer-number{font-size:1.2rem}
@@ -605,7 +605,7 @@ body.layout-admin .asta-row-puja{align-items:stretch;padding:5px 10px;gap:8px;mi
 body.layout-admin .asta-row-puja .card-timer-group{flex-direction:row;align-items:stretch;gap:10px;flex:1;min-width:0;min-height:0;overflow:visible;height:auto}
 body.layout-admin .asta-row-puja .chiamata-card{border-radius:10px;padding:6px 14px;text-align:left;box-shadow:none;min-height:0;overflow:visible;height:auto;flex:1 1 0%;min-width:0}
 body.layout-admin .asta-row-puja .cc-attesa-badge{display:block;font-size:.62rem;padding:3px 8px;margin-top:3px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
-body.layout-admin .asta-row-puja .chiamata-card .chiamata-stato{padding:0;font-size:.82rem;white-space:nowrap}
+body.layout-admin .asta-row-puja .chiamata-card .chiamata-stato{padding:0;font-size:1rem;white-space:nowrap}
 body.layout-admin .asta-row-puja .chiamata-card{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:nowrap;overflow:visible;height:auto}
 body.layout-admin .asta-row-puja .cc-header{margin-bottom:0;align-items:center;gap:8px;flex:1 1 auto;min-width:0;overflow:hidden}
 body.layout-admin .asta-row-puja .cc-avatar{width:56px;height:56px}body.layout-admin .asta-row-puja .cc-avatar-icon{font-size:1.15rem}body.layout-admin .asta-row-puja .cc-avatar-initial{font-size:1rem}body.layout-admin .asta-row-puja .cc-avatar-svg{width:78%;height:78%}
@@ -615,7 +615,7 @@ body.layout-admin .asta-row-puja .cc-meta{margin-top:0;flex-wrap:wrap;overflow:v
 body.layout-admin .asta-row-puja .cc-offerta{font-size:2.6rem;color:var(--gold);text-shadow:0 0 20px var(--gold-glow),0 0 40px rgba(255,184,0,.2)}
 body.layout-admin .asta-row-puja .cc-offerta-label{display:block;font-size:.72rem;font-weight:700}
 body.layout-admin .asta-row-puja .cc-body{margin-bottom:0;display:flex;align-items:center;gap:8px;flex:0 0 auto;white-space:nowrap}
-body.layout-admin .asta-row-puja .cc-offerente{font-size:.76rem;white-space:nowrap}
+body.layout-admin .asta-row-puja .cc-offerente{font-size:.95rem;white-space:nowrap}
 body.layout-admin .asta-row-puja .timer-ring-container{padding:0;border:none;border-radius:0;width:auto;height:100%;flex:0 0 auto;background:transparent;box-shadow:none;display:flex;align-items:center}
 body.layout-admin .asta-row-puja .timer-ring{width:52px;height:52px}
 body.layout-admin .asta-row-puja .timer-number{font-size:1.05rem}
@@ -790,7 +790,8 @@ body.layout-admin .asta-row-puja .cc-avatar-img{border-radius:14px!important}
   body.layout-admin .asta-row-puja .badge-ruolo{min-width:18px!important;height:16px!important;font-size:.55rem!important;padding:0 4px!important}
   body.layout-admin .asta-row-puja .cc-avatar{width:38px!important;height:38px!important}
   body.layout-admin .asta-row-puja .cc-avatar-icon{font-size:.85rem!important}body.layout-admin .asta-row-puja .cc-avatar-initial{font-size:.72rem!important}body.layout-admin .asta-row-puja .cc-avatar-svg{width:72%!important;height:72%!important}
-  body.layout-admin .asta-row-puja .cc-meta,body.layout-admin .asta-row-puja .cc-offerente{font-size:.62rem!important}
+  body.layout-admin .asta-row-puja .cc-meta{font-size:.62rem!important}
+  body.layout-admin .asta-row-puja .cc-offerente{font-size:.78rem!important}
   body.layout-admin .asta-row-puja .cc-offerta{font-size:1.9rem!important}
   body.layout-admin .asta-row-puja .cc-offerta-label{font-size:.62rem!important}
   body.layout-admin .asta-row-puja .timer-ring-container{flex:1 1 56px!important;min-width:56px}
@@ -810,7 +811,8 @@ body.layout-admin .asta-row-puja .cc-avatar-img{border-radius:14px!important}
   body.layout-admin .asta-row-puja .badge-ruolo{min-width:14px!important;height:13px!important;font-size:.48rem!important;padding:0 3px!important}
   body.layout-admin .asta-row-puja .cc-avatar{width:30px!important;height:30px!important}
   body.layout-admin .asta-row-puja .cc-avatar-icon{font-size:.65rem!important}body.layout-admin .asta-row-puja .cc-avatar-initial{font-size:.55rem!important}body.layout-admin .asta-row-puja .cc-avatar-svg{width:72%!important;height:72%!important}
-  body.layout-admin .asta-row-puja .cc-meta,body.layout-admin .asta-row-puja .cc-offerente{font-size:.52rem!important}
+  body.layout-admin .asta-row-puja .cc-meta{font-size:.52rem!important}
+  body.layout-admin .asta-row-puja .cc-offerente{font-size:.68rem!important}
   body.layout-admin .asta-row-puja .cc-offerta{font-size:1.5rem!important}
   body.layout-admin .asta-row-puja .cc-offerta-label{font-size:.5rem!important}
   body.layout-admin .asta-row-puja .timer-ring-container{flex:0 0 46px!important;min-width:46px!important}
@@ -845,7 +847,7 @@ body.layout-admin .asta-row-puja .cc-avatar-img{border-radius:14px!important}
   .puja-panel-slot .cc-meta{font-size:.62rem!important}
   .puja-panel-slot .cc-body{margin-bottom:0!important}
   .puja-panel-slot .cc-offerta-box{padding:3px 12px 6px!important;margin-bottom:2px!important}
-  .puja-panel-slot .cc-offerente{font-size:.68rem!important}
+  .puja-panel-slot .cc-offerente{font-size:.85rem!important}
 }
 @media (max-width:400px){
   .puja-panel-slot{padding:8px 10px!important;gap:6px!important}
@@ -855,7 +857,8 @@ body.layout-admin .asta-row-puja .cc-avatar-img{border-radius:14px!important}
   .puja-panel-slot .cc-avatar-icon{font-size:.65rem!important}
   .puja-panel-slot .cc-avatar-initial{font-size:.55rem!important}
   .puja-panel-slot .cc-nome{font-size:.8rem!important}
-  .puja-panel-slot .cc-meta,.puja-panel-slot .cc-offerente{font-size:.6rem!important}
+  .puja-panel-slot .cc-meta{font-size:.6rem!important}
+  .puja-panel-slot .cc-offerente{font-size:.78rem!important}
   .puja-panel-slot .cc-offerta{font-size:1.4rem!important}
   .puja-panel-slot .cc-offerta-label{font-size:.58rem!important}
   .puja-panel-slot .timer-ring{width:48px!important;height:48px!important}
@@ -866,7 +869,7 @@ body.layout-admin .asta-row-puja .cc-avatar-img{border-radius:14px!important}
   .puja-panel-slot .cc-manuale-badge,.puja-panel-slot .cc-attesa-badge{font-size:.5rem!important;padding:1px 5px!important;margin:0 0 1px!important}
   .puja-panel-slot .cc-header{margin-bottom:1px!important}
   .puja-panel-slot .cc-offerta-box{padding:2px 10px 5px!important;margin-bottom:1px!important}
-  .puja-panel-slot .cc-offerente{font-size:.58rem!important}
+  .puja-panel-slot .cc-offerente{font-size:.75rem!important}
   .puja-panel-slot .cc-strategia-info{display:block!important;margin-top:2px!important;padding-left:5px!important;font-size:.52rem!important;line-height:1.1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important}
 }
 /* ══ Colori ufficiali ruoli — applicato su Chiamata/Liberi/Rose/Annulla ══ */
@@ -2044,7 +2047,9 @@ body:has(#screen-asta.active) .user-email-badge{display:none}
   .puja-panel-slot .cc-offerta,body.layout-admin .asta-row-puja .cc-offerta{
     font-size:2.1rem!important;
   }
-  .puja-panel-slot .cc-offerente,body.layout-admin .asta-row-puja .cc-offerente,
+  .puja-panel-slot .cc-offerente,body.layout-admin .asta-row-puja .cc-offerente{
+    font-size:.92rem!important;white-space:normal!important;overflow:visible!important;
+  }
   .puja-panel-slot .cc-meta,body.layout-admin .asta-row-puja .cc-meta{
     font-size:.78rem!important;white-space:normal!important;overflow:visible!important;
   }

@@ -237,7 +237,7 @@ html body #puja-panel-slot .cc-offerta-label{
 }
 html body.puja-urgente #puja-panel-slot .cc-offerta-label{color:var(--sc-brace-piena) !important}
 html body #puja-panel-slot .cc-offerente{
-  font-size:.72rem !important;color:var(--sc-tenue) !important;margin-top:10px !important;
+  font-size:.95rem !important;color:var(--sc-tenue) !important;margin-top:10px !important;
   letter-spacing:.04em !important;white-space:nowrap !important;
 }
 html body #puja-panel-slot .cc-strategia-info{
@@ -497,7 +497,7 @@ html body #puja-panel-slot .btn-manuale{
   html body #puja-panel-slot .cc-body{width:100% !important}
   html body #puja-panel-slot .cc-offerta{font-size:3.9rem !important}
   html body #puja-panel-slot .cc-offerta-label{margin-top:8px !important;font-size:.54rem !important}
-  html body #puja-panel-slot .cc-offerente{font-size:.68rem !important;white-space:normal !important}
+  html body #puja-panel-slot .cc-offerente{font-size:.85rem !important;white-space:normal !important}
   html body #puja-panel-slot .cc-strategia-info{display:none !important}
 
   html body #puja-panel-slot .timer-ring-container{flex:0 0 auto !important}
