@@ -761,3 +761,52 @@ testata.
 A differenza di Cuoio (tema chiaro, servivano ombre/glow RIMOSSI perché sporcavano su fondo
 bianco), Lavagna resta scuro come il default: i glow neon sui testi (`text-shadow`) sono stati
 AGGIUNTI apposta invece che rimossi — è l'effetto voluto, non un residuo da ripulire.
+
+## `theme_overrides` (Supabase): un editor visuale nascosto, non il tema, causava colori "sbagliati"
+
+Bug reale segnalato dall'utente due volte ("questi bottoni restano viola in tutti i temi"),
+inizialmente scambiato per un problema di cache/tema. Causa reale: `backend/server.js` espone un
+"Editor Visuale di Stile" nascosto (`?editor=CHIAVE`) che salva override CSS **globali per tutti
+gli utenti** in una tabella Supabase (`theme_overrides`, riga `id='default'`), applicati ad ogni
+caricamento pagina via un `<style id="editor-overrides-style">` iniettato in `<head>` — *sopra*
+qualunque tema, perché arriva dopo entrambi i fogli CSS nel DOM. Qualcuno aveva ricolorato a mano
+`#btn-recap-iniziale`/`.storico-filtro-btn.active` il 2026-08-05 e salvato: da quel momento
+qualunque tema si scegliesse, quei due elementi restavano viola. Diagnosticato leggendo
+`document.styleSheets` in browser reale (non nei file sorgente: l'override non e' scritto in
+nessun `.css` del repo) e confermato via query diretta sulla tabella con l'MCP Supabase. Svuotato
+(`styles='{}'`) invece di eliminare la riga, per lasciare intatta la struttura che l'editor si
+aspetta di trovare. **Lezione**: un colore "sbagliato" che non torna in NESSUN tema, su un
+elemento con `id`, e che i file CSS del repo non spiegano, è quasi certamente qui — controllare
+`theme_overrides` prima di sospettare cache o CSS.
+
+## Materiali della clessidra: JS, non variabili CSS — i gradienti SVG hanno `stop-color` fissi
+
+L'orologio "specifico per tema" richiesto dall'utente non poteva essere fatto con le variabili
+`--sc-*` già in uso ovunque: i gradienti della clessidra (`cls-ottone`, `cls-sabbia`) sono
+`<linearGradient>` con `stop-color` scritti come attributi fissi dentro la stringa SVG generata
+da `clessidra.js` — nessuna cascata CSS può capovolgerli (infatti la variabile `--ottone` già
+presente in `tema-serata.css` da sessioni precedenti non veniva letta da **nessun** selettore:
+dead code, verificato con un grep mirato prima di aggiungerne altro). Soluzione: un piccolo
+oggetto `MATERIALI` in `clessidra.js` con i colori per `serata`/`cuoio`, applicato scrivendo
+`stop-color` sui `<stop>` esistenti dopo l'inserimento nel DOM, richiamato di nuovo da un
+`MutationObserver` su `data-tema` (il tema può cambiare a caldo dal selettore, senza reload —
+stesso principio del `MutationObserver` già esistente che legge il tempo dall'anello). "Lavagna"
+non ha un materiale: per quel tema (unico, su richiesta esplicita) l'oggetto stesso sparisce
+(`display:none`) e torna visibile il vecchio anello SVG originale — già nel DOM, già alimentato
+dallo stesso `#timer-progress`, già ritingibile via CSS (`#timer-grad-start/end` hanno
+`stop-color` impostato via JS in `app.js`/`updateTimer()`, ma una regola CSS con `!important`
+vince comunque sull'attributo — verificato, nessun cambio a `updateTimer()` necessario).
+
+## Anteprima: bordo viola mai migrato — trovato isolando la regola che vince davvero la cascata
+
+Il file `.ant-pitch-stage` compare **dieci volte** in `style.css` (redesign 3D iterativi di
+sessioni precedenti, mai ripulite), quasi tutte per proprietà di layout diverse per breakpoint —
+solo una imposta `border`/`box-shadow`, con un viola hardcoded (`rgba(115,105,255,.55)`) mai
+toccato da "Serata d'Asta" ne' dai temi successivi. Invece di rincorrere tutte e dieci le
+occorrenze, la regola effettivamente vincente è stata isolata leggendo `getComputedStyle` nel
+browser reale — l'unico modo affidabile con questo livello di duplicazione storica — poi
+sostituita con `var(--sc-ambra-piena)`/`rgba(var(--sc-ambra),...)`, variabili globali già corrette
+per tema: **una riga sola** ha sistemato tutti e tre i temi, senza bisogno di regole per-tema
+dedicate. Controllato anche il resto della chrome (RESET, toggle Vista, drawer, zoom): già su
+token generici, nessun altro intervento necessario — il viola era isolato a quella singola
+proprietà.

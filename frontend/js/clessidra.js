@@ -23,6 +23,31 @@
   // geometria (viewBox 0 0 100 152)
   const CIMA = 17, GOLA_ALTA = 74, GOLA_BASSA = 82, FONDO = 145;
 
+  // I materiali della clessidra (ottone della cornice, sabbia) cambiano per tema — non è
+  // un semplice ritinteggio via CSS perché i gradienti sono definiti come stop-color fissi
+  // dentro l'SVG stesso (nessuna variabile CSS può capovolgerli). "lavagna" non compare qui:
+  // in quel tema la clessidra resta nascosta (vedi tema-serata.css, sezione LAVAGNA AL NEON)
+  // e al suo posto torna visibile l'anello al neon originale — non le serve un materiale.
+  const MATERIALI = {
+    serata: {
+      ottone: ['#7A5A28', '#E8C489', '#C9974B', '#F0D6A4', '#A87C38', '#6B4E22'],
+      sabbia: ['#FFD79A', '#FFB04A', '#C4802B']
+    },
+    cuoio: {
+      ottone: ['#2B1B10', '#8F5A2C', '#6B4423', '#A87C4E', '#4A2E17', '#2B1B10'],
+      sabbia: ['#D9B98C', '#8F5A2C', '#4A2E17']
+    }
+  };
+
+  function applicaMateriale(box) {
+    const tema = document.documentElement.getAttribute('data-tema');
+    const m = MATERIALI[tema] || MATERIALI.serata;
+    const stopsOttone = box.querySelectorAll('#cls-ottone stop');
+    const stopsSabbia = box.querySelectorAll('#cls-sabbia stop');
+    stopsOttone.forEach((s, i) => { if (m.ottone[i]) s.setAttribute('stop-color', m.ottone[i]); });
+    stopsSabbia.forEach((s, i) => { if (m.sabbia[i]) s.setAttribute('stop-color', m.sabbia[i]); });
+  }
+
   function disegna() {
     return `
 <svg class="clessidra" viewBox="0 0 100 152" aria-hidden="true" focusable="false">
@@ -111,6 +136,14 @@
     if (!arco || !box || box.querySelector('.clessidra')) return;
 
     box.insertAdjacentHTML('afterbegin', disegna());
+    applicaMateriale(box);
+    // Il tema puo' cambiare a caldo dal selettore (setTema()), senza reload: si osserva
+    // l'attributo su <html> e si riapplica il materiale, stessa idea del MutationObserver
+    // che gia' legge il tempo dall'anello — passivo, non tocca lo stato di gioco.
+    new MutationObserver(() => applicaMateriale(box)).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-tema']
+    });
     const alta   = box.querySelector('.cls-sabbia-alta');
     const bassa  = box.querySelector('.cls-sabbia-bassa');
     const getto  = box.querySelector('.cls-getto');

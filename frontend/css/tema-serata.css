@@ -1904,14 +1904,30 @@ html[data-tema="cuoio"] body .asta-header::after{
 
 /* ── L'ambiente: la lavagna nera, polvere di gesso ── */
 html[data-tema="lavagna"] body{background:#0B0B0F !important}
+/* Non e' la foto del bar scurita come negli altri due temi: qui il locale e' un altro —
+   una lavagna vera, gesso e feltrini, mai una fotografia. Grana ottenuta con piccoli
+   radial-gradient ripetuti (polvere di gesso) + un pattern diagonale a bassissimo
+   contrasto (i segni del cancellino), stessa tecnica gia' usata per la pergamena di
+   Cuoio, qui bianco su nero invece di bruno su crema. */
 html[data-tema="lavagna"] .pitch-bg{
   background-color:#0B0B0F !important;
   background-image:
-    radial-gradient(52% 44% at 22% -6%, rgba(34,211,238,.12), transparent 64%),
-    radial-gradient(66% 60% at 104% 106%, rgba(255,60,172,.10), transparent 62%),
-    linear-gradient(180deg, rgba(11,11,15,.90) 0%, rgba(11,11,15,.82) 40%, rgba(11,11,15,.93) 100%),
-    url('/img/backgrounds/fantabar-bg.jpg') !important;
-  filter:saturate(.30) contrast(1.08) brightness(.62) !important;
+    radial-gradient(1px 1px at 20% 30%, rgba(240,244,248,.22), transparent 60%),
+    radial-gradient(1px 1px at 65% 15%, rgba(240,244,248,.16), transparent 60%),
+    radial-gradient(1.2px 1.2px at 40% 70%, rgba(240,244,248,.20), transparent 60%),
+    radial-gradient(1px 1px at 85% 55%, rgba(240,244,248,.14), transparent 60%),
+    radial-gradient(1px 1px at 10% 85%, rgba(240,244,248,.18), transparent 60%),
+    repeating-linear-gradient(115deg, rgba(240,244,248,.03) 0 2px, transparent 2px 90px),
+    radial-gradient(52% 44% at 22% -6%, rgba(34,211,238,.10), transparent 64%),
+    radial-gradient(66% 60% at 104% 106%, rgba(255,60,172,.08), transparent 62%),
+    linear-gradient(180deg, #0F1015 0%, #0B0B0F 55%, #08080B 100%) !important;
+  background-size:
+    90px 90px, 110px 110px, 130px 130px, 100px 100px, 140px 140px,
+    auto, cover, cover, cover !important;
+  background-repeat:
+    repeat, repeat, repeat, repeat, repeat,
+    repeat, no-repeat, no-repeat, no-repeat !important;
+  filter:none !important;
 }
 html[data-tema="lavagna"] ::selection{background:rgba(34,211,238,.28);color:#F0F4F8}
 
@@ -2043,10 +2059,37 @@ html[data-tema="lavagna"] body #puja-panel-slot .inp-rilancio{
 html[data-tema="lavagna"] body #puja-panel-slot .btn-quick,
 html[data-tema="lavagna"] body #puja-panel-slot .btn-manuale{color:#B8C4D0 !important}
 
-/* ── La clessidra: stessa lettura al buio, solo la ghiera cambia metallo ── */
+/* ── L'orologio qui non e' una clessidra: e' un anello al neon ──────────
+   Gli altri due temi condividono la clessidra (solo i materiali cambiano,
+   vedi clessidra.js/MATERIALI) perche' resta coerente con "un oggetto
+   fisico sul banco". La lavagna e' un locale diverso: qui torna visibile
+   il vecchio anello SVG originale (gia' nel DOM, nascosto altrove da
+   `html body ... .timer-ring{display:none}`) ritinto ciano→magenta, e la
+   clessidra si nasconde al suo posto. */
+html[data-tema="lavagna"] body #puja-panel-slot .timer-ring,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .timer-ring{
+  display:block !important;
+}
+html[data-tema="lavagna"] body #puja-panel-slot .clessidra,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .clessidra{
+  display:none !important;
+}
+html[data-tema="lavagna"] #timer-grad-start{stop-color:#22D3EE !important}
+html[data-tema="lavagna"] #timer-grad-end{stop-color:#FF3CAC !important}
+html[data-tema="lavagna"] body.puja-urgente #timer-grad-start{stop-color:#FF6B6B !important}
+html[data-tema="lavagna"] body.puja-urgente #timer-grad-end{stop-color:#FF2D2D !important}
 html[data-tema="lavagna"] body #puja-panel-slot .timer-ring-container,
 html[data-tema="lavagna"] body.layout-admin .asta-row-puja .timer-ring-container{
-  --ottone:linear-gradient(180deg,#7DE8F7,#22D3EE 55%,#0EA5C7);
+  filter:drop-shadow(0 0 10px rgba(34,211,238,.55));
+}
+html[data-tema="lavagna"] body.puja-urgente #puja-panel-slot .timer-ring-container{
+  filter:drop-shadow(0 0 12px rgba(255,45,45,.55));
+}
+html[data-tema="lavagna"] body #puja-panel-slot .timer-ring circle:first-of-type{
+  stroke:rgba(34,211,238,.18) !important;
+}
+html[data-tema="lavagna"] body #puja-panel-slot .timer-ring circle:nth-of-type(2){
+  stroke:rgba(0,0,0,.5) !important;stroke-width:5 !important;
 }
 
 /* ── Le tab: bordo magenta, testo ciano ── */

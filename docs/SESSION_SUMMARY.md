@@ -6,11 +6,19 @@ non accumulato. La cronologia sta in `git log`, il *perché* delle scelte in
 
 ## Stato attuale
 
-Branch `main`, allineato con `origin/main` fino al redesign tema chiaro "Cuoio" + fix
-cache-busting (vedi sotto) — **il selettore multi-tema e il terzo tema "Lavagna al Neon" sono
-implementati e verificati in locale ma non ancora committati/pushati**, prossimo passo di questa
-sessione. Su Hostinger il deploy è automatico al push su `main`, quindi finché non si pusha
-quest'ultimo lavoro non è online.
+Branch `main`, allineato con `origin/main` fino al selettore multi-tema + "Lavagna al Neon" — i
+**rifiniment successivi (orologio per tema, texture lavagna, Anteprima ritinta) sono fatti e
+verificati in locale ma non ancora committati/pushati**, prossimo passo di questa sessione. Su
+Hostinger il deploy è automatico al push su `main`.
+
+**Bug di produzione trovato e corretto in questa sessione, non un bug di tema**: la tabella
+Supabase `theme_overrides` (usata da un "Editor Visuale di Stile" nascosto, `?editor=CHIAVE`,
+vedi `backend/server.js` righe ~1837-1866) conteneva override globali salvati il 2026-08-05 che
+ricoloravano di viola `#btn-recap-iniziale`/`.storico-filtro-btn.active` **per tutti gli utenti,
+in tutti i temi** — non c'entrava il tema ne' la cache. Svuotata (`update theme_overrides set
+styles='{}' where id='default'`) via MCP Supabase, verificato sul sito reale con l'asta
+dell'utente. Se in futuro riappare un colore "che non torna" in nessun tema, controllare PRIMA
+questa tabella.
 
 **Architettura tema, cambiata in questa sessione**: non più un toggle binario chiaro/scuro
 (`html.theme-light`), ma un selettore multi-tema vero — `document.documentElement` porta un
@@ -46,6 +54,25 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Orologio, texture e Anteprima specifici per tema** (rifinitura sul lavoro sotto). La
+  clessidra usava materiali hardcoded nell'SVG (`clessidra.js`, gradienti `stop-color` fissi):
+  nessuna variabile CSS puo' capovolgerli, quindi aggiunto `MATERIALI` (serata=ottone/ambra
+  originale, cuoio=ottone scuro/sabbia cuoio) applicato via JS a `#cls-ottone`/`#cls-sabbia`, con
+  un `MutationObserver` su `data-tema` per seguire i cambi di tema a caldo. Per **lavagna** niente
+  clessidra: torna visibile il vecchio anello SVG originale (`#timer-progress`, gia' nel DOM,
+  nascosto negli altri due temi) ritinto ciano→magenta via `#timer-grad-start/end` — un
+  meccanismo diverso apposta (richiesta esplicita dell'utente), non solo un ricolorito.
+  **Texture lavagna**: `.pitch-bg` mostrava ancora la foto del bar scurita invece di una vera
+  lavagna — sostituita con nero pieno + polvere di gesso (radial-gradient a tile multipli, stessa
+  tecnica della pergamena Cuoio) e zero `url(...)`. **Anteprima**: trovato un bordo/glow viola
+  hardcoded (`rgba(115,105,255,.55)`, mai migrato dalla vecchia identita' "FantaBar Pulse")
+  sull'unica regola `.ant-pitch-stage` che vince davvero la cascata (verificato via
+  `getComputedStyle`, non a occhio, tra le ~10 regole `.ant-pitch-stage` sparse nel file) —
+  sostituito con `var(--sc-ambra-piena)`/`rgba(var(--sc-ambra),...)`, che essendo variabili
+  globali già corrette per tema si sistemano da sole nei 3 temi con una riga sola, nessuna regola
+  per-tema aggiuntiva. Il resto della chrome di Anteprima (RESET, toggle Vista, drawer, zoom) era
+  già correttamente su token generici — non serviva altro. Verificato nei 3 temi, desktop e
+  mobile, nessun errore console.
 - **Selettore multi-tema + terzo tema "Lavagna al Neon"** (architettura descritta sopra in "Stato
   attuale"). Verificato via script di contrasto (tutte le coppie chiave del nuovo tema ≥5.3:1,
   margine ampio) e nel browser con dati sintetici (stesso metodo del punto sotto): menu a tendina
