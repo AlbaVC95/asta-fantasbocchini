@@ -54,6 +54,22 @@ descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere qua
 
 ## Cambi recenti
 
+- **Lavagna: bug reale di specificita' CSS trovato, texture/cancellino/cocktail/scintilla
+  aggiunti**. L'utente ha segnalato che la texture "polvere di gesso" non si vedeva nella carta
+  di puja nonostante il codice ci fosse: causa reale (non a occhio, isolata con
+  `document.styleSheets`/`cssRules` in browser) — una regola piu' vecchia
+  (`body.layout-partecipante #puja-panel-slot, body #puja-panel-slot{background:...}`, versione
+  povera a 3 layer) batteva quella nuova per SPECIFICITA' (il branch `.layout-partecipante` ha
+  una classe in piu'), non per ordine — capitava in vista Partecipante, non Admin, e lo stesso
+  bug esisteva identico anche in Cuoio (mai notato perche' la differenza visiva era meno
+  marcata). Risolto eliminando la regola vecchia duplicata in entrambi i temi (la nuova
+  copriva gia' border/box-shadow). Aggiunti anche: nuvole di sbavatura piu' grandi (non solo
+  polvere fine) su `.pitch-bg` e sui pannelli; cancellino (legno+feltro) sia sullo sfondo di
+  pagina sia — apposta, per essere SEMPRE visibile — dentro `.chiamata-card::after`; bicchiere
+  da cocktail al neon (`.pitch-bg::after`, un solo clip-path con `filter:drop-shadow` invece di
+  `box-shadow` perche' quest'ultimo non segue le forme ritagliate); scintilla al neon accanto al
+  logo (`.asta-header-left::after` — non su `.asta-header-title::after`, gia' occupato dal
+  "respiro" del neon). Verificato nei 3 temi, nessuna regressione.
 - **Il campo di Anteprima, non solo la cornice, ridisegnato per tema**: l'utente ha fatto notare
   (due volte, con screenshot reali) che il prato restava sempre verde-neon a prescindere dal
   tema — avevo toccato solo `.ant-pitch-stage` (cornice esterna) in un giro precedente, non

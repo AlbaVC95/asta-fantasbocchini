@@ -762,6 +762,32 @@ A differenza di Cuoio (tema chiaro, servivano ombre/glow RIMOSSI perché sporcav
 bianco), Lavagna resta scuro come il default: i glow neon sui testi (`text-shadow`) sono stati
 AGGIUNTI apposta invece che rimossi — è l'effetto voluto, non un residuo da ripulire.
 
+## Bug reale: una regola duplicata più vecchia batteva quella giusta per specificità, non per ordine
+
+Trovato mentre si rispondeva a "la texture della lavagna non si vede" — il codice della texture
+c'era, ma non si applicava in vista Partecipante. Causa: `tema-serata.css` aveva DUE regole per
+`#puja-panel-slot` (Cuoio e Lavagna, entrambe): una piu' vecchia con
+`body.layout-partecipante #puja-panel-slot, body #puja-panel-slot{...}` (versione povera, 3
+layer), e una piu' nuova nella sezione "materie" con `body #puja-panel-slot, body.layout-admin
+.asta-row-puja{...}` (versione ricca, con la texture). Stesso selettore `body #puja-panel-slot`
+in entrambe — ma la prima regola ha un SECONDO branch (`body.layout-partecipante
+#puja-panel-slot`) con una classe in più, quindi più specifico: in vista Partecipante (dove
+quel branch matcha) vinceva SEMPRE la regola vecchia, indipendentemente da quale delle due
+venisse dopo nel file. In vista Admin invece (nessun branch con `.layout-partecipante` che
+matcha) vinceva quella giusta — motivo per cui il bug era invisibile finché non si guardava
+apposta la vista Partecipante.
+
+Diagnosticato NON leggendo il CSS a occhio (la duplicazione storica del file la rende
+inaffidabile, vedi sopra "bordo viola mai migrato") ma iterando `document.styleSheets` /
+`cssRules` nel browser reale e confrontando gli indici delle regole che matchano
+`el.matches(selectorText)` — l'unico modo per sapere con certezza quale regola vince davvero.
+Fix: eliminata la regola vecchia duplicata (in entrambi i temi, Cuoio aveva lo stesso bug mai
+notato), non solo aggiunta una terza per patcharla — la sezione materie era già l'unica fonte di
+verità necessaria per fondo/bordo/ombra. **Promemoria per il futuro**: quando si aggiunge una
+regola "più giusta" per un selettore che già esiste altrove nello stesso file con un branch più
+specifico, cancellare quella vecchia invece di lasciarla — la specificità CSS non rispetta
+l'ordine di lettura del file.
+
 ## `theme_overrides` (Supabase): un editor visuale nascosto, non il tema, causava colori "sbagliati"
 
 Bug reale segnalato dall'utente due volte ("questi bottoni restano viola in tutti i temi"),
