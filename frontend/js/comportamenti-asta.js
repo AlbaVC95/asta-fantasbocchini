@@ -101,7 +101,11 @@
     if (typeof _t === 'function' && !_t.__fantabar) {
       window.updateTimer = function (secondi) {
         const r = _t.apply(this, arguments);
-        try { fase(secondi <= 4 && secondi > 0 ? 'finale' : 'asta'); } catch (e) {}
+        // Rosso solo negli ULTIMI 3 SECONDI (richiesta esplicita dell'utente: prima
+        // partiva a 4s). Deve restare allineato alla soglia di updateTimer() in
+        // app.js, che accende .urgent sul cronometro — se le due divergono, meta'
+        // della scena diventa rossa un secondo prima dell'altra.
+        try { fase(secondi <= 3 && secondi > 0 ? 'finale' : 'asta'); } catch (e) {}
         return r;
       };
       window.updateTimer.__fantabar = true;

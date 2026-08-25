@@ -1166,3 +1166,66 @@ la dimensione del container `sala`, quindi fa scattare le soglie strette e il mo
 semplificato quando in realta' non lo sarebbe. Sembrava un bug, era lo strumento di misura. Per
 guardarlo davvero: finestra larga e cattura a scala 1:1, oppure `transform:scale` (che non tocca
 il layout), mai `zoom`.
+
+## Password: lunghezza minima 10 al posto di HaveIBeenPwned (che il piano gratuito non ha)
+
+L'audit di sicurezza aveva lasciato un solo rilievo aperto: la protezione contro le password
+compromesse (confronto con HaveIBeenPwned) disattivata. Si e' scoperto che **e' una funzione dei
+piani a pagamento di Supabase**, quindi non attivabile. In sostituzione e' stata imposta una
+**lunghezza minima di 10 caratteri**.
+
+E' un buon ripiego, ma va registrato con onesta' che **copre una minaccia diversa**. La lunghezza
+alza il costo di forza bruta e cracking offline; HaveIBeenPwned serviva contro il *riuso* di una
+password gia' finita in una fuga altrove, e li' la lunghezza non aiuta — `Password123` ha 11
+caratteri ed e' in qualunque dizionario di breach. Il minimo vale inoltre solo per le password
+**nuove**: gli account gia' esistenti tengono la loro.
+
+Conseguenza operativa da ricordare: **il rate limiting del backend non protegge il login.**
+`signInWithPassword`, `signUp` e `resetPasswordForEmail` partono dal browser e vanno DIRETTAMENTE
+all'API di Supabase con la chiave anon (`app.js`, sezione auth) — non toccano mai `server.js`,
+quindi `express-rate-limit` non li vede. L'unica difesa contro qualcuno che prova password filtrate
+contro gli account della lega sono i **Rate Limits di Supabase Auth**, configurabili anche sul
+piano gratuito. E' quella la leva da stringere, non il codice.
+
+Nota: il linter di sicurezza di Supabase continuera' a segnalare `auth_leaked_password_protection`
+come WARN per sempre. E' atteso e non va inseguito.
+
+## Ruoli in riga sopra il nome, e colore del ruolo anche in vista utente
+
+Due difetti segnalati insieme dall'utente sulla carta di puja, con la stessa radice: una regola
+pensata per il caso a UN ruolo che si comportava male con i giocatori multi-ruolo.
+
+**I ruoli si incolonnavano.** `.cc-nome-row` era stata messa `flex-direction:column` apposta —
+"il badge del ruolo rubava la riga al nome" — e con un ruolo solo funziona. Ma
+`_getRuoloBadgeHTML()` produce **un `<span>` per ruolo**, fratelli del nome: un `Dd/Ds/E` diventa
+tre badge, e in colonna finiscono uno sotto l'altro. Si torna `flex-direction:row` +
+`flex-wrap:wrap` e si manda a capo il solo NOME con `flex:0 0 100%`. Cosi' i badge stanno
+affiancati sopra e il nome tiene comunque tutta la colonna per se': **entrambe le richieste sono
+soddisfatte invece di sacrificarne una**, che era il compromesso implicito della regola vecchia.
+
+**I ruoli erano scoloriti solo nella puja.** La regola generica "contorno, non pastiglia piena"
+(`html body #puja-panel-slot .badge-ruolo[class*="r-"]`) li spegne tutti a contorno grigio, e per
+specificita' batte `html[data-tema="sala-giochi"] .badge-ruolo.r-*`: percio' nella carta di puja i
+ruoli erano bianchi mentre ovunque altrove (rose, Anteprima, liste) erano colorati — un'incoerenza
+visibile solo li'. Si rialza la specificita' nel solo contesto della puja, tenendo la forma arcade
+(gettone squadrato, bordo inset nero, Silkscreen) e restituendo la codifica per colore.
+**Solo nel tema arcade**: negli altri tre il contorno e' una scelta voluta, perche' il pieno
+colorato e' riservato agli stati.
+
+Nota: la correzione dell'incolonnamento vale per **tutti** i temi, perche' era un difetto di
+layout, non una scelta estetica di uno di essi.
+
+## Il rosso degli ultimi secondi: soglia a 3, e il ticchettio resta a 5
+
+Richiesta dell'utente: il rosso della scena deve accendersi **solo negli ultimi 3 secondi**.
+
+Il punto da ricordare e' che la scena diventa rossa da **due posti diversi**, che vanno tenuti
+allineati a mano: `updateTimer()` in `app.js` accende `.urgent` sul cronometro (numero, anello,
+pulsazione), mentre `fase()` in `comportamenti-asta.js` accende `body.puja-urgente`, da cui
+dipendono nel tema il tasto RILANCIA, l'etichetta dell'offerta e i colori del gradiente. Erano a
+soglie **diverse** (5 e 4): mezza scena diventava rossa un secondo prima dell'altra. Ora entrambe
+a 3, con un commento incrociato nei due file perche' non tornino a divergere.
+
+**Il ticchettio sonoro resta a 5 secondi**, staccato dal rosso: e' l'avviso che il tempo sta per
+finire e anticiparlo di due secondi e' utile, mentre il rosso e' l'allarme vero. Prima erano
+nello stesso ramo `if` per caso, non per scelta.

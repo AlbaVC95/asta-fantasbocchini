@@ -3059,3 +3059,63 @@ html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .cc-avatar{
     box-shadow:none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   VISTA UTENTE — i ruoli in RIGA, e con il loro colore
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* (1) In riga, non incolonnati.
+   Un giocatore multi-ruolo (es. Dd/Ds/E) produce TRE badge, fratelli del nome
+   dentro .cc-nome-row (vedi _getRuoloBadgeHTML in app.js). Quella riga era stata
+   messa in colonna apposta — "il badge del ruolo rubava la riga al nome", piu'
+   sopra — ma con piu' ruoli i badge finiscono uno SOTTO l'altro, che e' il difetto
+   segnalato dall'utente.
+   Si torna in riga e si manda a capo il solo NOME, con flex:0 0 100%: i badge
+   stanno affiancati sopra e il nome tiene comunque tutta la colonna per se',
+   che era esattamente lo scopo della regola originale. Cosi' valgono entrambe
+   le richieste, invece di sacrificarne una. */
+html body #puja-panel-slot .cc-nome-row{
+  flex-direction:row !important;
+  flex-wrap:wrap !important;
+  align-items:center !important;
+}
+html body #puja-panel-slot .cc-nome{flex:0 0 100% !important}
+
+/* (2) Il colore del ruolo torna anche in vista utente (solo tema arcade).
+   La regola generica dei badge in puja ("contorno, non pastiglia piena", piu'
+   sopra) li spegne tutti a contorno grigio e vince per specificita' su
+   html[data-tema="sala-giochi"] .badge-ruolo.r-* — percio' nella carta di puja i
+   ruoli erano bianchi mentre ovunque altrove erano colorati. Qui si rialza la
+   specificita' nel SOLO contesto della puja, tenendo la forma arcade (gettone
+   squadrato, bordo inset nero, Silkscreen) e restituendo la codifica per colore.
+   Gli altri tre temi non sono toccati: li' il contorno e' una scelta voluta,
+   perche' il pieno colorato e' riservato agli stati. */
+html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo,
+html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo[class*="r-"]{
+  border:0 !important;box-shadow:inset 0 0 0 2px #141024 !important;
+  border-radius:0 !important;
+  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  letter-spacing:.06em !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-P,
+html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-Por,
+html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-T{
+  background:#F5B01A !important;color:#141024 !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-D,
+html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-Dc,
+html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-Ds,
+html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-Dd,
+html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-B,
+html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-E{
+  background:#5FD3A0 !important;color:#141024 !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-C,
+html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-M,
+html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-W{
+  background:#9FB0FF !important;color:#141024 !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-A,
+html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-Pc{
+  background:#FF8079 !important;color:#141024 !important;
+}

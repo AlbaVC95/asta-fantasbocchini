@@ -39,6 +39,27 @@ Per portare online o tornare indietro: **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)**
 fermo al vecchio toggle binario chiaro/scuro e alla palette chiara precedente, va riscritto per i
 quattro temi prima del prossimo deploy importante.
 
+## Cambi recenti — ruoli in riga, ruoli colorati, rosso a 3 secondi (2026-08-25)
+
+Tre richieste dell'utente sulla carta di puja:
+
+- **Ruoli in RIGA, non incolonnati.** `.cc-nome-row` era `flex-direction:column` (per proteggere
+  il nome), ma un giocatore multi-ruolo produce un badge per ruolo: `Dd/Ds/E` diventava tre badge
+  impilati. Ora riga + `flex-wrap`, con il solo nome a capo (`flex:0 0 100%`): badge affiancati
+  sopra E nome con tutta la colonna. Vale per tutti i temi — era un difetto di layout.
+- **Ruoli col loro colore anche in vista utente** (solo tema arcade): la regola "contorno, non
+  pastiglia piena" della puja vinceva per specificita' sui colori del tema, quindi i ruoli erano
+  bianchi solo li' e colorati ovunque altrove. Rialzata la specificita' nel contesto della puja,
+  tenendo la forma arcade.
+- **Rosso solo negli ultimi 3 secondi.** La scena diventava rossa da DUE posti a soglie diverse
+  (`.urgent` in app.js a 5s, `body.puja-urgente` in comportamenti-asta.js a 4s): mezza scena si
+  accendeva un secondo prima dell'altra. Ora entrambe a 3. Il **ticchettio sonoro resta a 5s**,
+  deliberatamente staccato dal rosso.
+
+**Verificato** in browser: i tre badge su una riga sola in tutti e quattro i temi, colori per ruolo
+corretti in sala-giochi e contorno intatto negli altri tre; soglie del timer simulate secondo per
+secondo (rosso da 3, tic-tac da 5, le due meta' della scena in sincronia).
+
 ## Cambi recenti — cabinato attorno al ritratto in "sala-giochi" (2026-08-25)
 
 Richiesta dell'utente: cornice a forma di macchina da sala giochi attorno alla foto del giocatore,
@@ -129,8 +150,13 @@ con utenti veri loggati (in locale non ci sono le variabili Supabase).
 
 ## Prima del prossimo deploy
 
-1. Attivare a mano nel pannello Supabase la **protezione password compromesse (HaveIBeenPwned)**,
-   unico rilievo di sicurezza rimasto e non risolvibile da codice.
+1. ~~Protezione password compromesse (HaveIBeenPwned)~~ — **non disponibile**: e' una funzione
+   dei piani a pagamento. In sostituzione l'utente ha imposto una **lunghezza minima di 10
+   caratteri**. Il linter di Supabase continuera' a segnalare quel WARN per sempre: e' atteso,
+   non una svista. Copre pero' una minaccia diversa (vedi DECISIONS.md) — la leva ancora
+   disponibile e gratuita sono i **Rate Limits di Supabase Auth** (pannello -> Authentication ->
+   Rate Limits), che sono l'unica difesa sul login: `signInWithPassword`/`signUp` vanno dal
+   browser DIRETTAMENTE a Supabase e non passano mai dal rate limiting del backend.
 2. Dopo il primo deploy, controllare i log per righe `[CORS] Handshake socket rifiutato` — se ne
    compaiono con l'origine legittima del sito, impostare `ORIGINI_CONSENTITE` su Hostinger.
 3. Le quote in memoria si azzerano a ogni riavvio/deploy: è voluto, non un bug.

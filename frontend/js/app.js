@@ -2866,11 +2866,15 @@ function updateTimer(secondi, fase) {
     ballEl.style.left = (bx / 120 * 100) + '%';
     ballEl.style.top  = (by / 120 * 100) + '%';
   }
-  if (secondi <= 5) {
+  // Il ticchettio parte da 5s: e' l'avviso SONORO, e resta dov'era.
+  if (secondi <= 5) playSound('tick');
+  // Il ROSSO invece solo negli ultimi 3 secondi (richiesta dell'utente).
+  // Stessa soglia di fase() in comportamenti-asta.js, che accende
+  // body.puja-urgente: se divergono, meta' della scena diventa rossa prima.
+  if (secondi <= 3) {
     container && container.classList.add('urgent');
     if (gs) gs.setAttribute('stop-color', '#ff1744');
     if (ge) ge.setAttribute('stop-color', '#ff6b6b');
-    playSound('tick');
   } else if (secondi <= 10) {
     container && container.classList.remove('urgent');
     if (gs) gs.setAttribute('stop-color', '#ffb800');
