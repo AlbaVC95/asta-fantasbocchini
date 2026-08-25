@@ -39,6 +39,24 @@ Per portare online o tornare indietro: **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)**
 fermo al vecchio toggle binario chiaro/scuro e alla palette chiara precedente, va riscritto per i
 quattro temi prima del prossimo deploy importante.
 
+## Cambi recenti — export Fantaleghe: la rosa completa, non solo i nuovi acquisti (2026-08-25)
+
+Bug segnalato dall'utente. Il CSV Fantaleghe si costruiva da `asta.storico`, cioe' dalle
+assegnazioni di QUELLA asta: su un'asta di riparazione conteneva solo i nuovi acquisti, e
+reimportandolo ogni squadra restava composta da quelli soli, **perdendo il resto della rosa**.
+Danno silenzioso: il file si scaricava senza errori.
+
+Ora si esporta `squadra.rosa`, lo stato finale vero (pregressi + acquisti - svincolati), la stessa
+fonte gia' usata dal foglio "Rose" dell'Excel. Per l'asta 'iniziale' il risultato non cambia. Vale
+anche per lo Storico Esportazioni, il cui payload contiene l'oggetto asta intero. Aggiunto un
+avviso sui doppioni (stesso idFantaleghe in due rose), che prima avrebbero corrotto l'import in
+silenzio.
+
+**Verificato** eseguendo la funzione REALE estratta da app.js su aste sintetiche: riparazione con
+rosa pregressa + nuovi acquisti -> 5 giocatori esportati invece di 2; asta iniziale invariata;
+casi limite (idFantaleghe mancante, doppioni, rose vuote, prezzo assente) tutti con l'avviso
+giusto.
+
 ## Cambi recenti — il cabinato diventa un disegno SVG (2026-08-25)
 
 Dopo due giri respinti dall'utente ("si vede molto uguale"), il mobile e' stato rifatto come

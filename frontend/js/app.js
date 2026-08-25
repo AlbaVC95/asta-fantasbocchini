@@ -326,23 +326,45 @@ function _exportAstaExcel(asta, prefix) {
 function _exportAstaFantaleghe(asta, prefix) {
   const rows = [];
   let omessi = 0;
-  (asta.storico || []).forEach(s => {
-    if (s.tipo === 'scartato' || s.tipo === 'tradeoff') return;
-    if (!s.giocatore || !s.squadra) return;
-    const id = s.giocatore.idFantaleghe;
-    if (id === null || id === undefined || id === '') { omessi++; return; }
-    rows.push(s.squadra + ',' + id + ',' + s.prezzo);
+  // Si esporta la ROSA di ogni squadra, non lo storico delle assegnazioni.
+  //
+  // Lo storico contiene solo cio' che e' stato comprato IN QUESTA asta. Su un'asta
+  // di riparazione questo voleva dire esportare i soli nuovi acquisti: reimportando
+  // il file in Fantaleghe, ogni squadra risultava composta soltanto da quelli e
+  // perdeva tutto il resto della rosa. Bug segnalato dall'utente.
+  //
+  // La rosa e' invece lo stato finale vero: in riparazione parte gia' piena dei
+  // giocatori pregressi (vedi la creazione dell'asta in server.js, dove chi ha gia'
+  // una fantasquadra nel file entra direttamente in squadra.rosa), si arricchisce dei
+  // nuovi acquisti e perde gli svincolati (esegui-svincolo fa splice sulla rosa).
+  // E' la stessa fonte gia' usata dal foglio "Rose" dell'export Excel.
+  //
+  // Per un'asta 'iniziale' il risultato non cambia: li' la rosa parte vuota e si
+  // riempie solo con cio' che viene aggiudicato. Anzi e' piu' corretta dello storico,
+  // perche' riflette gli annullamenti invece di ricostruirli.
+  const visti = new Map(); // idFantaleghe -> squadra, per accorgersi dei doppioni
+  let doppioni = 0;
+  (asta.squadre || []).forEach(sq => {
+    (sq.rosa || []).forEach(g => {
+      const id = g.idFantaleghe;
+      if (id === null || id === undefined || id === '') { omessi++; return; }
+      const chiave = String(id);
+      if (visti.has(chiave)) { doppioni++; return; } // stesso giocatore in due rose: non duplicarlo nel file
+      visti.set(chiave, sq.nome);
+      rows.push(sq.nome + ',' + id + ',' + (g.prezzo != null ? g.prezzo : 0));
+    });
   });
   if (!rows.length) {
-    toast('Nessuna assegnazione con IdFantaleghe trovata' + (omessi ? ' (' + omessi + ' omessi)' : ''), 'error');
+    toast('Nessun giocatore in rosa con IdFantaleghe' + (omessi ? ' (' + omessi + ' omessi)' : ''), 'error');
     return;
   }
   const lines = ['$,$,$'].concat(rows).concat(['$,$,$']);
   const csv = lines.join(String.fromCharCode(13,10));
   const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   _triggerBlobDownload(new Blob([csv], { type: 'text/csv' }), prefix + '-' + (asta.id||'') + '-' + ts + '.csv');
+  if (doppioni > 0) toast('⚠️ ' + doppioni + ' giocatori risultavano in due rose: esportati una volta sola', 'error');
   if (omessi > 0) toast('⚠️ ' + omessi + ' giocatori omessi (IdFantaleghe mancante)', 'error');
-  else toast('Fantaleghe CSV scaricato', 'success');
+  else if (!doppioni) toast('Fantaleghe CSV scaricato (' + rows.length + ' giocatori)', 'success');
 }
 
 function _exportAstaRecap(asta, prefix) {

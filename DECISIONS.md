@@ -1302,3 +1302,34 @@ a 3, con un commento incrociato nei due file perche' non tornino a divergere.
 **Il ticchettio sonoro resta a 5 secondi**, staccato dal rosso: e' l'avviso che il tempo sta per
 finire e anticiparlo di due secondi e' utile, mentre il rosso e' l'allarme vero. Prima erano
 nello stesso ramo `if` per caso, non per scelta.
+
+## Export Fantaleghe: si esporta la ROSA, non lo storico delle assegnazioni
+
+Bug segnalato dall'utente. `_exportAstaFantaleghe()` costruiva il CSV da `asta.storico`, cioe'
+dall'elenco delle assegnazioni avvenute **in quella singola asta**. Su un'asta iniziale non si
+nota, perche' li' tutto quello che una squadra possiede e' stato aggiudicato in quell'asta. Su
+un'**asta di riparazione** invece lo storico contiene solo i nuovi acquisti: reimportando il file
+in Fantaleghe ogni squadra risultava composta soltanto da quelli, **perdendo tutto il resto della
+rosa**. Un danno silenzioso, perche' il file si scaricava senza errori.
+
+La fonte giusta e' `squadra.rosa`, che e' lo stato finale vero: in riparazione parte gia' piena
+dei giocatori pregressi (nella creazione dell'asta, chi nel file ha gia' una fantasquadra entra
+direttamente in `squadra.rosa`), si arricchisce dei nuovi acquisti e perde gli svincolati
+(`esegui-svincolo` fa `splice` sulla rosa). E' la stessa fonte gia' usata dal foglio "Rose"
+dell'export Excel — il CSV Fantaleghe era l'unico rimasto indietro.
+
+Per l'asta 'iniziale' il risultato non cambia (la rosa parte vuota e si riempie solo con cio' che
+viene aggiudicato); anzi e' piu' corretto, perche' la rosa riflette gia' gli annullamenti invece
+di doverli ricostruire scorrendo lo storico.
+
+Vale anche per lo **Storico Esportazioni**: li' il payload salvato su Supabase e' l'oggetto asta
+intero (`JSON.parse(JSON.stringify(asta))`), quindi contiene le rose e il bottone Fantaleghe delle
+aste passate si corregge da solo.
+
+Prezzo esportato: per i giocatori pregressi e' il loro costo di contratto (`prezzo` della rosa,
+che alla creazione dell'asta vale `costoOriginale`), per i nuovi acquisti il prezzo pagato in
+questa asta.
+
+Aggiunto anche un controllo sui **doppioni**: se lo stesso `idFantaleghe` comparisse in due rose,
+prima sarebbe finito due volte nel file corrompendo l'import in silenzio. Ora viene esportato una
+volta sola con un avviso esplicito.
