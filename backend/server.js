@@ -67,20 +67,35 @@ const server = http.createServer(app);
 const ORIGINI_CONSENTITE = (process.env.ORIGINI_CONSENTITE || '')
   .split(',').map(o => o.trim()).filter(Boolean);
 
-function origineConsentita(origin, host) {
+// `hosts` sono gli host che il server si vede attribuire: Host e, dietro a un proxy,
+// X-Forwarded-Host. Il confronto e' sull'HOSTNAME e non sull'host completo perche' un
+// reverse proxy cambia quasi sempre la porta (fuori 443, dentro 3000) e spesso riscrive
+// Host con un nome interno lasciando quello vero in X-Forwarded-Host.
+//
+// Questo dettaglio non e' pedanteria: se il confronto fallisse in produzione, il
+// handshake verrebbe rifiutato e NESSUNO potrebbe collegarsi all'asta. Meglio essere
+// tolleranti sulla forma dell'host — chi vuole entrare da un dominio diverso resta
+// comunque fuori, ed e' l'unica cosa che questo controllo deve impedire.
+function origineConsentita(origin, hosts) {
   // Nessun header Origin = richiesta non-browser (curl, health check del provider,
   // app native). Non e' un caso CORS: non c'e' nessun utente da proteggere qui.
   if (!origin) return true;
   if (ORIGINI_CONSENTITE.includes(origin)) return true;
-  try {
-    if (host && new URL(origin).host === host) return true; // same-origin
-  } catch (e) { return false; } // Origin malformato
-  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+  let nomeOrigine;
+  try { nomeOrigine = new URL(origin).hostname; }
+  catch (e) { return false; } // Origin malformato
+  if (/^(localhost|127\.0\.0\.1)$/.test(nomeOrigine)) return true; // sviluppo
+  return (hosts || []).some(h => {
+    if (!h) return false;
+    // h puo' essere "dominio:porta" oppure una lista "a.com, b.com" (X-Forwarded-Host
+    // con piu' proxy in catena): si confronta ogni pezzo, senza porta.
+    return String(h).split(',').some(p => p.trim().split(':')[0].toLowerCase() === nomeOrigine.toLowerCase());
+  });
 }
-
 const opzioniIO = {
   allowRequest: (req, callback) => {
-    const ok = origineConsentita(req.headers.origin, req.headers.host);
+    const ok = origineConsentita(req.headers.origin,
+      [req.headers.host, req.headers['x-forwarded-host']]);
     if (!ok) console.warn('[CORS] Handshake socket rifiutato — origin:', req.headers.origin);
     callback(ok ? null : 'origine non consentita', ok);
   }
@@ -149,11 +164,12 @@ function chiaveUtenteOIp(req) {
 const UN_GIORNO = 24 * 60 * 60 * 1000;
 const QUINDICI_MINUTI = 15 * 60 * 1000;
 
-function creaLimite({ nome, finestra, massimo, messaggio }) {
+function creaLimite({ nome, finestra, massimo, messaggio, salta }) {
   return rateLimit({
     windowMs: finestra,
     limit: massimo,
     keyGenerator: chiaveUtenteOIp,
+    ...(salta ? { skip: salta } : {}),
     // draft-8 e non draft-7: su una rotta agiscono piu' limiti in cascata (raffica +
     // quota giornaliera + quota specifica) e solo draft-8 sa elencarli tutti insieme.
     // Con draft-7 l'ultimo limite sovrascriveva l'header degli altri, e il client
@@ -165,17 +181,54 @@ function creaLimite({ nome, finestra, massimo, messaggio }) {
   });
 }
 
-// Livello 1 — antiflood per IP/utente su tutte le API.
+// ── Dimensionamento: un'asta vera dura 8-9 ore con 12-22 persone collegate ──
+//
+// Quel carico NON passa di qui: durante l'asta tutto (rilanci, stato, popup) viaggia
+// sul WebSocket, e le riconnessioni si limitano a riemettere 'join-asta' sul socket
+// senza nessuna chiamata REST. Le rotte /api vengono toccate poche volte per
+// caricamento di pagina: stato manutenzione, info asta, qualche foto di fallback.
+//
+// Il punto delicato e' un altro: le richieste SENZA token vengono contate per IP, e un
+// IP puo' essere condiviso per motivi legittimi — due persone della lega sulla stessa
+// wifi di casa, e soprattutto un reverse proxy che non inoltrasse l'IP reale, nel qual
+// caso TUTTI i partecipanti finirebbero in un unico contatore. Con 22 persone che
+// entrano nello stesso momento a inizio asta, una soglia stretta si esaurirebbe proprio
+// li'. Le soglie sono percio' generose: restano efficaci contro uno script che martella
+// (che le brucia in pochi secondi) ma non possono bloccare una serata vera.
 const limiteBurstApi = creaLimite({
-  nome: 'raffica-api', finestra: QUINDICI_MINUTI, massimo: 300,
-  messaggio: 'Troppe richieste in poco tempo. Riprova tra qualche minuto.'
+  nome: 'raffica-api', finestra: QUINDICI_MINUTI, massimo: 600,
+  messaggio: 'Troppe richieste in poco tempo. Riprova tra qualche minuto.',
+  salta: eIngressoAsta
 });
-// Livello 2 — quota giornaliera per persona.
 const limiteGiornalieroApi = creaLimite({
-  nome: 'quota-giornaliera', finestra: UN_GIORNO, massimo: 1000,
-  messaggio: 'Hai raggiunto il limite giornaliero di richieste. Riprova domani.'
+  nome: 'quota-giornaliera', finestra: UN_GIORNO, massimo: 3000,
+  messaggio: 'Hai raggiunto il limite giornaliero di richieste. Riprova domani.',
+  salta: eIngressoAsta
 });
-app.use('/api', limiteBurstApi, limiteGiornalieroApi);
+
+// Le due letture pubbliche che servono per ENTRARE in un'asta hanno un limite loro, piu'
+// alto e sganciato dagli altri: sono senza token (quindi contate per IP), non scrivono
+// niente e leggono solo dalla memoria. Non devono mai poter chiudere la porta a chi sta
+// entrando, che e' esattamente il momento in cui 22 persone bussano insieme.
+//
+// Si separano con `skip` reciproco e non registrando un handler a parte: dentro a un
+// app.use('/api', ...) il next() di una rotta piu' specifica ricadrebbe COMUNQUE nei
+// limitatori globali, quindi l'esenzione non varrebbe niente.
+// NB: qui req.path e' relativo al mount '/api', percio' '/asta/:id/info' e non
+// '/api/asta/:id/info'.
+function eIngressoAsta(req) {
+  return req.method === 'GET' && (
+    req.path === '/admin/manutenzione-status' ||
+    /^\/asta\/[^/]+\/info$/.test(req.path)
+  );
+}
+const limiteIngresso = creaLimite({
+  nome: 'ingresso-asta', finestra: QUINDICI_MINUTI, massimo: 3000,
+  messaggio: 'Troppe richieste in poco tempo. Riprova tra qualche minuto.',
+  salta: (req) => !eIngressoAsta(req)
+});
+
+app.use('/api', limiteIngresso, limiteBurstApi, limiteGiornalieroApi);
 
 // express.json() viene DOPO i limiti, non prima: altrimenti un client gia' bloccato
 // costringerebbe comunque il server a leggere e parsare fino a 10MB di corpo per ogni
@@ -1057,6 +1110,13 @@ app.get('/api/health/banda', (req, res) => {
     asteAttiveTotali: attive.length,
     asteZombieSospette: zombie.length,
     soglia: SOGLIA_ASTE_ATTIVE,
+    // Diagnostica per il rate limiting: e' l'IP che il server VEDE per chi chiama.
+    // Serve a verificare in produzione che il reverse proxy inoltri l'IP reale del
+    // client (app.set('trust proxy', 1) piu' sopra). Aprendo questa rotta da due
+    // dispositivi su reti diverse si devono leggere DUE ip diversi: se ne compare uno
+    // solo, tutti i partecipanti condividono lo stesso contatore e le soglie per IP
+    // vanno riviste. Non e' un dato sensibile: a ciascuno mostra il proprio.
+    ip: req.ip,
     timestamp: new Date().toISOString()
   });
 });
@@ -1359,8 +1419,13 @@ io.on('connection', (socket) => {
   // chiudere un'assegnazione. Finestra scorrevole di 1 secondo, contata per socket.
   // I contatori stanno SULL'oggetto socket, non in una Map globale: spariscono da soli
   // alla disconnessione, senza il rischio di fuga di memoria gia' visto altrove.
-  const EVENTI_AL_SECONDO = 15;   // azioni normali (admin che clicca in fretta, join, ecc.)
-  const RILANCI_AL_SECONDO = 5;   // il rilancio e' l'evento piu' facile da automatizzare
+  const EVENTI_AL_SECONDO = 15;    // azioni normali (admin che clicca in fretta, join, ecc.)
+  // 10 e non 5: in una puja combattuta si martella il tasto, e ogni tocco e' un rilancio
+  // da un credito. A 5/s le pulsazioni in eccesso venivano scartate e la persona rilanciava
+  // MENO di quanto credeva, potendo perdere il giocatore — in un'asta vera di 8-9 ore con
+  // 22 persone e' un caso che capita. La tenuta prolungata del tasto non c'entra: emette un
+  // solo evento al rilascio (vedi 'leva' in comportamenti-asta.js), non un flusso.
+  const RILANCI_AL_SECONDO = 10;
   socket.use((packet, next) => {
     const evento = packet[0];
     const massimo = evento === 'rilancio' ? RILANCI_AL_SECONDO : EVENTI_AL_SECONDO;

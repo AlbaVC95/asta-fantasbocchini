@@ -1387,3 +1387,53 @@ cioe' il tema stesso.
 Regola generale che ne esce: **prima di applicare una font a pixel a una schermata densa, misurare
 la larghezza risultante contro gli altri temi.** Il tema non deve costare densita' a una vista che
 esiste apposta per mostrarne tanta.
+
+## Dimensionare i limiti su un'asta VERA: 12-22 persone per 8-9 ore
+
+Domanda dell'utente dopo il giro di sicurezza: "l'asta e' di 12-22 persone collegate per 8-9 ore,
+ne sono gia' state fatte due e ha retto — non e' che ora l'ho rotta?". Domanda giusta: i limiti
+erano stati scelti a tavolino, senza confrontarli con il carico reale.
+
+**La buona notizia, verificata leggendo il codice**: quel carico non passa dal rate limiting REST.
+Durante l'asta tutto — rilanci, stato, popup — viaggia sul WebSocket, e le **riconnessioni non
+fanno nessuna chiamata REST**: `socket.on('connect'/'reconnect')` si limita a riemettere
+`join-asta` sul socket. Nove ore di micro-cadute di rete costano zero richieste. Le rotte `/api`
+vengono toccate poche volte per caricamento di pagina.
+
+Sono emersi pero' **tre rischi reali**, tutti corretti:
+
+1. **Il contatore per IP puo' essere condiviso.** Le richieste senza token sono contate per IP, e
+   un IP e' condiviso in due casi legittimi: due persone della lega sulla stessa wifi, e — molto
+   peggio — un reverse proxy che non inoltri l'IP reale, nel qual caso **tutti i partecipanti
+   finiscono in un unico contatore**. Con 22 persone che entrano insieme a inizio serata, 300
+   richieste/15min si sarebbero potute esaurire proprio li'. Soglie alzate a 600/15min e
+   3000/giorno, e soprattutto le due letture pubbliche che servono per ENTRARE
+   (`/asta/:id/info`, `/admin/manutenzione-status`) hanno ora un limite loro molto piu' alto e
+   **sganciato** dagli altri: non devono mai poter chiudere la porta a chi sta entrando.
+   Nota di implementazione: l'esenzione si fa con `skip` reciproco, non registrando una rotta piu'
+   specifica prima — dentro a un `app.use('/api', ...)` il `next()` ricadrebbe comunque nei
+   limitatori globali e l'esenzione non varrebbe niente.
+
+2. **5 rilanci al secondo erano troppo pochi per una puja combattuta.** Ogni tocco del tasto e' un
+   rilancio da un credito; chi martella supera i 5/s e le pulsazioni in eccesso venivano scartate,
+   cioe' la persona rilanciava MENO di quanto credeva e poteva perdere il giocatore. Alzato a 10/s.
+   Misurato: 8 tocchi umani rapidi (uno ogni 110ms) ora passano tutti, mentre 60 emessi di colpo da
+   uno script vengono ancora fermati. La tenuta prolungata del tasto non c'entrava: emette un solo
+   evento al rilascio.
+
+3. **Il controllo same-origin del socket poteva bloccare TUTTI.** Confrontava `new URL(origin).host`
+   con l'header `Host`. Dietro a un reverse proxy quel confronto fallisce facilmente — la porta
+   cambia quasi sempre (443 fuori, 3000 dentro) e spesso `Host` viene riscritto con un nome interno
+   lasciando quello vero in `X-Forwarded-Host`. Se fallisse in produzione, **nessuno potrebbe
+   collegarsi all'asta**. Ora si confronta l'HOSTNAME (senza porta) contro `Host` e
+   `X-Forwarded-Host`, gestendo anche la catena di piu' proxy. Verificato: passano same-origin,
+   porta diversa, Host riscritto e catena doppia; restano bloccati dominio estraneo e
+   typosquatting (`fantasbocchini.com.evil.net`).
+
+Aggiunta infine una **diagnostica**: `GET /api/health/banda` ritorna l'IP che il server vede per chi
+chiama. Aprendola da due dispositivi su reti diverse si devono leggere due IP diversi; se ne compare
+uno solo, il proxy non inoltra l'IP reale e le soglie per IP vanno riviste. Non e' un dato
+sensibile: a ciascuno mostra il proprio.
+
+Lezione: **un limite di sicurezza va dimensionato sul carico vero, non sul numero che sembra
+prudente.** Qui il numero prudente rischiava di rompere la serata che doveva proteggere.

@@ -39,6 +39,25 @@ Per portare online o tornare indietro: **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)**
 fermo al vecchio toggle binario chiaro/scuro e alla palette chiara precedente, va riscritto per i
 quattro temi prima del prossimo deploy importante.
 
+## Cambi recenti — limiti ridimensionati su un'asta vera (2026-08-25)
+
+L'utente ha chiesto se i limiti appena introdotti reggono un'asta vera: 12-22 persone collegate per
+8-9 ore. Verificato che il carico dell'asta **non passa dal rate limiting REST** (tutto sul
+WebSocket, e le riconnessioni non fanno nessuna chiamata REST). Ma sono emersi tre rischi reali,
+tutti corretti — dettagli in [DECISIONS.md](../DECISIONS.md):
+
+1. **Contatore per IP condiviso** (stessa wifi, o proxy che non inoltra l'IP reale: tutti in un
+   contatore solo). Soglie alzate a 600/15min e 3000/giorno, e le due letture pubbliche che servono
+   per ENTRARE hanno un limite proprio e sganciato: non possono mai chiudere la porta a chi entra.
+2. **5 rilanci/s erano pochi** per chi martella il tasto in una puja combattuta: le pulsazioni in
+   eccesso venivano scartate e si rilanciava meno del previsto. Alzato a 10/s.
+3. **Il same-origin del socket poteva bloccare tutti**: dietro a un proxy il confronto con l'header
+   `Host` fallisce facilmente. Ora confronta l'hostname contro `Host` e `X-Forwarded-Host`.
+
+**Da fare alla prima asta**: aprire `/api/health/banda` da due dispositivi su reti diverse e
+controllare che il campo `ip` sia DIVERSO. Se e' lo stesso, il proxy non inoltra l'IP reale e le
+soglie per IP vanno riviste.
+
 ## Cambi recenti — le Rose vestite da sala giochi (2026-08-25)
 
 Segnalato dall'utente: la schermata delle rose non seguiva il tema arcade. Motivo: `.rose-*` non
