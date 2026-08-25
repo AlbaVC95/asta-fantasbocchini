@@ -1121,6 +1121,48 @@ nome** (di 2-7px sulle schede da 196px), che e' il comportamento voluto e gia' d
 CSS: "a cedere per prima e' solo la coda del nome, con i puntini". Come effetto collaterale il
 nome guadagna spazio: prima era inchiodato al suo minimo di 52px, ora ne prende 72-89.
 
+## Il cabinato diventa un disegno SVG, e il ritratto cresce in altezza
+
+L'utente ha respinto due giri di cabinato fatto a gradienti: "si vede molto uguale". Aveva
+ragione, e il limite non era il dettaglio ma la **sagoma**. I gradienti CSS sanno fare solo bande
+orizzontali e pallini: davano insegna, cruscotto e tasti, ma non le spalle arrotondate, il bisel
+del monitor, il cruscotto che sporge piu' largo del mobile, lo sportello dei gettoni. Ed e' la
+sagoma, non il dettaglio, a far riconoscere una macchina da sala giochi.
+
+Ora il mobile e' **un disegno SVG in `::after`, sovrapposto alla foto**, con la finestra dello
+schermo ritagliata come buco vero (`fill-rule="evenodd"`): la foto sta sotto e si vede solo li'.
+
+**Il ritratto cresce in ALTEZZA** (rapporto 100:166 invece di ~100:130). Era inevitabile: su un
+cabinato vero lo schermo occupa circa il 60% del frontale, quindi nel riquadro di prima la faccia
+sarebbe scesa al ~38% per far posto a testata e cruscotto. Crescendo in altezza la finestra resta
+grande quanto la foto di prima (anzi un filo di piu': 135x183 contro 138x177) e il mobile ha lo
+spazio che gli serve. **Solo in altezza**: allargarlo avrebbe richiesto di ritoccare il
+`padding-left` di `.chiamata-card` in ogni breakpoint, dove un errore fa finire il ritratto sopra
+il nome — incidente gia' successo.
+
+Tre trappole incontrate, tutte utili da ricordare:
+
+1. **Le percentuali di `padding` si risolvono sulla larghezza del CONTENITORE, non
+   dell'elemento.** Primo tentativo: `padding:33% 12% 30%` per far cadere la foto nella finestra.
+   Con `.cc-avatar` in `position:absolute` dentro a una card larga 1200px, quel 33% diventava
+   400px e la border-box si allargava da 178 a 296px. La foto va posizionata invece con
+   `inset`/`top`/`left` in percentuale, che si misurano sull'elemento stesso (alto/basso
+   sull'altezza, sinistra/destra sulla larghezza) — la mappatura che serviva. Cosi' non serve
+   nessuna tabella di misure per breakpoint: `aspect-ratio` lega l'altezza alla larghezza e la
+   foto cade nella finestra a qualunque misura.
+2. **Per un elemento rimpiazzato (`<img>`) in `position:absolute`, `width:auto` prende la
+   dimensione INTRINSECA e `right` viene ignorato**, invece di stirarsi fra i due bordi come farebbe
+   un `<div>`. La foto usciva a 257px invece dei 135 della finestra. Servono misure esplicite
+   (`width:76%; height:62.05%`).
+3. **Un ID batte qualunque numero di classi.** In `style.css` la foto e' formattata da
+   `#chiamata-card .cc-avatar-img`; il mio ramo Admin, tutto a classi, perdeva — mentre quello
+   utente vinceva *per caso*, perche' contiene gia' `#puja-panel-slot`. Risultato: la foto restava
+   alta il 100% della scatola solo in vista Admin. Aggiunto `#chiamata-card` anche li'.
+
+E una trappola di **metodo**: ispezionare questa cornice col `zoom` del browser inganna, perche'
+`zoom` riduce anche la dimensione del container `sala` e fa scattare le soglie strette. Sembrava
+un bug, era lo strumento di misura. Si guarda con finestra stretta + colonna forzata larga, a 1:1.
+
 ## Cabinato: il mobile ESSENZIALE e' la base, il dettaglio si aggiunge se c'e' spazio
 
 Su richiesta dell'utente il cabinato e' stato reso molto piu' elaborato: lampadine sull'insegna,

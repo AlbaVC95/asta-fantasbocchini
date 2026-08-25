@@ -39,6 +39,28 @@ Per portare online o tornare indietro: **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)**
 fermo al vecchio toggle binario chiaro/scuro e alla palette chiara precedente, va riscritto per i
 quattro temi prima del prossimo deploy importante.
 
+## Cambi recenti — il cabinato diventa un disegno SVG (2026-08-25)
+
+Dopo due giri respinti dall'utente ("si vede molto uguale"), il mobile e' stato rifatto come
+**disegno SVG sovrapposto alla foto**, con la finestra dello schermo ritagliata a buco. I
+gradienti CSS non potevano bastare: sanno fare bande e pallini, non la SAGOMA (spalle
+arrotondate, bisel del monitor, cruscotto che sporge, sportello dei gettoni), ed e' la sagoma a
+far riconoscere una macchina da sala giochi.
+
+Il ritratto **cresce in altezza** (rapporto 100:166): su un cabinato vero lo schermo e' ~60% del
+frontale, quindi nel riquadro di prima la faccia sarebbe scesa al ~38%. Cosi' invece la finestra
+resta grande quanto la foto di prima (135x183 contro 138x177). Solo in altezza — allargarlo
+avrebbe richiesto di toccare il `padding-left` di `.chiamata-card` in ogni breakpoint.
+
+Niente misure per breakpoint: `aspect-ratio` lega l'altezza alla larghezza e la foto si posiziona
+con percentuali di `inset`. Tre trappole CSS incontrate lungo la strada (percentuali di padding
+che si misurano sul contenitore, `width:auto` sugli `<img>` assoluti, un ID che batte le classi
+nel solo ramo Admin) sono documentate in [DECISIONS.md](../DECISIONS.md).
+
+**Verificato** a 1:1: cabinato in Admin e utente a tutte le larghezze di colonna, foto sempre
+dentro la finestra, nessun ritaglio, i tre temi non-arcade intatti (178x226), cabinato spento e
+rapporto originale ripristinato sotto i 700px.
+
 ## Cambi recenti — cabinato piu' elaborato (2026-08-25)
 
 Su richiesta dell'utente il cabinato attorno al ritratto e' ora una macchina da sala giochi vera:
