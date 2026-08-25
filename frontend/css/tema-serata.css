@@ -2882,3 +2882,39 @@ html[data-tema="sala-giochi"] body .timbro-preso span{border-color:#147A52 !impo
 @media(prefers-reduced-motion:reduce){
   html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .btn-rilancia{animation:none !important}
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   FIX: nel Riepilogo squadre della vista Admin i conteggi coprivano il nome
+
+   Misurato in browser (finestra 1400, tema sala-giochi, asta di riparazione):
+   scheda squadra 211px, colonna "conteggi" della griglia 32px, ma la casella
+   .sq-bottom renderizzata 142px. Non e' un problema di troncamento: con
+   justify-self:end la casella si dimensiona sul CONTENUTO invece che sulla sua
+   colonna e, ancorata al bordo destro, cresce verso SINISTRA fino a stamparsi
+   sopra il nome e il pallino. overflow:hidden non la ferma, perche' la casella
+   e' davvero larga 142px: non c'e' niente da ritagliare.
+
+   Perche' proprio in Admin: li' #budget-bar e' repeat(auto-fit,minmax(190px,1fr))
+   (vedi "Vista Admin: le squadre su due colonne" piu' sopra), quindi le schede
+   sono la meta' di quelle del partecipante (minmax(336px,1fr)). Su una riga sola
+   servono 10+52+142+66+24 = 294px e ce ne sono 203: una riga NON puo' bastare.
+   La composizione a due righe esisteva gia', ma era agganciata a
+   @container sala (max-width:1200px), cioe' alla larghezza della COLONNA della
+   sala — che in Admin con Anteprima chiusa e' larghissima. La soglia guardava
+   la cosa sbagliata: la scheda e' stretta per quante colonne fa #budget-bar,
+   non per quanto e' larga la sala.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* 1) Rete di sicurezza valida in ogni vista e in ogni tema: la casella dei
+   conteggi non puo' mai essere piu' larga della sua colonna. Nel caso peggiore
+   i conteggi si accorciano con i puntini — mai sovrapposti al nome. */
+html body #budget-bar .sq-bottom{max-width:100% !important}
+
+/* 2) La correzione vera: in Admin due righe di default, la STESSA composizione
+   gia' scritta per le colonne strette del partecipante. I conteggi scendono
+   sotto il nome: non spariscono e non si sovrappongono. */
+html body.layout-admin #budget-bar .sidebar-squadra{
+  grid-template-columns:auto minmax(0,1fr) auto !important;
+  grid-template-areas:"pallino nome crediti" ". conteggi conteggi" !important;
+}
+html body.layout-admin #budget-bar .sq-bottom{justify-self:start !important}

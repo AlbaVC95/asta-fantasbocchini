@@ -39,6 +39,22 @@ Per portare online o tornare indietro: **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)**
 fermo al vecchio toggle binario chiaro/scuro e alla palette chiara precedente, va riscritto per i
 quattro temi prima del prossimo deploy importante.
 
+## Cambi recenti — Riepilogo squadre in Admin: conteggi sopra il nome (2026-08-25)
+
+Segnalato dall'utente. **Sovrapposizione vera, non un troncamento**: con `justify-self:end` la
+casella dei conteggi si dimensiona sul contenuto (142px) invece che sulla sua colonna (32px) e,
+ancorata a destra, cresce verso sinistra sopra il nome. La composizione a due righe che avrebbe
+evitato tutto esisteva gia', ma era agganciata a `@container sala (max-width:1200px)` — la
+larghezza della *colonna della sala*, che in Admin con Anteprima chiusa e' larghissima, mentre le
+schede sono strette lo stesso perche' in Admin `#budget-bar` usa `minmax(190px,1fr)`. **La soglia
+misurava la cosa sbagliata.** Risolto con due righe di default in Admin (stessa composizione gia'
+scritta per il partecipante stretto) piu' `max-width:100%` su `.sq-bottom` come rete di sicurezza
+globale. Dettagli e il tranello di `justify-self` in [DECISIONS.md](../DECISIONS.md).
+
+**Verificato** riproducendo prima il bug: 24 sovrapposizioni su 12 schede; dopo, zero nelle 8
+combinazioni vista×tema e su sei larghezze da 820 a 1400px, senza nessun testo troncato tranne la
+coda del nome (comportamento voluto). Il nome anzi guadagna spazio: da 52px fissi a 72-89px.
+
 ## Cambi recenti — pastiglia del nome in Anteprima (2026-08-25)
 
 Segnalato dall'utente sul tema "sala-giochi": il cartellino bianco dietro al nome del giocatore

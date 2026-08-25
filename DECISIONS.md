@@ -1078,3 +1078,45 @@ ricostruisce il DOM esatto di `renderAnteprimaPitch()` e riesegue la stessa logi
 misurato** e solo dopo corretto, e le misure sono state ripetute sui quattro temi a due larghezze
 (l'ampiezza mobile va forzata con un `<iframe>` stretto: le media query rispondono al viewport
 dell'iframe).
+
+## Riepilogo squadre in Admin: due righe di default, e `justify-self:end` non deve poter sbordare
+
+Segnalato dall'utente: nella vista Admin, con Anteprima chiusa, i conteggi
+(`Tot: n/25 🧤 🔓`) si stampavano SOPRA il nome della squadra.
+
+Non era un troncamento andato male: era una **sovrapposizione vera**. Misurato in browser
+(finestra 1400, tema sala-giochi, asta di riparazione): scheda squadra 211px, colonna
+`conteggi` della griglia **32px**, casella `.sq-bottom` renderizzata **142px**. Con
+`justify-self:end` un grid item si dimensiona sul CONTENUTO invece che sulla sua colonna e,
+ancorato al bordo destro dell'area, cresce verso **sinistra** fino a coprire nome e pallino.
+`overflow:hidden` non lo ferma, perche' la casella e' davvero larga 142px: non c'e' niente da
+ritagliare. È il tranello di `justify-self` diverso da `stretch` su una griglia sotto pressione,
+e vale la pena ricordarlo: **quando una griglia e' troppo stretta, `justify-self:end` trasforma
+un troncamento in una sovrapposizione.**
+
+La causa profonda pero' e' un'altra: **la soglia guardava la cosa sbagliata**. La composizione a
+due righe esisteva gia' ed era corretta, ma agganciata a `@container sala (max-width:1200px)`,
+cioe' alla larghezza della *colonna della sala*. In Admin con Anteprima chiusa quella colonna e'
+larghissima, quindi la soglia non scattava mai — mentre le schede erano strette lo stesso, perche'
+in Admin `#budget-bar` e' `repeat(auto-fit,minmax(190px,1fr))` (meta' dei `minmax(336px,1fr)` del
+partecipante). **La scheda e' stretta per quante colonne fa `#budget-bar`, non per quanto e' larga
+la sala**: due misure diverse che la regola trattava come una sola.
+
+La soluzione naturale sarebbe stata una container query sulla scheda stessa, ma **`@container`
+interroga sempre un ANTENATO**: un elemento non puo' reagire alla propria larghezza, quindi
+`.sidebar-squadra` non puo' cambiare il proprio `grid-template-areas` in base a quanto e' larga.
+Farlo avrebbe richiesto un wrapper in piu' nell'HTML generato da `app.js`. Non serve: in Admin le
+schede sono *sempre* strette, quindi bastano due righe di default, riusando la STESSA composizione
+gia' scritta per le colonne strette del partecipante (`"pallino nome crediti" / ". conteggi
+conteggi"`), senza inventare niente di nuovo.
+
+In piu' una rete di sicurezza valida ovunque: `.sq-bottom{max-width:100%}`, cosi' la casella non
+puo' mai superare la propria colonna in nessun tema e in nessuna vista. Nel caso peggiore i
+conteggi si accorciano; sovrapporsi al nome non e' piu' possibile.
+
+**Verificato**: prima riprodotto e misurato (24 sovrapposizioni su 12 schede), poi corretto —
+zero sovrapposizioni nelle 8 combinazioni vista×tema (Admin/Partecipante × serata/cuoio/lavagna/
+sala-giochi) e su sei larghezze di colonna da 820 a 1400px. **Zero testo troncato tranne il
+nome** (di 2-7px sulle schede da 196px), che e' il comportamento voluto e gia' documentato nel
+CSS: "a cedere per prima e' solo la coda del nome, con i puntini". Come effetto collaterale il
+nome guadagna spazio: prima era inchiodato al suo minimo di 52px, ora ne prende 72-89.
