@@ -3091,3 +3091,133 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-A,
 html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-Pc{
   background:#FF8079 !important;color:#141024 !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   LE ROSE — la schermata era rimasta fuori da TUTTI i temi
+
+   `.rose-*` non aveva una sola regola in questo foglio: la schermata ereditava i token
+   base e restava con carte arrotondate, ombre sfocate e badge in gradiente, cioe'
+   l'esatto contrario del resto del cabinato. Qui prende la stessa grammatica degli
+   altri pannelli arcade: angoli vivi, filo d'inchiostro da 2-3px, ombra dura non
+   sfocata, Silkscreen, e il gettone d'oro per le cifre di credito.
+
+   I colori dei ruoli NON sono inventati qui: sono gli stessi quattro gruppi gia' usati
+   da .badge-ruolo (portieri oro, difesa verde, centrocampo azzurro, attacco corallo),
+   cosi' un ruolo ha lo stesso colore in Puja, in Anteprima e nelle Rose. La schermata
+   originale ne usava cinque, con il viola per T/W: quel gruppo confluisce nell'oro dei
+   trequartisti, come gia' avviene nei badge della puja.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── la colonna di ogni squadra: una scheda del tabellone ── */
+html[data-tema="sala-giochi"] .rose-col{
+  background:#FFFFFF !important;border:3px solid #141024 !important;
+  border-radius:0 !important;box-shadow:4px 4px 0 #141024 !important;
+}
+html[data-tema="sala-giochi"] .rose-col.attiva{
+  border-color:#F5B01A !important;box-shadow:4px 4px 0 #141024, 0 0 0 3px #F5B01A !important;
+}
+html[data-tema="sala-giochi"] .rose-col-header{border-bottom:2px solid #141024 !important}
+/* Silkscreen e' molto piu' larga della font base: a parita' di corpo la colonna
+   passava da 145px a 195px, cioe' meno squadre a schermo — l'opposto di quello che
+   serve alla "Visione compatta". Misurato: 3 colonne 588px contro i 432px degli altri
+   temi. Il nome squadra resta a pixel (e' l'identita' della colonna) ma di corpo
+   minore, e i nomi dei GIOCATORI tornano alla font base: sono il contenuto denso e
+   ripetuto, ed e' li' che si pagava quasi tutta la larghezza. Cosi' si scende a
+   482px, +11% invece di +36%, e quel resto e' il filo d'inchiostro, cioe' il tema. */
+html[data-tema="sala-giochi"] .rose-col-header{gap:6px !important}
+html[data-tema="sala-giochi"] .rose-col-nome{
+  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-variation-settings:normal !important;color:#141024 !important;
+  font-size:.58rem !important;min-width:0 !important;
+}
+/* le cifre di credito: lo stesso gettone d'oro del Riepilogo squadre */
+html[data-tema="sala-giochi"] .rose-col-budget{
+  font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
+  font-variation-settings:normal !important;font-size:.46rem !important;
+  color:#141024 !important;background:#F5B01A !important;
+  border:2px solid #141024 !important;padding:3px 4px 2px !important;
+  display:inline-block !important;line-height:1 !important;
+}
+html[data-tema="sala-giochi"] .rose-col-budget.attiva{background:#EE2B22 !important;color:#FFFFFF !important}
+
+/* ── l'intestazione di ogni reparto (POR, MOV…): una barra da cabinato ── */
+html[data-tema="sala-giochi"] .rose-sec-hdr{
+  background:#2440D8 !important;border:2px solid #141024 !important;
+  border-radius:0 !important;color:#FFFFFF !important;
+  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-variation-settings:normal !important;letter-spacing:.04em !important;
+}
+html[data-tema="sala-giochi"] .rose-sec-hdr:hover{background:#1B2E9E !important;color:#FFFFFF !important;border-color:#141024 !important}
+html[data-tema="sala-giochi"] .rose-arrow{color:#F5B01A !important}
+
+/* ── la riga del giocatore ── */
+html[data-tema="sala-giochi"] .rose-player{
+  background:#F4F3EA !important;border-radius:0 !important;
+  border-left:3px solid #141024 !important;color:#141024 !important;
+}
+html[data-tema="sala-giochi"] .rose-nome{color:#141024 !important}
+/* la tinta della riga segue il reparto, con gli stessi quattro colori dei badge */
+html[data-tema="sala-giochi"] .rose-player.rose-riga-por{background:rgba(245,176,26,.20) !important;border-left-color:#F5B01A !important}
+html[data-tema="sala-giochi"] .rose-player.rose-riga-verde{background:rgba(95,211,160,.22) !important;border-left-color:#5FD3A0 !important}
+html[data-tema="sala-giochi"] .rose-player.rose-riga-azzurro{background:rgba(159,176,255,.26) !important;border-left-color:#9FB0FF !important}
+html[data-tema="sala-giochi"] .rose-player.rose-riga-viola{background:rgba(245,176,26,.20) !important;border-left-color:#F5B01A !important}
+html[data-tema="sala-giochi"] .rose-player.rose-riga-rosso{background:rgba(255,128,121,.24) !important;border-left-color:#FF8079 !important}
+
+/* ── i badge di ruolo: gettoni piatti, stessa codifica di .badge-ruolo ── */
+html[data-tema="sala-giochi"] .rose-badge{
+  border-radius:0 !important;box-shadow:inset 0 0 0 2px #141024 !important;
+  background:#FFFFFF !important;color:#141024 !important;
+  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-variation-settings:normal !important;padding:1px 2px !important;
+}
+html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-por,html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-p,
+html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-t{background:#F5B01A !important;color:#141024 !important}
+html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-d,html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-dc,
+html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-ds,html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-dd,
+html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-b,html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-e{background:#5FD3A0 !important;color:#141024 !important}
+html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-c,html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-m,
+html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-w{background:#9FB0FF !important;color:#141024 !important}
+html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-a,
+html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-pc{background:#FF8079 !important;color:#141024 !important}
+
+/* ── il prezzo: gettone d'oro in miniatura ── */
+html[data-tema="sala-giochi"] .rose-prezzo{
+  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-variation-settings:normal !important;
+  color:#141024 !important;background:#F5B01A !important;
+  border:2px solid #141024 !important;border-radius:0 !important;
+  padding:0 2px !important;line-height:1.3 !important;
+}
+html[data-tema="sala-giochi"] .rose-empty{color:#66627C !important;font-family:'Silkscreen',Archivo,sans-serif !important}
+
+/* ── l'interruttore "Visione compatta" ── */
+html[data-tema="sala-giochi"] .rose-compatta-toggle{
+  color:#141024 !important;font-family:'Silkscreen',Archivo,sans-serif !important;
+  font-variation-settings:normal !important;
+}
+html[data-tema="sala-giochi"] .rose-compatta-slider{
+  background:#FFFFFF !important;border:2px solid #141024 !important;border-radius:0 !important;
+}
+html[data-tema="sala-giochi"] .rose-compatta-slider::before{border-radius:0 !important;background:#141024 !important}
+html[data-tema="sala-giochi"] .rose-compatta-toggle input:checked + .rose-compatta-slider{background:#F5B01A !important}
+html[data-tema="sala-giochi"] .rose-compatta-toggle input:checked + .rose-compatta-slider::before{background:#141024 !important}
+
+/* ── la riga di ricerca (stesso tab) ── */
+html[data-tema="sala-giochi"] #tab-rose .rose-search-row{
+  background:#FFFFFF !important;border:3px solid #141024 !important;
+  border-radius:0 !important;box-shadow:4px 4px 0 #141024 !important;
+}
+html[data-tema="sala-giochi"] .rose-inp{background:#FFFFFF !important;color:#141024 !important;border-radius:0 !important}
+html[data-tema="sala-giochi"] .rose-cerca-btn{
+  background:#2440D8 !important;color:#FFFFFF !important;
+  border:2px solid #141024 !important;border-radius:0 !important;
+  font-family:'Silkscreen',Archivo,sans-serif !important;font-variation-settings:normal !important;
+}
+html[data-tema="sala-giochi"] .rose-cerca-btn:hover{background:#1B2E9E !important;color:#FFFFFF !important}
+html[data-tema="sala-giochi"] .rose-search-dropdown{
+  background:#FFFFFF !important;border:3px solid #141024 !important;
+  border-radius:0 !important;box-shadow:4px 4px 0 #141024 !important;
+}
+html[data-tema="sala-giochi"] .rose-search-item{color:#141024 !important;border-bottom:1px solid rgba(20,16,36,.14) !important}
+html[data-tema="sala-giochi"] .rose-search-item:hover{background:rgba(36,64,216,.10) !important}
+html[data-tema="sala-giochi"] .rose-search-item-sq{color:#66627C !important}

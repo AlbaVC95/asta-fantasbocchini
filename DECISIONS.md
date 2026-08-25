@@ -1341,3 +1341,32 @@ questa asta.
 Aggiunto anche un controllo sui **doppioni**: se lo stesso `idFantaleghe` comparisse in due rose,
 prima sarebbe finito due volte nel file corrompendo l'import in silenzio. Ora viene esportato una
 volta sola con un avviso esplicito.
+
+## Le Rose in "sala-giochi": la schermata che nessun tema aveva mai toccato
+
+Segnalato dall'utente. `.rose-*` non aveva **una sola regola** in `tema-serata.css`: la schermata
+delle rose ereditava i token base e restava con carte arrotondate, ombre sfocate e badge in
+gradiente — l'esatto contrario del cabinato. Ora segue la stessa grammatica degli altri pannelli
+arcade: angoli vivi, filo d'inchiostro, ombra dura non sfocata, gettone d'oro per le cifre.
+
+I colori dei ruoli **non sono nuovi**: sono i quattro gruppi gia' usati da `.badge-ruolo`
+(portieri oro, difesa verde, centrocampo azzurro, attacco corallo), cosi' un ruolo ha lo stesso
+colore in Puja, in Anteprima e nelle Rose. La schermata ne usava cinque, con il viola per T/W:
+quel gruppo confluisce nell'oro, come gia' avviene nei badge della puja.
+
+**Il punto che vale la pena ricordare: una font a pixel costa larghezza.** Applicando Silkscreen a
+tutta la schermata, tre colonne passavano da 432px a **588px (+36%)** — cioe' meno squadre a
+schermo, l'esatto opposto di quello che serve alla "Visione compatta", che e' proprio la modalita'
+in cui l'utente stava guardando. Misurando elemento per elemento, il collo di bottiglia era
+l'intestazione (nome squadra + gettone), piu' larga di qualunque riga giocatore.
+
+La soluzione non e' stata rimpicciolire tutto, ma **dividere per ruolo del testo**: Silkscreen
+resta sul "chrome" — intestazioni di reparto, badge, gettoni, interruttore — dove il testo e' corto
+e fa il look; i **nomi dei giocatori** tornano alla font base, perche' sono il contenuto denso e
+ripetuto ed e' li' che si pagava quasi tutta la larghezza. Il nome squadra resta a pixel ma di
+corpo minore. Risultato: **494px, +14% invece di +36%**, e quel resto e' il filo d'inchiostro,
+cioe' il tema stesso.
+
+Regola generale che ne esce: **prima di applicare una font a pixel a una schermata densa, misurare
+la larghezza risultante contro gli altri temi.** Il tema non deve costare densita' a una vista che
+esiste apposta per mostrarne tanta.

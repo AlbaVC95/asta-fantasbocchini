@@ -39,6 +39,20 @@ Per portare online o tornare indietro: **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)**
 fermo al vecchio toggle binario chiaro/scuro e alla palette chiara precedente, va riscritto per i
 quattro temi prima del prossimo deploy importante.
 
+## Cambi recenti — le Rose vestite da sala giochi (2026-08-25)
+
+Segnalato dall'utente: la schermata delle rose non seguiva il tema arcade. Motivo: `.rose-*` non
+aveva **nessuna regola** in `tema-serata.css` — quella vista non era mai stata toccata da nessuno
+dei quattro temi. Ora ha angoli vivi, filo d'inchiostro, ombra dura, intestazioni di reparto
+cobalto, badge di ruolo piatti con la stessa codifica colore della Puja, e gettoni d'oro per
+prezzi e crediti.
+
+**Attenzione alla densita'**: applicando Silkscreen a tutto, tre colonne passavano da 432px a
+588px (+36%), cioe' meno squadre a schermo proprio in "Visione compatta". Risolto tenendo la font
+a pixel sul chrome (intestazioni, badge, gettoni) e riportando i **nomi dei giocatori** alla font
+base: 494px, +14%. Vedi DECISIONS.md — la regola e' misurare sempre la larghezza contro gli altri
+temi prima di mettere una font a pixel in una vista densa.
+
 ## Cambi recenti — export Fantaleghe: la rosa completa, non solo i nuovi acquisti (2026-08-25)
 
 Bug segnalato dall'utente. Il CSV Fantaleghe si costruiva da `asta.storico`, cioe' dalle
