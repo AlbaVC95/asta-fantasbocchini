@@ -39,6 +39,21 @@ Per portare online o tornare indietro: **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)**
 fermo al vecchio toggle binario chiaro/scuro e alla palette chiara precedente, va riscritto per i
 quattro temi prima del prossimo deploy importante.
 
+## Cambi recenti — cabinato attorno al ritratto in "sala-giochi" (2026-08-25)
+
+Richiesta dell'utente: cornice a forma di macchina da sala giochi attorno alla foto del giocatore,
+senza occupare piu' spazio. Solo il ritratto della carta di puja (Admin e Partecipante), non le
+miniature. Marquise a tacche d'oro, montanti cobalto, cruscotto con leva a sinistra e tre tasti a
+destra — otto strati di `background`, perche' `::before`/`::after` di `.cc-avatar` sono gia' usati
+dal tema. Costruito **verso l'interno** (`box-sizing:border-box` + `padding`): la scatola esterna
+resta identica in tutti e quattro i temi, a rimpicciolirsi e' solo la foto.
+
+**Errore ripetuto e corretto**: le soglie erano su `@media`, ma il ritratto rimpicciolisce per
+`@container sala` — stesso sbaglio del Riepilogo squadre poche ore prima. Con le soglie giuste la
+foto resta al 61-68% dell'area a ogni misura invece di scendere al 54%. Sotto i ~70px il cabinato
+si spegne del tutto. **Attenzione**: ispezionarlo col `zoom` del browser inganna (il `zoom`
+rimpicciolisce anche il container e fa scattare le soglie strette) — vedi DECISIONS.md.
+
 ## Cambi recenti — Riepilogo squadre in Admin: conteggi sopra il nome (2026-08-25)
 
 Segnalato dall'utente. **Sovrapposizione vera, non un troncamento**: con `justify-self:end` la

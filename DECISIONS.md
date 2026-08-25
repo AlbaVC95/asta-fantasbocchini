@@ -1120,3 +1120,49 @@ sala-giochi) e su sei larghezze di colonna da 820 a 1400px. **Zero testo troncat
 nome** (di 2-7px sulle schede da 196px), che e' il comportamento voluto e gia' documentato nel
 CSS: "a cedere per prima e' solo la coda del nome, con i puntini". Come effetto collaterale il
 nome guadagna spazio: prima era inchiodato al suo minimo di 52px, ora ne prende 72-89.
+
+## Cabinato attorno al ritratto (sala-giochi): cornice costruita DENTRO, non attorno
+
+Richiesta dell'utente: attorno alla foto del giocatore, nel tema "sala-giochi", una cornice a
+forma di macchina da sala giochi — marquise, montanti, pulsantiera — **senza occupare piu'
+spazio**. Ambito concordato: solo il ritratto della carta di puja (Admin e Partecipante), non le
+miniature di rose e liste, dove sotto i ~60px il mobile coprirebbe la faccia, cioe' l'unica
+informazione utile.
+
+Tre scelte che vale la pena ricordare:
+
+1. **Il cabinato si costruisce verso l'interno.** `.cc-avatar` e' `box-sizing:border-box`, quindi
+   basta il `padding` per ricavare marquise/montanti/cruscotto dentro al riquadro esistente: la
+   scatola esterna resta identica (verificato: 178x226 partecipante e 124x158 admin, uguali in
+   tutti e quattro i temi, prima e dopo) e a rimpicciolirsi e' solo la foto (~62% dell'area).
+   Allargare il riquadro avrebbe voluto dire ritoccare anche il `padding-left` di
+   `.chiamata-card` in OGNI breakpoint — l'incavo in cui il ritratto e' incassato — e un errore
+   li' fa finire il ritratto sopra il nome, incidente gia' successo in passato.
+
+2. **Le parti del mobile sono strati di `background`, non elementi nuovi.** `::before` e `::after`
+   di `.cc-avatar` sono gia' occupati dalla gradazione di colore e dal riflesso del tema, e non
+   c'e' nessun altro gancio DOM senza toccare `app.js`. Otto strati (pomello, asta, tre tasti,
+   piano del cruscotto, marquise a tacche, traversa) le cui misure derivano tutte da tre
+   variabili: cambiarle in un breakpoint ribilancia insieme padding e gradienti. Le due patine
+   del tema vanno **ristrette allo schermo** con `inset:var(...)`: a tutto riquadro
+   ricoprirebbero marquise e cruscotto, spegnendoli.
+
+3. **La soglia deve misurare la cosa giusta — errore ripetuto e corretto.** Il primo tentativo
+   assottigliava il mobile con `@media (max-width:1200px)`. Ma il ritratto non rimpicciolisce per
+   larghezza di finestra: rimpicciolisce per `@container sala`, la colonna dell'asta. Risultato
+   misurato: scatola scesa a 112px con il mobile ancora spesso, foto schiacciata al **54%**
+   dell'area. Spostate le soglie su `@container sala` (1200/900/620), la foto resta al 61-68% a
+   ogni misura. **E' lo stesso errore del Riepilogo squadre**, commesso di nuovo a due ore di
+   distanza: in questo progetto la larghezza della finestra e quella della colonna sono due
+   grandezze diverse, e quasi sempre quella giusta e' la seconda.
+
+Sotto i ~70px di lato (telefono) il cabinato sparisce del tutto: marquise e pulsantiera sarebbero
+due macchie e la faccia diventerebbe illeggibile. A 84px restano marquise, montanti e cruscotto
+liscio: pomello e tasti si spengono azzerandone la `background-size`, cosi' la lista degli strati
+resta una sola e non va tenuta sincronizzata in due punti.
+
+**Nota di metodo**: ispezionare questa cornice col `zoom` del browser INGANNA. `zoom` riduce anche
+la dimensione del container `sala`, quindi fa scattare le soglie strette e il mobile appare
+semplificato quando in realta' non lo sarebbe. Sembrava un bug, era lo strumento di misura. Per
+guardarlo davvero: finestra larga e cattura a scala 1:1, oppure `transform:scale` (che non tocca
+il layout), mai `zoom`.
