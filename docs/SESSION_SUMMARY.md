@@ -39,6 +39,21 @@ Per portare online o tornare indietro: **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)**
 fermo al vecchio toggle binario chiaro/scuro e alla palette chiara precedente, va riscritto per i
 quattro temi prima del prossimo deploy importante.
 
+## Cambi recenti — cabinato piu' elaborato (2026-08-25)
+
+Su richiesta dell'utente il cabinato attorno al ritratto e' ora una macchina da sala giochi vera:
+lampadine sull'insegna, griglia dell'altoparlante, schermo a tubo catodico con righe di scansione
+e vignettatura, leva con piastra e riflesso, tasti bombati, gettoniera, zoccolo, montanti.
+
+**Struttura invertita rispetto al primo tentativo**: il mobile ESSENZIALE e' la regola base (Admin
+e utente), il dettaglio ricco si aggiunge solo in `@container sala (min-width:1201px)`. Motivo
+misurato: col dettaglio ovunque, la faccia scendeva al 48% dell'area sulla scatola da 112px e al
+51% su quella dell'Admin. Ora sta al **58-61% a ogni misura**. La lista degli strati ricchi vive
+in un solo punto, non duplicata fra le due viste.
+
+**Verificato** a 1:1 in browser: dettaglio completo solo sulla carta grande, essenziale altrove,
+cabinato spento sotto i 700px di finestra, i tre temi non-arcade intatti (padding 0).
+
 ## Cambi recenti — ruoli in riga, ruoli colorati, rosso a 3 secondi (2026-08-25)
 
 Tre richieste dell'utente sulla carta di puja:

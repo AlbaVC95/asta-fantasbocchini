@@ -1121,6 +1121,37 @@ nome** (di 2-7px sulle schede da 196px), che e' il comportamento voluto e gia' d
 CSS: "a cedere per prima e' solo la coda del nome, con i puntini". Come effetto collaterale il
 nome guadagna spazio: prima era inchiodato al suo minimo di 52px, ora ne prende 72-89.
 
+## Cabinato: il mobile ESSENZIALE e' la base, il dettaglio si aggiunge se c'e' spazio
+
+Su richiesta dell'utente il cabinato e' stato reso molto piu' elaborato: lampadine sull'insegna,
+griglia dell'altoparlante, schermo a tubo catodico con le righe di scansione e la vignettatura,
+leva con piastra e riflesso, tre tasti bombati, gettoniera, zoccolo, montanti ai lati.
+
+Il primo tentativo ha aggiunto tutto in un blocco solo, uguale a ogni misura. Misurato subito
+dopo: sulla scatola da 112px la faccia scendeva al **48%** dell'area contro il 61% della misura
+piena, e su quella dell'Admin (124px) al 51%. Sotto una certa taglia lampadine e griglia non sono
+dettaglio: sono sporcizia da 2px che ruba spazio al soggetto.
+
+La struttura e' stata quindi **invertita**: il mobile essenziale (insegna, traversa, cruscotto con
+leva e tasti, zoccolo) e' la regola BASE e vale per Admin e utente; il dettaglio ricco si aggiunge
+solo in `@container sala (min-width:1201px)`, cioe' sulla carta grande dove c'e' spazio per
+leggerlo. Risultato: la faccia sta al 58-61% a ogni misura, Admin compreso.
+
+Il motivo per cui vale la pena scriverlo cosi', e non con due liste duplicate: la lista degli
+strati ricchi vive in **un solo punto**. Due copie della stessa cosa, in questo progetto, finiscono
+sempre per divergere — e' successo con la regola CSS duplicata piu' vecchia che vinceva per
+specificita', ed e' successo con le due soglie del rosso a 5s e 4s.
+
+Un'altra cosa scartata per misura, non per gusto: i montanti erano due bande arcobaleno a tutta
+altezza. Leggevano come una cornice colorata attorno alla foto — non come i fianchi di un mobile —
+e rubavano l'occhio al giocatore, che e' il soggetto. Ora sono due montanti in un solo colore con
+lo spigolo in luce, limitati all'altezza dello SCHERMO.
+
+**Nota di metodo**: ispezionare questa cornice col `zoom` del browser INGANNA. `zoom` riduce anche
+la dimensione del container `sala`, quindi fa scattare le soglie strette e il mobile appare
+semplificato quando in realta' non lo sarebbe. Sembrava un bug, era lo strumento di misura. Per
+guardarlo davvero: finestra stretta + colonna forzata larga, cattura a scala 1:1.
+
 ## Cabinato attorno al ritratto (sala-giochi): cornice costruita DENTRO, non attorno
 
 Richiesta dell'utente: attorno alla foto del giocatore, nel tema "sala-giochi", una cornice a

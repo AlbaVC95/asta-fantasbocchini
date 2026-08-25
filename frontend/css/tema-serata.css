@@ -2922,126 +2922,197 @@ html body.layout-admin #budget-bar .sq-bottom{justify-self:start !important}
 /* ═══════════════════════════════════════════════════════════════════
    IL RITRATTO COME CABINATO — solo tema "sala-giochi", solo la carta di puja
 
-   Richiesta dell'utente: una cornice a forma di macchina da sala giochi attorno
-   alla foto del giocatore, SENZA occupare piu' spazio. Il cabinato percio' non
-   allarga niente: si costruisce DENTRO al riquadro che il ritratto ha gia'
-   (padding su un elemento box-sizing:border-box, quindi il riquadro esterno resta
-   identico e a rimpicciolirsi e' solo la foto — verificato: la scatola misura
-   178x226 (partecipante) e 124x158 (admin) in tutti e quattro i temi, prima e dopo).
-   Allargarlo avrebbe voluto dire ritoccare anche il `padding-left` di
-   .chiamata-card in OGNI breakpoint — l'incavo in cui il ritratto e' incassato — e
-   un errore li' fa finire il ritratto sopra il nome (incidente gia' capitato, vedi
-   il commento "il ritratto e' posizionato in assoluto" piu' sopra).
+   Una macchina da sala giochi attorno alla foto: insegna illuminata, schermo a tubo
+   catodico con le righe di scansione, cruscotto con leva e tasti, zoccolo. Sulla
+   carta grande si aggiungono le lampadine dell'insegna, la griglia dell'altoparlante,
+   la gettoniera e i montanti laterali.
 
-   Le tre parti del mobile (marquise, montanti, cruscotto) sono strati di background
-   sul contenitore, non elementi nuovi: ::before e ::after di .cc-avatar sono gia'
-   occupati dalla gradazione di colore e dal riflesso del tema, e non c'e' nessun
-   altro gancio DOM senza toccare app.js. Tutte le misure derivano da tre variabili,
-   leve comprese: cambiarle in un breakpoint ribilancia insieme padding, fasce,
-   pomello e tasti.
+   NON occupa spazio in piu': .cc-avatar e' box-sizing:border-box, quindi il padding
+   ricava il mobile DENTRO al riquadro che il ritratto ha gia' (verificato: la scatola
+   misura uguale in tutti e quattro i temi). Allargarla avrebbe voluto dire ritoccare
+   il padding-left di .chiamata-card in OGNI breakpoint, dove un errore fa finire il
+   ritratto sopra il nome — incidente gia' successo.
 
-   ATTENZIONE alle soglie: il ritratto NON rimpicciolisce per larghezza di finestra
-   ma per @container sala (la colonna dell'asta). Un primo tentativo aveva messo qui
-   una @media (max-width:1200px) e il mobile restava spesso mentre la scatola
-   scendeva a 112px, schiacciando la foto al 54% dell'area. E' lo stesso errore
-   "la soglia misura la cosa sbagliata" gia' visto nel Riepilogo squadre.
+   Tutto il mobile e' fatto di strati di background sul contenitore: ::before e
+   ::after sono gia' impegnati (vetro dello schermo e gradazione di colore del tema)
+   e non c'e' altro gancio DOM senza toccare app.js.
+
+   STRUTTURA — il mobile ESSENZIALE e' la base, il dettaglio si AGGIUNGE quando c'e'
+   spazio, non il contrario. Scritto cosi' dopo aver misurato che il cabinato completo
+   su una scatola da 112px lasciava alla faccia il 48% dell'area contro il 61% della
+   misura piena: sotto una certa taglia le lampadine e la griglia non sono dettaglio,
+   sono sporcizia da 2px che ruba spazio al soggetto. Cosi' la lista degli strati
+   ricchi sta in UN solo punto, invece di essere duplicata fra vista Admin e vista
+   utente — due copie della stessa cosa in questo progetto finiscono sempre per
+   divergere.
+
+   ATTENZIONE alle soglie: il ritratto NON rimpicciolisce per larghezza di finestra ma
+   per @container sala (la colonna dell'asta). Un primo tentativo usava @media e
+   lasciava il mobile spesso su una scatola gia' scesa a 112px. Stesso errore "la
+   soglia misura la cosa sbagliata" gia' visto nel Riepilogo squadre.
    ═══════════════════════════════════════════════════════════════════ */
 
+/* ── BASE: il mobile essenziale (vale per Admin e per l'utente) ── */
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar,
 html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .cc-avatar{
-  --cab-marquise:13px;   /* la fascia luminosa in cima */
-  --cab-montante:8px;    /* i due fianchi del mobile */
-  --cab-cruscotto:18px;  /* la pulsantiera in basso */
+  --cab-insegna:10px;    /* la marquise */
+  --cab-griglia:0px;     /* la griglia dell'altoparlante: solo sulla carta grande */
+  --cab-traversa:2px;    /* la traversa nera sopra lo schermo */
+  --cab-montante:6px;    /* i fianchi */
+  --cab-cruscotto:13px;  /* il piano di comando */
+  --cab-zoccolo:3px;     /* la base */
 
-  padding:var(--cab-marquise) var(--cab-montante) var(--cab-cruscotto) !important;
+  /* derivate: ingombro sopra lo schermo, sotto lo schermo, e altezza dello schermo */
+  --cab-alto:calc(var(--cab-insegna) + var(--cab-griglia) + var(--cab-traversa));
+  --cab-basso:calc(var(--cab-cruscotto) + var(--cab-zoccolo));
+  --cab-schermo:calc(100% - var(--cab-alto) - var(--cab-basso));
+
+  padding:var(--cab-alto) var(--cab-montante) var(--cab-basso) !important;
   border:4px solid #141024 !important;border-radius:0 !important;
   box-shadow:6px 6px 0 #141024 !important;
   background-color:#2440D8 !important;
   background-repeat:no-repeat !important;
-  /* Disposizione da cabinato vero: leva a SINISTRA, tasti a DESTRA. Il primo
-     strato della lista sta davanti, percio' il pomello copre la sua asta. */
+
+  /* Il primo strato della lista sta DAVANTI: pomello sopra l'asta, tasti sopra il piano. */
   background-image:
-    radial-gradient(circle at 50% 50%, #EE2B22 0 40%, #7A0F0A 44%, #141024 48% 50%, transparent 52%),
+    radial-gradient(circle at 36% 32%, #FF8F86 0 18%, #EE2B22 24% 42%, #141024 48% 52%, transparent 54%),
+    linear-gradient(180deg,#4A4468,#141024),
+    radial-gradient(circle at 38% 32%, #FFE9A8 0 18%, #F5B01A 24% 44%, #141024 50% 54%, transparent 56%),
+    radial-gradient(circle at 38% 32%, #FFE9A8 0 18%, #F5B01A 24% 44%, #141024 50% 54%, transparent 56%),
+    radial-gradient(circle at 38% 32%, #FFE9A8 0 18%, #F5B01A 24% 44%, #141024 50% 54%, transparent 56%),
+    linear-gradient(180deg,#1A2350,#0C1029),
+    linear-gradient(180deg,#3E4FA2 0%,#26326E 55%,#1B2350 100%),
     linear-gradient(#141024,#141024),
-    radial-gradient(circle at 50% 50%, #F5B01A 0 38%, #141024 42% 50%, transparent 52%),
-    radial-gradient(circle at 50% 50%, #F5B01A 0 38%, #141024 42% 50%, transparent 52%),
-    radial-gradient(circle at 50% 50%, #F5B01A 0 38%, #141024 42% 50%, transparent 52%),
-    linear-gradient(180deg,#2B3A80 0%,#1B2454 100%),
-    repeating-linear-gradient(90deg,#F5B01A 0 7px,#E09A0C 7px 14px),
-    linear-gradient(#141024,#141024)
+    linear-gradient(180deg,#F7BC33 0%,#E09A0C 58%,#BE8004 100%)
   !important;
-  /* pomello, asta e tasti derivano dallo spessore del cruscotto: cosi' rimpiccioliscono
-     da soli quando il mobile si assottiglia, senza una misura da aggiornare a mano */
   background-size:
+    calc(var(--cab-cruscotto) - 5px) calc(var(--cab-cruscotto) - 5px),
+    2px calc(var(--cab-cruscotto) - 8px),
     calc(var(--cab-cruscotto) - 7px) calc(var(--cab-cruscotto) - 7px),
-    3px calc(var(--cab-cruscotto) - 10px),
-    calc(var(--cab-cruscotto) - 9px) calc(var(--cab-cruscotto) - 9px),
-    calc(var(--cab-cruscotto) - 9px) calc(var(--cab-cruscotto) - 9px),
-    calc(var(--cab-cruscotto) - 9px) calc(var(--cab-cruscotto) - 9px),
+    calc(var(--cab-cruscotto) - 7px) calc(var(--cab-cruscotto) - 7px),
+    calc(var(--cab-cruscotto) - 7px) calc(var(--cab-cruscotto) - 7px),
+    100% var(--cab-zoccolo),
     100% var(--cab-cruscotto),
-    100% calc(var(--cab-marquise) - 3px),
-    100% 3px
+    100% var(--cab-traversa),
+    100% var(--cab-insegna)
   !important;
   background-position:
-    left var(--cab-montante) bottom 5px,
-    left calc(var(--cab-montante) + 4px) bottom 2px,
-    right calc(var(--cab-montante) + (var(--cab-cruscotto) - 6px) * 2) bottom 5px,
-    right calc(var(--cab-montante) + (var(--cab-cruscotto) - 6px)) bottom 5px,
-    right var(--cab-montante) bottom 5px,
+    left var(--cab-montante) bottom calc(var(--cab-zoccolo) + 3px),
+    left calc(var(--cab-montante) + 2px) bottom calc(var(--cab-zoccolo) + 1px),
+    right calc(var(--cab-montante) + 14px) bottom calc(var(--cab-zoccolo) + 3px),
+    right calc(var(--cab-montante) + 7px) bottom calc(var(--cab-zoccolo) + 4px),
+    right var(--cab-montante) bottom calc(var(--cab-zoccolo) + 3px),
     left 0 bottom 0,
-    left 0 top 0,
-    left 0 top calc(var(--cab-marquise) - 3px)
+    left 0 bottom var(--cab-zoccolo),
+    left 0 top var(--cab-insegna),
+    left 0 top 0
   !important;
 }
 
-/* Lo schermo: la foto sta nell'incavo, con la cornice nera del monitor attorno.
-   Le due patine del tema (gradazione di colore e riflesso) vanno ristrette allo
-   SCHERMO: a tutto riquadro ricoprirebbero anche marquise e cruscotto, spegnendoli. */
+/* ── DETTAGLIO: solo quando la colonna e' larga, cioe' sulla carta grande da 178px.
+   Qui il mobile guadagna lampadine sull'insegna, griglia dell'altoparlante,
+   gettoniera, piastra sotto la leva e i due montanti ai lati dello schermo. ── */
+@container sala (min-width:1201px){
+  html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar{
+    --cab-insegna:13px;--cab-griglia:4px;--cab-montante:8px;
+    --cab-cruscotto:17px;--cab-zoccolo:5px;
+    background-image:
+      radial-gradient(circle at 36% 32%, #FF8F86 0 16%, #EE2B22 22% 40%, #8E1912 45%, #141024 50% 53%, transparent 55%),
+      linear-gradient(180deg,#4A4468,#141024),
+      radial-gradient(ellipse at 50% 50%, #141024 0 58%, transparent 62%),
+      radial-gradient(circle at 38% 32%, #FFE9A8 0 16%, #F5B01A 22% 42%, #9C6A05 47%, #141024 52% 55%, transparent 57%),
+      radial-gradient(circle at 38% 32%, #FFE9A8 0 16%, #F5B01A 22% 42%, #9C6A05 47%, #141024 52% 55%, transparent 57%),
+      radial-gradient(circle at 38% 32%, #FFE9A8 0 16%, #F5B01A 22% 42%, #9C6A05 47%, #141024 52% 55%, transparent 57%),
+      linear-gradient(#07060F,#07060F),
+      linear-gradient(#07060F,#07060F),
+      linear-gradient(180deg,#1A2350,#0C1029),
+      linear-gradient(#93A4FF,#93A4FF),
+      linear-gradient(180deg,#3E4FA2 0%,#26326E 55%,#1B2350 100%),
+      repeating-linear-gradient(90deg,#141024 0 2px,transparent 2px 5px),
+      linear-gradient(#141024,#141024),
+      radial-gradient(circle at 50% 50%, #FFF6D5 0 34%, #D99B00 40%, transparent 46%),
+      linear-gradient(180deg,#F7BC33 0%,#E09A0C 58%,#BE8004 100%),
+      linear-gradient(90deg,#1B2E9E 0 40%,#4A63E8 100%),
+      linear-gradient(90deg,#4A63E8 0 60%,#1B2E9E 100%)
+    !important;
+    background-size:
+      12px 12px, 3px 8px, 15px 5px,
+      10px 10px, 10px 10px, 10px 10px,
+      4px 4px, 11px 2px,
+      100% var(--cab-zoccolo),
+      100% 1px,
+      100% var(--cab-cruscotto),
+      100% var(--cab-griglia),
+      100% var(--cab-traversa),
+      8px 5px,
+      100% var(--cab-insegna),
+      var(--cab-montante) var(--cab-schermo), var(--cab-montante) var(--cab-schermo)
+    !important;
+    background-position:
+      left calc(var(--cab-montante) + 2px) bottom calc(var(--cab-zoccolo) + 6px),
+      left calc(var(--cab-montante) + 6px) bottom calc(var(--cab-zoccolo) + 3px),
+      left var(--cab-montante) bottom calc(var(--cab-zoccolo) + 2px),
+      right calc(var(--cab-montante) + 26px) bottom calc(var(--cab-zoccolo) + 5px),
+      right calc(var(--cab-montante) + 13px) bottom calc(var(--cab-zoccolo) + 7px),
+      right var(--cab-montante) bottom calc(var(--cab-zoccolo) + 5px),
+      left 50% bottom 1px,
+      left calc(50% + 8px) bottom 1px,
+      left 0 bottom 0,
+      left 0 bottom calc(var(--cab-zoccolo) + var(--cab-cruscotto) - 1px),
+      left 0 bottom var(--cab-zoccolo),
+      left 0 top var(--cab-insegna),
+      left 0 top calc(var(--cab-insegna) + var(--cab-griglia)),
+      left 4px top 2px,
+      left 0 top 0,
+      left 0 top var(--cab-alto), right 0 top var(--cab-alto)
+    !important;
+    /* solo le lampadine si ripetono in orizzontale */
+    background-repeat:
+      no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,
+      no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,repeat-x,no-repeat,
+      no-repeat,no-repeat
+    !important;
+  }
+}
+
+/* Colonne piu' strette: stesse parti del mobile essenziale, spessori minori. */
+@container sala (max-width:900px){
+  html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar{
+    --cab-insegna:8px;--cab-montante:4px;--cab-cruscotto:10px;--cab-zoccolo:3px;
+  }
+}
+/* 84px: via anche leva e tasti (sarebbero punti da 2px). Il mobile si legge per
+   silhouette: insegna, traversa, cruscotto, zoccolo. */
+@container sala (max-width:620px){
+  html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar{
+    --cab-insegna:7px;--cab-montante:3px;--cab-cruscotto:8px;--cab-zoccolo:2px;
+    background-size:0 0,0 0,0 0,0 0,0 0,
+      100% var(--cab-zoccolo),100% var(--cab-cruscotto),
+      100% var(--cab-traversa),100% var(--cab-insegna) !important;
+  }
+}
+
+/* Lo SCHERMO a tubo catodico. Le due patine del tema vanno ristrette allo schermo:
+   a tutto riquadro coprirebbero insegna e cruscotto, spegnendoli. */
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar::before,
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar::after,
 html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .cc-avatar::before,
 html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .cc-avatar::after{
-  inset:var(--cab-marquise) var(--cab-montante) var(--cab-cruscotto) !important;
+  inset:var(--cab-alto) var(--cab-montante) var(--cab-basso) !important;
 }
+/* il vetro: righe di scansione, riflesso in alto, vignettatura e cornice del monitor */
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar::before,
 html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .cc-avatar::before{
-  box-shadow:inset 0 0 0 2px #141024 !important;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(8,6,20,.26) 0 1px, transparent 1px 3px),
+    radial-gradient(130% 90% at 46% -6%, rgba(255,255,255,.30) 0%, transparent 46%),
+    radial-gradient(120% 120% at 50% 50%, transparent 55%, rgba(12,9,28,.45) 100%)
+  !important;
+  box-shadow:inset 0 0 0 2px #141024, inset 0 0 12px rgba(10,8,24,.5) !important;
 }
 
-/* La vista Admin ha un ritratto piu' piccolo di quello del partecipante (124px
-   contro 178px) ma non passa dalle soglie di @container: la sua misura arriva da
-   style.css. Gli si da' direttamente lo spessore intermedio, altrimenti il mobile
-   pesa troppo (misurato: foto al 56% dell'area invece che al ~62% delle altre). */
-html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .cc-avatar{
-  --cab-marquise:10px;--cab-montante:6px;--cab-cruscotto:14px;
-}
-
-/* Colonna piu' stretta = ritratto piu' piccolo (112px, poi 100px): il mobile
-   si assottiglia con lui. Stesse soglie dove il ritratto cambia misura. */
-@container sala (max-width:1200px){
-  html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar{
-    --cab-marquise:10px;--cab-montante:6px;--cab-cruscotto:13px;
-  }
-}
-@container sala (max-width:900px){
-  html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar{
-    --cab-marquise:9px;--cab-montante:5px;--cab-cruscotto:12px;
-  }
-}
-/* 84px: restano marquise, montanti e cruscotto liscio. Pomello e tasti sarebbero
-   granelli di 2-3px, quindi si spengono azzerandone la background-size (la lista
-   degli strati resta la stessa, cosi' non va tenuta sincronizzata in due punti). */
-@container sala (max-width:620px){
-  html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar{
-    --cab-marquise:7px;--cab-montante:4px;--cab-cruscotto:9px;
-    background-size:0 0,0 0,0 0,0 0,0 0,
-      100% var(--cab-cruscotto),100% calc(var(--cab-marquise) - 2px),100% 2px !important;
-  }
-}
-
-/* Telefono: sotto i ~70px di lato il ritratto e' un francobollo (62px, poi 46px).
-   Li' il cabinato sparisce del tutto: marquise e pulsantiera sarebbero due macchie
-   e la faccia del giocatore — l'unica informazione utile — diventerebbe illeggibile. */
+/* Telefono: sotto i ~70px di lato il ritratto e' un francobollo (62px, poi 46px) e il
+   cabinato sparisce del tutto — la faccia del giocatore e' l'unica cosa che conta. */
 @media (max-width:700px){
   html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar,
   html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .cc-avatar{
@@ -3056,7 +3127,7 @@ html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .cc-avatar{
   }
   html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar::before,
   html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .cc-avatar::before{
-    box-shadow:none !important;
+    background-image:none !important;box-shadow:none !important;
   }
 }
 
