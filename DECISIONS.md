@@ -929,3 +929,152 @@ due correzioni (oro-testo e rosso del tasto). Reso in browser reale (Chromium he
 sintetico iniettato in un banco di prova temporaneo, a 1440x900 e 390x844, stato normale e
 `puja-urgente`, confrontato con `serata` e `cuoio` alla stessa larghezza. **Non verificato**: asta
 vera, vista Admin, modali, Griglia P/A, Anteprima, Strategie — lo stesso limite di sempre.
+
+## Rate limiting a tre livelli (IP → utente/giorno → evento socket), niente prima
+
+Non esisteva **nessun** limite: 26 rotte REST e 22 eventi socket erano tutti liberi, con
+`express.json({ limit: '10mb' })` a fare da unico tetto. I due vettori concreti erano mandare
+corpi da 10MB in ciclo contro rotte che scrivono su Supabase (stesso conto banda dell'incidente
+di agosto 2026) e inondare l'asta di `rilancio`, che **resetta il timer a ogni offerta**: un
+client scriptato poteva tenere una chiamata aperta all'infinito e rendere impossibile chiudere
+l'assegnazione.
+
+Tre livelli, dal piu' largo al piu' stretto: 300 richieste/15min per chiave, 1000/giorno per
+chiave, e quote giornaliere strette sulle operazioni costose (20 aste create, 10 caricamenti di
+listino, 30 ripristini). Sul socket, finestra scorrevole di 1 secondo: 5 `rilancio`, 15 per gli
+altri eventi.
+
+Tre scelte non ovvie dentro questa:
+
+1. **La chiave e' il `sub` del JWT Supabase letto SENZA verifica crittografica**, con fallback
+   all'IP. Verificarlo davvero significherebbe una chiamata di rete a Supabase per *ogni*
+   richiesta, solo per decidere in quale contatore metterla. Non e' un controllo di accesso —
+   l'autenticazione vera resta `getRuoloUtente()`/`getUtenteDaToken()` dentro agli handler — e
+   chi falsificasse il `sub` per sfuggire alla propria quota resterebbe comunque sotto il limite
+   per IP. L'IP passa per `ipKeyGenerator` (normalizza gli IPv6 sulla /64): senza, un utente IPv6
+   avrebbe miliardi di indirizzi e quindi nessun limite effettivo.
+2. **`app.set('trust proxy', 1)` e' obbligatorio**, non un dettaglio: Hostinger serve l'app dietro
+   a un reverse proxy, quindi senza questa riga `req.ip` sarebbe sempre l'IP del proxy, tutti gli
+   utenti finirebbero nello stesso contatore e **il primo che supera la soglia bloccherebbe l'app
+   a tutta la lega**.
+3. **`express.json()` viene applicato DOPO i limitatori.** Nell'ordine inverso (quello scritto di
+   getto la prima volta) un client gia' bloccato costringerebbe comunque il server a leggere e
+   parsare fino a 10MB di corpo per ogni richiesta, prima di riceversi il 429.
+
+Sul socket il pacchetto oltre soglia viene **scartato**, non passato a `next(err)`: `next(err)` fa
+emettere un evento `error` che il client non gestisce e che puo' chiudere la connessione, cioe'
+butterebbe fuori dall'asta chi ha soltanto cliccato troppo in fretta. Si manda invece un solo
+`errore` "stai andando troppo veloce" per finestra. I contatori vivono sull'oggetto `socket`, non
+in una Map globale: spariscono da soli alla disconnessione, senza la fuga di memoria gia' vista
+con `_ultimoBackupHash`.
+
+Le finestre "giornaliere" sono 24h a scorrimento dalla prima richiesta della persona, non il
+giorno di calendario, e i contatori stanno **in memoria**: si azzerano a ogni riavvio/deploy.
+Coerente con il resto dell'architettura (lo stato di gioco stesso vive in memoria) e accettabile
+perche' le quote servono contro l'abuso, non a fatturare.
+
+## CORS del socket: same-origin sempre ammesso, non un'allowlist da configurare
+
+C'era `{ origin: '*' }`, che non serviva a nessun client reale — il frontend e' servito dallo
+stesso processo che espone il socket e in `app.js` la connessione si apre con `io()` senza URL,
+cioe' same-origin — ma permetteva a qualunque pagina web di aprire socket verso questo server
+usando il browser di un utente.
+
+La tentazione era sostituirlo con una allowlist da variabile d'ambiente. **Sarebbe stato un
+trabocchetto di deploy**: se `ORIGINI_CONSENTITE` non fosse impostata su Hostinger, l'origine di
+produzione verrebbe rifiutata e l'app si romperebbe interamente al primo push. La regola scritta
+e' invece: same-origin **sempre** ammesso (si confronta l'host dell'`Origin` con l'header `Host`
+della richiesta), piu' l'eventuale allowlist esplicita, piu' i localhost per lo sviluppo. Cosi'
+il deploy funziona su qualunque dominio senza configurare niente.
+
+`Origin` assente = richiesta non-browser (curl, health check del provider, app native): non e' un
+caso CORS e viene ammessa — non c'e' nessun utente da proteggere. Gli header CORS vengono emessi
+**solo** se e' stata configurata un'allowlist esplicita: senza, socket.io non ne emette nessuno e
+il browser blocca da solo il cross-origin, che e' esattamente il comportamento voluto.
+
+## Editor visuale di stile: eliminato, non protetto meglio
+
+`THEME_EDITOR_SECRET` era una stringa scritta in chiaro nel backend, quindi
+pubblica su GitHub, ed era l'**unica** protezione di `POST /api/theme`, che riscrive il CSS
+globale iniettato a tutti gli utenti dell'app: e' esattamente il meccanismo dell'incidente dei
+bottoni viola del 2026-08-05.
+
+Si poteva spostare la chiave in una variabile d'ambiente o passare l'endpoint al ruolo `admin`
+(che gia' esiste). Si e' scelto invece di **eliminare l'editor**: non era piu' usato, e un
+endpoint che riscrive il CSS per tutti e' una superficie che non conviene tenere in piedi per una
+funzione che nessuno apre. Sono spariti l'IIFE di ~530 righe in fondo ad `app.js`, le due rotte, i
+keyframes `editor-anim-*` (che nessun altro CSS usava) e la `fetch('/api/theme')` che **ogni
+visitatore** faceva al caricamento della pagina.
+
+La tabella `theme_overrides` **non** e' stata toccata: ospita anche la riga
+`gk_planner_calendario`, cioe' il calendario reale del GK Planner (~21KB). La riga `default`
+resta li' dentro, vuota (`{}`), ormai senza nessun lettore. Resta valido il promemoria storico
+"se un colore non torna, controlla `theme_overrides`" solo per capire un incidente passato: da
+ora quella riga non puo' piu' influenzare niente.
+
+## RLS: era gia' a posto, la verifica e' il contributo
+
+Controllate tutte e 11 le tabelle `public` del progetto Supabase: RLS attiva ovunque. Le tabelle
+dei dati personali (`strategie`, `strategia_giocatori`, `strategia_tipi_asta`, `fasce`,
+`gk_planner_config`, `profiles`) hanno policy per proprietario via `auth.uid()`;
+`listino_giocatori` e' in sola lettura per gli autenticati; e le quattro che solo il backend deve
+toccare (`app_settings`, `asta_backups`, `asta_exports`, `theme_overrides`) hanno RLS attiva e
+**zero policy**, che in Postgres significa negare tutto a chiunque non usi la service role key.
+Il linter di sicurezza di Supabase non segnala nessun ERROR/WARN sulle policy.
+
+Le policy `FOR ALL` hanno `with_check` nullo: non e' un buco, Postgres in quel caso riusa
+l'espressione `USING` anche come check su INSERT/UPDATE.
+
+Resta un solo punto aperto, ed e' un interruttore del pannello Supabase, non codice: **protezione
+password compromesse (HaveIBeenPwned) disattivata**.
+
+## `/api/exports`: erano tre rotte completamente aperte
+
+Fuori dai quattro punti dell'audit ma piu' sfruttabile di due di essi: `GET /api/exports`,
+`GET /api/exports/:id` e soprattutto **`DELETE /api/exports/:id`** non avevano alcuna
+autenticazione. Chiunque poteva elencare, scaricare e **cancellare per sempre** lo storico delle
+aste concluse di tutta la lega con un `curl`, senza nemmeno essere loggato.
+
+Ora la lettura richiede il login (`getUtenteDaToken`) e la cancellazione il ruolo `admin`
+(`getRuoloUtente`), stesso schema delle altre rotte amministrative. Non e' una restrizione reale
+per gli utenti: lo storico si apre solo dal menu principale, cioe' a utente gia' loggato.
+
+## Pastiglia del nome in Anteprima: `width:max-content`, non la larghezza dello slot
+
+Segnalato dall'utente sul tema "sala-giochi": il cartellino bianco dietro al nome del giocatore
+non copriva tutto il nome, che usciva dai due lati.
+
+La causa non era nel tema. `.ant-slot3d-label` era rimasta a `left:0; width:100%` (regola "Cada
+etiqueta pertenece físicamente a su slot"), cioè larga esattamente quanto la carta e **sempre
+identica**, qualunque fosse il nome; il testo però vive in uno `<span>` a `width:auto` con
+l'etichetta a `overflow:visible` (impostato dal "blocco finale" che ha ripristinato la riga
+singola). Risultato: pastiglia di larghezza fissa, testo di larghezza variabile, e i nomi lunghi
+che sbordavano. Misurato in browser a 560px: **pastiglia sempre 42.3px**, contro CARNISECCHI
+62.5px (+20.2), THORSTVEDT 57.6 (+15.3), RASPADORI 53.3 (+11.0); e all'opposto DODÒ (27px) si
+prendeva una pastiglia larga quasi il doppio del suo testo.
+
+**Il difetto c'era in tutti e quattro i temi**, non solo in "sala-giochi": lì la pastiglia è un
+cartellino bianco su prato chiaro e il bordo nero rende lo sbordo evidente, negli altri è una
+pastiglia scura su fondo scuro e si notava molto meno. Utile ricordarlo: un difetto segnalato su
+un tema non è automaticamente un difetto *del* tema — qui il tema ha solo reso visibile una
+regola di layout sbagliata per tutti.
+
+La correzione è una regola sola nel "blocco finale" di `style.css`: `width:max-content` +
+`left:50%` + `translateX(-50%)` al posto di `left:0` + `width:100%`. L'etichetta si stringe
+esattamente sul testo e resta centrata sullo slot. **Non serve nessun limite di larghezza qui** —
+è `_antFitTestoLabel()` a ridurre il font finché il nome entra nello spazio misurato fra le carte
+vicine, quindi anche a contenuto libero l'etichetta non può invadere quella del vicino (misurato:
+zero sovrapposizioni fra etichette adiacenti sulla stessa riga, in tutti i temi, a 371px e 980px).
+
+La regola è ristretta con `:has(.ant-slot3d-name-txt)` alle sole etichette che contengono un
+**nome**. Le etichette degli slot vuoti contengono badge di ruolo e hanno già una loro regola
+(`:has(.badge-ruolo)`, `display:flex` + `flex-wrap`): con `max-content` un ruolo multiplo tipo
+"T/A/Pc" smetterebbe di andare a capo e si allargherebbe oltre lo slot. Restano come sono.
+
+**Nota sul metodo, ripetibile**: l'Anteprima non è raggiungibile senza login Supabase, quindi la
+verifica è stata fatta con un banco di prova temporaneo in `frontend/` (poi cancellato) che
+ricostruisce il DOM esatto di `renderAnteprimaPitch()` e riesegue la stessa logica di
+`_antFitEtichetteCampo()`, caricando i due CSS veri. Il bug è stato prima **riprodotto e
+misurato** e solo dopo corretto, e le misure sono state ripetute sui quattro temi a due larghezze
+(l'ampiezza mobile va forzata con un `<iframe>` stretto: le media query rispondono al viewport
+dell'iframe).

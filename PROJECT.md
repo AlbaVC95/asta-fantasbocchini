@@ -15,7 +15,8 @@ scade e il giocatore viene assegnato al miglior offerente.
 - Backend: Node.js + Express + Socket.io
 - Frontend: HTML/CSS/JS vanilla — nessun framework, nessun bundler
 - Persistenza/autenticazione/storage: Supabase
-- Dipendenze principali (`package.json`): `express`, `socket.io`, `uuid`, `@supabase/supabase-js`
+- Dipendenze principali (`package.json`): `express`, `socket.io`, `uuid`, `@supabase/supabase-js`,
+  `express-rate-limit` (limiti di richieste per IP e per utente — vedi DECISIONS.md)
 
 Non ci sono script di test, lint o build.
 
@@ -63,9 +64,26 @@ Non esiste `.env.example`. Variabili richieste in produzione:
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY` (backend, service role — mai esporre al client)
 - `PORT` (opzionale)
+- `ORIGINI_CONSENTITE` (opzionale): allowlist di origini per il socket, separate da virgola.
+  **Non serve impostarla per il deploy normale** — il same-origin e' sempre ammesso, quindi
+  l'app funziona su qualunque dominio senza configurare niente. Va usata solo se un giorno un
+  client servito da un ALTRO dominio dovra' connettersi al socket.
 
 Senza di esse il server parte comunque ma tutte le funzionalità legate a Supabase sono disattivate
 (`supabaseAdmin === null`, ogni funzione che lo usa fa un check e no-op/errore gestito).
+
+## Sicurezza: cosa e' pubblico di proposito
+
+- **`SUPABASE_ANON_KEY` in `app.js` e' pubblica per definizione** e non va "nascosta": la chiave
+  anon viaggia in ogni client web, il suo JWT dice `"role":"anon"`, e cio' che protegge i dati e'
+  RLS su Supabase, non la segretezza della chiave. Spostarla in una variabile d'ambiente non
+  cambierebbe nulla (finirebbe comunque nel file servito al browser). L'unica chiave davvero
+  segreta e' `SUPABASE_SERVICE_ROLE_KEY`, che sta solo nel backend.
+- **Nessun altro segreto va scritto in chiaro nel codice.** C'era una `THEME_EDITOR_SECRET`
+  hardcoded, quindi pubblica su GitHub: rimossa insieme all'editor che proteggeva.
+- Le tabelle Supabase hanno tutte RLS attiva, con policy per proprietario; quelle che il solo
+  backend deve toccare (`app_settings`, `asta_backups`, `asta_exports`, `theme_overrides`)
+  hanno RLS attiva e **zero policy**, cioe' negano tutto a chi non usa la service role key.
 
 ## Convenzioni del codice
 
@@ -78,8 +96,8 @@ Senza di esse il server parte comunque ma tutte le funzionalità legate a Supaba
 - Nel frontend (`app.js`), le sezioni principali del file sono individuabili dai commenti `══` che le
   separano.
 - **Fine riga miste — mai l'Edit tool su `frontend/js/app.js`, `frontend/index.html`,
-  `frontend/css/style.css`**: hanno righe LF-only preesistenti (rispettivamente 240, 19 e 210 —
-  contate il 2026-08-25, il numero di app.js cresce man mano che si aggiungono righe LF) e
+  `frontend/css/style.css`**: hanno righe LF-only preesistenti (rispettivamente 240, 19 e 234 —
+  ricontate il 2026-08-25; il numero cresce man mano che si aggiungono righe nelle zone LF) e
   l'Edit tool converte tutto il file a LF, producendo un diff enorme. Usare uno script Node/Python
   che legge il file grezzo e sostituisce stringhe esatte, e ricontare le righe LF-only prima e dopo.
   **Lo stile non e' uniforme in tutto il file**: alcune zone (es. le funzioni 3D dello stadio in

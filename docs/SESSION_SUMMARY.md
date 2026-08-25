@@ -6,111 +6,122 @@ non accumulato. La cronologia sta in `git log`, il *perché* delle scelte in
 
 ## Stato attuale
 
-Branch `main`, allineato con `origin/main`. Deploy automatico su Hostinger al push su `main`.
+Branch `main`. Deploy automatico su Hostinger al push su `main`. **Le modifiche di sicurezza
+descritte qui sotto sono nel working tree e non sono ancora state committate né deployate.**
 
-**Quattro temi attivi**, tutti con lo stesso pattern (ruoli `--sc-*` in `tema-serata.css` + token
-base in `style.css`, entrambi con un blocco `[data-tema="<id>"]`, + una sezione "materie" in fondo a
-`tema-serata.css`; una riga in `TEMI` in `app.js` e, se la clessidra resta visibile, una voce in
-`MATERIALI` di `clessidra.js`):
-
-- **`serata`** (scuro, default) — lampada ambra su sala scura.
-- **`cuoio`** (chiaro, caldo) — banco di cuoio e pergamena, foto reali; verde bosco SOLO per le
-  cifre di credito.
-- **`lavagna`** (scuro) — lavagna nera e gesso (foto vera), cornice in ottone, ciano = struttura,
-  magenta = brand + denaro.
-- **`sala-giochi`** (chiaro, freddo) — cabinato anni '90: carta bianca a retino, inchiostro spesso,
-  ombre dure (`6px 6px 0`, mai sfocate), font a pixel. Cobalto = accento strutturale, oro gettone =
-  solo denaro, ciliegia = allarme **e** tasto RILANCIA (unica deroga alla regola "rosso = solo
-  stato", vedi DECISIONS.md). Nessuna immagine nuova: tutto in gradienti CSS.
-
-L'attributo e' `data-tema="<id>"` su `<html>`, il selettore e' il menu 🎨 (`.tema-picker*`, regole
-scritte solo su token base, quindi valgono anche per i temi futuri). I token globali di `style.css`
-cascano da soli su Home, Lobby, Strategie, Editor Fasce, Anteprima e Griglia P/A per tutti e quattro
-i temi, senza regole per schermata. L'Anteprima (campo 3D) e' coperta in tutti e quattro i temi.
+**Quattro temi attivi** (`serata` default, `cuoio`, `lavagna`, `sala-giochi`), tutti con lo stesso
+pattern (ruoli `--sc-*` in `tema-serata.css` + token base in `style.css`, entrambi con un blocco
+`[data-tema="<id>"]`, + una sezione "materie" in fondo a `tema-serata.css`; una riga in `TEMI` in
+`app.js` e, se la clessidra resta visibile, una voce in `MATERIALI` di `clessidra.js`).
+L'attributo è `data-tema="<id>"` su `<html>`, il selettore è il menu 🎨. Home, Lobby, Strategie,
+Editor Fasce, Anteprima e Griglia P/A ereditano i token globali senza regole per schermata.
 
 **Promemoria operativi che non scadono:**
 
-1. **Se un colore "non torna" in NESSUN tema, controllare prima la tabella Supabase
-   `theme_overrides`** (riga `id='default'`), non la cache ne' il tema: un "Editor Visuale di Stile"
-   nascosto (`?editor=CHIAVE`, `backend/server.js` ~1837-1866) salva override CSS globali per tutti
-   gli utenti, iniettati dopo entrambi i fogli. Gia' successo una volta (bottoni viola, 2026-08-05),
-   svuotata con `update theme_overrides set styles='{}' where id='default'`.
-2. **Per usare una foto vera** (non un'imitazione CSS) serve che sia l'utente a salvarla su disco e
-   dire il nome del file: nessun tool di Claude Code puo' esportare un'immagine incollata in chat.
-   Poi si copia in `frontend/img/backgrounds/` e si referenzia con `url(...)` + `?v=N` manuale
-   (Hostinger serve gli statici con cache `immutable` di 30gg — senza bump del `?v=` un cambio
-   foto resta invisibile a chi l'ha gia' visitata, vedi PROJECT.md).
-3. **Font-size nella zona puja (`#puja-panel-slot`/`.asta-row-puja`) deve sempre usare `cqw`, mai
+1. **Font-size nella zona puja (`#puja-panel-slot`/`.asta-row-puja`) deve sempre usare `cqw`, mai
    `vw`**: il container "sala" (`#asta-main-col`) si dimezza quando si apre Anteprima senza che la
-   finestra cambi — una regola in `vw` resta tarata sulla finestra e puo' arrivare a rompere il
-   layout (nome del giocatore a capo lettera per lettera, bug reale gia' capitato).
-4. **I 3 file con righe LF-only** (`frontend/js/app.js`, `frontend/index.html`,
+   finestra cambi — una regola in `vw` resta tarata sulla finestra e può arrivare a rompere il
+   layout (nome del giocatore a capo lettera per lettera, bug reale già capitato).
+2. **I 3 file con righe LF-only** (`frontend/js/app.js`, `frontend/index.html`,
    `frontend/css/style.css`) non vanno mai editati con l'Edit tool standard — vedi PROJECT.md per
-   il procedimento (script Python, verificare lo stile di fine riga ESATTO del punto d'inserimento,
-   non assumerlo uniforme).
+   il procedimento (script Python, verificare lo stile di fine riga ESATTO del punto
+   d'inserimento, non assumerlo uniforme, e ricontare le righe LF-only prima e dopo).
+3. **Per usare una foto vera** (non un'imitazione CSS) serve che sia l'utente a salvarla su disco
+   e dire il nome del file: nessun tool di Claude Code può esportare un'immagine incollata in
+   chat. Poi si copia in `frontend/img/backgrounds/` e si referenzia con `url(...)` + `?v=N`
+   manuale (Hostinger serve gli statici con cache `immutable` di 30gg).
+4. **Non vale più il vecchio promemoria "se un colore non torna, controlla `theme_overrides`"**:
+   l'Editor Visuale di Stile che scriveva quella riga è stato eliminato (vedi sotto). La riga
+   `default` resta nel database, vuota, ma nessuno la legge più.
 
-Per portare online o tornare indietro: **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)** — attenzione, e'
+Per portare online o tornare indietro: **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)** — attenzione, è
 fermo al vecchio toggle binario chiaro/scuro e alla palette chiara precedente, va riscritto per i
 quattro temi prima del prossimo deploy importante.
 
-## Cambi recenti
+## Cambi recenti — pastiglia del nome in Anteprima (2026-08-25)
 
-- **Quarto tema "Sala Giochi"** (chiaro, da cabinato arcade) implementato in una sessione
-  parallela e unito a `main` via rebase (due giri: prima il tema base, poi copertura di
-  `.admin-conferma-box`, `#mio-panel` in vista Admin, e il campo 3D di Anteprima — gli unici tre
-  punti che nessun tema toccava). Dettagli tecnici e decisioni non ovvie in
-  [DECISIONS.md](../DECISIONS.md). **Non verificato da questa sessione**: asta vera, modali,
-  Griglia P/A, Strategie con questo tema; drag&drop/Autorellenar/accordion sotto sono stati
-  verificati su `serata`/`cuoio`/`lavagna` e a campione su `sala-giochi` (nessuna regressione
-  trovata, ma non un giro di verifica completo).
-- **Accordion Riepilogo squadre/Mio team**: default sempre-espanso sia in Admin che Utente
-  (l'utente vuole vederli subito, li stringe lui se vuole — classe `acc-open` col significato
-  invertito tra i due ruoli, commentato nel CSS). **Bug reale trovato e corretto**: su mobile
-  l'Utente non riusciva MAI a richiudere questi due pannelli — due regole incondizionate in
-  `tema-serata.css` (`display:grid !important` per il layout a griglia desktop) avevano piu'
-  specificita' delle regole mobile in `style.css` e vincevano sempre. Risolto alzando la
-  specificita' delle regole mobile, senza toccare il layout desktop.
-- **Anteprima — drag & drop + "Autorellenar"** (richiesta esplicita dell'utente, specifica
-  dettagliata su piu' turni): trascina un giocatore dalla Panchina al campo, dal campo alla
-  Panchina, o tra due slot (sposta/scambia con validazione del ruolo in entrambe le direzioni) —
-  alternativa al click esistente su `_antOpenPicker`, mai toccato. Bottone Autorellenar riempie
-  solo gli slot vuoti processando le linee del campo dalla piu' difensiva alla piu' offensiva
-  (`P → DS/DC/B/DD → M → C/E → W/T → A/PC`), assegnando ogni volta il candidato compatibile di
-  valore piu' alto — un giocatore multi-ruolo (es. `DD/E`) viene cosi' considerato prima per la
-  sua linea piu' difensiva. **Bug corretto dopo il primo rilascio**: il valore di riferimento
-  usava solo `fm` (spesso assente a seconda di come e' stato importato il listino), scegliendo
-  di fatto quasi a caso — sostituito con una catena `quotazione → valore → fm → mv` (mai il
-  prezzo pagato, scartato esplicitamente: dipende da troppi fattori estranei alla qualita' del
-  giocatore). Aggiunta anche la colonna QUOT. mancante nel secondo importatore Excel (roster di
-  lega esistente, riparazione).
-- **Bug di logica (non di tema): l'asta proseguiva mentre una squadra aveva uno svincolo o una
-  decisione (plusvalenza/recompra) pendente** — il bottone NASCONDI nel popup di svincolo chiude
-  solo la vista, ma l'Admin poteva comunque continuare a chiamare giocatori nel frattempo.
-  Aggiunto un controllo su `asta.popupAttivo` in `estrai-giocatore`/`chiama-giocatore`/
-  `assegna-manuale` (`backend/server.js`), stesso pattern gia' usato per `chiamataAttuale`.
-  **Non testato end-to-end con 2 client reali** (nessuna asta di test disponibile).
+Segnalato dall'utente sul tema "sala-giochi": il cartellino bianco dietro al nome del giocatore
+non copriva tutto il nome. **Non era un difetto del tema**: `.ant-slot3d-label` era larga quanto
+la carta e sempre uguale (`left:0;width:100%`) mentre il testo, in uno span `width:auto` con
+etichetta a `overflow:visible`, cambiava larghezza col nome — quindi il difetto c'era in tutti e
+quattro i temi, ma su prato chiaro con bordo nero si vedeva e su fondo scuro no. Corretto con una
+regola sola (`width:max-content` + `left:50%` + `translateX(-50%)`, ristretta con
+`:has(.ant-slot3d-name-txt)` per non toccare i badge degli slot vuoti). Dettagli e metodo in
+[DECISIONS.md](../DECISIONS.md).
 
-Storico completo dei redesign dei temi (Cuoio, Lavagna, Anteprima, orologio, texture) e dei bug
-di specificita' CSS trovati lungo il percorso: `git log`, oltre 20 commit tra fine agosto 2026.
+**Verificato** in browser reale, riproducendo prima il bug e misurandolo: pastiglia fissa a
+42.3px contro nomi fino a 62.5px (CARNISECCHI sbordava di 20.2px); dopo la correzione lo sbordo
+è **zero su tutti gli 11 nomi**, in tutti e quattro i temi, a 980px e a 371px, senza nessuna
+sovrapposizione fra etichette vicine. Diff: 24 righe aggiunte, 0 rimosse.
+
+## Cambi recenti — giro di sicurezza (2026-08-25)
+
+Audit su quattro punti richiesti dall'utente. **Due erano reali, uno era già a posto, uno era un
+falso allarme**; in più è emerso un buco più grave dei precedenti. Motivazioni tecniche complete
+in [DECISIONS.md](../DECISIONS.md), in fondo.
+
+- **API key in chiaro — falso allarme a metà.** La `SUPABASE_ANON_KEY` in `app.js` è **pubblica
+  per definizione** e non va nascosta (è RLS a proteggere i dati, non la segretezza della chiave);
+  la `service_role` non è mai stata committata, verificato su tutto lo storico git. Era invece un
+  vero segreto filtrato `THEME_EDITOR_SECRET`, hardcoded, unica protezione di
+  `POST /api/theme`.
+- **Editor Visuale di Stile eliminato** (l'utente ha confermato che non lo usa): via l'IIFE di
+  ~530 righe in fondo ad `app.js`, le due rotte `/api/theme`, la costante segreta, i keyframes
+  `editor-anim-*` e la `fetch('/api/theme')` che ogni visitatore faceva a ogni caricamento.
+  La tabella `theme_overrides` **non** è stata toccata: ospita anche il calendario del GK Planner.
+- **RLS — era già corretta.** Tutte e 11 le tabelle `public` hanno RLS attiva, con policy per
+  proprietario sui dati personali e zero policy (= deny-all) sulle quattro tabelle solo-backend.
+  Nessun ERROR/WARN dal linter Supabase. Nessuna modifica al database.
+- **Rate limiting — non esisteva, ora a tre livelli.** 300 richieste/15min e 1000/giorno per
+  persona su tutte le API, più quote giornaliere strette (20 aste create, 10 caricamenti listino,
+  30 ripristini, 20 tentativi di registrazione/15min) e antiflood sul socket (5 `rilancio`/s, 15
+  altri eventi/s). Chiave: `sub` del JWT con fallback all'IP. Aggiunta la dipendenza
+  `express-rate-limit` e `app.set('trust proxy', 1)` (indispensabile dietro il proxy Hostinger).
+- **CORS del socket chiuso.** Via `{ origin: '*' }`; ora same-origin sempre ammesso (confronto
+  `Origin` ↔ `Host`, così il deploy non richiede configurazione), più l'allowlist opzionale
+  `ORIGINI_CONSENTITE` e i localhost.
+- **`/api/exports` — il buco più grave, fuori dai quattro punti.** Le tre rotte erano
+  completamente aperte: chiunque, senza login, poteva elencare, scaricare e **cancellare per
+  sempre** lo storico delle aste concluse di tutta la lega. Ora lettura con login, cancellazione
+  con ruolo `admin`.
+
+**Verificato** con server locale su :3999 e client socket.io reale: rotte `/api/theme` a 404 anche
+con la vecchia chiave; `/api/exports` a 401 senza token; handshake socket rifiutato da un'origine
+esterna e accettato same-origin e senza `Origin`; quote da 20 e 10 rispettate al richiesto; 40
+`rilancio` di fila scartati oltre i primi 5 con **un solo** avviso e senza disconnettere il
+socket, che torna operativo dopo un secondo. Diff di `app.js` 23/536 righe, recuento LF-only
+invariato (240/19/210).
+
+**Non verificato**: comportamento dietro il proxy reale di Hostinger (`trust proxy`), e i limiti
+con utenti veri loggati (in locale non ci sono le variabili Supabase).
+
+## Prima del prossimo deploy
+
+1. Attivare a mano nel pannello Supabase la **protezione password compromesse (HaveIBeenPwned)**,
+   unico rilievo di sicurezza rimasto e non risolvibile da codice.
+2. Dopo il primo deploy, controllare i log per righe `[CORS] Handshake socket rifiutato` — se ne
+   compaiono con l'origine legittima del sito, impostare `ORIGINI_CONSENTITE` su Hostinger.
+3. Le quote in memoria si azzerano a ogni riavvio/deploy: è voluto, non un bug.
 
 ## Debito tecnico riconosciuto (non pagato di proposito)
 
-`style.css` difende la zona puja con ~40 regole `!important` su tutti i breakpoint, quindi
-`tema-serata.css` deve vincerle con `html body #puja-panel-slot` + `!important`. Ripulirle è il
-lavoro successivo naturale, tenuto fuori dagli interventi estetici per non mescolare un
-refactor rischioso con un cambio di aspetto. Nello stesso giro si può togliere il blocco
-`@media (min-width:901px)` in fondo a `style.css` (commit `039206b`, lavoro di un altro
-strumento): è ridondante da quando il tema ridisegna la stessa zona con specificità più alta.
+- `style.css` difende la zona puja con ~40 regole `!important` su tutti i breakpoint, quindi
+  `tema-serata.css` deve vincerle con `html body #puja-panel-slot` + `!important`. Ripulirle è il
+  lavoro successivo naturale, tenuto fuori dagli interventi estetici per non mescolare un refactor
+  rischioso con un cambio di aspetto. Nello stesso giro si può togliere il blocco
+  `@media (min-width:901px)` in fondo a `style.css` (commit `039206b`).
+- `app.js` chiama `/api/player-photo`, una rotta che **non esiste** nel backend: la richiesta cade
+  sempre in 404 e si passa al fallback successivo della catena foto. Funziona per caso, andrebbe
+  tolta o implementata.
 
 ## Pendenze
 
 - **Mai provato end-to-end in un'asta vera**: login Supabase, più dispositivi, modali critici
-  (svincolo, conferma RIC, plusvalenza/recompra, annulla storico), il blocco popup-pendente sopra.
-  È il limite noto di tutte le sessioni finora — non ci sono credenziali di test.
-- Schermate Strategie, Editor Fasce e Griglia P/A: ereditano la palette ma non sono state
-  guardate una per una in tutti e quattro i temi.
-- [docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md) descrive ancora il vecchio toggle binario e la palette
-  chiara precedente — da riscrivere per i 4 temi/selettore prima del prossimo deploy importante.
+  (svincolo, conferma RIC, plusvalenza/recompra, annulla storico), il blocco popup-pendente. È il
+  limite noto di tutte le sessioni finora — non ci sono credenziali di test.
+- Schermate Strategie, Editor Fasce e Griglia P/A: ereditano la palette ma non sono state guardate
+  una per una in tutti e quattro i temi.
+- [docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md) descrive ancora il vecchio toggle binario — da riscrivere.
 - Ripristinare `.cc-strategia-info` su mobile: è l'unico `display:none` del tema che tocca
   contenuto vero e non decorazione.
 - Nel tema **scuro** il grigio più tenue (`--sc-tenue`) resta a 3.4:1 su testi da 9-10px. È così
@@ -119,9 +130,10 @@ strumento): è ridondante da quando il tema ridisegna la stessa zona con specifi
 ## Prossimo passo
 
 Aprire un'asta di test reale, idealmente con 2+ dispositivi, e guardare in ordine: la schermata
-asta nei quattro temi, i modali di svincolo/plusvalenza/recompra con dati veri (incluso il nuovo
-blocco popup-pendente), e i comportamenti della puja (leva su RILANCIA, drag & drop e
-Autorellenar in Anteprima).
+asta nei quattro temi, i modali di svincolo/plusvalenza/recompra con dati veri (incluso il blocco
+popup-pendente), i comportamenti della puja (leva su RILANCIA, drag & drop e Autorellenar in
+Anteprima) e — nuovo — che l'antiflood da 5 rilanci/secondo non dia fastidio a chi rilancia in
+fretta davvero, durante gli ultimi secondi di una puja combattuta.
 
 ## Regola da non dimenticare: non si nasconde informazione
 

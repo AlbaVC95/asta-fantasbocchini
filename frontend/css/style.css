@@ -3018,6 +3018,30 @@ body.layout-admin .asta-row-puja .cc-avatar{width:108px!important;height:140px!i
   -webkit-line-clamp:1!important;line-clamp:1!important;
 }
 
+/* ── 2) La pastiglia dietro al nome deve coprire IL NOME, non la larghezza dello slot.
+   `.ant-slot3d-label` era rimasta a `left:0;width:100%` (regola "Cada etiqueta pertenece
+   fisicamente a su slot", piu' sopra): larga quanto la carta e SEMPRE identica, qualunque
+   fosse il nome. Il testo pero' vive in uno span `width:auto` con l'etichetta a
+   `overflow:visible`, quindi i nomi lunghi uscivano dai due lati della pastiglia — misurato
+   in browser a 560px: pastiglia sempre 42.3px, CARNISECCHI 62.5px (+20.2), THORSTVEDT +15.3,
+   RASPADORI +11.0; e i nomi corti (DODO' 27px) si prendevano una pastiglia molto piu' larga
+   del testo. Sul tema "sala-giochi" la pastiglia e' un cartellino BIANCO su prato chiaro e
+   il difetto salta all'occhio; negli altri temi e' scura su fondo scuro e si notava meno,
+   ma c'era ugualmente.
+   Con `width:max-content` l'etichetta si stringe esattamente sul testo e resta centrata
+   sullo slot (left:50% + translateX(-50%) al posto di left:0 + width:100%). NON serve
+   nessun limite di larghezza qui: e' _antFitTestoLabel() a ridurre il font finche' il nome
+   entra nello spazio misurato fra le carte vicine, quindi l'etichetta non puo' comunque
+   invadere quella del vicino.
+   Solo le etichette col NOME: quelle degli slot vuoti contengono badge di ruolo
+   (`:has(.badge-ruolo)`, display:flex + flex-wrap) e con max-content un ruolo multiplo tipo
+   "T/A/Pc" smetterebbe di andare a capo, allargandosi oltre lo slot. Restano come sono. ── */
+.ant-slot3d-label:has(.ant-slot3d-name-txt){
+  left:50%!important;
+  width:max-content!important;max-width:none!important;
+  transform:translateX(-50%)!important;
+}
+
 /* ── 2) Forma del campo SEMPRE intera, mai "tagliata"/triangolare: rimosso
    il clip-path a trapezio (si notava soprattutto riducendo lo zoom) — resta
    un rettangolo pieno con angoli smussati, stessa estetica delle linee bianche

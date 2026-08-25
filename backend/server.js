@@ -6,6 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 const fs   = require('fs');
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 
 const app = express();
 
@@ -53,7 +54,44 @@ async function getUtenteCompletoDaToken(req) {
 }
 
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
+
+// ══ ORIGINI CONSENTITE (CORS) ══════════════
+// Qui c'era { origin: '*' }: qualunque pagina web poteva aprire un socket verso
+// questo server usando il browser di un utente. Non serviva a nessun client reale,
+// perche' il frontend e' servito dallo STESSO processo che espone il socket e in
+// app.js la connessione si apre con io() senza URL, cioe' same-origin.
+//
+// La regola e': same-origin sempre ammesso (cosi' il deploy funziona su qualunque
+// dominio senza configurare niente), piu' l'eventuale allowlist esplicita in
+// ORIGINI_CONSENTITE (lista separata da virgole), piu' i localhost per lo sviluppo.
+const ORIGINI_CONSENTITE = (process.env.ORIGINI_CONSENTITE || '')
+  .split(',').map(o => o.trim()).filter(Boolean);
+
+function origineConsentita(origin, host) {
+  // Nessun header Origin = richiesta non-browser (curl, health check del provider,
+  // app native). Non e' un caso CORS: non c'e' nessun utente da proteggere qui.
+  if (!origin) return true;
+  if (ORIGINI_CONSENTITE.includes(origin)) return true;
+  try {
+    if (host && new URL(origin).host === host) return true; // same-origin
+  } catch (e) { return false; } // Origin malformato
+  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+}
+
+const opzioniIO = {
+  allowRequest: (req, callback) => {
+    const ok = origineConsentita(req.headers.origin, req.headers.host);
+    if (!ok) console.warn('[CORS] Handshake socket rifiutato — origin:', req.headers.origin);
+    callback(ok ? null : 'origine non consentita', ok);
+  }
+};
+// Header CORS emessi SOLO se e' stata configurata un'allowlist esplicita: senza,
+// socket.io non ne emette nessuno e il browser blocca da solo il cross-origin
+// (che e' esattamente il comportamento voluto per il caso same-origin reale).
+if (ORIGINI_CONSENTITE.length) {
+  opzioniIO.cors = { origin: ORIGINI_CONSENTITE, credentials: true };
+}
+const io = new Server(server, opzioniIO);
 
 // Rete di sicurezza: un errore non gestito in UN singolo handler (es. dati malformati
 // mandati da un client) non deve far crashare l'intero processo, cosa che interromperebbe
@@ -74,9 +112,99 @@ app.use(express.static(path.join(__dirname, '..', 'frontend'), {
     }
   }
 }));
+// ══ RATE LIMITING ══════════════
+// Prima di questo blocco non esisteva NESSUN limite su nessun endpoint: un solo
+// client poteva martellare le API (che scrivono su Supabase — vedi l'incidente banda
+// di agosto 2026) o mandare corpi da 10MB in ciclo. Tre livelli, dal piu' largo al
+// piu' stretto: per IP, per utente al giorno, per evento socket (piu' in basso).
+
+// Hostinger serve l'app dietro a un reverse proxy: senza questo req.ip sarebbe
+// SEMPRE l'IP del proxy, quindi tutti gli utenti finirebbero nello stesso contatore
+// e il primo che supera la soglia bloccherebbe l'app a tutti gli altri.
+app.set('trust proxy', 1);
+
+// Chiave per utente: il campo `sub` del JWT di Supabase, letto SENZA verifica
+// crittografica. Va bene per CONTARE le richieste, non e' un controllo di accesso:
+// l'autenticazione vera resta getRuoloUtente()/getUtenteDaToken(), che verificano il
+// token con Supabase. Verificarlo anche qui costerebbe una chiamata di rete per ogni
+// singola richiesta. Chi falsificasse `sub` per sfuggire alla propria quota resterebbe
+// comunque soggetto al limite per IP, che non e' falsificabile allo stesso modo.
+function chiaveUtenteOIp(req) {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (token) {
+    try {
+      const parti = token.split('.');
+      const payload = JSON.parse(Buffer.from(parti[1], 'base64url').toString('utf8'));
+      if (payload && payload.sub) return 'u:' + payload.sub;
+    } catch (e) { /* token assente o malformato: si ricade sull'IP */ }
+  }
+  // ipKeyGenerator normalizza gli IPv6 sulla /64: senza, un singolo utente IPv6
+  // avrebbe a disposizione miliardi di indirizzi e quindi nessun limite effettivo.
+  return 'ip:' + ipKeyGenerator(req.ip);
+}
+
+// La finestra "giornaliera" e' di 24h a scorrimento a partire dalla prima richiesta
+// della persona, non il giorno di calendario: piu' semplice e senza scalino a mezzanotte.
+const UN_GIORNO = 24 * 60 * 60 * 1000;
+const QUINDICI_MINUTI = 15 * 60 * 1000;
+
+function creaLimite({ nome, finestra, massimo, messaggio }) {
+  return rateLimit({
+    windowMs: finestra,
+    limit: massimo,
+    keyGenerator: chiaveUtenteOIp,
+    // draft-8 e non draft-7: su una rotta agiscono piu' limiti in cascata (raffica +
+    // quota giornaliera + quota specifica) e solo draft-8 sa elencarli tutti insieme.
+    // Con draft-7 l'ultimo limite sovrascriveva l'header degli altri, e il client
+    // leggeva "ancora 990 richieste" un attimo prima di prendersi un 429.
+    standardHeaders: 'draft-8',
+    identifier: nome,
+    legacyHeaders: false,
+    message: { error: messaggio }
+  });
+}
+
+// Livello 1 — antiflood per IP/utente su tutte le API.
+const limiteBurstApi = creaLimite({
+  nome: 'raffica-api', finestra: QUINDICI_MINUTI, massimo: 300,
+  messaggio: 'Troppe richieste in poco tempo. Riprova tra qualche minuto.'
+});
+// Livello 2 — quota giornaliera per persona.
+const limiteGiornalieroApi = creaLimite({
+  nome: 'quota-giornaliera', finestra: UN_GIORNO, massimo: 1000,
+  messaggio: 'Hai raggiunto il limite giornaliero di richieste. Riprova domani.'
+});
+app.use('/api', limiteBurstApi, limiteGiornalieroApi);
+
+// express.json() viene DOPO i limiti, non prima: altrimenti un client gia' bloccato
+// costringerebbe comunque il server a leggere e parsare fino a 10MB di corpo per ogni
+// richiesta, solo per riceversi un 429 subito dopo. Cosi' invece il corpo di una
+// richiesta oltre soglia non viene nemmeno letto.
 app.use(express.json({ limit: '10mb' }));
 
-app.post('/api/auth/completa-registrazione', async (req, res) => {
+// Livello 2b — quote giornaliere strette sulle operazioni costose (scrivono su
+// Supabase o creano stato nuovo sul server). Si applicano DOPO quelle generali.
+const limiteCreazioneAste = creaLimite({
+  nome: 'creazione-aste', finestra: UN_GIORNO, massimo: 20,
+  messaggio: 'Hai raggiunto il limite di aste creabili in un giorno (20).'
+});
+const limiteUploadListino = creaLimite({
+  nome: 'upload-listino', finestra: UN_GIORNO, massimo: 10,
+  messaggio: 'Hai raggiunto il limite di caricamenti del listino in un giorno (10).'
+});
+const limiteRipristini = creaLimite({
+  nome: 'ripristini', finestra: UN_GIORNO, massimo: 30,
+  messaggio: 'Troppi ripristini di asta in un giorno. Riprova domani.'
+});
+// Registrazione: la soglia e' per IP (chi si registra non ha ancora un token), e serve
+// a impedire che si creino utenti Supabase in serie da un unico client.
+const limiteRegistrazione = creaLimite({
+  nome: 'registrazione', finestra: QUINDICI_MINUTI, massimo: 20,
+  messaggio: 'Troppi tentativi di registrazione. Riprova tra qualche minuto.'
+});
+
+app.post('/api/auth/completa-registrazione', limiteRegistrazione, async (req, res) => {
   // Try/catch esplicito: senza, un'eccezione qui dentro lascerebbe la richiesta del client
   // in attesa per sempre (Express 4 non intercetta automaticamente i reject di una route
   // async), invece di rispondere con un errore visibile.
@@ -713,7 +841,7 @@ function clearTimer(astaId) {
 }
 
 // ============ API REST ============
-app.post('/api/asta', async (req, res) => {
+app.post('/api/asta', limiteCreazioneAste, async (req, res) => {
   // Creare un'asta richiede login (Supabase Auth): l'asta viene associata al creatore
   // (creatorUserId/creatorEmail), così può ritrovarla in "Mie aste" da qualunque dispositivo,
   // senza dover conservare manualmente nessun link/token.
@@ -837,7 +965,7 @@ app.post('/api/asta', async (req, res) => {
 });
 
 // ══ LISTINO UFFICIALE (solo Admin) ══════════════════════
-app.post('/api/listino/upload', async (req, res) => {
+app.post('/api/listino/upload', limiteUploadListino, async (req, res) => {
   if (!supabaseAdmin) return res.status(500).json({ error: 'Supabase non configurato sul server' });
   const auth = await getRuoloUtente(req);
   if (auth.error) return res.status(auth.status).json({ error: auth.error });
@@ -1073,7 +1201,14 @@ app.get('/api/asta/:id/export', (req, res) => {
 // ══ STORICO ESPORTAZIONI (persistente su Supabase) ══════════════
 // Lista leggera (solo metadati, senza il payload completo) per popolare velocemente
 // la schermata "Storico Esportazioni" dalla Home.
+// SICUREZZA: queste tre rotte erano completamente aperte — chiunque conoscesse l'URL
+// poteva elencare, scaricare e soprattutto CANCELLARE per sempre lo storico delle aste
+// concluse di tutta la lega con una sola richiesta. Ora la lettura richiede il login
+// (lo storico si apre comunque solo dal menu principale, cioe' a utente gia' loggato)
+// e la cancellazione richiede il ruolo 'admin'.
 app.get('/api/exports', async (req, res) => {
+  const utente = await getUtenteDaToken(req);
+  if (!utente) return res.status(401).json({ error: 'Login richiesto' });
   if (!supabaseAdmin) return res.json([]);
   try {
     const { data, error } = await supabaseAdmin
@@ -1092,6 +1227,8 @@ app.get('/api/exports', async (req, res) => {
 // Payload completo di una singola esportazione (usato per generare JSON/Excel/Fantaleghe/Recap
 // lato client, riusando esattamente la stessa logica già usata per l'export "a caldo").
 app.get('/api/exports/:id', async (req, res) => {
+  const utente = await getUtenteDaToken(req);
+  if (!utente) return res.status(401).json({ error: 'Login richiesto' });
   if (!supabaseAdmin) return res.status(500).json({ error: 'Supabase non configurato sul server' });
   try {
     const { data, error } = await supabaseAdmin.from('asta_exports').select('payload').eq('id', req.params.id).single();
@@ -1101,6 +1238,9 @@ app.get('/api/exports/:id', async (req, res) => {
 });
 
 app.delete('/api/exports/:id', async (req, res) => {
+  const auth = await getRuoloUtente(req);
+  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  if (auth.role !== 'admin') return res.status(403).json({ error: 'Solo un Admin puo\' cancellare una esportazione' });
   if (!supabaseAdmin) return res.status(500).json({ error: 'Supabase non configurato sul server' });
   try {
     const { error } = await supabaseAdmin.from('asta_exports').delete().eq('id', req.params.id);
@@ -1212,6 +1352,33 @@ app.post('/api/admin/toggle-manutenzione', async (req, res) => {
 // ============ WEBSOCKET ============
 io.on('connection', (socket) => {
   console.log(`[WS] Connesso: ${socket.id}`);
+
+  // ══ ANTIFLOOD SUGLI EVENTI SOCKET ══
+  // Non esisteva nessun limite: un client scriptato poteva inondare l'asta di
+  // 'rilancio' e far ripartire il timer all'infinito, rendendo di fatto impossibile
+  // chiudere un'assegnazione. Finestra scorrevole di 1 secondo, contata per socket.
+  // I contatori stanno SULL'oggetto socket, non in una Map globale: spariscono da soli
+  // alla disconnessione, senza il rischio di fuga di memoria gia' visto altrove.
+  const EVENTI_AL_SECONDO = 15;   // azioni normali (admin che clicca in fretta, join, ecc.)
+  const RILANCI_AL_SECONDO = 5;   // il rilancio e' l'evento piu' facile da automatizzare
+  socket.use((packet, next) => {
+    const evento = packet[0];
+    const massimo = evento === 'rilancio' ? RILANCI_AL_SECONDO : EVENTI_AL_SECONDO;
+    const ora = Date.now();
+    if (!socket._afInizio || ora - socket._afInizio >= 1000) {
+      socket._afInizio = ora; socket._afConteggio = {};
+    }
+    const n = (socket._afConteggio[evento] || 0) + 1;
+    socket._afConteggio[evento] = n;
+    if (n > massimo) {
+      // Si SCARTA il pacchetto invece di passare un errore a next(): next(err) fa
+      // emettere un evento 'error' che il client non gestisce e che puo' chiudere la
+      // connessione, buttando fuori dall'asta chi ha soltanto cliccato troppo in fretta.
+      if (n === massimo + 1) socket.emit('errore', { msg: 'Stai andando troppo veloce, aspetta un attimo' });
+      return;
+    }
+    next();
+  });
 
   socket.on('join-asta', ({ astaId, nomeSquadra, isAdmin: adminFlag, adminToken }) => {
     const asta = aste.get(astaId);
@@ -1754,7 +1921,7 @@ app.get('/api/mie-aste', async (req, res) => {
 // il suo adminToken attuale (nessuna modifica). Se non è in memoria (server riavviato/crash),
 // la ricostruisce dal backup Supabase e genera un NUOVO adminToken (invalida il precedente),
 // senza mai disconnettere gli altri partecipanti eventualmente già collegati.
-app.post('/api/asta/:id/riprendi', async (req, res) => {
+app.post('/api/asta/:id/riprendi', limiteRipristini, async (req, res) => {
   const utente = await getUtenteDaToken(req);
   if (!utente) return res.status(401).json({ error: 'Login richiesto' });
   if (!supabaseAdmin) return res.status(500).json({ error: 'Supabase non configurato sul server' });
@@ -1820,7 +1987,7 @@ app.get('/api/asta/:id/mio-backup', async (req, res) => {
 // essere esattamente uno scaricato tramite /api/asta/:id/mio-backup (stesso formato).
 // Per sicurezza, viene verificato che l'asta contenuta nel file appartenga davvero
 // all'utente loggato, prima di rimetterla in memoria e generare un nuovo adminToken.
-app.post('/api/asta/ripristina-da-file', async (req, res) => {
+app.post('/api/asta/ripristina-da-file', limiteRipristini, async (req, res) => {
   const utente = await getUtenteDaToken(req);
   if (!utente) return res.status(401).json({ error: 'Login richiesto' });
   try {
@@ -1842,36 +2009,15 @@ app.post('/api/asta/ripristina-da-file', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// ══════ EDITOR VISUALE DI STILE (Fase 1) ══════
-// Chiave segreta semplice per proteggere il salvataggio (solo il proprietario la conosce).
-// Usata come query param ?editorKey=... sia per leggere sia per salvare.
-const THEME_EDITOR_SECRET = 'fasce-editor-2026-vc95';
-
-app.get('/api/theme', async (req, res) => {
-  try {
-    if (!supabaseAdmin) return res.json({ styles: {} });
-    const { data, error } = await supabaseAdmin.from('theme_overrides').select('styles').eq('id', 'default').single();
-    if (error) return res.json({ styles: {} });
-    res.json({ styles: (data && data.styles) || {} });
-  } catch (e) {
-    res.json({ styles: {} });
-  }
-});
-
-app.post('/api/theme', async (req, res) => {
-  try {
-    const key = req.query.editorKey || (req.body && req.body.editorKey);
-    if (key !== THEME_EDITOR_SECRET) return res.status(403).json({ error: 'Chiave editor non valida' });
-    if (!supabaseAdmin) return res.status(500).json({ error: 'Supabase non configurato' });
-    const styles = (req.body && req.body.styles) || {};
-    const { error } = await supabaseAdmin.from('theme_overrides')
-      .upsert({ id: 'default', styles, updated_at: new Date().toISOString() }, { onConflict: 'id' });
-    if (error) return res.status(500).json({ error: error.message });
-    res.json({ success: true });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
+// ══════ EDITOR VISUALE DI STILE — RIMOSSO ══════
+// Qui vivevano GET/POST /api/theme e la costante THEME_EDITOR_SECRET, una chiave
+// segreta scritta in chiaro nel codice e quindi pubblica su GitHub: chiunque leggesse
+// il repository poteva riscrivere il CSS globale iniettato a TUTTI gli utenti
+// dell'app (e' esattamente il meccanismo dell'incidente dei bottoni viola).
+// L'editor non veniva piu' usato, quindi e' stato eliminato invece che protetto.
+// NB: la tabella Supabase `theme_overrides` NON e' stata toccata perche' ospita anche
+// la riga `gk_planner_calendario` (il calendario reale del GK Planner, piu' sopra).
+// La riga `default` resta li' dentro, vuota ({}), ormai senza nessun lettore.
 
 // Auto-save every 30s — esclude 'attesa' (nulla da salvare) e 'completata' (il backup di
 // un'asta conclusa viene eliminato esplicitamente in termina-asta: risalvarlo qui ogni 30s
