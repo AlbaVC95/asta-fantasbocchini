@@ -128,6 +128,8 @@ Tre richieste dell'utente sulla carta di puja:
 **Verificato** in browser: i tre badge su una riga sola in tutti e quattro i temi, colori per ruolo
 corretti in sala-giochi e contorno intatto negli altri tre; soglie del timer simulate secondo per
 secondo (rosso da 3, tic-tac da 5, le due meta' della scena in sincronia).
+**Confermato dall'utente**: il ticchettio resta a 5s e il rosso a 3s — lo sfasamento e' voluto,
+non una svista da correggere in futuro.
 
 ## Cambi recenti — cabinato attorno al ritratto in "sala-giochi" (2026-08-25)
 
@@ -222,10 +224,12 @@ con utenti veri loggati (in locale non ci sono le variabili Supabase).
 1. ~~Protezione password compromesse (HaveIBeenPwned)~~ — **non disponibile**: e' una funzione
    dei piani a pagamento. In sostituzione l'utente ha imposto una **lunghezza minima di 10
    caratteri**. Il linter di Supabase continuera' a segnalare quel WARN per sempre: e' atteso,
-   non una svista. Copre pero' una minaccia diversa (vedi DECISIONS.md) — la leva ancora
-   disponibile e gratuita sono i **Rate Limits di Supabase Auth** (pannello -> Authentication ->
-   Rate Limits), che sono l'unica difesa sul login: `signInWithPassword`/`signUp` vanno dal
-   browser DIRETTAMENTE a Supabase e non passano mai dal rate limiting del backend.
+   non una svista.
+   **Non c'e' nient'altro da configurare sul login**: l'endpoint `/auth/v1/token` e' limitato per
+   IP (1800/ora, raffiche 30) e NON e' regolabile — una raccomandazione precedente diceva il
+   contrario ed era sbagliata, vedi la correzione in DECISIONS.md. La sola difesa aggiuntiva
+   possibile sarebbe il CAPTCHA, che richiede codice e un provider esterno: sproporzionato per
+   una lega privata, da riconsiderare solo se la registrazione venisse aperta.
 2. Dopo il primo deploy, controllare i log per righe `[CORS] Handshake socket rifiutato` — se ne
    compaiono con l'origine legittima del sito, impostare `ORIGINI_CONSENTITE` su Hostinger.
 3. Le quote in memoria si azzerano a ogni riavvio/deploy: è voluto, non un bug.

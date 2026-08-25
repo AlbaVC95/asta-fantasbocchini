@@ -1264,9 +1264,26 @@ caratteri ed e' in qualunque dizionario di breach. Il minimo vale inoltre solo p
 Conseguenza operativa da ricordare: **il rate limiting del backend non protegge il login.**
 `signInWithPassword`, `signUp` e `resetPasswordForEmail` partono dal browser e vanno DIRETTAMENTE
 all'API di Supabase con la chiave anon (`app.js`, sezione auth) — non toccano mai `server.js`,
-quindi `express-rate-limit` non li vede. L'unica difesa contro qualcuno che prova password filtrate
-contro gli account della lega sono i **Rate Limits di Supabase Auth**, configurabili anche sul
-piano gratuito. E' quella la leva da stringere, non il codice.
+quindi `express-rate-limit` non li vede.
+
+**Correzione a una raccomandazione sbagliata data qui in precedenza**: si era scritto che la leva
+rimasta fossero i "Rate Limits di Supabase Auth, da stringere dal pannello". **Non e' vero.**
+Verificato sulla documentazione: l'endpoint del login (`/auth/v1/token`, dove finisce
+`signInWithPassword`) e' limitato per indirizzo IP a 1800 richieste/ora con raffiche fino a 30, ed
+e' esplicitamente **non configurabile**. Nel pannello Authentication > Rate Limits si possono
+regolare soltanto invii di OTP, finestra dei magic link, conferma di registrazione e richiesta di
+reset password: nessuno di questi e' il percorso del login con password. Su quel fronte non c'e'
+nulla da stringere — il limite per IP c'e' gia' ed e' fisso.
+
+La difesa vera disponibile, se un giorno servisse, e' il **CAPTCHA**, che Supabase supporta su
+registrazione, login e reset. Non e' un interruttore: richiede un account hCaptcha o Cloudflare
+Turnstile e la modifica delle chiamate di auth in `app.js` per inviare il token. Per una lega
+privata di dodici amici in beta chiusa e' sproporzionato; diventa sensato solo se la registrazione
+venisse aperta al pubblico.
+
+Lezione di metodo: **una raccomandazione operativa va verificata sulla documentazione prima di
+darla.** Questa era plausibile e sbagliata, ed e' rimasta scritta come "cosa da fare" finche'
+l'utente non ha chiesto i passi esatti.
 
 Nota: il linter di sicurezza di Supabase continuera' a segnalare `auth_leaked_password_protection`
 come WARN per sempre. E' atteso e non va inseguito.
