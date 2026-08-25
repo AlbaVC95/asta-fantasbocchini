@@ -6,9 +6,9 @@ non accumulato. La cronologia sta in `git log`, il *perché* delle scelte in
 
 ## Stato attuale
 
-Branch di lavoro `claude/arcade-mode-visual-mock-soytgj` (non ancora unito a `main`): contiene il
-**quarto tema, "Sala Giochi"**, e il mockup da cui e' nato. Su Hostinger il deploy e' automatico al
-push su `main`, quindi finche' resta su questo branch non e' online.
+Branch `main`, con il **quarto tema "Sala Giochi"** gia' unito (arrivava dal branch
+`claude/arcade-mode-visual-mock-soytgj` di una sessione parallela). Su Hostinger il deploy e'
+automatico al push su `main`.
 
 **Quattro temi attivi**, tutti con lo stesso pattern (ruoli `--sc-*` in `tema-serata.css` + token
 base in `style.css`, entrambi con un blocco `[data-tema="<id>"]`, + una sezione "materie" in fondo a
@@ -47,14 +47,14 @@ quattro temi prima del prossimo deploy importante.
 
 ## Cambi recenti
 
-- **Quarto tema "Sala Giochi" (chiaro, da cabinato), dal mockup approvato all'implementazione.**
-  Richiesto come "modo chiaro stile arcade": prima un mockup visuale
-  ([docs/mockup-tema-sala-giochi.html](mockup-tema-sala-giochi.html) — la sola schermata d'asta,
-  desktop e mobile, nei due stati), poi il tema vero. Cinque file toccati, nessuna riga degli altri
-  tre temi modificata: `app.js` (una riga in `TEMI`), `style.css` (token base + testata/avatar/
-  strategie), `tema-serata.css` (ruoli `--sc-*` + sezione "materie" in fondo), `clessidra.js`
-  (materiali: cornice cobalto, sabbia oro), `index.html` (i due font a pixel + `?v=` nuovi su tutti
-  e quattro i file).
+- **Quarto tema "Sala Giochi" (chiaro, da cabinato), dal mockup approvato all'implementazione —
+  sessione parallela, unita a `main` via rebase.** Richiesto come "modo chiaro stile arcade":
+  prima un mockup visuale ([docs/mockup-tema-sala-giochi.html](mockup-tema-sala-giochi.html) —
+  la sola schermata d'asta, desktop e mobile, nei due stati), poi il tema vero. Cinque file
+  toccati, nessuna riga degli altri tre temi modificata: `app.js` (una riga in `TEMI`),
+  `style.css` (token base + testata/avatar/strategie), `tema-serata.css` (ruoli `--sc-*` +
+  sezione "materie" in fondo), `clessidra.js` (materiali: cornice cobalto, sabbia oro),
+  `index.html` (i due font a pixel + `?v=` nuovi su tutti e quattro i file).
   Le decisioni non ovvie (rosso anche sull'azione, oro con due valori diversi per fondo e testo,
   nome del giocatore NON a pixel, ombre solide invece che sfocate) sono in
   [DECISIONS.md](../DECISIONS.md).
@@ -68,8 +68,29 @@ quattro temi prima del prossimo deploy importante.
   e Anteprima, stato normale e `puja-urgente`, a 1440x900 e 390x844, confrontato con
   `serata`/`cuoio`. **Non verificato**: asta vera, modali, Griglia P/A, Strategie.
   **Nota**: la vista "campo 3D" resta al neon in `serata` e `cuoio` — nessun tema la copriva prima,
-  ora la copre solo `sala-giochi`.
-
+  ora la copre solo `sala-giochi`. Autorellenar/drag&drop/accordion sotto sono stati verificati
+  solo su `serata`/`cuoio`/`lavagna`, non ancora ricontrollati su `sala-giochi` dopo il rebase.
+- **Accordion Riepilogo squadre/Mio team: default Admin invertito a sempre-espanso + bug
+  reale trovato sul collasso mobile in vista Utente.** Due correzioni dell'utente sullo
+  stesso accordion:
+  1. L'Admin (default chiuso nel giro precedente) doveva invece partire **sempre espanso**
+     come l'Utente — stesso pattern "`.acc-open` = l'ho chiuso io" gia' usato per l'Utente,
+     ora identico per entrambi i ruoli su desktop (`@media min-width:641px`).
+  2. **Bug reale**: su mobile (`@media max-width:640px`, il meccanismo storico, mai toccato
+     prima d'ora) l'Utente non riusciva MAI a richiudere ne' "Riepilogo squadre" ne' "Mio
+     team" — segnalato dall'utente. Causa (trovata isolando la cascata via
+     `document.styleSheets`, non a occhio): due regole **incondizionate** in `tema-serata.css`
+     — `html body #budget-bar{display:grid !important}` (riga ~581, per la griglia colonne
+     desktop) e `html body #mio-panel .slot-counter{display:grid !important}` (riga ~625) —
+     hanno piu' specificita' (id/classe extra) delle regole mobile in `style.css`
+     (`#budget-bar{display:none}`/`#mio-slot-counter{display:none!important}`, semplici,
+     nessuna scoperta prima perche' nessuno aveva ancora provato a richiudere questi due
+     pannelli specifici su mobile in vista Utente). Vincevano sempre, l'accordion sembrava
+     "aperto per sempre". Risolto alzando la specificita' delle regole mobile
+     (`html body .panel-budget #budget-bar`/`html body #mio-panel:not(.acc-open) .slot-counter`)
+     invece di toccare le regole desktop (avrebbe rotto il layout a griglia li').
+  Verificato: apri/chiudi funzionante nei 4 contesti (Admin/Utente × mobile/desktop), nei 3
+  temi, nessun errore console.
 - **Autorellenar sceglieva i PEGGIORI, non i migliori — bug reale nel valore di riferimento.**
   Segnalato dall'utente subito dopo il rilascio del punto sotto. Causa: l'algoritmo confrontava
   solo `g.fm`, ma FM e' un campo opzionale (dipende dalla colonna nel file caricato) — quando

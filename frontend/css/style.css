@@ -2185,15 +2185,24 @@ body:has(#screen-asta.active) .user-email-badge{display:none}
   .panel-budget-hdr:active{background:rgba(255,255,255,.06)}
   .panel-budget-hdr::after{content:'▾';font-size:.9em;transition:transform .25s;opacity:.7}
   .panel-budget.acc-open .panel-budget-hdr::after{transform:rotate(180deg)}
-  #budget-bar{display:none;max-height:46vh;overflow-y:auto;padding-top:8px}
-  .panel-budget.acc-open #budget-bar{display:flex}
+  /* html body .panel-budget (non solo #budget-bar): serve piu' specificita' di
+     "html body #budget-bar{display:grid !important}" in tema-serata.css (la griglia
+     colonne del riepilogo su desktop) — senza, quella vinceva sempre e l'accordion
+     mobile non chiudeva mai davvero (segnalato dall'utente: "non mi lascia stringere"). */
+  html body .panel-budget #budget-bar{display:none !important;max-height:46vh;overflow-y:auto;padding-top:8px}
+  html body .panel-budget.acc-open #budget-bar{display:flex !important}
 
   .mio-panel-header{cursor:pointer;padding:11px 12px!important;margin-bottom:0!important;border-radius:10px;position:relative;transition:background .2s}
   .mio-panel-header:active{background:rgba(255,255,255,.06)}
   .mio-panel-header::after{content:'▾';font-size:.9em;transition:transform .25s;opacity:.7;margin-left:8px}
   #mio-panel.acc-open .mio-panel-header::after{transform:rotate(180deg)}
-  #mio-slot-counter,.mio-panel-actions{display:none!important}
-  #mio-panel.acc-open #mio-slot-counter{display:block!important;margin-top:6px}
+  /* html body #mio-panel :not(.acc-open) (non solo #mio-slot-counter): serve piu' specificita'
+     di "html body #mio-panel .slot-counter{display:grid !important}" in tema-serata.css
+     (layout desktop del contatore) — senza, quella vinceva sempre e "Mio team" non chiudeva
+     mai davvero, stesso bug/fix di poco sopra su #budget-bar. */
+  .mio-panel-actions{display:none!important}
+  html body #mio-panel:not(.acc-open) .slot-counter{display:none!important}
+  html body #mio-panel.acc-open #mio-slot-counter{display:block!important;margin-top:6px}
   #mio-panel.acc-open .mio-panel-actions{display:flex!important;margin-top:8px}
   #mio-panel .mio-panel-actions .btn{font-size:.85rem!important;padding:11px 10px!important}
   /* Fix acordeón cerrado: la regla de tablet (max-width:768px, arriba en el

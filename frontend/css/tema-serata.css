@@ -914,33 +914,31 @@ html body.layout-admin .asta-row-panels>#mio-panel{
 /* Riepilogo squadre e Mio team, collassabili anche su desktop in Admin — stesso
    meccanismo dell'accordion mobile (stessi handler di click, gia' agganciati da
    setupAstaMobileAccordion() indipendentemente dalla larghezza), qui esteso oltre
-   i 640px. Default chiuso: sono le due sezioni meno urgenti quando la card di
-   chiamata e le tab sotto (Storico/Rose/...) devono restare raggiungibili senza
-   scorrere troppo — segnalato dall'utente, non tocca #admin-panel (ha i controlli
-   Backup/Termina, quelli restano sempre visibili). */
+   i 640px. **Default SEMPRE espanso** (correzione dell'utente al tentativo precedente,
+   che partiva chiuso): l'Admin deve vedere questi dati appena entra, l'accordion serve
+   solo per lasciargli la scelta di stringerli lui — stesso significato invertito di
+   ".acc-open" usato per l'Utente qui sotto (vuol dire "l'ho chiuso io", non "e' aperto").
+   Non tocca #admin-panel (ha i controlli Backup/Termina, quelli restano sempre visibili). */
 @media (min-width:641px){
   html body.layout-admin .panel-budget-hdr{
     cursor:pointer !important;display:flex !important;align-items:center !important;
     justify-content:space-between !important;
   }
   html body.layout-admin .panel-budget-hdr::after{content:'▾' !important;font-size:.9em !important;transition:transform .25s !important;opacity:.7 !important}
-  html body.layout-admin .panel-budget.acc-open .panel-budget-hdr::after{transform:rotate(180deg) !important}
-  html body.layout-admin .asta-row-panels>.panel-budget{max-height:44px !important;overflow:hidden !important}
-  html body.layout-admin .asta-row-panels>.panel-budget.acc-open{max-height:clamp(200px,32vh,300px) !important;overflow-y:auto !important}
+  html body.layout-admin .panel-budget:not(.acc-open) .panel-budget-hdr::after{transform:rotate(180deg) !important}
+  html body.layout-admin .asta-row-panels>.panel-budget.acc-open{max-height:44px !important;overflow:hidden !important}
 
   html body.layout-admin .mio-panel-header{cursor:pointer !important;position:relative !important}
   html body.layout-admin .mio-panel-header::after{content:'▾' !important;font-size:.9em !important;transition:transform .25s !important;opacity:.7 !important;margin-left:8px !important}
-  html body.layout-admin #mio-panel.acc-open .mio-panel-header::after{transform:rotate(180deg) !important}
-  html body.layout-admin .asta-row-panels>#mio-panel{max-height:44px !important;overflow:hidden !important}
-  html body.layout-admin .asta-row-panels>#mio-panel.acc-open{max-height:clamp(200px,32vh,300px) !important;overflow-y:auto !important}
+  html body.layout-admin #mio-panel:not(.acc-open) .mio-panel-header::after{transform:rotate(180deg) !important}
+  html body.layout-admin .asta-row-panels>#mio-panel.acc-open{max-height:44px !important;overflow:hidden !important}
 }
-/* Stessa cosa in vista Utente, ma al CONTRARIO: l'utente ha chiarito che qui devono restare
-   SEMPRE espansi di default (l'allenatore vuole vederli), l'accordion serve solo per lasciargli
-   la scelta di stringerli lui stesso se vuole. Percio' qui ".acc-open" (stesso identico
-   meccanismo/handler di click di sopra, non e' un secondo sistema) significa il CONTRARIO che in
-   Admin/mobile: li' vuol dire "aperto", qui vuol dire "l'utente lo ha chiuso lui" — stesso nome
-   di classe, significato invertito di proposito in base al contesto. Non toccare senza aver
-   letto questo commento. */
+/* Stessa cosa in vista Utente: default SEMPRE espanso (l'allenatore vuole vederli),
+   l'accordion serve solo per lasciargli la scelta di stringerli lui stesso se vuole.
+   ".acc-open" (stesso identico meccanismo/handler di click di sopra, non e' un secondo
+   sistema) significa qui "l'utente lo ha chiuso lui" — stesso significato di Admin sopra,
+   diverso solo dall'accordion MOBILE (righe piu' sotto, dentro @media max-width:640px),
+   dove invece ".acc-open" vuol dire "aperto" (default li' e' chiuso, storico, non toccato). */
 @media (min-width:641px){
   html body.layout-partecipante .panel-budget-hdr{cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:space-between !important}
   html body.layout-partecipante .panel-budget-hdr::after{content:'▾' !important;font-size:.9em !important;transition:transform .25s !important;opacity:.7 !important}
