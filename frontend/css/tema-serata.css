@@ -1965,6 +1965,15 @@ html[data-tema="cuoio"] body .asta-header::after{
   box-shadow:0 0 8px rgba(143,90,44,.4) !important;
 }
 
+/* La cassa delle decisioni dell'Admin: `html body .admin-conferma-box` porta un
+   fondo scuro fisso senza scoping per tema, quindi sulla pergamena restava un
+   rettangolo grigio con sopra l'inchiostro di cuoio. Bug preesistente, trovato
+   mentre si sistemava lo stesso punto in Sala Giochi. */
+html[data-tema="cuoio"] body .admin-conferma-box{
+  background:rgba(250,242,227,.92) !important;
+  border:1px solid rgba(107,68,35,.38) !important;
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    LAVAGNA AL NEON — terzo tema, scuro
 
@@ -2496,13 +2505,39 @@ html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot::after{
 html[data-tema="sala-giochi"] body #puja-panel-slot .card-timer-group{
   border-right:3px solid rgba(20,16,36,.14) !important;
 }
-/* il conto sul tavolo */
-html[data-tema="sala-giochi"] body.layout-partecipante .asta-row-panels>#mio-panel{
-  background:#FFFFFF !important;
+/* Il conto sul tavolo. Selettore con l'id (non `.mio-panel`) apposta: la regola
+   delle materie del tema base (`html body #mio-panel`, la venatura del legno + un
+   fondo scuro semitrasparente) ha un id e batteva la versione a sola classe — in
+   vista Admin il pannello restava una macchia grigia con sopra il testo scuro
+   (segnalato dall'utente). Una regola sola per tutte e due le viste.
+   Verificato leggendo getComputedStyle nel browser, non il CSS a occhio. */
+/* Due rami, stesse dichiarazioni, una regola sola: il primo serve a battere la
+   regola del tema base per la vista Partecipante (`body.layout-partecipante
+   .asta-row-panels>#mio-panel`, piu' specifica di due classi), il secondo copre
+   la vista Admin, dove quella non matcha. Misurato in browser: con il solo ramo
+   corto il pannello tornava scuro in Partecipante. */
+html[data-tema="sala-giochi"] body.layout-partecipante .asta-row-panels>#mio-panel,
+html[data-tema="sala-giochi"] body #mio-panel{
+  background-color:#FFFFFF !important;
+  background-image:repeating-conic-gradient(rgba(36,64,216,.05) 0% 25%, transparent 0% 50%) !important;
+  background-size:8px 8px !important;
   border:3px solid #141024 !important;border-radius:0 !important;
   box-shadow:6px 6px 0 #141024 !important;
 }
 html[data-tema="sala-giochi"] body #mio-panel::before{background:#2440D8 !important}
+
+/* ── Vista Admin: la cassa delle decisioni ──
+   `html body .admin-conferma-box` (piu' su in questo file) ha un fondo scuro fisso
+   senza scoping per tema: qui restava un rettangolo grigio con sopra testo scuro.
+   Stesso difetto in Cuoio, corretto anche li' (sezione MATTINA AL BANCO). */
+html[data-tema="sala-giochi"] body .admin-conferma-box{
+  background:#FFF6E0 !important;
+  border:3px solid #141024 !important;border-radius:0 !important;
+  box-shadow:4px 4px 0 #141024 !important;
+}
+html[data-tema="sala-giochi"] body .conferma-info-text{color:#4A465E !important}
+html[data-tema="sala-giochi"] body .slot-chip,
+html[data-tema="sala-giochi"] body .slot-sub{color:#4A465E !important}
 
 /* ── Il ritratto: una card sotto vetro, angoli vivi ── */
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar{
@@ -2784,6 +2819,39 @@ html[data-tema="sala-giochi"] .badge-ruolo.r-A,
 html[data-tema="sala-giochi"] .badge-ruolo.r-Pc{background:#FF8079 !important;color:#141024 !important}
 
 /* ── Il drawer di Anteprima, i modali ── */
+/* ── Anteprima: la cassetta del campo ──
+   Il campo vero e proprio (prato, righe, slot, carte) sta in style.css, insieme
+   a quello degli altri temi; qui c'e' solo la cornice attorno. */
+html[data-tema="sala-giochi"] .ant-drawer-title,
+html[data-tema="sala-giochi"] .ant-panchina-title{
+  font-family:'Press Start 2P',var(--font-display) !important;font-weight:400 !important;
+  font-size:.56rem !important;letter-spacing:.04em !important;color:#141024 !important;
+}
+html[data-tema="sala-giochi"] .ant-panchina-count{
+  font-family:'Press Start 2P',var(--font-mono) !important;font-size:.5rem !important;color:#4A465E !important;
+}
+html[data-tema="sala-giochi"] .ant-select,
+html[data-tema="sala-giochi"] .ant-zoom-controls{
+  background:#FFFFFF !important;color:#141024 !important;
+  border:3px solid #141024 !important;border-radius:0 !important;
+}
+html[data-tema="sala-giochi"] .ant-zoom-btn{color:#141024 !important;border-radius:0 !important}
+html[data-tema="sala-giochi"] .ant-zoom-btn:hover{background:#F5B01A !important}
+html[data-tema="sala-giochi"] .ant-subtab{
+  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  background:#F4F3EA !important;color:#4A465E !important;
+  border:3px solid #141024 !important;border-radius:0 !important;
+}
+html[data-tema="sala-giochi"] .ant-subtab.active{
+  background:#2440D8 !important;color:#FFFFFF !important;border-color:#141024 !important;
+}
+html[data-tema="sala-giochi"] .ant-picker{
+  background:#FFFFFF !important;border:3px solid #141024 !important;
+  border-radius:0 !important;box-shadow:6px 6px 0 #141024 !important;
+}
+html[data-tema="sala-giochi"] .ant-picker-item{border-radius:0 !important;color:#141024 !important}
+html[data-tema="sala-giochi"] .ant-picker-item:hover{background:#F5B01A !important}
+
 html[data-tema="sala-giochi"] #tab-anteprima.ant-drawer{
   background:#FFFFFF !important;border:3px solid #141024 !important;border-radius:0 !important;
 }

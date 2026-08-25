@@ -1760,6 +1760,101 @@ html[data-tema="lavagna"] .ant-slot.filled .ant-slot-player{
   color:#fff !important;border-color:#22D3EE !important;box-shadow:0 0 10px rgba(34,211,238,.4) !important;
 }
 html[data-tema="lavagna"] .ant-slot:hover .ant-slot-player{box-shadow:0 0 14px rgba(34,211,238,.6) !important}
+
+/* "Sala Giochi": il campo di un gioco a 16 bit — verde piatto a fasce larghe,
+   righe bianche nette, cornice d'inchiostro, nessun bagliore. Stessa geometria
+   (background-size/position) degli altri temi: cambiano solo le materie. */
+html[data-tema="sala-giochi"] .ant-pitch{
+  border-radius:0 !important;
+  background-color:#3E9E56 !important;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.10) 0 22px, transparent 22px 44px),
+    linear-gradient(#FFFFFF,#FFFFFF),
+    linear-gradient(#FFFFFF,#FFFFFF),
+    linear-gradient(#FFFFFF,#FFFFFF),
+    linear-gradient(#FFFFFF,#FFFFFF),
+    linear-gradient(#FFFFFF,#FFFFFF),
+    linear-gradient(#FFFFFF,#FFFFFF),
+    radial-gradient(ellipse at 50% -10%, rgba(255,255,255,.10), transparent 55%),
+    linear-gradient(180deg,#43A85B 0%,#43A85B 100%) !important;
+  background-repeat:no-repeat !important;
+  background-size:
+    100% 100%,
+    46% 3px, 3px 12%, 3px 12%,
+    46% 3px, 3px 12%, 3px 12%,
+    100% 100%, 100% 100% !important;
+  background-position:
+    0 0,
+    50% 12%, 27% 0%, 73% 0%,
+    50% 88%, 27% 100%, 73% 100%,
+    0 0, 0 0 !important;
+  box-shadow:inset 0 0 0 4px #141024, 6px 6px 0 #141024 !important;
+}
+html[data-tema="sala-giochi"] .ant-pitch:not(.ant-pitch3d)::before{background:#FFFFFF !important;height:4px !important;box-shadow:none !important}
+html[data-tema="sala-giochi"] .ant-pitch:not(.ant-pitch3d)::after{border:4px solid #FFFFFF !important;box-shadow:none !important}
+html[data-tema="sala-giochi"] .ant-slot-role{
+  background:#F5B01A !important;color:#141024 !important;text-shadow:none !important;
+  border:2px solid #141024 !important;border-radius:0 !important;
+}
+html[data-tema="sala-giochi"] .ant-slot-player{
+  background:#FFFFFF !important;color:#141024 !important;
+  border:2px solid #141024 !important;border-radius:0 !important;
+  box-shadow:3px 3px 0 #141024 !important;
+  font-family:'Silkscreen',Archivo,sans-serif !important;
+}
+html[data-tema="sala-giochi"] .ant-slot.filled .ant-slot-player{
+  background:#2440D8 !important;color:#FFFFFF !important;border-color:#141024 !important;
+}
+html[data-tema="sala-giochi"] .ant-slot:hover .ant-slot-player{
+  box-shadow:1px 1px 0 #141024 !important;transform:translate(2px,2px) !important;
+}
+
+/* La vista "campo 3D" e' l'unico punto dell'app che nessun tema toccava: la scena
+   restava un fondo quasi nero con bordi al neon viola/ciano (segnalato dall'utente).
+   Qui diventa una piastra come le altre, col campo dentro. */
+html[data-tema="sala-giochi"] .ant-pitch-stage{
+  background:#F4F3EA !important;
+  border:4px solid #141024 !important;border-radius:0 !important;
+  box-shadow:6px 6px 0 #141024 !important;
+}
+html[data-tema="sala-giochi"] .ant-pitch.ant-pitch3d{
+  background:
+    repeating-linear-gradient(0deg, rgba(20,16,36,.05) 0 1px, transparent 1px 12.5%),
+    repeating-linear-gradient(90deg, #3E9E56 0 10%, #48B463 10% 20%) !important;
+  border:4px solid #141024 !important;border-radius:0 !important;
+  box-shadow:4px 4px 0 rgba(20,16,36,.5) !important;
+}
+/* le righe del campo: restano bianche, perdono l'alone */
+html[data-tema="sala-giochi"] .ant-pitch.ant-pitch3d::before{filter:none !important;opacity:1 !important}
+/* Le righe del campo sono un SVG (.ant-field-markings), non una griglia CSS: nel
+   tema base sono ciano con l'alone al neon. Qui tornano bianche e nette, come
+   quelle dipinte sul prato di un gioco a 16 bit. */
+html[data-tema="sala-giochi"] .ant-field-markings rect,
+html[data-tema="sala-giochi"] .ant-field-markings path,
+html[data-tema="sala-giochi"] .ant-field-markings circle{
+  stroke:#FFFFFF !important;stroke-width:.9 !important;filter:none !important;
+}
+html[data-tema="sala-giochi"] .ant-field-markings .ant-field-dot{fill:#FFFFFF !important;filter:none !important}
+html[data-tema="sala-giochi"] .ant-slot3d-empty{
+  background:rgba(255,255,255,.18) !important;
+  border:3px dashed rgba(255,255,255,.9) !important;border-radius:0 !important;
+}
+/* L'etichetta sotto ogni slot aveva una pastiglia quasi nera (rgba(6,4,16,.74),
+   misurata in browser): sul prato chiaro del cabinato era l'unica macchia scura
+   rimasta. Diventa un cartellino bianco col filo d'inchiostro. */
+html[data-tema="sala-giochi"] .ant-slot3d-label{
+  font-family:'Silkscreen',Archivo,sans-serif !important;color:#141024 !important;
+  background:#FFFFFF !important;border:2px solid #141024 !important;
+  border-radius:0 !important;text-shadow:none !important;padding:2px 3px !important;
+}
+html[data-tema="sala-giochi"] .ant-card{
+  background:linear-gradient(180deg,#FFFFFF,#F4F3EA) !important;
+  border:3px solid #141024 !important;border-radius:0 !important;
+  box-shadow:4px 4px 0 #141024 !important;
+}
+html[data-tema="sala-giochi"] .ant-lista li{
+  background:#FFFFFF !important;border:2px solid #141024 !important;border-radius:0 !important;
+}
 #tab-anteprima{position:relative}
 .ant-picker{position:absolute;z-index:500;background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.4);padding:8px;max-height:280px;overflow-y:auto;min-width:200px;max-width:calc(100vw - 16px)}
 .ant-picker.hidden{display:none}

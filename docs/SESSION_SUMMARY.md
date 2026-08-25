@@ -58,10 +58,17 @@ quattro temi prima del prossimo deploy importante.
   Le decisioni non ovvie (rosso anche sull'azione, oro con due valori diversi per fondo e testo,
   nome del giocatore NON a pixel, ombre solide invece che sfocate) sono in
   [DECISIONS.md](../DECISIONS.md).
-  **Verificato**: contrasto via script su 18 coppie (tutte >=4.5:1 dopo due correzioni), reso in
-  Chromium headless con stato sintetico a 1440x900 e 390x844, stato normale e `puja-urgente`,
-  confrontato con `serata`/`cuoio`. **Non verificato**: asta vera, vista Admin, modali, Griglia P/A,
-  Anteprima, Strategie.
+  **Secondo giro, dopo il deploy** (segnalazioni dell'utente sul sito vero): coperti i tre punti
+  che nessun tema aveva mai toccato — la cassa decisioni dell'Admin (`.admin-conferma-box`, fondo
+  scuro fisso: **stesso bug in Cuoio**, corretto anche li'), `#mio-panel` in vista Admin, e tutta
+  la vista "campo 3D" dell'Anteprima (scena, prato, righe SVG, slot, carte, sotto-tab, picker):
+  ora e' un campo piatto a 16 bit con cornice d'inchiostro, niente neon.
+  **Verificato**: contrasto via script su 18 coppie (tutte >=4.5:1 dopo due correzioni), e resa in
+  Chromium headless leggendo `getComputedStyle` (non il CSS a occhio) in vista Partecipante, Admin
+  e Anteprima, stato normale e `puja-urgente`, a 1440x900 e 390x844, confrontato con
+  `serata`/`cuoio`. **Non verificato**: asta vera, modali, Griglia P/A, Strategie.
+  **Nota**: la vista "campo 3D" resta al neon in `serata` e `cuoio` — nessun tema la copriva prima,
+  ora la copre solo `sala-giochi`.
 
 - **Autorellenar sceglieva i PEGGIORI, non i migliori — bug reale nel valore di riferimento.**
   Segnalato dall'utente subito dopo il rilascio del punto sotto. Causa: l'algoritmo confrontava
@@ -424,8 +431,9 @@ strumento): è ridondante da quando il tema ridisegna la stessa zona con specifi
 - **Mai provato end-to-end in un'asta vera**: login Supabase, più dispositivi, modali critici
   (svincolo, conferma RIC, plusvalenza/recompra, annulla storico) con dati reali. È il limite
   noto di tutte le sessioni finora — non ci sono credenziali di test.
-- Schermate Strategie, Editor Fasce, Anteprima e Griglia P/A: ereditano la palette ma non sono
-  state guardate una per una, in nessuno dei quattro temi.
+- Schermate Strategie, Editor Fasce e Griglia P/A: ereditano la palette ma non sono state
+  guardate una per una, in nessuno dei quattro temi. L'Anteprima (campo 3D) e' stata coperta solo
+  in `sala-giochi`: in `serata` e `cuoio` resta la scena al neon viola/ciano del tema base.
 - [docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md) descrive ancora il vecchio toggle binario e la palette
   chiara precedente — da riscrivere per i 4 temi/selettore prima del prossimo deploy importante.
 - Ripristinare `.cc-strategia-info` su mobile: è l'unico `display:none` del tema che tocca

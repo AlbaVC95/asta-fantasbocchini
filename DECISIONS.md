@@ -911,6 +911,19 @@ Scelte non ovvie, per chi tocca queste regole in futuro:
   fisse per breakpoint in `style.css`: un bordo vero, anche con `box-sizing:border-box`, avrebbe
   mangiato spazio interno a un badge alto 13px.
 
+**Tre punti dell'app che nessun tema aveva mai coperto** (trovati dall'utente sul sito vero,
+non dai test): la cassa delle decisioni dell'Admin (`.admin-conferma-box`, fondo scuro fisso —
+rotta anche in Cuoio, corretta li' nello stesso giro), `#mio-panel` (le "materie" del tema base
+lo dipingono con un selettore che ha un id, quindi batteva la versione a sola classe del tema
+nuovo) e tutta la vista "campo 3D" dell'Anteprima (scena quasi nera con bordi al neon
+viola/ciano, righe del campo in un SVG `.ant-field-markings` con alone). Da qui due regole
+pratiche: **un tema nuovo non e' finito quando la schermata d'asta e' a posto** — vanno guardate
+anche vista Admin e Anteprima; e **prima di scrivere l'override, misurare `getComputedStyle` nel
+browser**, perche' in questo progetto la specificita' delle regole di partenza e' imprevedibile.
+Una regressione presa proprio cosi': semplificando il selettore di `#mio-panel` in un solo ramo
+corto il pannello e' tornato scuro in vista Partecipante — la forma giusta e' **una regola sola
+con due rami** (quello lungo per Partecipante, quello corto per Admin), non due regole separate.
+
 **Verifica**: contrasto calcolato via script (non a occhio) su 18 coppie chiave, tutte >=4.5:1 dopo
 due correzioni (oro-testo e rosso del tasto). Reso in browser reale (Chromium headless) con stato
 sintetico iniettato in un banco di prova temporaneo, a 1440x900 e 390x844, stato normale e
