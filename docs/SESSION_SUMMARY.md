@@ -6,64 +6,62 @@ non accumulato. La cronologia sta in `git log`, il *perché* delle scelte in
 
 ## Stato attuale
 
-Branch `main`, allineato con `origin/main` fino al selettore multi-tema + "Lavagna al Neon" — i
-**rifiniment successivi (orologio per tema, texture lavagna, Anteprima ritinta, foto reali per
-pallone Cuoio e lavagna) sono fatti e verificati in locale ma non ancora committati/pushati**,
-prossimo passo di questa sessione. Su Hostinger il deploy è automatico al push su `main`.
+Branch di lavoro `claude/arcade-mode-visual-mock-soytgj` (non ancora unito a `main`): contiene il
+**quarto tema, "Sala Giochi"**, e il mockup da cui e' nato. Su Hostinger il deploy e' automatico al
+push su `main`, quindi finche' resta su questo branch non e' online.
 
-**Novità: due texture non sono più disegnate in CSS, sono foto vere.** L'utente ha fornito due
-foto reali (pallone di cuoio vintage, lavagna vera) e ha chiesto di usarle tali e quali, non
-un'imitazione — cosa impossibile finché le foto restavano solo "viste" nella chat (nessun
-tool di Claude Code può salvare un'immagine incollata in chat come file su disco). Risolto
-facendo salvare all'utente le foto in `~/Downloads` (`pelota.jpeg`, `pizarra.jpeg`) e copiandole
-poi in `frontend/img/backgrounds/pelota-cuoio.jpeg` e `frontend/img/backgrounds/pizarra-lavagna.jpeg`
-— da lì sono file del progetto come gli altri in quella cartella, referenziabili in CSS con
-`url(...)`. **Se in futuro serve un'altra foto reale (non un'imitazione)**: stesso percorso,
-farla salvare all'utente su disco (Downloads o direttamente nella cartella giusta) e chiedere
-il nome del file — non esiste un modo per Claude Code di esportare un'immagine incollata in chat.
+**Quattro temi attivi**, tutti con lo stesso pattern (ruoli `--sc-*` in `tema-serata.css` + token
+base in `style.css`, entrambi con un blocco `[data-tema="<id>"]`, + una sezione "materie" in fondo a
+`tema-serata.css`; una riga in `TEMI` in `app.js` e, se la clessidra resta visibile, una voce in
+`MATERIALI` di `clessidra.js`):
 
-**Bug di produzione trovato e corretto in questa sessione, non un bug di tema**: la tabella
-Supabase `theme_overrides` (usata da un "Editor Visuale di Stile" nascosto, `?editor=CHIAVE`,
-vedi `backend/server.js` righe ~1837-1866) conteneva override globali salvati il 2026-08-05 che
-ricoloravano di viola `#btn-recap-iniziale`/`.storico-filtro-btn.active` **per tutti gli utenti,
-in tutti i temi** — non c'entrava il tema ne' la cache. Svuotata (`update theme_overrides set
-styles='{}' where id='default'`) via MCP Supabase, verificato sul sito reale con l'asta
-dell'utente. Se in futuro riappare un colore "che non torna" in nessun tema, controllare PRIMA
-questa tabella.
+- **`serata`** (scuro, default) — lampada ambra su sala scura.
+- **`cuoio`** (chiaro, caldo) — banco di cuoio e pergamena, foto reali; verde bosco SOLO per le
+  cifre di credito.
+- **`lavagna`** (scuro) — lavagna nera e gesso, cornice in ottone, ciano = struttura, magenta =
+  brand + denaro.
+- **`sala-giochi`** (chiaro, freddo) — cabinato anni '90: carta bianca a retino, inchiostro spesso,
+  ombre dure (`6px 6px 0`, mai sfocate), font a pixel. Cobalto = accento strutturale, oro gettone =
+  solo denaro, ciliegia = allarme **e** tasto RILANCIA (unica deroga alla regola "rosso = solo
+  stato", vedi DECISIONS.md). Nessuna immagine nuova: tutto in gradienti CSS.
 
-**Architettura tema, cambiata in questa sessione**: non più un toggle binario chiaro/scuro
-(`html.theme-light`), ma un selettore multi-tema vero — `document.documentElement` porta un
-attributo `data-tema="<id>"` (`serata`/`cuoio`/`lavagna`), gestito da `TEMI` (registro id→nome→
-swatch) e `setTema(id)` in [app.js:1-90 ca.](frontend/js/app.js). Un menu a tendina (icona 🎨,
-classi `.tema-picker*` in `style.css`, generiche/theme-agnostic) sostituisce il vecchio bottone
-sole/luna nei due punti di sempre (`.asta-header-right`, ogni `.home-header`). Migrazione
-automatica e silenziosa dal vecchio `localStorage['tema']='light'/'dark'` al nuovo id
-(`'cuoio'`/`'serata'`), poi si salva direttamente l'id.
+L'attributo e' `data-tema="<id>"` su `<html>`, il selettore e' il menu 🎨 (`.tema-picker*`, regole
+scritte solo su token base, quindi valgono anche per i temi futuri). I token globali di `style.css`
+cascano da soli su Home, Lobby, Strategie, Editor Fasce, Anteprima e Griglia P/A per tutti e quattro
+i temi, senza regole per schermata.
 
-Tre temi attivi, tutti seguono lo stesso pattern (ruoli `--sc-*` in `tema-serata.css` + token
-base in `style.css`, entrambi con blocco `:root`/`[data-tema="cuoio"]`/`[data-tema="lavagna"]`, +
-una sezione di "materie" per tema in fondo a `tema-serata.css`):
-- **`serata`** (scuro, default) — lampada ambra su sala scura, invariato dall'origine.
-- **`cuoio`** (chiaro) — banco di cuoio e pergamena (mockup utente "PuntBar"), verde bosco SOLO
-  per le cifre di credito/offerta. Ex "Mattina al banco" (bianco/argento/ottone), sostituito
-  interamente.
-- **`lavagna`** (scuro) — lavagna nera + gesso, cornice fisica in ottone attorno alla testata,
-  due neon come accenti: ciano per la struttura (bordi, cornici, tab attiva — il ruolo che
-  altrove ha l'ambra/il cuoio), magenta riservato al brand e al denaro (nome "FantaBar" in
-  font Pacifico con glow, cifra di offerta/credito). Rosso resta solo allarme. Mockup utente
-  fornito, secondo tema scuro dell'app.
+**Due promemoria operativi che non scadono:**
 
-I token globali in `style.css` (`--bg-card`,`--primary`,`--gold`,`--success`,`--text-primary`...)
-cascano automaticamente su Home, Lobby, Strategie, Editor Fasce, Anteprima e Griglia P/A per
-tutti e tre i temi senza bisogno di regole dedicate per schermata — stesso meccanismo di leva già
-sfruttato per "Cuoio", ora esteso.
+1. **Se un colore "non torna" in NESSUN tema, controllare prima la tabella Supabase
+   `theme_overrides`** (riga `id='default'`), non la cache ne' il tema: un "Editor Visuale di Stile"
+   nascosto (`?editor=CHIAVE`, `backend/server.js` ~1837-1866) salva override CSS globali per tutti
+   gli utenti, iniettati dopo entrambi i fogli. Gia' successo una volta (bottoni viola, 2026-08-05),
+   svuotata con `update theme_overrides set styles='{}' where id='default'`.
+2. **Per usare una foto vera** (non un'imitazione CSS) serve che sia l'utente a salvarla su disco e
+   dire il nome del file: nessun tool di Claude Code puo' esportare un'immagine incollata in chat.
+   Poi si copia in `frontend/img/backgrounds/` e si referenzia con `url(...)` + `?v=N` manuale.
 
-Per portare online, tornare indietro, o sapere cosa è stato verificato e cosa no:
-**[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)** (non aggiornato da nessuno dei due redesign recenti —
-descrive ancora il toggle binario e la vecchia palette chiara; da riscrivere quando si pusha
-"Lavagna al Neon").
+Per portare online o tornare indietro: **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)** — attenzione, e'
+fermo al vecchio toggle binario chiaro/scuro e alla palette chiara precedente, va riscritto per i
+quattro temi prima del prossimo deploy importante.
 
 ## Cambi recenti
+
+- **Quarto tema "Sala Giochi" (chiaro, da cabinato), dal mockup approvato all'implementazione.**
+  Richiesto come "modo chiaro stile arcade": prima un mockup visuale
+  ([docs/mockup-tema-sala-giochi.html](mockup-tema-sala-giochi.html) — la sola schermata d'asta,
+  desktop e mobile, nei due stati), poi il tema vero. Cinque file toccati, nessuna riga degli altri
+  tre temi modificata: `app.js` (una riga in `TEMI`), `style.css` (token base + testata/avatar/
+  strategie), `tema-serata.css` (ruoli `--sc-*` + sezione "materie" in fondo), `clessidra.js`
+  (materiali: cornice cobalto, sabbia oro), `index.html` (i due font a pixel + `?v=` nuovi su tutti
+  e quattro i file).
+  Le decisioni non ovvie (rosso anche sull'azione, oro con due valori diversi per fondo e testo,
+  nome del giocatore NON a pixel, ombre solide invece che sfocate) sono in
+  [DECISIONS.md](../DECISIONS.md).
+  **Verificato**: contrasto via script su 18 coppie (tutte >=4.5:1 dopo due correzioni), reso in
+  Chromium headless con stato sintetico a 1440x900 e 390x844, stato normale e `puja-urgente`,
+  confrontato con `serata`/`cuoio`. **Non verificato**: asta vera, vista Admin, modali, Griglia P/A,
+  Anteprima, Strategie.
 
 - **Autorellenar sceglieva i PEGGIORI, non i migliori — bug reale nel valore di riferimento.**
   Segnalato dall'utente subito dopo il rilascio del punto sotto. Causa: l'algoritmo confrontava
@@ -427,9 +425,9 @@ strumento): è ridondante da quando il tema ridisegna la stessa zona con specifi
   (svincolo, conferma RIC, plusvalenza/recompra, annulla storico) con dati reali. È il limite
   noto di tutte le sessioni finora — non ci sono credenziali di test.
 - Schermate Strategie, Editor Fasce, Anteprima e Griglia P/A: ereditano la palette ma non sono
-  state guardate una per una, in nessuno dei tre temi.
+  state guardate una per una, in nessuno dei quattro temi.
 - [docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md) descrive ancora il vecchio toggle binario e la palette
-  chiara precedente — da riscrivere per i 3 temi/selettore prima del prossimo deploy importante.
+  chiara precedente — da riscrivere per i 4 temi/selettore prima del prossimo deploy importante.
 - Ripristinare `.cc-strategia-info` su mobile: è l'unico `display:none` del tema che tocca
   contenuto vero e non decorazione.
 - Nel tema **scuro** il grigio più tenue (`--sc-tenue`) resta a 3.4:1 su testi da 9-10px. È così
@@ -437,7 +435,8 @@ strumento): è ridondante da quando il tema ridisegna la stessa zona con specifi
 
 ## Prossimo passo
 
-Aprire un'asta di test reale, idealmente con 2+ dispositivi, e guardare in ordine: la schermata
+Unire il branch del tema "Sala Giochi" a `main` (il push su `main` e' anche il deploy) e poi
+aprire un'asta di test reale, idealmente con 2+ dispositivi, e guardare in ordine: la schermata
 asta (sera e mattina), i modali di svincolo con dati veri, e infine i comportamenti della puja
 (la leva su RILANCIA).
 

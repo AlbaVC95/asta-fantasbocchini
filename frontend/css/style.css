@@ -1466,6 +1466,82 @@ html[data-tema="lavagna"] #screen-strategia-editor.active{
 }
 html[data-tema="lavagna"] .badge-ruolo.r-XX{background:#191C22;color:var(--text-muted)}
 
+/* ══ SALA GIOCHI — quarto tema (chiaro), il cabinato della sala giochi ══
+   Chiaro come Cuoio ma dall'altra parte: Cuoio e' caldo e materico (pergamena,
+   cuoio, luce di giorno), questo e' freddo e grafico — carta stampata a retino,
+   inchiostro spesso al posto delle ombre sfumate, colore piatto.
+   Cobalto = accento strutturale (il ruolo che altrove hanno ambra/cuoio/ciano),
+   ciliegia = solo allarme e azione di rilancio, oro gettone = solo denaro.
+   Le materie (retino, cornici, pixel) stanno in tema-serata.css, sezione
+   "SALA GIOCHI". */
+html[data-tema="sala-giochi"]{
+  --bg-abyss:#E4E3D6;
+  --bg-deep:#F4F3EA;
+  --panel-glass-1:rgba(255,255,255,.98);
+  --panel-glass-2:rgba(250,250,245,.98);
+  --panel-glass-3:rgba(244,243,234,.96);
+  --bg-main:#FFFFFF;
+  --bg-card:#FFFFFF;
+  --bg-elevated:#F4F3EA;
+  --bg-glass:rgba(255,255,255,.95);
+  --primary:#2440D8;
+  --primary-bright:#2440D8;   /* su carta il "bright" deve restare leggibile, non schiarire */
+  --primary-dark:#1B2FA8;
+  --primary-glow:rgba(36,64,216,.22);
+  --primary-subtle:rgba(36,64,216,.10);
+  --gold:#8A5A05;             /* l'oro come TESTO: scurito fino a 5.9:1 su bianco (il
+                                 gettone pieno #F5B01A resta, ma solo come FONDO) */
+  --gold-bright:#7A4F04;
+  --gold-deep:#5E3D03;
+  --gold-glow:rgba(245,176,26,.30);
+  --gold-subtle:rgba(245,176,26,.14);
+  --fire:#D4241C;
+  --fire-bright:#B01710;
+  --fire-glow:rgba(212,36,28,.22);
+  --success:#147A52;
+  --success-glow:rgba(20,122,82,.20);
+  --danger:#D4241C;
+  --danger-glow:rgba(212,36,28,.20);
+  --text-primary:#141024;
+  --text-secondary:#4A465E;
+  --text-muted:#66627C;
+  --border:rgba(20,16,36,.18);
+  --border-light:rgba(20,16,36,.30);
+}
+/* L'ombra qui non e' luce diffusa ma un blocco d'inchiostro spostato: su fondo
+   chiaro le ombre sfumate sporcano (gia' imparato con Cuoio), un rilievo stampato no. */
+html[data-tema="sala-giochi"] .card,
+html[data-tema="sala-giochi"] .chiamata-card,
+html[data-tema="sala-giochi"] .tabs-panel,
+html[data-tema="sala-giochi"] .admin-panel,
+html[data-tema="sala-giochi"] .mio-panel,
+html[data-tema="sala-giochi"] .rilancio-box,
+html[data-tema="sala-giochi"] .panel-budget,
+html[data-tema="sala-giochi"] .modal-content{
+  box-shadow:6px 6px 0 #141024!important;
+}
+/* Come in Cuoio: sull'avatar si toccano SOLO bordo e raggio, mai le misure
+   (c'e' un bug storico legato a .cc-avatar che cambia forma tra contesti). */
+html[data-tema="sala-giochi"] .cc-avatar{background:#2440D8;border-radius:0;border:3px solid #141024}
+/* La testata NON e' scura come in Cuoio: qui e' la marquee del cabinato, carta
+   bianca con il filo d'inchiostro sotto. */
+html[data-tema="sala-giochi"] .asta-header{
+  background:#FFFFFF;
+  border-bottom:4px solid #141024;
+  box-shadow:none;
+}
+html[data-tema="sala-giochi"] .home-header{color:#141024}
+html[data-tema="sala-giochi"] .home-logo{filter:none}
+html[data-tema="sala-giochi"] #screen-strategie-lista.active,
+html[data-tema="sala-giochi"] #screen-strategia-form.active,
+html[data-tema="sala-giochi"] #screen-strategia-editor.active{
+  background:
+    repeating-conic-gradient(rgba(36,64,216,.05) 0% 25%, transparent 0% 50%),
+    var(--bg-deep);
+  background-size:8px 8px, auto;
+}
+html[data-tema="sala-giochi"] .badge-ruolo.r-XX{background:#F4F3EA;color:var(--text-muted)}
+
 /* ══ Selettore multi-tema — pannello a tendina, generico su tutti i temi ══
    Costruito solo su token base (--bg-card, --border-light, --text-primary...) cosi'
    si adatta da solo a qualunque tema presente e futuro, senza regole per-tema qui. */

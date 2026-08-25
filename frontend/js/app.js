@@ -7,7 +7,8 @@
 const TEMI = [
   { id: 'serata',  nome: "Serata d'Asta",  tipo: 'scuro',  swatch: '#FFB04A' },
   { id: 'cuoio',   nome: 'Cuoio',          tipo: 'chiaro', swatch: '#7A4A22' },
-  { id: 'lavagna', nome: 'Lavagna al Neon', tipo: 'scuro',  swatch: '#22D3EE' }
+  { id: 'lavagna', nome: 'Lavagna al Neon', tipo: 'scuro',  swatch: '#22D3EE' },
+  { id: 'sala-giochi', nome: 'Sala Giochi', tipo: 'chiaro', swatch: '#2440D8' }
 ];
 const TEMA_DEFAULT = 'serata';
 function _temaValido(id) { return TEMI.some(function(t) { return t.id === id; }); }

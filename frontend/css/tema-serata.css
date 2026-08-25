@@ -54,6 +54,18 @@ html[data-tema="cuoio"]{
   --sc-brace-piena:#A83A2A;
   --sc-fondo:#F3E7D0;
 }
+html[data-tema="sala-giochi"]{
+  --sc-carta:20,16,36;       /* sulla carta stampata il "chiaro" diventa inchiostro */
+  --sc-ambra:36,64,216;      /* il cobalto del cabinato: l'accento strutturale */
+  --sc-brace:212,36,28;      /* rosso arcade, scurito quanto basta per leggersi su bianco */
+  --sc-testo:#141024;
+  --sc-medio:#4A465E;
+  --sc-tenue:#66627C;        /* misurato 5.4:1 sulla carta */
+  --sc-ambra-piena:#2440D8;
+  --sc-ambra-alta:#1B2FA8;   /* l'"alta" qui scurisce invece di schiarire: fondo chiaro */
+  --sc-brace-piena:#D4241C;
+  --sc-fondo:#F4F3EA;
+}
 html[data-tema="lavagna"]{
   --sc-carta:240,244,248;    /* il gesso: testo e filetti sulla lavagna nera */
   --sc-ambra:34,211,238;     /* il tubo al neon ciano, l'accento strutturale */
@@ -2335,4 +2347,472 @@ html body.layout-partecipante .asta-row-tabs{
 }
 html body.layout-partecipante #asta-main-col{
   overflow-y:auto !important;overflow-x:hidden !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SALA GIOCHI — quarto tema, chiaro
+
+   Non e' Cuoio raffreddato: e' un altro locale. Cuoio e' il banco di
+   giorno (pergamena, cuoio, ombre morbide); questo e' il cabinato in
+   fondo alla sala — carta stampata a retino, inchiostro spesso, colore
+   piatto, cifre a pixel. Le ombre non sono luce: sono un blocco
+   d'inchiostro spostato di 6px, come un rilievo di stampa.
+
+   I ruoli sono quelli di sempre: cobalto = accento strutturale (bordi,
+   testate, tab attiva, cronometro), oro gettone = SOLO il denaro
+   (crediti e offerte), ciliegia = allarme e il tasto RILANCIA, cioe'
+   l'unica azione che toglie crediti. Le regole di composizione (griglie,
+   misure, container query) restano una serie sola per tutti e quattro i
+   temi: qui cambiano solo le materie.
+
+   Due font a pixel, con ruoli distinti: 'Press Start 2P' per le cose
+   corte e grandi (insegna, cifre, testate), 'Silkscreen' per tutto il
+   resto dell'interfaccia. Il NOME del giocatore resta in Archivo
+   apposta: a pixel un "KVARATSKHELIA" non ci starebbe nella carta (c'e'
+   gia' un bug storico di sconfinamento del nome, vedi piu' su).
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── L'ambiente: carta stampata, i raggi della marquee ── */
+html[data-tema="sala-giochi"] body{background:#F4F3EA !important}
+/* Nessuna fotografia qui, e nessuna immagine nuova da versionare: il retino di
+   stampa e i raggi sono due gradienti CSS. E' anche il motivo per cui questo tema
+   non ha un `?v=` da alzare sulle immagini (vedi PROJECT.md). */
+html[data-tema="sala-giochi"] .pitch-bg{
+  background-color:#F4F3EA !important;
+  background-image:
+    repeating-conic-gradient(from 0deg at 50% 26%, rgba(36,64,216,.05) 0deg 6deg, transparent 6deg 12deg),
+    radial-gradient(circle at 1px 1px, rgba(20,16,36,.13) 1px, transparent 1.7px) !important;
+  background-size:auto, 12px 12px !important;
+  background-repeat:no-repeat, repeat !important;
+  background-position:center, 0 0 !important;
+  filter:none !important;
+}
+html[data-tema="sala-giochi"] ::selection{background:rgba(36,64,216,.24);color:#141024}
+
+/* ── La testata: l'insegna del cabinato ── */
+html[data-tema="sala-giochi"] .asta-header{
+  background:#FFFFFF !important;
+  border-bottom:4px solid #141024 !important;
+  box-shadow:none !important;backdrop-filter:none !important;
+}
+/* La fascia dipinta sotto la testata — stesso punto d'aggancio della trave in
+   ottone di Lavagna, qui i tre colori del cabinato uno accanto all'altro. */
+html[data-tema="sala-giochi"] body .asta-header::after{
+  background:repeating-linear-gradient(90deg,
+    #2440D8 0 18px, #EE2B22 18px 36px, #F5B01A 36px 54px) !important;
+  box-shadow:none !important;
+}
+html[data-tema="sala-giochi"] body .asta-header-title,
+html[data-tema="sala-giochi"] body .home-title{
+  font-family:'Press Start 2P',var(--font-display) !important;font-style:normal !important;font-weight:400 !important;
+  font-size:clamp(.7rem,1.7vw,1.02rem) !important;letter-spacing:.02em !important;line-height:1.4 !important;
+  background:none !important;-webkit-text-fill-color:#2440D8 !important;color:#2440D8 !important;
+  /* l'ombra a pixel: tre strati pieni, nessuna sfocatura */
+  text-shadow:2px 0 0 #F5B01A, 2px 2px 0 #EE2B22, 4px 4px 0 #141024 !important;
+  animation:none !important;text-transform:uppercase !important;
+}
+html[data-tema="sala-giochi"] .asta-header-email{
+  font-family:'Silkscreen',var(--font-mono) !important;color:#66627C !important;
+}
+html[data-tema="sala-giochi"] .btn-sound,
+html[data-tema="sala-giochi"] .asta-header-right .btn-secondary{
+  background:#F4F3EA !important;color:#141024 !important;
+  border:3px solid #141024 !important;border-radius:0 !important;box-shadow:none !important;
+}
+html[data-tema="sala-giochi"] .btn-sound:hover,
+html[data-tema="sala-giochi"] .asta-header-right .btn-secondary:hover{
+  background:#F5B01A !important;color:#141024 !important;border-color:#141024 !important;
+}
+html[data-tema="sala-giochi"] .home-header{
+  background:#FFFFFF !important;border-radius:0 !important;
+  border-bottom:4px solid #141024 !important;box-shadow:none !important;
+}
+html[data-tema="sala-giochi"] .home-header .btn-logout-link{color:#4A465E !important}
+html[data-tema="sala-giochi"] .home-header .btn-logout-link:hover{color:#2440D8 !important}
+html[data-tema="sala-giochi"] body .card{
+  background:#FFFFFF !important;
+  border:3px solid #141024 !important;border-radius:0 !important;
+  box-shadow:6px 6px 0 #141024 !important;
+}
+html[data-tema="sala-giochi"] body .home-logo{filter:none !important}
+
+/* ── I piani: piastre bianche con la cornice d'inchiostro ── */
+html[data-tema="sala-giochi"] .panel-budget,
+html[data-tema="sala-giochi"] .mio-panel,
+html[data-tema="sala-giochi"] .admin-panel,
+html[data-tema="sala-giochi"] .tabs-panel{
+  background:#FFFFFF !important;
+  border:3px solid #141024 !important;border-radius:0 !important;
+  box-shadow:6px 6px 0 #141024 !important;
+}
+/* la testata di ogni piastra e' una targhetta cobalto, come sopra i pulsanti
+   di un cabinato */
+html[data-tema="sala-giochi"] .panel-budget-hdr{
+  font-family:'Press Start 2P',var(--font-mono) !important;font-size:.48rem !important;
+  letter-spacing:.06em !important;color:#FFFFFF !important;
+  background:#2440D8 !important;padding:10px 11px !important;
+}
+html[data-tema="sala-giochi"] .mio-panel-header .mio-nome,
+html[data-tema="sala-giochi"] .admin-badge{
+  font-family:'Press Start 2P',var(--font-mono) !important;font-size:.46rem !important;
+  letter-spacing:.05em !important;color:#2440D8 !important;
+}
+
+/* ── Il tavolo della puja: la piastra grande del cabinato ── */
+html[data-tema="sala-giochi"] body #puja-panel-slot,
+html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja{
+  background-color:#FFFFFF !important;
+  background-image:
+    repeating-conic-gradient(rgba(36,64,216,.05) 0% 25%, transparent 0% 50%),
+    radial-gradient(circle at 1px 1px, rgba(20,16,36,.10) 1px, transparent 1.7px) !important;
+  background-size:8px 8px, 12px 12px !important;
+  background-repeat:repeat, repeat !important;
+  border:4px solid #141024 !important;border-radius:0 !important;
+  box-shadow:8px 8px 0 #141024 !important;
+}
+html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot{
+  background-color:#FFF3F2 !important;
+  border-color:#D4241C !important;
+  box-shadow:8px 8px 0 #D4241C !important;
+}
+/* La miccia diventa due nastri: sopra la fascia dipinta (ferma), sotto il tempo
+   che si consuma (la stessa larghezza percentuale di sempre, solo ridipinta). */
+html[data-tema="sala-giochi"] body #puja-panel-slot::before{
+  height:10px !important;
+  background:repeating-linear-gradient(115deg,
+    #2440D8 0 12px, #FFFFFF 12px 19px, #EE2B22 19px 31px,
+    #FFFFFF 31px 38px, #F5B01A 38px 50px, #FFFFFF 50px 57px) !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot::after{
+  top:10px !important;height:5px !important;
+  background:#2440D8 !important;box-shadow:none !important;
+}
+html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot::before{
+  background:repeating-linear-gradient(115deg,#D4241C 0 12px,#FFFFFF 12px 19px) !important;
+}
+html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot::after{
+  background:#D4241C !important;box-shadow:none !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .card-timer-group{
+  border-right:3px solid rgba(20,16,36,.14) !important;
+}
+/* il conto sul tavolo */
+html[data-tema="sala-giochi"] body.layout-partecipante .asta-row-panels>#mio-panel{
+  background:#FFFFFF !important;
+  border:3px solid #141024 !important;border-radius:0 !important;
+  box-shadow:6px 6px 0 #141024 !important;
+}
+html[data-tema="sala-giochi"] body #mio-panel::before{background:#2440D8 !important}
+
+/* ── Il ritratto: una card sotto vetro, angoli vivi ── */
+html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar{
+  background:#2440D8 !important;
+  border:4px solid #141024 !important;border-radius:0 !important;
+  box-shadow:6px 6px 0 #141024 !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar-img{
+  filter:contrast(1.14) saturate(1.06) !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar::after{
+  background:linear-gradient(202deg, rgba(36,64,216,.50) 0%, rgba(245,176,26,.10) 55%, rgba(238,43,34,.28) 100%) !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar::before{
+  background:linear-gradient(180deg, rgba(255,255,255,.22) 0%, transparent 40%, rgba(20,16,36,.32) 100%) !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar-svg{opacity:.7 !important}
+
+/* ── Il nome: inchiostro con l'ombra dura cobalto ── */
+html[data-tema="sala-giochi"] body #puja-panel-slot .cc-nome{
+  color:#141024 !important;text-shadow:3px 3px 0 rgba(36,64,216,.26) !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .cc-meta{
+  font-family:'Silkscreen',var(--font-mono) !important;letter-spacing:.08em !important;
+  font-size:.68rem !important;color:#4A465E !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .cc-offerente,
+html[data-tema="sala-giochi"] body #puja-panel-slot .cc-strategia-info{
+  font-family:'Silkscreen',var(--font-mono) !important;color:#66627C !important;
+}
+
+/* ── Il denaro: l'unico oro del tema ── */
+html[data-tema="sala-giochi"] body #puja-panel-slot .cc-offerta,
+html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .cc-offerta{
+  font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
+  font-variation-settings:normal !important;
+  font-size:3.1rem !important;line-height:1.06 !important;letter-spacing:0 !important;
+  color:#141024 !important;
+  text-shadow:5px 5px 0 #F5B01A, 9px 9px 0 rgba(20,16,36,.14) !important;
+}
+html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .cc-offerta{
+  text-shadow:5px 5px 0 #D4241C, 9px 9px 0 rgba(20,16,36,.14) !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .cc-offerta-label{
+  font-family:'Press Start 2P',var(--font-mono) !important;font-size:.44rem !important;
+  letter-spacing:.1em !important;color:#8A5A05 !important;
+}
+html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .cc-offerta-label{color:#D4241C !important}
+/* i crediti nella lista squadre: un gettone, non un numero qualsiasi */
+html[data-tema="sala-giochi"] .sq-crediti{
+  font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
+  font-variation-settings:normal !important;font-size:.5rem !important;
+  color:#141024 !important;background:#F5B01A !important;
+  border:2px solid #141024 !important;padding:4px 5px 3px !important;
+  display:inline-block !important;line-height:1 !important;
+}
+/* "chi sta vincendo ora" resta uno stato della riga, non un colore diverso del
+   gettone: stessa distinzione semantica gia' scelta in Cuoio. */
+html[data-tema="sala-giochi"] .sidebar-squadra.offerente-attuale .sq-crediti{
+  color:#141024 !important;background:#F5B01A !important;
+}
+html[data-tema="sala-giochi"] body #mio-panel .crediti-badge{
+  font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
+  font-variation-settings:normal !important;
+  font-size:1.25rem !important;line-height:1 !important;letter-spacing:0 !important;
+  display:inline-block !important;
+  color:#141024 !important;background:#F5B01A !important;
+  border:3px solid #141024 !important;border-radius:0 !important;
+  padding:9px 11px 7px !important;
+}
+html[data-tema="sala-giochi"] .crediti-badge{
+  background:#F5B01A !important;border:2px solid #141024 !important;border-radius:0 !important;
+  color:#141024 !important;font-family:'Press Start 2P',Archivo,sans-serif !important;
+  font-weight:400 !important;font-variation-settings:normal !important;font-size:.5rem !important;
+}
+
+/* ── Le squadre al tavolo: il tabellone dei record ── */
+html[data-tema="sala-giochi"] .sidebar-squadra{
+  border-left:6px solid transparent !important;
+  border-bottom:2px solid rgba(20,16,36,.10) !important;
+}
+html[data-tema="sala-giochi"] .sidebar-squadra.mia-squadra{
+  background:rgba(36,64,216,.09) !important;border-left-color:#2440D8 !important;
+}
+html[data-tema="sala-giochi"] .sidebar-squadra.offerente-attuale{
+  background:rgba(245,176,26,.20) !important;border-left-color:#F5B01A !important;
+}
+html[data-tema="sala-giochi"] .sidebar-squadra.critica{border-left-color:#D4241C !important}
+html[data-tema="sala-giochi"] .sidebar-squadra:hover{background:rgba(20,16,36,.04) !important}
+html[data-tema="sala-giochi"] .sq-nome{
+  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-variation-settings:normal !important;letter-spacing:.02em !important;color:#4A465E !important;
+}
+html[data-tema="sala-giochi"] .sidebar-squadra.mia-squadra .sq-nome{color:#141024 !important}
+html[data-tema="sala-giochi"] .sq-svincoli,
+html[data-tema="sala-giochi"] .slot-chip,
+html[data-tema="sala-giochi"] .sq-slot{
+  font-family:'Silkscreen',var(--font-mono) !important;color:#66627C !important;
+}
+/* La barra dei crediti diventa una barra energia: stesso dato, stessi stati
+   ok/warn/crit, solo tagliata a tacche invece che continua. */
+html[data-tema="sala-giochi"] .budget-progress{
+  height:9px !important;border-radius:0 !important;
+  background:rgba(20,16,36,.10) !important;border:2px solid #141024 !important;
+}
+html[data-tema="sala-giochi"] .budget-progress-fill{background-color:transparent !important}
+html[data-tema="sala-giochi"] .budget-progress-fill.ok{
+  background-image:repeating-linear-gradient(90deg,#2440D8 0 6px,transparent 6px 8px) !important;
+}
+html[data-tema="sala-giochi"] .budget-progress-fill.warn{
+  background-image:repeating-linear-gradient(90deg,#F5B01A 0 6px,transparent 6px 8px) !important;
+}
+html[data-tema="sala-giochi"] .budget-progress-fill.crit{
+  background-image:repeating-linear-gradient(90deg,#D4241C 0 6px,transparent 6px 8px) !important;
+}
+
+/* ── La pulsantiera ── */
+html[data-tema="sala-giochi"] body #puja-panel-slot .quick-bids-row,
+html[data-tema="sala-giochi"] body #puja-panel-slot .manual-bid-row{
+  background:#FFFFFF !important;border:3px solid #141024 !important;border-radius:0 !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .btn-quick,
+html[data-tema="sala-giochi"] body #puja-panel-slot .btn-manuale{
+  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-variation-settings:normal !important;color:#141024 !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .btn-quick:hover{background:#F5B01A !important}
+html[data-tema="sala-giochi"] body #puja-panel-slot .btn-quick + .btn-quick,
+html[data-tema="sala-giochi"] body #puja-panel-slot .btn-manuale{
+  border-left:3px solid #141024 !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .inp-rilancio{
+  background:#F4F3EA !important;color:#141024 !important;
+  font-family:'Silkscreen',var(--font-mono) !important;
+}
+/* Il tasto rosso del cabinato. Il rosso qui non e' solo allarme ma anche
+   l'azione — e' l'unico bottone che toglie crediti; il resto del rosso resta
+   riservato agli ultimi secondi, che si distinguono perche' cambia TUTTA la
+   piastra (cornice, ombra, nastri, cronometro) e il tasto pulsa. */
+html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia{
+  background:#D4241C !important;color:#FFFFFF !important;
+  font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
+  font-variation-settings:normal !important;
+  font-size:.48rem !important;letter-spacing:.02em !important;
+  padding:0 12px !important;
+  border:4px solid #141024 !important;border-radius:0 !important;
+  box-shadow:6px 6px 0 #141024 !important;
+  text-shadow:3px 3px 0 rgba(20,16,36,.45) !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia::after{
+  font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
+  font-variation-settings:normal !important;font-size:.6rem !important;
+  padding-left:10px !important;margin-left:10px !important;
+  border-left:3px solid rgba(255,255,255,.55) !important;
+}
+/* la pressione del bottone: si affonda nel suo stesso rilievo */
+html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia:active{
+  transform:translate(6px,6px) !important;box-shadow:none !important;
+}
+html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .btn-rilancia{
+  background:#B01710 !important;box-shadow:6px 6px 0 #141024 !important;
+  animation:sg-pigia .45s steps(2) infinite !important;
+}
+@keyframes sg-pigia{
+  50%{transform:translate(3px,3px);box-shadow:3px 3px 0 #141024}
+}
+
+/* ── Il cronometro: cifre da punteggio ── */
+html[data-tema="sala-giochi"] body #puja-panel-slot .timer-number,
+html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .timer-number{
+  font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
+  font-variation-settings:normal !important;
+  font-size:1.8rem !important;letter-spacing:0 !important;
+  color:#2440D8 !important;text-shadow:4px 4px 0 rgba(36,64,216,.20) !important;
+}
+html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .timer-number,
+html[data-tema="sala-giochi"] body #puja-panel-slot .timer-ring-container.urgent .timer-number{
+  color:#D4241C !important;text-shadow:4px 4px 0 rgba(212,36,28,.22) !important;
+}
+html[data-tema="sala-giochi"] body #puja-panel-slot .timer-label-text{
+  font-family:'Press Start 2P',var(--font-mono) !important;font-size:.4rem !important;
+  letter-spacing:.08em !important;color:#66627C !important;
+}
+
+/* ── Le tab: la fila di pulsanti del cabinato ── */
+html[data-tema="sala-giochi"] .tabs-nav{
+  background:#141024 !important;padding:4px !important;gap:4px !important;
+  border-bottom:none !important;
+}
+html[data-tema="sala-giochi"] .tab-btn{
+  font-family:'Silkscreen',var(--font-mono) !important;font-weight:700 !important;
+  font-size:.68rem !important;letter-spacing:.05em !important;
+  background:#F4F3EA !important;color:#4A465E !important;
+  padding:12px 15px !important;border-radius:0 !important;
+}
+html[data-tema="sala-giochi"] .tab-btn:hover{background:#FFFFFF !important;color:#141024 !important}
+html[data-tema="sala-giochi"] .tab-btn.active{background:#2440D8 !important;color:#FFFFFF !important}
+html[data-tema="sala-giochi"] .tab-btn.active::after{display:none !important}
+html[data-tema="sala-giochi"] .pill-btn{
+  border-radius:0 !important;border:2px solid #141024 !important;
+  background:#F5B01A !important;color:#141024 !important;
+}
+html[data-tema="sala-giochi"] .pill-btn::before{display:none !important}
+html[data-tema="sala-giochi"] .storico-list li,
+html[data-tema="sala-giochi"] .rose-row,
+html[data-tema="sala-giochi"] .libero-row,
+html[data-tema="sala-giochi"] .storico-export-item{
+  border-bottom:2px solid rgba(20,16,36,.10) !important;color:#141024 !important;
+}
+html[data-tema="sala-giochi"] .tab-content{color:#141024}
+html[data-tema="sala-giochi"] .text-accent{color:#2440D8 !important}
+html[data-tema="sala-giochi"] .storico-filtro-btn,
+html[data-tema="sala-giochi"] .filtro-btn{
+  background:#FFFFFF !important;border:2px solid #141024 !important;border-radius:0 !important;
+  color:#4A465E !important;font-family:'Silkscreen',var(--font-mono) !important;
+}
+html[data-tema="sala-giochi"] .storico-filtro-btn.active,
+html[data-tema="sala-giochi"] .filtro-btn.active{
+  background:#2440D8 !important;color:#FFFFFF !important;border-color:#141024 !important;
+}
+
+/* ── I bottoni: plastica stampata, nessun gradiente ── */
+html[data-tema="sala-giochi"] .btn{
+  border-radius:0 !important;
+  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-variation-settings:normal !important;letter-spacing:.04em !important;
+}
+html[data-tema="sala-giochi"] .btn::before{display:none !important}
+html[data-tema="sala-giochi"] .btn:hover{transform:none !important}
+html[data-tema="sala-giochi"] .btn:active{transform:translate(3px,3px) !important;box-shadow:none !important}
+html[data-tema="sala-giochi"] .btn-primary{
+  background:#2440D8 !important;color:#FFFFFF !important;
+  border:3px solid #141024 !important;box-shadow:4px 4px 0 #141024 !important;
+}
+html[data-tema="sala-giochi"] .btn-secondary{
+  background:#FFFFFF !important;color:#141024 !important;
+  border:3px solid #141024 !important;box-shadow:4px 4px 0 #141024 !important;
+}
+html[data-tema="sala-giochi"] .btn-accent{
+  background:#F5B01A !important;color:#141024 !important;
+  border:3px solid #141024 !important;box-shadow:4px 4px 0 #141024 !important;
+}
+html[data-tema="sala-giochi"] .btn-danger{
+  background:#FFFFFF !important;color:#D4241C !important;
+  border:3px solid #D4241C !important;box-shadow:4px 4px 0 #D4241C !important;
+}
+html[data-tema="sala-giochi"] .btn-success{
+  background:#FFFFFF !important;color:#147A52 !important;
+  border:3px solid #147A52 !important;box-shadow:4px 4px 0 #147A52 !important;
+}
+html[data-tema="sala-giochi"] .rose-inp,
+html[data-tema="sala-giochi"] input[type=text],
+html[data-tema="sala-giochi"] input[type=number],
+html[data-tema="sala-giochi"] select{
+  background:#FFFFFF !important;border:3px solid #141024 !important;
+  border-radius:0 !important;color:#141024 !important;
+}
+
+/* ── I badge di ruolo: gettoni piatti, stessa codifica per colore ──
+   Il bordo e' un box-shadow inset e non un border apposta: i badge hanno
+   misure fisse per breakpoint (style.css), un bordo vero le sposterebbe. */
+html[data-tema="sala-giochi"] .badge-ruolo{
+  border-radius:0 !important;box-shadow:inset 0 0 0 2px #141024 !important;
+  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+}
+html[data-tema="sala-giochi"] .badge-ruolo.r-P,
+html[data-tema="sala-giochi"] .badge-ruolo.r-Por,
+html[data-tema="sala-giochi"] .badge-ruolo.r-T{background:#F5B01A !important;color:#141024 !important}
+html[data-tema="sala-giochi"] .badge-ruolo.r-D,
+html[data-tema="sala-giochi"] .badge-ruolo.r-Dc,
+html[data-tema="sala-giochi"] .badge-ruolo.r-Ds,
+html[data-tema="sala-giochi"] .badge-ruolo.r-Dd,
+html[data-tema="sala-giochi"] .badge-ruolo.r-B,
+html[data-tema="sala-giochi"] .badge-ruolo.r-E{background:#5FD3A0 !important;color:#141024 !important}
+html[data-tema="sala-giochi"] .badge-ruolo.r-C,
+html[data-tema="sala-giochi"] .badge-ruolo.r-M,
+html[data-tema="sala-giochi"] .badge-ruolo.r-W{background:#9FB0FF !important;color:#141024 !important}
+html[data-tema="sala-giochi"] .badge-ruolo.r-A,
+html[data-tema="sala-giochi"] .badge-ruolo.r-Pc{background:#FF8079 !important;color:#141024 !important}
+
+/* ── Il drawer di Anteprima, i modali ── */
+html[data-tema="sala-giochi"] #tab-anteprima.ant-drawer{
+  background:#FFFFFF !important;border:3px solid #141024 !important;border-radius:0 !important;
+}
+html[data-tema="sala-giochi"] .ant-drawer-close{
+  background:#F4F3EA !important;border:3px solid #141024 !important;
+  border-radius:0 !important;color:#141024 !important;
+}
+html[data-tema="sala-giochi"] .modal-content{
+  background:#FFFFFF !important;border:4px solid #141024 !important;
+  border-radius:0 !important;box-shadow:8px 8px 0 #141024 !important;
+}
+
+/* ── L'assegnazione: il verde resta solo qui, come negli altri temi ── */
+html[data-tema="sala-giochi"] body .timbro-preso span,
+html[data-tema="sala-giochi"] body .chiamata-card.assegnata .cc-esito{
+  color:#147A52 !important;text-shadow:none !important;
+}
+html[data-tema="sala-giochi"] body .timbro-preso span{border-color:#147A52 !important;border-radius:0 !important}
+
+/* ── Schermo stretto: le cifre a pixel sono piu' larghe di quelle di Archivo,
+      quindi qui scendono di un gradino in piu' del solito ── */
+@media (max-width:760px){
+  html[data-tema="sala-giochi"] body #puja-panel-slot .cc-offerta{font-size:1.9rem !important}
+  html[data-tema="sala-giochi"] body #puja-panel-slot .timer-number{font-size:1.3rem !important}
+  html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia{font-size:.46rem !important}
+  html[data-tema="sala-giochi"] body .asta-header-title{font-size:.62rem !important}
+}
+
+/* chi non vuole movimento: il tasto smette di pulsare (il colore resta) */
+@media(prefers-reduced-motion:reduce){
+  html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .btn-rilancia{animation:none !important}
 }

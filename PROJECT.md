@@ -45,8 +45,9 @@ frontend/index.html        ← SPA a singolo file: tutte le "screen" sono <secti
 frontend/js/app.js         ← TUTTA la logica client + WebSocket (1 file, ~4700 righe)
 frontend/js/gk-planner-*.js← modulo indipendente "Griglia Portieri/Attaccanti" (vedi ARCHITECTURE.md)
 frontend/css/style.css     ← foglio storico: palette (:root), layout, tutti i breakpoint
-frontend/css/tema-serata.css← selettore multi-tema: composizione e materie dei 3 temi (`serata`/
-                            `cuoio`/`lavagna`, attributo `data-tema` su `<html>`), caricato DOPO style.css
+frontend/css/tema-serata.css← selettore multi-tema: composizione e materie dei 4 temi (`serata`/
+                            `cuoio`/`lavagna`/`sala-giochi`, attributo `data-tema` su `<html>`),
+                            caricato DOPO style.css
 frontend/js/clessidra.js   ← la clessidra del cronometro (SVG); legge il tempo, non lo calcola
 frontend/js/comportamenti-asta.js ← comportamenti aggiuntivi della puja (leva, "ancora in gioco")
 frontend/data/*.json       ← dati statici (calendario placeholder, index foto giocatori, override nomi)
@@ -77,7 +78,8 @@ Senza di esse il server parte comunque ma tutte le funzionalità legate a Supaba
 - Nel frontend (`app.js`), le sezioni principali del file sono individuabili dai commenti `══` che le
   separano.
 - **Fine riga miste — mai l'Edit tool su `frontend/js/app.js`, `frontend/index.html`,
-  `frontend/css/style.css`**: hanno righe LF-only preesistenti (rispettivamente 137, 19 e 210) e
+  `frontend/css/style.css`**: hanno righe LF-only preesistenti (rispettivamente 240, 19 e 210 —
+  contate il 2026-08-25, il numero di app.js cresce man mano che si aggiungono righe LF) e
   l'Edit tool converte tutto il file a LF, producendo un diff enorme. Usare uno script Node/Python
   che legge il file grezzo e sostituisce stringhe esatte, e ricontare le righe LF-only prima e dopo.
   **Lo stile non e' uniforme in tutto il file**: alcune zone (es. le funzioni 3D dello stadio in

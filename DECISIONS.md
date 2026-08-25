@@ -864,3 +864,55 @@ aggiungendo lo stesso controllo `if (asta.popupAttivo) return ...` usato per `ch
 tutti e tre gli handler. Nessun rischio di bloccare l'asta senza via d'uscita: l'Admin ha già un
 percorso per risolvere lui stesso lo svincolo per conto della squadra (`popup-svincolo-admin`,
 esistente da prima), quindi non serve un override separato per sbloccare.
+
+## "Sala Giochi": il secondo tema chiaro non e' Cuoio raffreddato, e' l'altro estremo
+
+Quarto tema, richiesto dall'utente come "modo chiaro stile arcade" e disegnato prima come mockup
+([docs/mockup-tema-sala-giochi.html](docs/mockup-tema-sala-giochi.html), approvato) e solo dopo
+implementato. Il rischio vero non era il colore ma la sovrapposizione: avere DUE temi chiari che
+si somigliano li rende entrambi inutili. Cuoio e' chiaro-caldo-materico (pergamena, cuoio, ombre
+morbide, foto vere); Sala Giochi e' chiaro-freddo-grafico (carta bianca a retino, inchiostro,
+colore piatto, zero fotografie). Le due direzioni sono opposte apposta.
+
+Il pattern di aggiunta era gia' rodato (vedi la decisione sul selettore `data-tema`) e ha retto
+senza modifiche strutturali: **una riga in `TEMI`** (app.js), **un blocco di token base** in
+`style.css`, **un blocco di ruoli `--sc-*`** + **una sezione "materie"** in fondo a
+`tema-serata.css`, **una voce in `MATERIALI`** di `clessidra.js`. Zero righe degli altri tre temi
+toccate.
+
+Scelte non ovvie, per chi tocca queste regole in futuro:
+
+- **Il rosso qui non e' solo allarme: e' anche il tasto RILANCIA.** Negli altri tre temi il rosso
+  e' esclusivamente stato. Deroga deliberata (il mockup approvato lo mostrava cosi'): RILANCIA e'
+  l'unico bottone che toglie crediti, quindi resta dentro la famiglia semantica "attenzione". Per
+  non perdere il segnale degli ultimi secondi, l'urgenza non si affida piu' al solo colore del
+  tasto: cambia TUTTA la piastra (cornice, ombra, nastri, cronometro, cifra) e il tasto passa a un
+  rosso piu' scuro *e* pulsa.
+- **L'oro ha due valori, non uno**: `#F5B01A` esiste solo come FONDO (il gettone dietro le cifre di
+  credito), mentre come TESTO l'oro e' `#8A5A05`. Misurato: il giallo pieno su bianco sta a 3.2:1,
+  sotto la soglia; il gettone con testo inchiostro sopra sta a 9.8:1. Stessa regola restrittiva del
+  verde in Cuoio (se non e' denaro, non e' oro), applicata a due tinte invece che a una.
+- **Il NOME del giocatore resta in Archivo, non in font a pixel.** E' l'unico punto del mockup non
+  riprodotto alla lettera, e non per gusto: c'e' gia' un bug storico di sconfinamento del nome
+  (`KVARATSKHELIA`/`KOUTSOUPIAS`, vedi sopra) e le lettere a pixel sono ~1.6x piu' larghe di
+  Archivo condensato. I due font a pixel ('Press Start 2P' per insegna/cifre/testate, 'Silkscreen'
+  per il resto dell'interfaccia) stanno ovunque tranne li'.
+- **La larghezza dei font a pixel e' un vincolo di layout, non un dettaglio tipografico**: il totale
+  dentro il tasto RILANCIA usciva dal bordo a 270px con la stessa dimensione che Archivo reggeva
+  benissimo. Misurato in browser e ridotto (0.48rem/0.6rem). Se si cambia una dimensione qui,
+  ricontrollare a 1440 **e** a 390px, non solo su desktop.
+- **Nessuna immagine nuova**: retino, raggi del marquee e barre a tacche sono gradienti CSS. E' anche
+  il motivo per cui questo tema non ha nessun `?v=` da alzare sulle immagini (vedi PROJECT.md,
+  cache-busting su `url(...)`): non ne referenzia.
+- **Le ombre sono blocchi d'inchiostro spostati (`6px 6px 0`), mai sfocate.** Su fondo chiaro le
+  ombre morbide sporcano — gia' imparato con Cuoio, dove erano state RIMOSSE; qui la stessa lezione
+  arriva all'altra conclusione: non toglierle, ma renderle solide.
+- **Il bordo dei badge di ruolo e' un `box-shadow: inset`, non un `border`.** I badge hanno misure
+  fisse per breakpoint in `style.css`: un bordo vero, anche con `box-sizing:border-box`, avrebbe
+  mangiato spazio interno a un badge alto 13px.
+
+**Verifica**: contrasto calcolato via script (non a occhio) su 18 coppie chiave, tutte >=4.5:1 dopo
+due correzioni (oro-testo e rosso del tasto). Reso in browser reale (Chromium headless) con stato
+sintetico iniettato in un banco di prova temporaneo, a 1440x900 e 390x844, stato normale e
+`puja-urgente`, confrontato con `serata` e `cuoio` alla stessa larghezza. **Non verificato**: asta
+vera, vista Admin, modali, Griglia P/A, Anteprima, Strategie — lo stesso limite di sempre.

@@ -36,6 +36,13 @@
     cuoio: {
       ottone: ['#2B1B10', '#8F5A2C', '#6B4423', '#A87C4E', '#4A2E17', '#2B1B10'],
       sabbia: ['#D9B98C', '#8F5A2C', '#4A2E17']
+    },
+    // Sala Giochi: la cornice e' il cobalto del cabinato (l'accento strutturale del tema),
+    // la sabbia resta l'oro del gettone — il denaro e il tempo che scorre, gli unici due
+    // gialli concessi. Nessun ottone: qui e' plastica stampata, non metallo.
+    'sala-giochi': {
+      ottone: ['#141024', '#5A72F0', '#2440D8', '#8CA0FF', '#1B2FA8', '#141024'],
+      sabbia: ['#FFD37A', '#F5B01A', '#C4820A']
     }
   };
 
