@@ -6,8 +6,9 @@ non accumulato. La cronologia sta in `git log`, il *perché* delle scelte in
 
 ## Stato attuale
 
-Branch `main`. Deploy automatico su Hostinger al push su `main`. **Le modifiche di sicurezza
-descritte qui sotto sono nel working tree e non sono ancora state committate né deployate.**
+Branch `main`, allineato con `origin/main`. Deploy automatico su Hostinger al push su `main`.
+Il giro di sicurezza e il fix delle etichette in Anteprima (vedi sotto) sono **committati e
+pushati** il 2026-08-25 (commit `18b0bb9`), quindi in produzione.
 
 **Quattro temi attivi** (`serata` default, `cuoio`, `lavagna`, `sala-giochi`), tutti con lo stesso
 pattern (ruoli `--sc-*` in `tema-serata.css` + token base in `style.css`, entrambi con un blocco
