@@ -1159,6 +1159,14 @@ Tre trappole incontrate, tutte utili da ricordare:
    utente vinceva *per caso*, perche' contiene gia' `#puja-panel-slot`. Risultato: la foto restava
    alta il 100% della scatola solo in vista Admin. Aggiunto `#chiamata-card` anche li'.
 
+**Niente nero attorno alla foto** (richiesta dell'utente dopo il primo rilascio): il nero veniva
+da tre punti diversi, e toglierne uno solo non sarebbe bastato. (1) Il bisel scuro del monitor.
+(2) Il `stroke` del corpo del mobile: su un path con `fill-rule="evenodd"` il tratto viene
+disegnato **anche attorno al buco**, quindi la foto si ritrovava un contorno nero anche senza
+bisel — risolto separando il path in due, uno riempito col buco (senza tratto) e uno che disegna
+il solo contorno esterno. (3) La vignettatura del vetro, che scuriva i bordi della foto stessa.
+Ora la foto sta direttamente nell'apertura del mobile, sul cobalto.
+
 E una trappola di **metodo**: ispezionare questa cornice col `zoom` del browser inganna, perche'
 `zoom` riduce anche la dimensione del container `sala` e fa scattare le soglie strette. Sembrava
 un bug, era lo strumento di misura. Si guarda con finestra stretta + colonna forzata larga, a 1:1.
