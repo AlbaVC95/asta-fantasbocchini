@@ -1,0 +1,773 @@
+<title>Sala Giochi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Press+Start+2P&display=swap">
+
+<style>
+/* ══════════════════════════════════════════════════════════════
+   Pagina-pitch: cromo attorno al mock (grigio freddo da sala giochi)
+   ══════════════════════════════════════════════════════════════ */
+:root{
+  --pg-fondo:#DFE2EC;
+  --pg-fondo-2:#CFD4E2;
+  --pg-inchiostro:#141024;
+  --pg-medio:#4A465E;
+  --pg-tenue:#6F6B85;
+  --pg-linea:#B9BECE;
+
+  /* i tre colori del cabinato: accento / allarme / gettone */
+  --cobalto:#2440D8;
+  --ciliegia:#EE2B22;
+  --gettone:#F0A81E;
+
+  --sp:clamp(28px,4vw,56px);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--pg-fondo);
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(20,16,36,.10) 1px, transparent 1.6px);
+  background-size:14px 14px;
+  color:var(--pg-inchiostro);
+  font-family:'Archivo','Helvetica Neue',Arial,sans-serif;
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:var(--sp) 20px 96px}
+p{margin:0}
+h1,h2,h3{margin:0;text-wrap:balance;line-height:1.1}
+
+/* ── masthead ─────────────────────────────────────────────── */
+.marquee{
+  height:14px;border:3px solid var(--pg-inchiostro);border-bottom:none;
+  background:repeating-linear-gradient(115deg,
+    var(--cobalto) 0 26px, #fff 26px 40px, var(--ciliegia) 40px 66px, #fff 66px 80px,
+    var(--gettone) 80px 106px, #fff 106px 120px);
+}
+.masthead{
+  border:3px solid var(--pg-inchiostro);
+  background:#F7F7F1;
+  box-shadow:8px 8px 0 var(--pg-inchiostro);
+  padding:clamp(24px,3.4vw,40px);
+  display:grid;gap:18px;
+}
+.eyebrow{
+  font-family:'Press Start 2P',ui-monospace,monospace;
+  font-size:9px;letter-spacing:.14em;color:var(--cobalto);text-transform:uppercase;
+}
+.masthead h1{
+  font-family:'Press Start 2P',ui-monospace,monospace;
+  font-size:clamp(26px,5.4vw,52px);line-height:1.18;letter-spacing:-.01em;
+  color:var(--pg-inchiostro);
+  text-shadow:4px 4px 0 var(--gettone), 8px 8px 0 var(--ciliegia);
+}
+.tesi{max-width:60ch;font-size:clamp(15px,1.5vw,18px);color:var(--pg-medio)}
+.tesi b{color:var(--pg-inchiostro);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+.chip{
+  display:inline-flex;align-items:center;gap:7px;
+  border:2px solid var(--pg-inchiostro);background:#fff;
+  padding:5px 11px;font-size:12.5px;font-weight:700;letter-spacing:.02em;
+}
+.pastiglia{width:11px;height:11px;border:2px solid var(--pg-inchiostro);display:inline-block}
+
+/* ── sezioni ──────────────────────────────────────────────── */
+section{margin-top:clamp(44px,6vw,80px)}
+.sez-hdr{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.sez-hdr h2{font-size:clamp(20px,2.4vw,27px);font-weight:800;letter-spacing:-.02em}
+.sez-hdr .nota{font-size:14px;color:var(--pg-tenue);max-width:52ch}
+
+/* ══════════════════════════════════════════════════════════════
+   IL TEMA — "Sala Giochi": tutto ciò che sta dentro .arcade
+   ══════════════════════════════════════════════════════════════ */
+.arcade{
+  /* i ruoli --sc-* del progetto, tradotti in sala giochi */
+  --sc-fondo:#F7F7F1;        /* la carta del cabinato */
+  --sc-testo:#141024;        /* inchiostro, mai nero puro */
+  --sc-medio:#4A465E;
+  --sc-tenue:#78748D;
+  --sc-ambra-piena:#2440D8;  /* accento strutturale = cobalto */
+  --sc-ambra-alta:#5A72F0;
+  --sc-brace-piena:#EE2B22;  /* solo allarme */
+  --oro:#F0A81E;             /* solo denaro */
+  --superficie:#FFFFFF;
+  --linea:#141024;
+
+  border:3px solid var(--linea);
+  background:var(--sc-fondo);
+  background-image:radial-gradient(circle at 1px 1px, rgba(20,16,36,.13) 1px, transparent 1.7px);
+  background-size:12px 12px;
+  box-shadow:10px 10px 0 var(--pg-inchiostro);
+  color:var(--sc-testo);
+  overflow:hidden;
+}
+.arcade *{box-sizing:border-box}
+
+/* testata dell'app */
+.a-header{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:12px 16px;background:var(--superficie);
+  border-bottom:3px solid var(--linea);
+  position:relative;
+}
+.a-header::after{
+  content:"";position:absolute;left:0;right:0;bottom:-3px;height:3px;
+  background:repeating-linear-gradient(90deg,var(--cobalto) 0 22px,var(--ciliegia) 22px 44px,var(--gettone) 44px 66px);
+}
+.a-brand{display:flex;align-items:center;gap:11px}
+.a-logo{
+  width:30px;height:30px;display:grid;place-items:center;
+  border:2px solid var(--linea);background:var(--gettone);
+  font-size:14px;box-shadow:3px 3px 0 var(--linea);
+}
+.a-titolo{
+  font-family:'Press Start 2P',ui-monospace,monospace;font-size:15px;
+  color:var(--cobalto);text-shadow:2px 2px 0 rgba(238,43,34,.85);letter-spacing:.02em;
+}
+.a-header-right{display:flex;gap:7px}
+.a-hbtn{
+  width:32px;height:30px;display:grid;place-items:center;font-size:13px;
+  border:2px solid var(--linea);background:var(--sc-fondo);
+  box-shadow:2px 2px 0 var(--linea);cursor:default;
+}
+
+/* griglia della schermata */
+.a-layout{display:grid;grid-template-columns:236px minmax(0,1fr) 196px;gap:14px;padding:14px}
+.a-centro{display:grid;gap:14px;min-width:0}
+
+/* pannello generico = piastra del cabinato */
+.a-panel{
+  border:3px solid var(--linea);background:var(--superficie);
+  box-shadow:5px 5px 0 var(--linea);
+  display:flex;flex-direction:column;min-width:0;
+}
+.a-panel-hdr{
+  font-family:'Press Start 2P',ui-monospace,monospace;font-size:8.5px;letter-spacing:.06em;
+  padding:9px 11px;border-bottom:2px solid var(--linea);
+  background:var(--cobalto);color:#fff;text-transform:uppercase;
+}
+.a-panel-hdr.oro{background:var(--gettone);color:var(--sc-testo)}
+
+/* ── lista squadre = tabellone dei punteggi ───────────────── */
+.a-squadre{display:flex;flex-direction:column}
+.a-sq{
+  display:grid;grid-template-columns:auto 1fr auto;gap:6px 8px;align-items:center;
+  padding:8px 10px;border-bottom:2px solid rgba(20,16,36,.12);
+}
+.a-sq:last-child{border-bottom:none}
+.a-sq-rank{
+  font-family:'Press Start 2P',ui-monospace,monospace;font-size:8px;color:var(--sc-tenue);
+}
+.a-sq-nome{font-weight:700;font-size:13.5px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a-sq-crediti{
+  font-family:'Press Start 2P',ui-monospace,monospace;font-size:9.5px;
+  color:var(--sc-testo);background:var(--oro);
+  border:2px solid var(--linea);padding:4px 6px 3px;white-space:nowrap;
+}
+/* barra crediti a blocchi, come una barra energia */
+.a-barra{
+  grid-column:1/-1;height:9px;border:2px solid var(--linea);background:#EDEDF4;
+  padding:1px;display:flex;gap:1px;overflow:hidden;
+}
+.a-barra i{flex:0 0 auto;width:7px;height:100%;background:var(--cobalto)}
+.a-barra i.vuoto{background:#DDDEE8}
+.a-barra i.warn{background:var(--gettone)}
+.a-barra i.crit{background:var(--ciliegia)}
+.a-sq-tot{grid-column:1/-1;font-size:11px;color:var(--sc-tenue);font-weight:600;letter-spacing:.01em}
+.a-sq.mia{background:#EFF1FF;box-shadow:inset 5px 0 0 var(--cobalto)}
+.a-sq.offerente{background:#FFF6E2;box-shadow:inset 5px 0 0 var(--oro)}
+.a-sq.critica{box-shadow:inset 5px 0 0 var(--ciliegia)}
+
+/* ── carta chiamata (la puja) ─────────────────────────────── */
+.a-puja{position:relative;padding:0}
+.a-puja-strip{height:10px;border-bottom:2px solid var(--linea);
+  background:repeating-linear-gradient(115deg,var(--cobalto) 0 18px,#fff 18px 28px,var(--ciliegia) 28px 46px,#fff 46px 56px,var(--gettone) 56px 74px,#fff 74px 84px)}
+.a-puja-body{display:grid;grid-template-columns:auto 1fr auto;gap:18px;padding:16px 18px;align-items:center}
+.a-avatar{
+  width:86px;height:86px;border:3px solid var(--linea);background:var(--cobalto);
+  box-shadow:5px 5px 0 var(--linea);display:grid;place-items:center;overflow:hidden;
+}
+.a-avatar svg{width:78px;height:78px;display:block}
+.a-nome-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.a-badge-ruolo{
+  font-family:'Press Start 2P',ui-monospace,monospace;font-size:9px;
+  border:2px solid var(--linea);background:var(--ciliegia);color:#fff;padding:5px 6px 4px;
+}
+.a-nome{font-size:clamp(21px,2.6vw,29px);font-weight:800;letter-spacing:-.025em}
+.a-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.a-meta span{
+  font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  border:2px solid rgba(20,16,36,.35);padding:2px 7px;color:var(--sc-medio);
+}
+.a-offerta-box{text-align:right;min-width:150px}
+.a-offerta{
+  font-family:'Press Start 2P',ui-monospace,monospace;
+  font-size:clamp(26px,3.6vw,40px);line-height:1;color:var(--sc-testo);
+  text-shadow:4px 4px 0 var(--oro);
+  font-variant-numeric:tabular-nums;
+}
+.a-offerta-label{
+  font-family:'Press Start 2P',ui-monospace,monospace;font-size:8px;
+  color:var(--sc-tenue);margin-top:11px;letter-spacing:.06em;text-transform:uppercase;
+}
+.a-offerente{
+  border-top:2px solid rgba(20,16,36,.14);padding:9px 18px;font-size:13px;font-weight:600;color:var(--sc-medio);
+}
+.a-offerente b{color:var(--sc-testo);font-weight:800}
+
+/* ── timer + rilancio ─────────────────────────────────────── */
+.a-riga-azione{display:grid;grid-template-columns:190px minmax(0,1fr);gap:14px}
+.a-timer{
+  display:grid;place-items:center;gap:2px;padding:14px 10px;
+  border:3px solid var(--linea);background:var(--superficie);box-shadow:5px 5px 0 var(--linea);
+}
+.a-timer-num{
+  font-family:'Press Start 2P',ui-monospace,monospace;font-size:44px;line-height:1;
+  color:var(--cobalto);font-variant-numeric:tabular-nums;
+}
+.a-timer-lbl{font-family:'Press Start 2P',ui-monospace,monospace;font-size:7.5px;color:var(--sc-tenue);letter-spacing:.08em;text-transform:uppercase;margin-top:9px}
+.a-timer-tacche{display:flex;gap:3px;margin-top:11px}
+.a-timer-tacche i{width:9px;height:9px;border:2px solid var(--linea);background:var(--cobalto)}
+.a-timer-tacche i.off{background:#E3E4EE}
+
+.a-rilancio{
+  border:3px solid var(--linea);background:var(--superficie);box-shadow:5px 5px 0 var(--linea);
+  padding:12px;display:grid;gap:10px;align-content:center;
+}
+.a-quick{display:flex;gap:10px}
+.btn-arcade{
+  font-family:'Press Start 2P',ui-monospace,monospace;font-size:10px;
+  border:3px solid var(--linea);background:var(--sc-fondo);color:var(--sc-testo);
+  padding:11px 14px 10px;box-shadow:4px 4px 0 var(--linea);
+  cursor:pointer;transition:transform .06s steps(2),box-shadow .06s steps(2);
+  text-transform:uppercase;letter-spacing:.04em;
+}
+.btn-arcade:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--linea)}
+.btn-arcade:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--linea)}
+.btn-arcade:focus-visible{outline:3px solid var(--cobalto);outline-offset:3px}
+.btn-rilancia{
+  width:100%;font-size:13px;padding:16px 14px 14px;
+  background:var(--ciliegia);color:#fff;box-shadow:5px 5px 0 var(--linea);
+}
+.btn-rilancia:hover{box-shadow:2px 2px 0 var(--linea)}
+.a-manuale{display:flex;gap:8px}
+.a-inp{
+  flex:1;border:3px solid var(--linea);background:#fff;padding:9px 11px;font-family:'Archivo',sans-serif;
+  font-weight:700;font-size:13px;color:var(--sc-tenue);
+}
+
+/* ── mia squadra (colonna destra) ─────────────────────────── */
+.a-rosa{display:flex;flex-direction:column;padding:0}
+.a-rosa-riga{
+  display:flex;align-items:center;gap:7px;padding:7px 9px;font-size:12px;font-weight:600;
+  border-bottom:2px solid rgba(20,16,36,.10);
+}
+.a-rosa-riga:last-child{border-bottom:none}
+.a-rosa-r{
+  font-family:'Press Start 2P',ui-monospace,monospace;font-size:7.5px;
+  border:2px solid var(--linea);padding:3px 4px 2px;background:#fff;
+}
+.a-rosa-r.P{background:var(--gettone)}
+.a-rosa-r.D{background:#9FE8C8}
+.a-rosa-r.C{background:#BCC6FF}
+.a-rosa-r.A{background:#FFB5B0}
+.a-rosa-nome{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a-rosa-cr{font-family:'Press Start 2P',ui-monospace,monospace;font-size:8px;color:var(--sc-medio)}
+.a-rosa-piede{
+  margin-top:auto;border-top:2px solid var(--linea);background:var(--sc-fondo);
+  padding:9px;display:flex;justify-content:space-between;align-items:center;
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--sc-medio);
+}
+.a-rosa-piede b{font-family:'Press Start 2P',monospace;font-size:9.5px;color:var(--sc-testo);
+  background:var(--oro);border:2px solid var(--linea);padding:4px 6px 3px}
+
+/* ── tabs ─────────────────────────────────────────────────── */
+.a-tabs{margin:0 14px 14px;border:3px solid var(--linea);background:var(--superficie);box-shadow:5px 5px 0 var(--linea)}
+.a-tabs-nav{display:flex;gap:0;border-bottom:3px solid var(--linea);flex-wrap:wrap}
+.a-tab{
+  font-family:'Press Start 2P',ui-monospace,monospace;font-size:8.5px;letter-spacing:.03em;
+  padding:12px 13px 10px;border:none;border-right:2px solid var(--linea);
+  background:var(--sc-fondo);color:var(--sc-tenue);cursor:pointer;text-transform:uppercase;
+}
+.a-tab.attiva{background:var(--cobalto);color:#fff}
+.a-tab:focus-visible{outline:3px solid var(--ciliegia);outline-offset:-3px}
+.a-storico{display:flex;flex-direction:column}
+.a-storico-riga{
+  display:grid;grid-template-columns:auto 1fr auto auto;gap:11px;align-items:center;
+  padding:9px 12px;border-bottom:2px solid rgba(20,16,36,.10);font-size:13px;
+}
+.a-storico-riga:last-child{border-bottom:none}
+.a-storico-riga .cr{font-family:'Press Start 2P',monospace;font-size:9px;background:var(--oro);border:2px solid var(--linea);padding:4px 6px 3px}
+.a-storico-riga .sq{font-weight:700;color:var(--sc-medio);font-size:12px}
+.a-storico-riga .nm{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── stato "ultimi secondi": rosso, e la stanza si stringe ── */
+.arcade.urgente .a-timer-num{color:var(--ciliegia);animation:pulsa .5s steps(2) infinite}
+.arcade.urgente .a-timer{border-color:var(--ciliegia);box-shadow:5px 5px 0 var(--ciliegia)}
+.arcade.urgente .a-timer-tacche i{background:var(--ciliegia)}
+.arcade.urgente .a-timer-tacche i.off{background:#F2D6D4}
+.arcade.urgente .a-puja-strip{background:repeating-linear-gradient(115deg,var(--ciliegia) 0 18px,#fff 18px 28px)}
+.arcade.urgente .a-offerta{text-shadow:4px 4px 0 var(--ciliegia)}
+.arcade.urgente .a-squadre-wrap,
+.arcade.urgente .a-rosa-wrap{opacity:.26;filter:blur(1.4px)}
+.arcade.urgente .a-tabs{opacity:.3}
+.arcade.urgente .btn-rilancia{animation:sussulto .5s steps(2) infinite}
+@keyframes pulsa{50%{opacity:.35}}
+@keyframes sussulto{50%{transform:translate(2px,2px);box-shadow:3px 3px 0 var(--linea)}}
+@media (prefers-reduced-motion:reduce){
+  .arcade.urgente .a-timer-num,.arcade.urgente .btn-rilancia{animation:none}
+  .btn-arcade{transition:none}
+}
+.a-squadre-wrap,.a-rosa-wrap{transition:opacity .25s,filter .25s;display:flex;min-width:0}
+.a-squadre-wrap>.a-panel,.a-rosa-wrap>.a-panel{flex:1;min-width:0}
+
+/* ── comandi del mock (fuori dal tema) ────────────────────── */
+.comandi{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.cmd{
+  font-family:'Archivo',sans-serif;font-weight:800;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;
+  border:3px solid var(--pg-inchiostro);background:#fff;color:var(--pg-inchiostro);
+  padding:9px 15px;box-shadow:4px 4px 0 var(--pg-inchiostro);cursor:pointer;
+  transition:transform .06s steps(2),box-shadow .06s steps(2);
+}
+.cmd:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--pg-inchiostro)}
+.cmd[aria-pressed="true"]{background:var(--pg-inchiostro);color:#fff}
+.cmd:focus-visible{outline:3px solid var(--cobalto);outline-offset:3px}
+.cmd-nota{font-size:13px;color:var(--pg-tenue)}
+
+/* ── mobile mock ──────────────────────────────────────────── */
+.mob-riga{display:grid;grid-template-columns:300px minmax(0,1fr);gap:clamp(20px,3vw,40px);align-items:start}
+.mob{width:300px;max-width:100%}
+.mob .a-layout{grid-template-columns:1fr;padding:11px;gap:11px}
+.mob .a-puja-body{grid-template-columns:auto 1fr;gap:12px;padding:12px}
+.mob .a-offerta-box{grid-column:1/-1;text-align:left;min-width:0;border-top:2px solid rgba(20,16,36,.14);padding-top:10px}
+.mob .a-offerta{font-size:34px}
+.mob .a-riga-azione{grid-template-columns:1fr}
+.mob .a-timer{flex-direction:row;padding:10px}
+.mob .a-tabs{margin:0 11px 11px}
+.mob .a-avatar{width:64px;height:64px}
+.mob .a-avatar svg{width:58px;height:58px}
+.mob .a-nome{font-size:19px}
+
+/* ── decisioni / griglia note ─────────────────────────────── */
+.note{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:14px}
+.nota-card{
+  border:3px solid var(--pg-inchiostro);background:#F7F7F1;padding:16px 17px;
+  box-shadow:5px 5px 0 var(--pg-inchiostro);display:grid;gap:8px;align-content:start;
+}
+.nota-card h3{font-size:15.5px;font-weight:800;letter-spacing:-.01em}
+.nota-card p{font-size:13.5px;color:var(--pg-medio);line-height:1.55}
+.nota-card .tag{
+  justify-self:start;font-family:'Press Start 2P',monospace;font-size:7.5px;letter-spacing:.05em;
+  border:2px solid var(--pg-inchiostro);padding:4px 6px 3px;text-transform:uppercase;
+}
+.tag.acc{background:var(--cobalto);color:#fff}
+.tag.all{background:var(--ciliegia);color:#fff}
+.tag.den{background:var(--gettone)}
+.tag.mat{background:#fff}
+
+/* ── palette ──────────────────────────────────────────────── */
+.tok-scroll{overflow-x:auto;border:3px solid var(--pg-inchiostro);box-shadow:6px 6px 0 var(--pg-inchiostro);background:#F7F7F1}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:13.5px}
+th,td{text-align:left;padding:11px 14px;border-bottom:2px solid rgba(20,16,36,.13)}
+th{
+  font-family:'Press Start 2P',monospace;font-size:8px;letter-spacing:.05em;text-transform:uppercase;
+  background:var(--pg-inchiostro);color:#fff;border-bottom:none;
+}
+tbody tr:last-child td{border-bottom:none}
+code{font-family:ui-monospace,'SFMono-Regular',Menlo,monospace;font-size:12.5px;background:#E7E9F2;padding:2px 5px;border:1px solid var(--pg-linea)}
+.sw{display:inline-flex;align-items:center;gap:9px;font-variant-numeric:tabular-nums}
+.sw i{width:22px;height:22px;border:2px solid var(--pg-inchiostro);display:block;flex:0 0 auto}
+td .uso{color:var(--pg-medio)}
+
+/* ── piede ────────────────────────────────────────────────── */
+.piede{
+  margin-top:clamp(44px,6vw,76px);border-top:3px solid var(--pg-inchiostro);padding-top:18px;
+  font-size:13px;color:var(--pg-tenue);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+}
+
+@media (max-width:900px){
+  .a-layout{grid-template-columns:1fr}
+  .a-riga-azione{grid-template-columns:1fr}
+  .mob-riga{grid-template-columns:1fr}
+  .mob{margin:0 auto}
+}
+</style>
+
+<div class="wrap">
+
+  <div class="marquee"></div>
+  <header class="masthead">
+    <p class="eyebrow">Tema 4 · mock visivo</p>
+    <h1>SALA<br>GIOCHI</h1>
+    <p class="tesi">
+      Un tema <b>chiaro</b> costruito sul vocabolario del cabinato anni '90: carta bianca stampata a
+      retino, contorni d'inchiostro spessi, ombre dure senza sfumatura e cifre a pixel.
+      Stessa regola degli altri tre temi — <b>un solo accento diffuso</b> (cobalto), il rosso
+      <b>solo</b> come stato d'allarme, e un colore <b>riservato al denaro</b> (oro gettone).
+    </p>
+    <div class="chips">
+      <span class="chip"><i class="pastiglia" style="background:#2440D8"></i> Cobalto · accento</span>
+      <span class="chip"><i class="pastiglia" style="background:#EE2B22"></i> Ciliegia · allarme</span>
+      <span class="chip"><i class="pastiglia" style="background:#F0A81E"></i> Oro · denaro</span>
+      <span class="chip"><i class="pastiglia" style="background:#F7F7F1"></i> Carta · fondo</span>
+    </div>
+  </header>
+
+  <!-- ══════════ MOCK PRINCIPALE ══════════ -->
+  <section>
+    <div class="sez-hdr">
+      <h2>La schermata d'asta</h2>
+      <p class="nota">Vista partecipante, desktop. Pulsa el botón para ver el estado
+        <b>«ultimi secondi»</b> — la habitación se estrecha, igual que hace hoy el módulo de comportamientos.</p>
+    </div>
+
+    <div class="comandi">
+      <button class="cmd" id="cmd-normale" aria-pressed="true">Stato normale</button>
+      <button class="cmd" id="cmd-urgente" aria-pressed="false">Ultimi 5 secondi</button>
+      <span class="cmd-nota" id="cmd-nota">18 s al termine · si vede tutto il tavolo</span>
+    </div>
+
+    <div class="arcade" id="mock">
+      <div class="a-header">
+        <div class="a-brand">
+          <span class="a-logo">🕹</span>
+          <span class="a-titolo">FANTABAR</span>
+        </div>
+        <div class="a-header-right">
+          <span class="a-hbtn">🔊</span>
+          <span class="a-hbtn">🎨</span>
+          <span class="a-hbtn">📥</span>
+          <span class="a-hbtn">🚪</span>
+        </div>
+      </div>
+
+      <div class="a-layout">
+
+        <!-- Riepilogo squadre -->
+        <div class="a-squadre-wrap">
+          <div class="a-panel">
+            <div class="a-panel-hdr">Riepilogo squadre</div>
+            <div class="a-squadre">
+              <div class="a-sq offerente">
+                <span class="a-sq-rank">1º</span>
+                <span class="a-sq-nome">Bar Centrale</span>
+                <span class="a-sq-crediti">312</span>
+                <span class="a-barra" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i></span>
+                <span class="a-sq-tot">Tot: 11/25 · 🧤 2</span>
+              </div>
+              <div class="a-sq mia">
+                <span class="a-sq-rank">2º</span>
+                <span class="a-sq-nome">Sbocchini FC</span>
+                <span class="a-sq-crediti">268</span>
+                <span class="a-barra" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i></span>
+                <span class="a-sq-tot">Tot: 13/25 · 🧤 2 · la tua</span>
+              </div>
+              <div class="a-sq">
+                <span class="a-sq-rank">3º</span>
+                <span class="a-sq-nome">Deportivo Spritz</span>
+                <span class="a-sq-crediti">154</span>
+                <span class="a-barra" aria-hidden="true"><i class="warn"></i><i class="warn"></i><i class="warn"></i><i class="warn"></i><i class="warn"></i><i class="warn"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i></span>
+                <span class="a-sq-tot">Tot: 16/25 · 🧤 3</span>
+              </div>
+              <div class="a-sq critica">
+                <span class="a-sq-rank">4º</span>
+                <span class="a-sq-nome">AC Pigiama</span>
+                <span class="a-sq-crediti">38</span>
+                <span class="a-barra" aria-hidden="true"><i class="crit"></i><i class="crit"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i></span>
+                <span class="a-sq-tot">Tot: 21/25 · 🧤 3</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Colonna centrale: puja + azione -->
+        <div class="a-centro">
+          <div class="a-panel a-puja">
+            <div class="a-puja-strip"></div>
+            <div class="a-puja-body">
+              <div class="a-avatar">
+                <svg viewBox="0 0 100 100" aria-hidden="true">
+                  <path d="M29,44 Q26,35 30,28 Q33,21 39,19 Q41,15 47,16 Q50,13 53,16 Q59,15 61,19 Q67,21 70,28 Q74,35 71,44 Q74,48 70,52 Q71,57 68,60 L68,62 C68,70 60,76 50,76 C40,76 32,70 32,62 L32,60 Q29,57 30,52 Q26,48 29,44 Z" fill="#F7F7F1"/>
+                  <path d="M12,100 L12,88 C12,74 24,63 39,61 L39,66 C39,71 44,75 50,75 C56,75 61,71 61,66 L61,61 C76,63 88,74 88,88 L88,100 Z" fill="#F7F7F1"/>
+                </svg>
+              </div>
+              <div>
+                <div class="a-nome-row">
+                  <span class="a-badge-ruolo">A</span>
+                  <p class="a-nome">Lautaro Martinez</p>
+                </div>
+                <div class="a-meta">
+                  <span>Inter</span><span>Titolare</span><span>27 anni</span>
+                </div>
+              </div>
+              <div class="a-offerta-box">
+                <p class="a-offerta">147</p>
+                <p class="a-offerta-label">crediti</p>
+              </div>
+            </div>
+            <p class="a-offerente">Offerta più alta: <b>Bar Centrale</b> · 4 squadre possono ancora coprirla</p>
+          </div>
+
+          <div class="a-riga-azione">
+            <div class="a-timer">
+              <div class="a-timer-num" id="timer-num">18</div>
+              <div class="a-timer-lbl">rilancio</div>
+              <div class="a-timer-tacche" id="tacche" aria-hidden="true"></div>
+            </div>
+            <div class="a-rilancio">
+              <div class="a-quick">
+                <button class="btn-arcade" type="button">+5</button>
+                <button class="btn-arcade" type="button">+10</button>
+              </div>
+              <button class="btn-arcade btn-rilancia" type="button">▶ RILANCIA +1</button>
+              <div class="a-manuale">
+                <span class="a-inp">importo</span>
+                <button class="btn-arcade" type="button">Offri</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mia rosa -->
+        <div class="a-rosa-wrap">
+          <div class="a-panel">
+            <div class="a-panel-hdr oro">La mia rosa</div>
+            <div class="a-rosa">
+              <div class="a-rosa-riga"><span class="a-rosa-r P">P</span><span class="a-rosa-nome">Di Gregorio</span><span class="a-rosa-cr">18</span></div>
+              <div class="a-rosa-riga"><span class="a-rosa-r D">D</span><span class="a-rosa-nome">Bastoni</span><span class="a-rosa-cr">42</span></div>
+              <div class="a-rosa-riga"><span class="a-rosa-r D">D</span><span class="a-rosa-nome">Dimarco</span><span class="a-rosa-cr">55</span></div>
+              <div class="a-rosa-riga"><span class="a-rosa-r C">C</span><span class="a-rosa-nome">Barella</span><span class="a-rosa-cr">61</span></div>
+              <div class="a-rosa-riga"><span class="a-rosa-r C">C</span><span class="a-rosa-nome">Koopmeiners</span><span class="a-rosa-cr">34</span></div>
+              <div class="a-rosa-riga"><span class="a-rosa-r A">A</span><span class="a-rosa-nome">Kean</span><span class="a-rosa-cr">47</span></div>
+              <div class="a-rosa-piede"><span>Residuo</span><b>268</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="a-tabs">
+        <div class="a-tabs-nav">
+          <button class="a-tab attiva" type="button">Storico</button>
+          <button class="a-tab" type="button">Rose</button>
+          <button class="a-tab" type="button">Svincolati</button>
+          <button class="a-tab" type="button">Griglia P/A</button>
+          <button class="a-tab" type="button">Anteprima</button>
+        </div>
+        <div class="a-storico">
+          <div class="a-storico-riga"><span class="a-rosa-r A">A</span><span class="nm">Retegui</span><span class="sq">Deportivo Spritz</span><span class="cr">132</span></div>
+          <div class="a-storico-riga"><span class="a-rosa-r C">C</span><span class="nm">Pulisic</span><span class="sq">Bar Centrale</span><span class="cr">98</span></div>
+          <div class="a-storico-riga"><span class="a-rosa-r D">D</span><span class="nm">Dimarco</span><span class="sq">Sbocchini FC</span><span class="cr">55</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ DECISIONI ══════════ -->
+  <section>
+    <div class="sez-hdr">
+      <h2>Las decisiones del tema</h2>
+      <p class="nota">Las mismas reglas que ya siguen Serata, Cuoio y Lavagna, traducidas al cabinato.</p>
+    </div>
+    <div class="note">
+      <div class="nota-card">
+        <span class="tag acc">Accento</span>
+        <h3>Cobalto, y solo cobalto</h3>
+        <p>Bordi, testata delle piastre, tab attiva, timer, barre dei crediti: tutto ciò che è
+          <em>struttura</em> è cobalto. È il posto che in Serata occupa l'ambra e in Lavagna il ciano.</p>
+      </div>
+      <div class="nota-card">
+        <span class="tag all">Allarme</span>
+        <h3>Il rosso non decora mai</h3>
+        <p>Ciliegia solo su RILANCIA (l'azione) e sugli ultimi secondi: timer, striscia della carta,
+          squadra a crediti critici. Mai come fondo o testo generico.</p>
+      </div>
+      <div class="nota-card">
+        <span class="tag den">Denaro</span>
+        <h3>Oro = gettone, non accento</h3>
+        <p>Le cifre di credito/offerta portano il fondo oro con contorno d'inchiostro, come un gettone.
+          Stessa regola restrittiva del verde in Cuoio: se non è denaro, non è oro.</p>
+      </div>
+      <div class="nota-card">
+        <span class="tag mat">Materia</span>
+        <h3>Ombra dura, mai glow</h3>
+        <p>Su fondo chiaro le ombre sfumate sporcano (già visto in Cuoio). Qui l'ombra è un blocco
+          pieno spostato di 5px: legge come rilievo stampato, non come luce.</p>
+      </div>
+      <div class="nota-card">
+        <span class="tag mat">Materia</span>
+        <h3>Retino, non texture fotografica</h3>
+        <p>Il fondo è un retino di punti in CSS puro: nessuna immagine nuova in <code>img/backgrounds/</code>,
+          quindi niente cache-busting <code>?v=</code> da gestire su un file binario.</p>
+      </div>
+      <div class="nota-card">
+        <span class="tag mat">Tipografia</span>
+        <h3>Pixel con il contagocce</h3>
+        <p><em>Press Start 2P</em> (Google Fonts, come Pacifico in Lavagna) solo su marca, cifre e
+          etichette corte. I nomi e i testi lunghi restano in Archivo: a pixel diventerebbero illeggibili.</p>
+      </div>
+      <div class="nota-card">
+        <span class="tag acc">Struttura</span>
+        <h3>Barra crediti a blocchi</h3>
+        <p>La <code>.budget-progress</code> continua e liscia diventa una barra energia a tacche.
+          Stesso dato, stessa classe, stessi stati ok/warn/crit — cambia solo la materia.</p>
+      </div>
+      <div class="nota-card">
+        <span class="tag all">Comportamento</span>
+        <h3>Gli ultimi secondi restano quelli</h3>
+        <p>Nessuna regola nuova: il tema si limita a ridipingere lo stato <code>body.puja-urgente</code>
+          che il modulo comportamenti già accende. Il tavolo sfoca, prezzo e tempo restano.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ MOBILE ══════════ -->
+  <section>
+    <div class="sez-hdr">
+      <h2>En móvil</h2>
+      <p class="nota">La app es mobile-first: el mismo cabinato en una columna, con el precio bajo la ficha del jugador.</p>
+    </div>
+    <div class="mob-riga">
+      <div class="arcade mob">
+        <div class="a-header">
+          <div class="a-brand"><span class="a-logo">🕹</span><span class="a-titolo">FANTABAR</span></div>
+          <div class="a-header-right"><span class="a-hbtn">🎨</span><span class="a-hbtn">🚪</span></div>
+        </div>
+        <div class="a-layout">
+          <div class="a-centro">
+            <div class="a-panel a-puja">
+              <div class="a-puja-strip"></div>
+              <div class="a-puja-body">
+                <div class="a-avatar">
+                  <svg viewBox="0 0 100 100" aria-hidden="true">
+                    <path d="M29,44 Q26,35 30,28 Q33,21 39,19 Q41,15 47,16 Q50,13 53,16 Q59,15 61,19 Q67,21 70,28 Q74,35 71,44 Q74,48 70,52 Q71,57 68,60 L68,62 C68,70 60,76 50,76 C40,76 32,70 32,62 L32,60 Q29,57 30,52 Q26,48 29,44 Z" fill="#F7F7F1"/>
+                    <path d="M12,100 L12,88 C12,74 24,63 39,61 L39,66 C39,71 44,75 50,75 C56,75 61,71 61,66 L61,61 C76,63 88,74 88,88 L88,100 Z" fill="#F7F7F1"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="a-nome-row"><span class="a-badge-ruolo">A</span><p class="a-nome">Lautaro</p></div>
+                  <div class="a-meta"><span>Inter</span><span>27 anni</span></div>
+                </div>
+                <div class="a-offerta-box">
+                  <p class="a-offerta">147</p>
+                  <p class="a-offerta-label">crediti · Bar Centrale</p>
+                </div>
+              </div>
+            </div>
+            <div class="a-riga-azione">
+              <div class="a-timer" style="grid-template-columns:auto 1fr;display:grid;align-items:center;justify-items:start;gap:0 14px">
+                <div class="a-timer-num" style="font-size:32px">18</div>
+                <div class="a-timer-lbl" style="margin-top:0">rilancio</div>
+              </div>
+              <div class="a-rilancio">
+                <div class="a-quick">
+                  <button class="btn-arcade" type="button">+5</button>
+                  <button class="btn-arcade" type="button">+10</button>
+                </div>
+                <button class="btn-arcade btn-rilancia" type="button">▶ RILANCIA +1</button>
+              </div>
+            </div>
+            <div class="a-panel">
+              <div class="a-panel-hdr">Riepilogo squadre</div>
+              <div class="a-squadre">
+                <div class="a-sq offerente">
+                  <span class="a-sq-rank">1º</span><span class="a-sq-nome">Bar Centrale</span><span class="a-sq-crediti">312</span>
+                  <span class="a-barra" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i></span>
+                </div>
+                <div class="a-sq mia">
+                  <span class="a-sq-rank">2º</span><span class="a-sq-nome">Sbocchini FC</span><span class="a-sq-crediti">268</span>
+                  <span class="a-barra" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i><i class="vuoto"></i></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="note" style="grid-template-columns:1fr">
+        <div class="nota-card">
+          <span class="tag mat">Nota</span>
+          <h3>Qué cambia respecto a los otros tres</h3>
+          <p>Serata y Lavagna son oscuros; Cuoio es el único claro y es cálido (pergamino y piel).
+            Sala Giochi es claro pero <em>frío y gráfico</em>: papel blanco, tinta y color plano.
+            Son dos temas claros que no se pisan.</p>
+        </div>
+        <div class="nota-card">
+          <span class="tag acc">Alcance</span>
+          <h3>Qué haría falta para montarlo</h3>
+          <p>El patrón ya está rodado: un bloque <code>[data-tema="sala-giochi"]</code> con los tokens
+            base en <code>style.css</code>, los roles <code>--sc-*</code> y una sección «materie» al
+            final de <code>tema-serata.css</code>, más una entrada en el selector 🎨.
+            Cero líneas tocadas en los temas existentes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ PALETTE ══════════ -->
+  <section>
+    <div class="sez-hdr">
+      <h2>Los tokens</h2>
+      <p class="nota">Listos para pegar como cuarto bloque, con los mismos nombres de rol que usan los otros temas.</p>
+    </div>
+    <div class="tok-scroll">
+      <table>
+        <thead>
+          <tr><th>Token</th><th>Valore</th><th>Ruolo nel tema</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>--sc-fondo</code></td><td><span class="sw"><i style="background:#F7F7F1"></i>#F7F7F1</span></td><td class="uso">la carta stampata, con retino di punti</td></tr>
+          <tr><td><code>--sc-testo</code></td><td><span class="sw"><i style="background:#141024"></i>#141024</span></td><td class="uso">inchiostro: testo e ogni contorno</td></tr>
+          <tr><td><code>--sc-medio</code></td><td><span class="sw"><i style="background:#4A465E"></i>#4A465E</span></td><td class="uso">testo secondario, meta del giocatore</td></tr>
+          <tr><td><code>--sc-tenue</code></td><td><span class="sw"><i style="background:#78748D"></i>#78748D</span></td><td class="uso">etichette, tab inattive (≈4.9:1 sulla carta)</td></tr>
+          <tr><td><code>--sc-ambra-piena</code></td><td><span class="sw"><i style="background:#2440D8"></i>#2440D8</span></td><td class="uso">cobalto: accento strutturale unico</td></tr>
+          <tr><td><code>--sc-ambra-alta</code></td><td><span class="sw"><i style="background:#5A72F0"></i>#5A72F0</span></td><td class="uso">cobalto chiaro: hover, stati secondari</td></tr>
+          <tr><td><code>--sc-brace-piena</code></td><td><span class="sw"><i style="background:#EE2B22"></i>#EE2B22</span></td><td class="uso">ciliegia: allarme e azione di rilancio</td></tr>
+          <tr><td>(nuovo) <code>--sc-gettone</code></td><td><span class="sw"><i style="background:#F0A81E"></i>#F0A81E</span></td><td class="uso">oro: solo crediti e offerte</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="piede">
+    <span>FantaSbocchini · mock del quarto tema, nessun file dell'app modificato</span>
+    <span>Serata d'Asta · Cuoio · Lavagna al Neon · <b>Sala Giochi</b></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  // tacche del timer: 20 blocchi, si spengono col tempo
+  var tacche = document.getElementById('tacche');
+  for (var i = 0; i < 12; i++) {
+    var t = document.createElement('i');
+    if (i >= 7) t.className = 'off';
+    tacche.appendChild(t);
+  }
+
+  var mock = document.getElementById('mock');
+  var num  = document.getElementById('timer-num');
+  var nota = document.getElementById('cmd-nota');
+  var bN   = document.getElementById('cmd-normale');
+  var bU   = document.getElementById('cmd-urgente');
+
+  function stato(urgente){
+    mock.classList.toggle('urgente', urgente);
+    num.textContent = urgente ? '4' : '18';
+    nota.textContent = urgente
+      ? '4 s al termine · restano prezzo, tempo e azione'
+      : '18 s al termine · si vede tutto il tavolo';
+    bN.setAttribute('aria-pressed', String(!urgente));
+    bU.setAttribute('aria-pressed', String(urgente));
+    var its = tacche.querySelectorAll('i');
+    for (var i = 0; i < its.length; i++) {
+      its[i].className = i >= (urgente ? 2 : 7) ? 'off' : '';
+    }
+  }
+  bN.addEventListener('click', function(){ stato(false); });
+  bU.addEventListener('click', function(){ stato(true); });
+})();
+</script>
