@@ -334,11 +334,17 @@ con utenti veri loggati (in locale non ci sono le variabili Supabase).
 
 ## Debito tecnico riconosciuto (non pagato di proposito)
 
-- `style.css` difende la zona puja con ~40 regole `!important` su tutti i breakpoint, quindi
-  `tema-serata.css` deve vincerle con `html body #puja-panel-slot` + `!important`. Ripulirle è il
-  lavoro successivo naturale, tenuto fuori dagli interventi estetici per non mescolare un refactor
-  rischioso con un cambio di aspetto. Nello stesso giro si può togliere il blocco
-  `@media (min-width:901px)` in fondo a `style.css` (commit `039206b`).
+- `style.css` difende la zona puja con `!important` su tutti i breakpoint (897 occorrenze su 504
+  righe in tutto il file), quindi `tema-serata.css` deve vincerle con `html body #puja-panel-slot`
+  + `!important`. **Il blocco `@media (min-width:901px)` in fondo è stato sfrondato il 2026-08-26**:
+  le sue regole per la vista Partecipante erano morte e sono state tolte, verificando a runtime che
+  nelle due viste per tutti e quattro i temi non cambiasse un pixel.
+  **Attenzione, la vecchia nota diceva di togliere il blocco INTERO ed era sbagliata**: le tre
+  regole `body.layout-admin` sono vive, e toglierle cambia davvero il tasto RILANCIA dell'Admin.
+  È anche il motivo per cui il resto della ripulitura non è stato fatto in blocco: in questa zona
+  "sembra morto" e "è morto" non coincidono, e l'unico modo di saperlo è cancellare la regola dal
+  CSSOM a runtime e confrontare i valori calcolati nelle due viste per i quattro temi. Si può fare,
+  ma va fatto una regola per volta e con quella misura in mano — non a vista.
 - ~~`app.js` chiama `/api/player-photo`~~ — **la nota era sbagliata**: quella funzione non veniva
   chiamata da nessuno, quindi nessun 404 partiva davvero. Era codice morto, insieme ad altre 13
   funzioni della vecchia catena foto da fonti esterne (SportsDB/Wikidata/Wikipedia/API-Football),

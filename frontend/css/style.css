@@ -2908,20 +2908,21 @@ body.layout-admin .asta-row-puja .cc-avatar{width:108px!important;height:140px!i
    gia' un trattamento dedicato (stacking dei bottoni sotto i 900px, carta
    grande sotto i 640px) che non va toccato.
    ══════════════════════════════════════════════════════════════════════════ */
+/* SFRONDATO 2026-08-26: di questo blocco restano solo le tre regole Admin.
+   Tutto cio' che riguardava la vista Partecipante (`.puja-panel-slot`) era ormai
+   battuto per specificita' da tema-serata.css e non produceva piu' alcun effetto.
+   Verificato togliendolo dal CSSOM a runtime e confrontando font-size/padding/gap
+   di nome, btn-quick, quick-bids-row e btn-rilancia nelle DUE viste per tutti e
+   QUATTRO i temi: nessuna differenza.
+   Le tre righe Admin invece NON sono morte — la nota di debito dava l'intero
+   blocco per rimovibile, ed era sbagliata: togliendole cambia davvero il tasto
+   RILANCIA dell'Admin (misurato). Restano. */
 @media (min-width:901px){
-  .puja-panel-slot .cc-nome,
   body.layout-admin .asta-row-puja .cc-nome{
     font-size:1.3rem!important;
   }
-  .puja-panel-slot .btn-quick{
-    padding:10px 16px!important;font-size:1rem!important;
-  }
-  .puja-panel-slot .quick-bids-row,
   body.layout-admin .asta-row-puja .quick-bids-row{
     gap:10px!important;
-  }
-  .puja-panel-slot .btn-rilancia{
-    padding:12px 20px!important;font-size:1.05rem!important;
   }
   body.layout-admin .asta-row-puja .btn-rilancia{
     padding:9px 8px!important;font-size:.85rem!important;
