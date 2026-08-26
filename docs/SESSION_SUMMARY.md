@@ -10,8 +10,9 @@ Il lavoro fino al 2026-08-25 è su `main`, committato e pushato (ultimo commit `
 in produzione su Hostinger (il deploy parte da solo al push su `main`).
 
 Il lavoro del 2026-08-26 vive sul ramo **`tema-lavagna-gesso`**, non ancora unito a `main` e quindi
-non ancora online: la conversione a LF di `tema-serata.css` e il gesso del tema lavagna (vedi
-sotto). Per mandarlo in produzione va unito a `main` e pushato.
+non ancora online, in tre commit: la conversione a LF di `tema-serata.css`, il gesso del tema
+lavagna e il fix di impaginazione della carta di puja (vedi sotto). Per mandarlo in produzione va
+unito a `main` e pushato.
 
 **Quattro temi attivi** (`serata` default, `cuoio`, `lavagna`, `sala-giochi`), tutti con lo stesso
 pattern (ruoli `--sc-*` in `tema-serata.css` + token base in `style.css`, entrambi con un blocco
@@ -70,6 +71,9 @@ piu' stretto di Archivo e Space Mono, quindi regge gli 8-10px dell'app e le vist
 *stringono* — tre colonne delle Rose passano da 594px a 560px (-6%), il contrario della regressione
 di Silkscreen. Caveat ha l'occhio del 32% piu' piccolo: serve solo dove il testo e' maiuscolo o
 enorme. Dettagli e formule in [DECISIONS.md](../DECISIONS.md).
+**Un dato di quel commit era sbagliato ed e' stato corretto dopo**: Caveat non e' piu' stretto di
+Archivo per il nome del giocatore, e' il 5% piu' largo — Archivo li' gira condensato (`wdth 62`), e
+la prima misura era presa con `scrollWidth`, che restituisce la scatola invece del testo.
 
 **Due trappole vere, trovate e risolte a schermo**: le cifre ingrandite con `font-size-adjust`
 venivano *tagliate* da `.cc-offerta-box` perche' il foglio base stringe l'interlinea sotto 1 (limite
@@ -81,10 +85,33 @@ Partecipante e Admin, su carta di puja, Riepilogo squadre, Rose, tab, modali, An
 applicato ovunque, nessun taglio, nessun errore in console, e gli altri **tre temi hanno le stesse
 identiche font di prima** (controllo automatico su 12 selettori x 4 temi).
 
-**Difetto preesistente trovato per strada, NON toccato**: in vista Partecipante a 1280px con il
-riquadro di rilancio aperto, la carta della puja in lavagna e' larga 292px contro i 346 degli altri
-temi (il gruppo cronometro se ne prende 216 invece di 164) e il nome va a capo in mezzo alla parola.
-Forzando Archivo sugli stessi elementi il difetto resta identico — e' di layout, non del gesso.
+**Difetto preesistente trovato per strada**: a 1280px il nome del giocatore andava a capo in mezzo
+alla parola. Non era del gesso (forzando Archivo restava identico) ed e' stato corretto a parte —
+vedi la sezione qui sotto.
+
+## Cambi recenti — la carta di puja a 1280px: il nome non si spezza piu' (2026-08-26)
+
+Segnalato dall'utente. In vista Partecipante a 1280px il nome del giocatore andava a capo in mezzo
+alla parola: tre righe nei temi scuri, cinque in lavagna. **Non era un difetto del tema lavagna** —
+forzando Archivo sugli stessi elementi restava identico. Era di tutti e quattro.
+
+La causa e' uno **scalino**: appena la sala supera i 1200px la lista squadre si affianca alla puja e
+la carta crolla da 596px a 285, ma nello stesso istante la carta entra nella fascia larga, che le
+mette il ritratto grande (206px di padding) e la font tarata sulla SALA (54px). Restavano 79px al
+nome. La soglia esisteva, ma **misurava la sala mentre il problema era la carta** — lo stesso errore
+gia' visto nel Riepilogo squadre e nel cabinato.
+
+Corretto in tre punti: la font del nome si misura ora sulla propria colonna (`.cc-info` diventa un
+container, `15cqw`, ricavato dal fatto che il nome piu' lungo occupa ~6.5 volte la sua font-size); il
+ritratto scende con la carta invece che con la sala, riusando le misure che le fasce strette avevano
+gia'; e `.cc-offerente` va a capo invece di troncarsi coi puntini ("Real Caz…" a 1280px).
+
+**Il container va messo solo in vista Partecipante**: provato in Admin, la colonna del nome collassa
+a 0px, perche' li' `.cc-header` si dimensiona sul contenuto.
+
+**Verificato** A/B, con e senza, a 16 larghezze da 390 a 1920px nei quattro temi: una riga sola
+ovunque, offerta che non sborda, offerente mai troncato; e fuori dalla fascia rotta il risultato e'
+identico a prima. Dettagli e tabella delle misure in [DECISIONS.md](../DECISIONS.md).
 
 ## Cambi recenti — limiti ridimensionati su un'asta vera (2026-08-25)
 

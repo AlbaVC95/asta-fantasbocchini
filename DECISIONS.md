@@ -1464,6 +1464,14 @@ Caveat ha l'occhio del 32% piu' piccolo: e' inservibile come font di base, va be
 e' maiuscolo (dove le sue maiuscole valgono quelle di Archivo) o enorme. E' questo il motivo del
 doppio font, non un gusto grafico.
 
+**Attenzione a come si legge quella tabella** — la colonna "riga" confronta le font a larghezza
+NORMALE, ma nella carta di puja Archivo gira a `wdth 62`, cioe' condensato. Sul testo davvero
+impaginato "KVARATSKHELIA" occupa 6.5 volte la sua font-size in Caveat contro 6.2 in Archivo
+condensato: li' Caveat e' il 5% piu' LARGO, non piu' stretto. (Una misura precedente diceva il
+contrario perche' era presa con `scrollWidth` su un elemento a `white-space:nowrap`, che restituisce
+la larghezza della scatola invece di quella del testo: per misurare il testo serve un `Range`.)
+La tabella resta valida per il confronto Kalam/Space Mono, dove nessuna delle due e' condensata.
+
 **Variabili + liste esplicite, non solo variabili.** Ridefinire `--font-main`/`--font-display` copre
 tutto style.css (Rose, Storico, Strategie, modali, campi), ma il foglio di tema riscrive
 'Archivo'/'Space Mono' a mano dentro ~43 regole con `!important`, che una variabile non raggiunge:
@@ -1493,9 +1501,62 @@ Risolto con `padding-right:.1em` sull'offerta. E' il tipo di dettaglio che una g
 e che una scrittura a mano porta con se': **quando si cambia famiglia di font non basta guardare
 l'altezza, va guardato anche quanto l'inchiostro esce dalla scatola.**
 
-**Un difetto trovato per strada e NON toccato.** In vista Partecipante a 1280px, con il riquadro di
-rilancio aperto, la carta della puja in "lavagna" e' larga 292px contro i 346 degli altri tre temi
-(il gruppo cronometro se ne prende 216 invece di 164) e il nome del giocatore va a capo in mezzo alla
-parola. **Non e' una regressione del gesso**: forzando Archivo sugli stessi elementi il difetto resta
-identico, e anzi coi font nuovi la carta guadagna 8px. E' un difetto preesistente del solo tema
-lavagna, di layout, lasciato fuori da un intervento tipografico.
+**Un difetto trovato per strada, corretto a parte** (vedi la voce successiva): in vista Partecipante
+a 1280px il nome del giocatore andava a capo in mezzo alla parola. Non era una regressione del gesso
+ne' un difetto del solo tema lavagna — forzando Archivo sugli stessi elementi restava identico.
+
+
+## Il nome del giocatore misura la SUA colonna, non la sala
+
+Bug segnalato: in vista Partecipante a 1280px "KVARATSKHELIA" andava a capo in mezzo alla parola —
+tre righe nei temi scuri, cinque in "lavagna". Sembrava un difetto del tema lavagna; non lo era:
+forzando Archivo sugli stessi elementi il difetto restava identico. Era di tutti e quattro i temi.
+
+**La causa e' uno scalino, non una misura sbagliata.** Appena la sala supera i 1200px
+`.asta-row-panels` passa da una colonna a due (la lista squadre si affianca alla puja) e la carta
+della puja CROLLA da 596px a 285. Nello stesso identico istante la carta entra nella fascia larga,
+che le assegna il ritratto grande: `padding-left:206px` su una carta di 285px lascia 79px al nome,
+con la font tarata su `4.4cqw` della SALA, cioe' 54px. Un nome che ne chiede 336 dentro 79px di
+colonna: da qui le cinque righe. Misurato (carta / colonna del nome / righe):
+
+| sala | carta | colonna nome | righe (prima) | righe (dopo) |
+|---|---|---|---|---|
+| 1192 | 596 | 464 | 1 | 1 |
+| 1262 | 292–346 | 86–140 | 3, e 5 in lavagna | **1** |
+| 1382 | 412–466 | 206–334 | 2 | **1** |
+| 1902 | 932 | 726–780 | 1 | 1 |
+
+**La soglia esisteva gia' ed era la cosa giusta da guardare — solo che guardava la sala mentre il
+problema era la carta.** E' lo stesso errore, in un altro punto, gia' documentato per il Riepilogo
+squadre in Admin ("la soglia misurava la cosa sbagliata") e per il cabinato di Sala Giochi
+(`@media` invece di `@container`). Vale la pena scriverlo come regola: **una soglia responsive deve
+misurare la scatola che contiene davvero il testo, non un antenato che le somiglia.**
+
+Due correzioni, nessuna delle quali inventa numeri nuovi:
+
+1. **`.cc-info` diventa un container** (`nomecol`) e la font del nome si misura su di lei: `15cqw`.
+   Il 15 non e' a occhio — il nome piu' lungo dell'app occupa ~6.5 volte la sua font-size (Caveat) e
+   ~6.2 (Archivo condensato), quindi `15% x 6.5 = 97.5%` della colonna: sta sempre su UNA riga, a
+   qualunque larghezza e in tutti e quattro i temi, senza una tabella di valori da mantenere. I
+   tetti massimi per fascia restano quelli di prima: cambia da cosa si parte, non dove si arriva.
+2. **Il ritratto scende con la carta** invece che con la sala, riusando le misure che le fasce
+   strette avevano gia' (100px e 112px). Le nuove fasce sembrano fuori scala rispetto a quella
+   sopra i 1200px — ed e' voluto: e' proprio li' che la carta e' piu' stretta, per lo scalino della
+   griglia.
+
+**Il container va messo solo in vista Partecipante.** Provato anche in Admin, la colonna del nome
+collassava a **0px**: li' `.cc-header` si dimensiona sul contenuto, e `container-type:inline-size`
+azzera la larghezza intrinseca di cio' che contiene. In Partecipante non succede perche'
+`.cc-header` e' `width:100%`. Verificato prima di sceglierlo: la sola dichiarazione `container-type`
+non sposta di un pixel nessuna delle larghezze in gioco.
+
+**Terza correzione, stessa famiglia:** `.cc-offerente` ("Offerta di: Real Cazzuola") era
+`nowrap` + `ellipsis` e a 1280px veniva troncato a "Real Caz…" — 180px di testo in 160px di casella.
+Ora va a capo. E' l'applicazione diretta della regola "non si nasconde informazione": se due
+informazioni non stanno su una riga si usa una riga in piu', non si taglia un dato.
+
+**Verificato** in browser reale, A/B con e senza la correzione, a 390 / 800 / 1000 / 1219 / 1232 /
+1250 / 1261 / 1280 / 1348 / 1366 / 1400 / 1418 / 1422 / 1440 / 1531 / 1549 / 1560 / 1920px, nei
+quattro temi: una riga sola ovunque, cifra dell'offerta che non sborda piu' dalla carta, nome
+dell'offerente mai troncato. Fuori dalla fascia rotta (390, 1000, 1920) il risultato e' identico
+pixel per pixel a prima.

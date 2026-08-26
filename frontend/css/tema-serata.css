@@ -208,7 +208,15 @@ html body #puja-panel-slot .cc-header{
   margin:0 !important;gap:0 !important;align-items:flex-start !important;
   flex:1 1 300px !important;min-width:0 !important;flex-shrink:1 !important;
 }
-html body #puja-panel-slot .cc-info{min-width:0 !important;flex:1 1 auto !important}
+/* La colonna del nome e' un CONTAINER: e' lei che il nome deve misurare, non la
+   sala (vedi "IL NOME MISURA LA SUA COLONNA" piu' sotto). Solo in vista
+   Partecipante: in Admin .cc-header si dimensiona sul contenuto, e contenendo
+   .cc-info la sua larghezza intrinseca diventa 0 — la colonna collassava e il
+   nome finiva al minimo del clamp (misurato: .cc-info larga 0px). */
+html body #puja-panel-slot .cc-info{
+  min-width:0 !important;flex:1 1 auto !important;
+  container-type:inline-size !important;container-name:nomecol !important;
+}
 html body #puja-panel-slot .cc-nome{
   font-family:'Archivo',sans-serif !important;font-weight:900 !important;
   font-variation-settings:'wdth' 62 !important;
@@ -1383,8 +1391,15 @@ html body #puja-panel-slot .cc-header{
 }
 html body #puja-panel-slot .cc-nome-row{width:100% !important;align-self:stretch !important}
 html body #puja-panel-slot .cc-nome{
-  /* Stesso bug/fix di sopra: vw->cqw, misura la colonna reale non la finestra. */
-  font-size:clamp(1.3rem,4.4cqw,3.4rem) !important;
+  /* 15cqw = 15% della COLONNA DEL NOME (.cc-info), non della sala: vedi
+     "IL NOME MISURA LA SUA COLONNA" piu' sotto per il perche' del 15. */
+  font-size:clamp(1.05rem,15cqw,3.4rem) !important;
+  white-space:normal !important;overflow:visible !important;text-overflow:clip !important;
+}
+/* Chi sta offrendo e' un dato, non decorazione: se non ci sta su una riga si va
+   a capo, non si taglia coi puntini (misurato a 1280px: la casella dava 160px a
+   un testo che ne chiede 180, e "Real Cazzuola" diventava "Real Caz…"). */
+html body #puja-panel-slot .cc-offerente{
   white-space:normal !important;overflow:visible !important;text-overflow:clip !important;
 }
 html body #puja-panel-slot .cc-body{width:100% !important;flex:0 0 auto !important}
@@ -1552,7 +1567,7 @@ html body #budget-bar .budget-progress{bottom:1px !important;left:8px !important
   }
   html body #puja-panel-slot .cc-offerta-box{align-items:flex-end !important}
   html body #puja-panel-slot .cc-avatar{width:112px !important;height:146px !important}
-  html body #puja-panel-slot .cc-nome{font-size:clamp(1.15rem,3.4cqw,1.9rem) !important}
+  html body #puja-panel-slot .cc-nome{font-size:clamp(1.05rem,15cqw,1.9rem) !important}
   html body #puja-panel-slot .cc-meta{margin-top:8px !important}
   html body #puja-panel-slot .cc-offerta{
     font-size:clamp(2.4rem,6.4cqw,4rem) !important;white-space:nowrap !important;
@@ -1604,7 +1619,7 @@ html body #budget-bar .budget-progress{bottom:1px !important;left:8px !important
     padding-left:116px !important;min-height:0 !important;gap:10px 18px !important;
   }
   html body #puja-panel-slot .cc-avatar{width:100px !important;height:130px !important}
-  html body #puja-panel-slot .cc-nome{font-size:clamp(1.1rem,5.4cqw,1.7rem) !important}
+  html body #puja-panel-slot .cc-nome{font-size:clamp(1.05rem,15cqw,1.7rem) !important}
   html body #puja-panel-slot .cc-offerta{font-size:clamp(2.4rem,10cqw,3.8rem) !important}
   /* la clessidra sotto la scena: al centro, non appesa a sinistra */
   html body #puja-panel-slot .timer-ring-container{
@@ -1630,7 +1645,7 @@ html body #budget-bar .budget-progress{bottom:1px !important;left:8px !important
   }
   html body #puja-panel-slot .cc-offerta-box{align-items:flex-start !important}
   html body #puja-panel-slot .cc-avatar{width:84px !important;height:110px !important}
-  html body #puja-panel-slot .cc-nome{font-size:clamp(1rem,6cqw,1.5rem) !important}
+  html body #puja-panel-slot .cc-nome{font-size:clamp(1rem,15cqw,1.5rem) !important}
   html body #puja-panel-slot .cc-offerta{font-size:clamp(2.1rem,12cqw,3.2rem) !important}
   html body #puja-panel-slot .clessidra{width:46px !important}
   html body #puja-panel-slot .timer-number{font-size:2rem !important}
@@ -1653,6 +1668,59 @@ html body #budget-bar .budget-progress{bottom:1px !important;left:8px !important
    alto abbastanza da essere usabile, e dentro di esse continua a scorrere
    solo .tab-content, come sempre. Due aree di scorrimento in tutto — la
    pagina e la tab aperta — non una catena annidata. */
+
+/* ═══════════════════════════════════════════════════════════════════
+   IL NOME MISURA LA SUA COLONNA, E IL RITRATTO SEGUE LA CARTA
+
+   Bug segnalato: in vista Partecipante a 1280px il nome del giocatore
+   andava a capo in mezzo alla parola. Misurato: "KVARATSKHELIA" su 3
+   righe nei temi scuri e su 5 in "lavagna". Non era un difetto di un
+   tema: era di tutti e quattro.
+
+   La causa e' uno SCALINO. Appena la sala supera i 1200px, .asta-row-panels
+   passa da una colonna a due (la lista squadre si affianca alla puja) e la
+   carta CROLLA da 596px a 285. Nello stesso istante la carta entra nella
+   fascia larga, che le mette il ritratto grande: padding-left 206px su una
+   carta di 285 lascia 79px al nome, con la font tarata su 4.4cqw della
+   SALA, cioe' 54px. Un nome da 336px in 79px di colonna: da qui le 5 righe.
+   La soglia c'era, ma misurava la sala mentre il problema era la carta.
+
+   Due correzioni, nessuna delle quali inventa numeri nuovi:
+
+   1) La font del nome ora si misura su .cc-info (il container "nomecol"
+      dichiarato piu' su), non sulla sala. 15cqw non e' un numero a caso:
+      "KVARATSKHELIA" occupa circa 6.2 volte la sua font-size in Archivo
+      condensato e 6.5 in Caveat, quindi 15% della colonna x 6.5 = 97.5%
+      della colonna — il nome piu' lungo che l'app mostra ci sta sempre su
+      UNA riga, a qualunque larghezza e in tutti e quattro i temi, senza
+      una tabella di valori da tenere allineata. I tetti massimi per fascia
+      restano quelli di prima: cambia da cosa si parte, non dove si arriva.
+
+   2) Il ritratto scende con la carta invece che con la sala, riusando le
+      misure che le fasce strette gia' avevano (100/112px). Le due fasce qui
+      sotto sembrano fuori scala rispetto a quella sopra i 1200 — ed e'
+      voluto: e' proprio li' che la carta e' piu' STRETTA, per lo scalino
+      della griglia descritto sopra.
+
+   Misurato dopo (finestra 1280, con il riquadro di rilancio aperto): una
+   riga sola in tutti e quattro i temi, con margine, e la cifra dell'offerta
+   che non sborda piu' dalla carta. A 390, 1000 e 1920px non cambia un pixel
+   rispetto a prima. */
+@container sala (min-width:1201px) and (max-width:1260px){
+  html body #puja-panel-slot .cc-avatar{width:100px !important;height:130px !important}
+  html body #puja-panel-slot .chiamata-card{padding-left:116px !important;min-height:150px !important}
+  html body #puja-panel-slot .cc-offerta{font-size:clamp(2rem,4.6cqw,5.6rem) !important}
+}
+@container sala (min-width:1261px) and (max-width:1400px){
+  html body #puja-panel-slot .cc-avatar{width:112px !important;height:146px !important}
+  html body #puja-panel-slot .chiamata-card{padding-left:132px !important;min-height:170px !important}
+  html body #puja-panel-slot .cc-offerta{font-size:clamp(2.2rem,5.2cqw,5.6rem) !important}
+}
+@container sala (min-width:1401px) and (max-width:1530px){
+  html body #puja-panel-slot .cc-avatar{width:140px !important;height:178px !important}
+  html body #puja-panel-slot .chiamata-card{padding-left:166px !important;min-height:200px !important}
+}
+
 @container sala (max-width:1200px){
   html body.layout-partecipante #asta-main-col{
     overflow-y:auto !important;overflow-x:hidden !important;
@@ -2450,11 +2518,13 @@ html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-offerta{
   line-height:.92 !important;padding-right:.1em !important;
 }
 /* Il nome sta in maiuscolo, e li' Caveat e' alto quanto Archivo (maiuscole .70em
-   contro .69em) e il 18% piu' STRETTO: "KVARATSKHELIA" su una riga sola misura
-   246px invece di 300, quindi va a capo meno spesso, non di piu' — un guadagno,
-   visto lo storico di sconfinamenti di questo elemento. Serve solo un filo
-   d'interlinea in piu' del .86 di base, perche' la mano larga sale e scende piu'
-   della grottesca: sotto .74 le maiuscole uscirebbero sopra la riga. */
+   contro .69em). In LARGHEZZA invece e' un filo piu' ingombrante: misurato sul
+   testo davvero impaginato, "KVARATSKHELIA" occupa 6.5 volte la sua font-size
+   contro le 6.2 di Archivo a `wdth 62` (che e' condensato, non normale — il
+   confronto con Archivo a larghezza piena non vale qui). Un 5% in piu', di cui
+   tiene gia' conto il 15cqw con cui il nome misura la sua colonna. Serve solo un
+   filo d'interlinea in piu' del .86 di base, perche' la mano larga sale e scende
+   piu' della grottesca: sotto .74 le maiuscole uscirebbero sopra la riga. */
 html[data-tema="lavagna"] body #puja-panel-slot .cc-nome,
 html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-nome{
   line-height:.88 !important;letter-spacing:.01em !important;
