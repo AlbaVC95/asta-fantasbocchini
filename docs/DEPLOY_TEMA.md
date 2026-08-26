@@ -210,6 +210,22 @@ Nel tema **scuro** il grigio più tenue (`--sc-tenue`, `#6E645A`) resta a 3.4:1 
 9-10px. È così da quando il tema è online, non è una regressione, ma si schiarisce con una
 riga. Gli altri tre temi sono stati misurati sopra 4.5:1 (3:1 per i corpi grandi).
 
+## Per chi fa da admin durante l'asta
+
+Se qualcuno dice **"ho premuto in tempo e non è passato"**, il rilancio è arrivato al server dopo
+lo scadere del timer e viene respinto: non c'è nessuna finestra di tolleranza, e chi lo subisce non
+vede il motivo — vede solo che ha perso il giocatore.
+
+Il rimedio esiste già ed è il tasto **"Riapri asta"**, che rimette in gioco il giocatore *dal prezzo
+attuale* o *da 1*. Usalo senza pensarci troppo: è lì per questo.
+
+Quanto sia frequente dipende dalla rete di chi gioca, non dalla distanza. Fra Spagna, Italia e UK la
+differenza di latenza fra i partecipanti è nell'ordine dei 30ms su una finestra di 1000 — sepolta
+sotto il tempo di reazione umano, che varia molto di più. Quindi il caso vero non è la geografia: è
+la sfuriata occasionale del wifi di casa. Se dopo un'asta vera risultasse frequente, allora avrebbe
+senso valutare una finestra di tolleranza lato server (~400ms) nel gestore `rilancio`; farlo prima
+significherebbe cambiare una regola di gioco per un problema mai osservato.
+
 ## Se qualcosa si rompe
 
 Il sospetto numero uno è la **specificità CSS**: `style.css` difende la zona puja con circa
