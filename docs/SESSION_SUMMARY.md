@@ -88,6 +88,32 @@ identiche font di prima** (controllo automatico su 12 selettori x 4 temi).
 alla parola. Non era del gesso (forzando Archivo restava identico) ed e' stato corretto a parte —
 vedi la sezione qui sotto.
 
+## Cambi recenti — la Griglia P/A poggia su un piano (2026-08-26)
+
+Era l'ultima schermata senza un trattamento suo: `.gk-view` in `style.css` è pura impaginazione,
+senza fondo, quindi il contenuto stava appoggiato direttamente sull'immagine d'ambiente — sulla
+pergamena di Cuoio e sulla foto del bar di Serata si leggeva male e la schermata sembrava non finita
+rispetto a tutte le altre.
+
+Non è stato inventato niente di nuovo: si riusa, tema per tema, **la stessa materia che ciascuno dà
+già a `.card`**. Così la Griglia entra nel locale invece di galleggiarci sopra, e chi domani ritocca
+`.card` non deve ricordarsi di ritoccare anche questa. Il piano va su `.gk-view.active` e non su un
+contenitore più esterno perché un contenitore non c'è: in `index.html` testata, toggle, tab e viste
+sono fratelli. Testata e tab restano "chrome" appoggiato all'ambiente, come già fanno la Home e la
+riga di tab della schermata d'asta.
+
+In più, le righe della classifica in **sala-giochi** erano bianche su piano bianco: hanno preso lo
+stesso trattamento che il tema dà già alle righe delle Rose (angoli vivi e filo d'inchiostro). Gli
+altri tre temi non sono stati toccati — si leggevano già bene.
+
+`overflow-x:auto` sul piano è deliberato: la vista "Griglia" è una mappa di calore con una colonna
+per giornata, quindi è più larga della pagina per costruzione. Deve scorrere DENTRO il suo piano,
+mai far scorrere la pagina in orizzontale.
+
+**Verificato** nei quattro temi a 1100px e 390px, su tutte le viste della Griglia (Ranking, Griglia,
+Impostazioni): il piano compare, nessun sbordo orizzontale della pagina, e su mobile misura 358px in
+tutti e quattro.
+
 ## Cambi recenti — chiuse le pendenze vecchie (2026-08-26)
 
 Quattro voci ferme da sessioni, chiuse in un giro solo.
@@ -356,12 +382,11 @@ con utenti veri loggati (in locale non ci sono le variabili Supabase).
 - **Mai provato end-to-end in un'asta vera**: login Supabase, più dispositivi, modali critici
   (svincolo, conferma RIC, plusvalenza/recompra, annulla storico), il blocco popup-pendente. È il
   limite noto di tutte le sessioni finora — non ci sono credenziali di test.
-- Schermate Strategie, Editor Fasce e Griglia P/A: **guardate** il 2026-08-26 nei quattro temi.
-  Nessuno sbordo, e i due difetti di contrasto trovati sono corretti. Resta però un fatto di
-  *composizione*, non un bug: queste schermate ereditano i token ma non hanno un trattamento loro,
-  quindi il contenuto poggia direttamente sull'immagine d'ambiente invece che su un piano — nella
-  Griglia P/A si vede parecchio, su pergamena e sulla foto del bar. Vestirle è un lavoro della
-  stessa taglia di "le Rose vestite da sala giochi", cioè una sessione a sé, non una riga.
+- ~~Schermate Strategie, Editor Fasce e Griglia P/A mai guardate nei quattro temi~~ — **fatto** il
+  2026-08-26. Strategie ed Editor Fasce usavano già `.card`, quindi un piano ce l'avevano; la
+  Griglia P/A no, ed è stata vestita (vedi sotto). Restano da rifinire, se un giorno servirà, la
+  striscia di tab e il toggle Portieri/Attaccanti della Griglia, che usano ancora le pastiglie
+  generiche invece del linguaggio di ciascun tema: si leggono bene, non sono un difetto.
 
 ## Prossimo passo
 

@@ -3470,3 +3470,69 @@ html[data-tema="sala-giochi"] .rose-search-dropdown{
 html[data-tema="sala-giochi"] .rose-search-item{color:#141024 !important;border-bottom:1px solid rgba(20,16,36,.14) !important}
 html[data-tema="sala-giochi"] .rose-search-item:hover{background:rgba(36,64,216,.10) !important}
 html[data-tema="sala-giochi"] .rose-search-item-sq{color:#66627C !important}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LA GRIGLIA P/A POGGIA SU UN PIANO
+
+   Era l'ultima schermata senza un trattamento suo: `.gk-view` in
+   style.css e' pura impaginazione, senza fondo, quindi il contenuto
+   stava appoggiato direttamente sull'immagine d'ambiente — sulla
+   pergamena di Cuoio e sulla foto del bar di Serata si leggeva male, e
+   la schermata sembrava non finita rispetto a tutte le altre.
+
+   Qui non si inventa niente di nuovo: si riusa, tema per tema, LA
+   STESSA materia che ciascuno da' gia' a `.card`. Cosi' la Griglia
+   entra nel locale invece di galleggiarci sopra, e chi un domani
+   ritocca `.card` non deve ricordarsi di ritoccare anche questa.
+
+   Il piano va su `.gk-view.active` e non su un contenitore piu' esterno
+   perche' un contenitore non c'e': in `index.html` testata, toggle,
+   tab e viste sono fratelli. Testata e tab restano "chrome" appoggiato
+   sull'ambiente, esattamente come si comportano la Home e la riga di
+   tab della schermata d'asta.
+
+   `overflow-x:auto` e' deliberato: la vista "Griglia" e' una mappa di
+   calore con una colonna per giornata, quindi e' piu' larga della
+   pagina per costruzione. Deve scorrere DENTRO il suo piano — mai far
+   scorrere la pagina in orizzontale. */
+html body .gk-view.active{
+  padding:16px !important;
+  background:linear-gradient(180deg, rgba(25,20,17,.9), rgba(13,11,10,.94)) !important;
+  border:1px solid rgba(var(--sc-carta),.10) !important;
+  border-radius:2px !important;
+  overflow-x:auto !important;
+}
+html[data-tema="cuoio"] body .gk-view.active{
+  background:linear-gradient(180deg, #FAF2E3, #F0E3C8) !important;
+  border:1px solid rgba(58,36,20,.14) !important;
+}
+html[data-tema="lavagna"] body .gk-view.active{
+  background:linear-gradient(180deg, #111318, #0B0B0F) !important;
+  border:1px solid rgba(34,211,238,.22) !important;
+}
+html[data-tema="sala-giochi"] body .gk-view.active{
+  background:#FFFFFF !important;
+  border:3px solid #141024 !important;border-radius:0 !important;
+  box-shadow:6px 6px 0 #141024 !important;
+}
+/* su schermo stretto il piano si stringe con la pagina, e l'ombra piena
+   di Sala Giochi mangerebbe spazio utile: resta il bordo */
+@media (max-width:640px){
+  html body .gk-view.active{padding:12px !important}
+  html[data-tema="sala-giochi"] body .gk-view.active{box-shadow:3px 3px 0 #141024 !important}
+}
+
+/* Le righe della classifica dentro il piano. Servono solo dove la materia del
+   tema le renderebbe invisibili: in "sala-giochi" il piano e' bianco e la riga
+   e' bianca con un filo tenue, quindi sparisce. Le si da' lo stesso trattamento
+   che il tema usa gia' per le righe delle Rose — angoli vivi e filo d'inchiostro,
+   non una pastiglia arrotondata. Gli altri tre temi si leggono gia' bene e non
+   vengono toccati: vestire per il gusto di vestire e' come non vestire. */
+html[data-tema="sala-giochi"] body .gk-rank-card{
+  border-radius:0 !important;
+  border:2px solid rgba(20,16,36,.16) !important;
+  background:#F4F3EA !important;box-shadow:none !important;
+}
+html[data-tema="sala-giochi"] body .gk-rank-card:hover{
+  border-color:#2440D8 !important;background:#FFFFFF !important;
+}
