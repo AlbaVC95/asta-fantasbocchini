@@ -104,6 +104,12 @@ Senza di esse il server parte comunque ma tutte le funzionalità legate a Supaba
   `app.js`, dentro `_antAssicuraStadio3D`) sono a loro volta LF-only anziche' CRLF — prima di
   scrivere l'`old_string`/`new_string` dello script, verificare lo stile REALE del punto preciso
   d'inserimento (es. `sed -n 'N,Mp' file | od -c`), non assumerlo uniforme.
+- **`frontend/css/tema-serata.css` è invece interamente a LF** e si edita normalmente. Era l'unico
+  file al 100% CRLF, quindi qualunque strumento che normalizza le fine riga lo riscriveva tutto e
+  ogni modifica al CSS appariva come un diff da 3000+ righe: convertito una volta per tutte in un
+  commit di sole fine riga (`style: convert CRLF to LF in tema-serata.css`, 2026-08-26). **Va
+  tenuto a LF**: se un giorno ricomparissero dei CR, si è tornati al problema di prima.
+  Conteggi righe LF-only al 2026-08-26: `app.js` 240, `index.html` 19, `style.css` 234.
 - **`String.replace(x, stringa)` corrompe `app.js`**: le sequenze `$&`, `$'`, `$1` nella stringa di
   sostituzione vengono interpretate come pattern, e `app.js` contiene `['$,$,$']` (riga 293). Usare
   sempre un replacer come **funzione**: `str.replace(x, () => y)`.

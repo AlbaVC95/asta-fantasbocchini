@@ -6,9 +6,12 @@ non accumulato. La cronologia sta in `git log`, il *perché* delle scelte in
 
 ## Stato attuale
 
-Branch `main`, allineato con `origin/main`. Deploy automatico su Hostinger al push su `main`.
-Il giro di sicurezza e il fix delle etichette in Anteprima (vedi sotto) sono **committati e
-pushati** il 2026-08-25 (commit `18b0bb9`), quindi in produzione.
+Il lavoro fino al 2026-08-25 è su `main`, committato e pushato (ultimo commit `8a85e67`), quindi
+in produzione su Hostinger (il deploy parte da solo al push su `main`).
+
+Il lavoro del 2026-08-26 vive sul ramo **`tema-lavagna-gesso`**, non ancora unito a `main` e quindi
+non ancora online: la conversione a LF di `tema-serata.css` e il gesso del tema lavagna (vedi
+sotto). Per mandarlo in produzione va unito a `main` e pushato.
 
 **Quattro temi attivi** (`serata` default, `cuoio`, `lavagna`, `sala-giochi`), tutti con lo stesso
 pattern (ruoli `--sc-*` in `tema-serata.css` + token base in `style.css`, entrambi con un blocco
@@ -16,6 +19,10 @@ pattern (ruoli `--sc-*` in `tema-serata.css` + token base in `style.css`, entram
 `app.js` e, se la clessidra resta visibile, una voce in `MATERIALI` di `clessidra.js`).
 L'attributo è `data-tema="<id>"` su `<html>`, il selettore è il menu 🎨. Home, Lobby, Strategie,
 Editor Fasce, Anteprima e Griglia P/A ereditano i token globali senza regole per schermata.
+Due dei quattro temi cambiano anche i **caratteri** (`sala-giochi`: Press Start 2P + Silkscreen;
+`lavagna`: Caveat + Kalam): in quel caso la famiglia va aggiunta al `<link>` di Google Fonts in
+`index.html`, e non basta ridefinire `--font-main`/`--font-display` — il foglio di tema scrive
+'Archivo'/'Space Mono' a mano in ~43 regole con `!important`, che le variabili non raggiungono.
 
 **Promemoria operativi che non scadono:**
 
@@ -27,6 +34,10 @@ Editor Fasce, Anteprima e Griglia P/A ereditano i token globali senza regole per
    `frontend/css/style.css`) non vanno mai editati con l'Edit tool standard — vedi PROJECT.md per
    il procedimento (script Python, verificare lo stile di fine riga ESATTO del punto
    d'inserimento, non assumerlo uniforme, e ricontare le righe LF-only prima e dopo).
+   `frontend/css/tema-serata.css` **non è più in questa lista**: era l'unico file al 100% CRLF ed
+   è stato convertito a LF il 2026-08-26 in un commit di sole fine riga, apposta per non trascinare
+   un diff da 3000 righe a ogni ritocco al CSS. Ora si edita normalmente, e va tenuto a LF.
+   Conteggi righe LF-only al 2026-08-26: app.js 240, index.html 19, style.css 234.
 3. **Per usare una foto vera** (non un'imitazione CSS) serve che sia l'utente a salvarla su disco
    e dire il nome del file: nessun tool di Claude Code può esportare un'immagine incollata in
    chat. Poi si copia in `frontend/img/backgrounds/` e si referenzia con `url(...)` + `?v=N`
@@ -38,6 +49,42 @@ Editor Fasce, Anteprima e Griglia P/A ereditano i token globali senza regole per
 Per portare online o tornare indietro: **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)** — attenzione, è
 fermo al vecchio toggle binario chiaro/scuro e alla palette chiara precedente, va riscritto per i
 quattro temi prima del prossimo deploy importante.
+
+## Cambi recenti — "Lavagna al Neon" scritta a mano (2026-08-26)
+
+Richiesta dell'utente: nel tema lavagna il testo doveva sembrare scritto col gesso, leggibile, non
+una corsiva strana. Il tema aveva l'ambiente giusto ma i caratteri della stampa, gli stessi degli
+altri tre locali. Ora usa **due font, con ruoli distinti** come gia' fa Sala Giochi:
+
+- **Kalam** = l'interfaccia intera (prende il posto di Archivo e Space Mono);
+- **Caveat** = la mano larga, solo per nome del giocatore, offerta, cronometro, RILANCIA, esito;
+- **Pacifico** resta l'insegna: e' il tubo al neon, non il gesso.
+
+Restano a monospazio, di proposito, il link da copiare, le colonne numeriche della Griglia P/A e i
+`<code>`: li' non e' estetica ma allineamento. Per questo si ridefiniscono solo `--font-main` e
+`--font-display`, mai `--font-mono`; le ~43 regole del foglio di tema che scrivono il font a mano con
+`!important` hanno bisogno di due elenchi espliciti di selettori, che le variabili non raggiungono.
+
+**Scelto misurando, non guardando**: Kalam ha l'occhio di Archivo (51.1 contro 52.6 su 100px) ed e'
+piu' stretto di Archivo e Space Mono, quindi regge gli 8-10px dell'app e le viste dense si
+*stringono* — tre colonne delle Rose passano da 594px a 560px (-6%), il contrario della regressione
+di Silkscreen. Caveat ha l'occhio del 32% piu' piccolo: serve solo dove il testo e' maiuscolo o
+enorme. Dettagli e formule in [DECISIONS.md](../DECISIONS.md).
+
+**Due trappole vere, trovate e risolte a schermo**: le cifre ingrandite con `font-size-adjust`
+venivano *tagliate* da `.cc-offerta-box` perche' il foglio base stringe l'interlinea sotto 1 (limite
+ricavato: `line-height >= 0.76 · k`); e la coda del 7 di Caveat sborda di .088em oltre la larghezza
+nominale della cifra, quindi veniva tranciata.
+
+**Verificato** in browser reale con stato d'asta finto, a 390 / 900 / 1280 / 1440 / 1600px, in vista
+Partecipante e Admin, su carta di puja, Riepilogo squadre, Rose, tab, modali, Anteprima e menu: font
+applicato ovunque, nessun taglio, nessun errore in console, e gli altri **tre temi hanno le stesse
+identiche font di prima** (controllo automatico su 12 selettori x 4 temi).
+
+**Difetto preesistente trovato per strada, NON toccato**: in vista Partecipante a 1280px con il
+riquadro di rilancio aperto, la carta della puja in lavagna e' larga 292px contro i 346 degli altri
+temi (il gruppo cronometro se ne prende 216 invece di 164) e il nome va a capo in mezzo alla parola.
+Forzando Archivo sugli stessi elementi il difetto resta identico — e' di layout, non del gesso.
 
 ## Cambi recenti — limiti ridimensionati su un'asta vera (2026-08-25)
 
@@ -90,42 +137,22 @@ rosa pregressa + nuovi acquisti -> 5 giocatori esportati invece di 2; asta inizi
 casi limite (idFantaleghe mancante, doppioni, rose vuote, prezzo assente) tutti con l'avviso
 giusto.
 
-## Cambi recenti — il cabinato diventa un disegno SVG (2026-08-25)
+## Cambi recenti — il cabinato attorno al ritratto, in "sala-giochi" (2026-08-25)
 
-Dopo due giri respinti dall'utente ("si vede molto uguale"), il mobile e' stato rifatto come
-**disegno SVG sovrapposto alla foto**, con la finestra dello schermo ritagliata a buco. I
-gradienti CSS non potevano bastare: sanno fare bande e pallini, non la SAGOMA (spalle
-arrotondate, bisel del monitor, cruscotto che sporge, sportello dei gettoni), ed e' la sagoma a
-far riconoscere una macchina da sala giochi.
+Tre giri sullo stesso pezzo, riassunti qui: cornice a forma di macchina da sala giochi attorno alla
+foto del giocatore nella carta di puja (Admin e Partecipante, non le miniature), senza occupare piu'
+spazio. I gradienti CSS non bastavano — sanno fare bande e pallini, non la SAGOMA — quindi il mobile
+e' un **disegno SVG sovrapposto alla foto, con la finestra dello schermo ritagliata a buco**. Il
+ritratto cresce in altezza (rapporto 100:166) perche' su un cabinato vero lo schermo e' ~60% del
+frontale: cosi' la finestra resta grande quanto la foto di prima. Il mobile **essenziale** e' la
+regola base e il dettaglio ricco (lampadine, righe di scansione, leva, gettoniera) si aggiunge solo
+in `@container sala (min-width:1201px)`: col dettaglio ovunque la faccia scendeva al 48% dell'area,
+ora sta al 58-61% a ogni misura. Sotto i 700px il cabinato si spegne.
 
-Il ritratto **cresce in altezza** (rapporto 100:166): su un cabinato vero lo schermo e' ~60% del
-frontale, quindi nel riquadro di prima la faccia sarebbe scesa al ~38%. Cosi' invece la finestra
-resta grande quanto la foto di prima (135x183 contro 138x177). Solo in altezza — allargarlo
-avrebbe richiesto di toccare il `padding-left` di `.chiamata-card` in ogni breakpoint.
-
-Niente misure per breakpoint: `aspect-ratio` lega l'altezza alla larghezza e la foto si posiziona
-con percentuali di `inset`. Tre trappole CSS incontrate lungo la strada (percentuali di padding
-che si misurano sul contenitore, `width:auto` sugli `<img>` assoluti, un ID che batte le classi
-nel solo ramo Admin) sono documentate in [DECISIONS.md](../DECISIONS.md).
-
-**Verificato** a 1:1: cabinato in Admin e utente a tutte le larghezze di colonna, foto sempre
-dentro la finestra, nessun ritaglio, i tre temi non-arcade intatti (178x226), cabinato spento e
-rapporto originale ripristinato sotto i 700px.
-
-## Cambi recenti — cabinato piu' elaborato (2026-08-25)
-
-Su richiesta dell'utente il cabinato attorno al ritratto e' ora una macchina da sala giochi vera:
-lampadine sull'insegna, griglia dell'altoparlante, schermo a tubo catodico con righe di scansione
-e vignettatura, leva con piastra e riflesso, tasti bombati, gettoniera, zoccolo, montanti.
-
-**Struttura invertita rispetto al primo tentativo**: il mobile ESSENZIALE e' la regola base (Admin
-e utente), il dettaglio ricco si aggiunge solo in `@container sala (min-width:1201px)`. Motivo
-misurato: col dettaglio ovunque, la faccia scendeva al 48% dell'area sulla scatola da 112px e al
-51% su quella dell'Admin. Ora sta al **58-61% a ogni misura**. La lista degli strati ricchi vive
-in un solo punto, non duplicata fra le due viste.
-
-**Verificato** a 1:1 in browser: dettaglio completo solo sulla carta grande, essenziale altrove,
-cabinato spento sotto i 700px di finestra, i tre temi non-arcade intatti (padding 0).
+Due trappole da ricordare: le soglie vanno su `@container sala`, **non** su `@media` (il ritratto
+rimpicciolisce con la colonna, non con la finestra — stesso errore fatto nel Riepilogo squadre); e
+ispezionare col `zoom` del browser inganna, perche' rimpicciolisce anche il container. Dettagli e le
+tre trappole CSS incontrate in [DECISIONS.md](../DECISIONS.md).
 
 ## Cambi recenti — ruoli in riga, ruoli colorati, rosso a 3 secondi (2026-08-25)
 
@@ -149,21 +176,6 @@ corretti in sala-giochi e contorno intatto negli altri tre; soglie del timer sim
 secondo (rosso da 3, tic-tac da 5, le due meta' della scena in sincronia).
 **Confermato dall'utente**: il ticchettio resta a 5s e il rosso a 3s — lo sfasamento e' voluto,
 non una svista da correggere in futuro.
-
-## Cambi recenti — cabinato attorno al ritratto in "sala-giochi" (2026-08-25)
-
-Richiesta dell'utente: cornice a forma di macchina da sala giochi attorno alla foto del giocatore,
-senza occupare piu' spazio. Solo il ritratto della carta di puja (Admin e Partecipante), non le
-miniature. Marquise a tacche d'oro, montanti cobalto, cruscotto con leva a sinistra e tre tasti a
-destra — otto strati di `background`, perche' `::before`/`::after` di `.cc-avatar` sono gia' usati
-dal tema. Costruito **verso l'interno** (`box-sizing:border-box` + `padding`): la scatola esterna
-resta identica in tutti e quattro i temi, a rimpicciolirsi e' solo la foto.
-
-**Errore ripetuto e corretto**: le soglie erano su `@media`, ma il ritratto rimpicciolisce per
-`@container sala` — stesso sbaglio del Riepilogo squadre poche ore prima. Con le soglie giuste la
-foto resta al 61-68% dell'area a ogni misura invece di scendere al 54%. Sotto i ~70px il cabinato
-si spegne del tutto. **Attenzione**: ispezionarlo col `zoom` del browser inganna (il `zoom`
-rimpicciolisce anche il container e fa scattare le soglie strette) — vedi DECISIONS.md.
 
 ## Cambi recenti — Riepilogo squadre in Admin: conteggi sopra il nome (2026-08-25)
 

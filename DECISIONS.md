@@ -1437,3 +1437,65 @@ sensibile: a ciascuno mostra il proprio.
 
 Lezione: **un limite di sicurezza va dimensionato sul carico vero, non sul numero che sembra
 prudente.** Qui il numero prudente rischiava di rompere la serata che doveva proteggere.
+
+## "Lavagna al Neon" scritto a mano: due font, e le metriche prima dell'estetica
+
+Il tema aveva l'ambiente di una lavagna ma i caratteri della stampa (Archivo/Space Mono, come gli
+altri tre locali). Richiesta dell'utente: gesso, leggibile, non una corsiva strana. La scelta e'
+ricaduta su **due** font con ruoli distinti, come gia' fa "Sala Giochi" (Press Start 2P + Silkscreen):
+**Kalam** e' il font dell'interfaccia (sostituisce Archivo e Space Mono dappertutto), **Caveat** e' la
+mano larga riservata alle poche cose grandi e corte — nome del giocatore, cifra dell'offerta,
+cronometro, RILANCIA, esito. `Pacifico` resta l'insegna del brand: e' il tubo al neon, non il gesso.
+
+**La scelta e' stata fatta misurando, non guardando.** Con un canvas a 100px, x-height e larghezza
+della stessa stringa:
+
+| | x-height | riga | cifre alte | "0" largo |
+|---|---|---|---|---|
+| Archivo | 52.6 | 990px | 69.8 | 56.3 |
+| Space Mono | 49.6 | 1285px | 71.4 | 61.2 |
+| Kalam | 51.1 | 891px | 72.9 | 51.6 |
+| Caveat | 35.7 | 724px | 56.3 | 45.0 |
+
+Kalam ha praticamente l'occhio di Archivo ed e' piu' stretto di entrambi: si legge alle misure minime
+dell'app (8-10px) e le viste dense si **stringono** invece di allargarsi — tre colonne delle Rose
+passano da 594px a 560px (-6%), l'esatto contrario della regressione di Silkscreen documentata sopra.
+Caveat ha l'occhio del 32% piu' piccolo: e' inservibile come font di base, va bene solo dove il testo
+e' maiuscolo (dove le sue maiuscole valgono quelle di Archivo) o enorme. E' questo il motivo del
+doppio font, non un gusto grafico.
+
+**Variabili + liste esplicite, non solo variabili.** Ridefinire `--font-main`/`--font-display` copre
+tutto style.css (Rose, Storico, Strategie, modali, campi), ma il foglio di tema riscrive
+'Archivo'/'Space Mono' a mano dentro ~43 regole con `!important`, che una variabile non raggiunge:
+per quelle serve un elenco di selettori, prefissati con `html[data-tema="lavagna"]` per vincere di
+specificita'. `--font-mono` invece **non** si tocca: il link da copiare (`.link-text`), le colonne
+numeriche della Griglia P/A (hanno `min-width` + `text-align`) e i `<code>` usano il monospazio per
+allineamento e trascrizione, non per estetica.
+
+**Le cifre grandi e il limite `line-height >= 0.76 · k`.** In Caveat le cifre nascono il 19% piu'
+basse: sull'offerta, il dato piu' importante a schermo, non era accettabile. Si ingrandiscono con
+`font-size-adjust:ch-width`, che ridimensiona la font sulla larghezza del suo "0" senza toccare
+nessuna delle `font-size` esistenti — che qui sono responsive (`clamp`/`cqw`) e riscriverle avrebbe
+voluto dire rifarle a ogni breakpoint. Ma il valore che pareggia Archivo (.563) **taglia le cifre**:
+`.cc-offerta-box` ha `overflow:hidden` e il foglio base stringe l'interlinea sotto 1 (.76 nella carta
+grande, .8 in Admin) per recuperare spazio; Caveat ha il corpo molto piu' alto della sua parte
+scritta (1.26em contro cifre alte .575em), quindi la linea di base scende e l'inchiostro esce sotto
+la riga. Messo in formula, con k = di quanto si ingrandisce la font, le cifre restano dentro finche'
+`line-height >= 0.76 · k`. Da qui la coppia k = 1.10 (`ch-width .495`) + interlinea .92: cifre solo
+il 10% piu' basse di Archivo invece del 19%, ~4px di margine, 14px di altezza in piu' sulla carta
+grande. Tarare piu' su (k 1.156 con interlinea .90) lasciava meno di 1px: verificato a schermo che le
+cifre tornavano a toccare il bordo. Dove `font-size-adjust` non e' supportato (Safari < 17) la
+dichiarazione viene ignorata: cifre naturali di Caveat, piu' piccole, mai tagliate.
+
+**La coda del 7.** In Caveat l'inchiostro sborda di .088em oltre la larghezza nominale della cifra, e
+`.cc-offerta-box` si dimensiona esattamente su quella larghezza: la coda veniva tranciata di netto.
+Risolto con `padding-right:.1em` sull'offerta. E' il tipo di dettaglio che una grottesca non ha mai
+e che una scrittura a mano porta con se': **quando si cambia famiglia di font non basta guardare
+l'altezza, va guardato anche quanto l'inchiostro esce dalla scatola.**
+
+**Un difetto trovato per strada e NON toccato.** In vista Partecipante a 1280px, con il riquadro di
+rilancio aperto, la carta della puja in "lavagna" e' larga 292px contro i 346 degli altri tre temi
+(il gruppo cronometro se ne prende 216 invece di 164) e il nome del giocatore va a capo in mezzo alla
+parola. **Non e' una regressione del gesso**: forzando Archivo sugli stessi elementi il difetto resta
+identico, e anzi coi font nuovi la carta guadagna 8px. E' un difetto preesistente del solo tema
+lavagna, di layout, lasciato fuori da un intervento tipografico.

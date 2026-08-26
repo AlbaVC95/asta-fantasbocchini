@@ -2306,6 +2306,161 @@ html[data-tema="lavagna"] body .asta-header::after{
   box-shadow:0 0 8px rgba(201,162,39,.4) !important;
 }
 
+/* ── IL GESSO: la mano che scrive sulla lavagna ─────────────────────────
+   Ultimo pezzo che tradiva il tema: i caratteri erano quelli degli altri tre
+   locali (Archivo/Space Mono, cioe' STAMPA). Su una lavagna si SCRIVE.
+   Due mani, con ruoli distinti come i due neon:
+
+   - 'Kalam'  → la scrittura di tutti i giorni: e' il font dell'interfaccia,
+                sostituisce Archivo/Space Mono ovunque.
+   - 'Caveat' → la mano larga del gesso, riservata alle poche cose grandi e
+                corte: nome del giocatore, cifra dell'offerta, cronometro,
+                RILANCIA, l'esito. Stesso schema di "Sala Giochi", dove
+                'Press Start 2P' fa l'insegna e 'Silkscreen' il resto.
+
+   Perche' Kalam e non una corsiva piu' bella: e' l'unica delle due che regge
+   le misure minime dell'app. MISURATO col canvas a 100px, x-height e
+   larghezza della stessa stringa:
+     Archivo     x 52.6   riga 990px   cifre alte 69.8   "0" largo 56.3
+     Space Mono  x 49.6   riga 1285px  cifre alte 71.4   "0" largo 61.2
+     Kalam       x 51.1   riga  891px  cifre alte 72.9   "0" largo 51.6
+     Caveat      x 35.7   riga  724px  cifre alte 56.3   "0" largo 45.0
+   Kalam ha lo stesso occhio di Archivo (51.1 contro 52.6) ed e' piu' STRETTO
+   di entrambi: si legge uguale a 8-10px e le viste diffe non si allargano —
+   il contrario di quello che era successo con Silkscreen nelle Rose, dove tre
+   colonne erano cresciute del 36% (vedi DECISIONS.md). Caveat ha invece
+   l'occhio del 32% piu' piccolo: va bene solo dove il testo e' MAIUSCOLO o
+   enorme, ed e' il motivo per cui non e' il font di base.
+
+   Restano volutamente NON scritti a mano:
+   - l'insegna ('Pacifico'): e' il tubo al neon, non il gesso — unico punto col
+     font del brand, vedi DECISIONS.md;
+   - il monospazio dove non e' estetica ma allineamento e trascrizione: il link
+     da copiare (.link-text), le colonne numeriche della Griglia P/A (.gk-*,
+     hanno min-width + text-align) e i <code>. Per questo si ridefiniscono solo
+     --font-main e --font-display, MAI --font-mono.
+
+   Perche' servono anche le due liste esplicite e non bastano le variabili: il
+   foglio di tema riscrive 'Archivo'/'Space Mono' a mano dentro ~43 regole con
+   !important, che una variabile non raggiunge. Le variabili coprono style.css
+   (Rose, Storico, Strategie, modali, campi); le liste coprono il tema. */
+html[data-tema="lavagna"]{
+  --font-main:'Kalam',Archivo,Inter,sans-serif;
+  --font-display:'Kalam',Archivo,Outfit,sans-serif;
+}
+
+/* la mano larga: solo maiuscole e cifre grandi */
+html[data-tema="lavagna"] body #puja-panel-slot .cc-nome,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-nome,
+html[data-tema="lavagna"] body #puja-panel-slot .cc-offerta,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-offerta,
+html[data-tema="lavagna"] body #puja-panel-slot .timer-number,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .timer-number,
+html[data-tema="lavagna"] body #puja-panel-slot .btn-rilancia,
+html[data-tema="lavagna"] body #puja-panel-slot .btn-rilancia::after,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .btn-rilancia,
+html[data-tema="lavagna"] body .chiamata-card.assegnata .cc-esito,
+html[data-tema="lavagna"] body .timbro-preso span,
+html[data-tema="lavagna"] body .card-title,
+html[data-tema="lavagna"] body .conferma-titolo{
+  font-family:'Caveat','Kalam',Archivo,sans-serif !important;
+  /* l'asse 'wdth' e' di Archivo: qui non esiste piu', si azzera per non
+     lasciare una dichiarazione che non vuol dire niente */
+  font-variation-settings:normal !important;
+}
+
+/* la mano di tutti i giorni */
+html[data-tema="lavagna"] body #puja-panel-slot .cc-meta,
+html[data-tema="lavagna"] body #puja-panel-slot .cc-offerta-label,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-offerta-label,
+html[data-tema="lavagna"] body #puja-panel-slot .cc-strategia-info,
+html[data-tema="lavagna"] body #puja-panel-slot .timer-label-text,
+html[data-tema="lavagna"] body .timer-label-text,
+html[data-tema="lavagna"] body #puja-panel-slot .btn-quick,
+html[data-tema="lavagna"] body #puja-panel-slot .btn-manuale,
+html[data-tema="lavagna"] body #puja-panel-slot .inp-rilancio,
+html[data-tema="lavagna"] body #puja-panel-slot .badge-ruolo,
+html[data-tema="lavagna"] body #puja-panel-slot .badge-ruolo[class*="r-"],
+html[data-tema="lavagna"] body #mio-panel .mio-nome,
+html[data-tema="lavagna"] body #mio-panel .crediti-badge,
+html[data-tema="lavagna"] body.layout-admin #mio-panel .crediti-badge,
+html[data-tema="lavagna"] body .admin-badge,
+html[data-tema="lavagna"] body .timbro-preso em,
+html[data-tema="lavagna"] body .vivi-chip b,
+html[data-tema="lavagna"] body .vivi-chip span,
+html[data-tema="lavagna"] body .storico-list li .text-accent,
+html[data-tema="lavagna"] body #budget-bar .sq-bottom,
+html[data-tema="lavagna"] .panel-budget-hdr,
+html[data-tema="lavagna"] .mio-panel-header .mio-nome,
+html[data-tema="lavagna"] .admin-badge,
+html[data-tema="lavagna"] .sq-nome,
+html[data-tema="lavagna"] .sq-crediti,
+html[data-tema="lavagna"] .crediti-badge,
+html[data-tema="lavagna"] .sq-svincoli,
+html[data-tema="lavagna"] .slot-chip,
+html[data-tema="lavagna"] .sq-slot,
+html[data-tema="lavagna"] .btn,
+html[data-tema="lavagna"] .tab-btn,
+html[data-tema="lavagna"] .storico-filtro-btn,
+html[data-tema="lavagna"] .filtro-btn,
+html[data-tema="lavagna"] .asta-header-email{
+  font-family:'Kalam',Archivo,sans-serif !important;
+  font-variation-settings:normal !important;
+}
+
+/* Le cifre che si guardano da lontano — offerta, cronometro, il totale dentro
+   RILANCIA — in Caveat nascevano il 19% piu' basse di prima: sono il dato piu'
+   importante a schermo, non potevano rimpicciolirsi. `font-size-adjust`
+   ridimensiona la font sulla larghezza del suo "0" SENZA toccare nessuna delle
+   font-size esistenti, che qui sono responsive (clamp/cqw) e riscriverle a mano
+   avrebbe voluto dire rifarle a ogni breakpoint.
+
+   Il valore non e' pero' quello che pareggia Archivo (.563 dell'em): a quel
+   punto le cifre SBORDANO dalla riga e .cc-offerta-box, che ha overflow:hidden,
+   le taglia a meta' — visto e fotografato in vista Admin. Il motivo e'
+   l'interlinea: il foglio base la stringe sotto 1 (.76 nella carta grande, .8
+   in Admin) per recuperare spazio, e Caveat ha il corpo molto piu' alto della
+   sua parte scritta (1.26em contro cifre alte .575em), quindi la linea di base
+   scende. In formula, con k = di quanto si ingrandisce la font, le cifre
+   restano dentro la riga finche' `line-height >= 0.76 · k`.
+   Da qui la coppia scelta: k = 1.10 (ch-width .495 — cifre il 10% piu' basse
+   di Archivo invece del 19%) con interlinea .92, che tiene il limite con circa
+   4px di margine e costa 14px di altezza alla carta grande, 7 a quella
+   dell'Admin. Tarare piu' su (k 1.156 con interlinea .90) lasciava meno di 1px
+   di margine: verificato a schermo che le cifre tornavano a toccare il bordo.
+   Dove `font-size-adjust` non e' supportato (Safari < 17) la dichiarazione
+   viene semplicemente ignorata: cifre naturali di Caveat, piu' piccole, mai
+   tagliate.
+
+   Il tracking negativo invece va a zero: su una grottesca chiude un buco, su
+   una scrittura a mano fa collidere lettere gia' inclinate. */
+html[data-tema="lavagna"] body #puja-panel-slot .cc-offerta,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-offerta,
+html[data-tema="lavagna"] body #puja-panel-slot .timer-number,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .timer-number,
+html[data-tema="lavagna"] body #puja-panel-slot .btn-rilancia::after{
+  font-size-adjust:ch-width 0.495 !important;
+  letter-spacing:0 !important;
+}
+/* e la coda del 7: in Caveat l'inchiostro sborda di .088em oltre la larghezza
+   nominale della cifra, e .cc-offerta-box (overflow:hidden) la tagliava di
+   netto perche' si dimensiona esattamente su quella larghezza. */
+html[data-tema="lavagna"] body #puja-panel-slot .cc-offerta,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-offerta{
+  line-height:.92 !important;padding-right:.1em !important;
+}
+/* Il nome sta in maiuscolo, e li' Caveat e' alto quanto Archivo (maiuscole .70em
+   contro .69em) e il 18% piu' STRETTO: "KVARATSKHELIA" su una riga sola misura
+   246px invece di 300, quindi va a capo meno spesso, non di piu' — un guadagno,
+   visto lo storico di sconfinamenti di questo elemento. Serve solo un filo
+   d'interlinea in piu' del .86 di base, perche' la mano larga sale e scende piu'
+   della grottesca: sotto .74 le maiuscole uscirebbero sopra la riga. */
+html[data-tema="lavagna"] body #puja-panel-slot .cc-nome,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-nome{
+  line-height:.88 !important;letter-spacing:.01em !important;
+}
+
+
 /* ── Vista Admin: il nome finiva sotto la clessidra ──────────────────
    Misurato (1600px, tema scuro, cioe' bug preesistente e non del tema
    chiaro): .cc-info largo 331px dentro una carta che ne lasciava 266,
