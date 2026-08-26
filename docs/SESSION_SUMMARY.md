@@ -208,9 +208,20 @@ tutti corretti — dettagli in [DECISIONS.md](../DECISIONS.md):
 3. **Il same-origin del socket poteva bloccare tutti**: dietro a un proxy il confronto con l'header
    `Host` fallisce facilmente. Ora confronta l'hostname contro `Host` e `X-Forwarded-Host`.
 
-**Da fare alla prima asta**: aprire `/api/health/banda` da due dispositivi su reti diverse e
-controllare che il campo `ip` sia DIVERSO. Se e' lo stesso, il proxy non inoltra l'IP reale e le
-soglie per IP vanno riviste.
+**Controllo fatto il 2026-08-26 — passato.** `/api/health/banda` da due reti diverse ha restituito
+due IP distinti (`79.150.106.127` da wifi, un IPv6 da 4G), quindi il proxy di Hostinger inoltra
+davvero l'IP del client e `trust proxy` e' tarato bene: le soglie per IP non vanno riviste.
+
+Il telefono ha risposto con un **IPv6**, cosa che il codice gia' gestiva: `ipKeyGenerator` raggruppa
+sulla /56, quindi un utente IPv6 resta un solo contatore anche quando le privacy extensions gli
+cambiano gli ultimi 64 bit. Verificato sull'indirizzo vero. (Il commento nel codice diceva /64 ed e'
+stato corretto.)
+
+**Nota su cosa il test NON dimostra**: le due prove erano su reti diverse. Se la sera dell'asta
+sono tutti nella stessa stanza sulla stessa wifi, condividono un solo IPv4 e quindi un solo
+contatore. Non e' un problema per chi ha fatto il login — li' la chiave e' il `sub` del JWT, una
+per persona — ma lo sarebbe per le chiamate anonime, che infatti hanno soglie proprie e sganciate
+apposta perche' non possano mai chiudere la porta a chi entra.
 
 ## Cambi recenti — le Rose vestite da sala giochi (2026-08-25)
 

@@ -154,8 +154,14 @@ function chiaveUtenteOIp(req) {
       if (payload && payload.sub) return 'u:' + payload.sub;
     } catch (e) { /* token assente o malformato: si ricade sull'IP */ }
   }
-  // ipKeyGenerator normalizza gli IPv6 sulla /64: senza, un singolo utente IPv6
-  // avrebbe a disposizione miliardi di indirizzi e quindi nessun limite effettivo.
+  // ipKeyGenerator raggruppa gli IPv6 sulla /56 (il default di express-rate-limit 8),
+  // non sulla /64 come diceva prima questo commento. Senza, un singolo utente IPv6
+  // avrebbe miliardi di indirizzi e quindi nessun limite effettivo, perche' le privacy
+  // extensions gli cambiano gli ultimi 64 bit da sole.
+  // Verificato il 2026-08-26 su un indirizzo vero di un telefono in 4G:
+  //   2a02:9130:84ab:f570:18cf:58d1:ab7:227f -> 2a02:9130:84ab:f500::/56
+  // Lo stesso telefono dopo la rotazione cade nella STESSA chiave; un altro abbonato
+  // su una /64 diversa ne prende una sua.
   return 'ip:' + ipKeyGenerator(req.ip);
 }
 

@@ -104,6 +104,9 @@ Senza di esse il server parte comunque ma tutte le funzionalità legate a Supaba
   `app.js`, dentro `_antAssicuraStadio3D`) sono a loro volta LF-only anziche' CRLF — prima di
   scrivere l'`old_string`/`new_string` dello script, verificare lo stile REALE del punto preciso
   d'inserimento (es. `sed -n 'N,Mp' file | od -c`), non assumerlo uniforme.
+- **`backend/server.js` è interamente a CRLF** (0 righe LF-only): come lo era `tema-serata.css`,
+  l'Edit tool lo convertirebbe tutto a LF e il diff diventerebbe l'intero file. Editarlo con uno
+  script che scrive `\r\n`, oppure convertirlo a LF una volta per tutte in un commit dedicato.
 - **`frontend/css/tema-serata.css` è invece interamente a LF** e si edita normalmente. Era l'unico
   file al 100% CRLF, quindi qualunque strumento che normalizza le fine riga lo riscriveva tutto e
   ogni modifica al CSS appariva come un diff da 3000+ righe: convertito una volta per tutte in un
