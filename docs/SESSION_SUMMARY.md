@@ -6,14 +6,12 @@ non accumulato. La cronologia sta in `git log`, il *perché* delle scelte in
 
 ## Stato attuale
 
-Il lavoro fino al 2026-08-25 è in produzione su Hostinger (il deploy parte da solo al push su
-`main`); l'ultimo commit online è `8a85e67`.
+Branch `main`, allineato con `origin/main`. Deploy automatico su Hostinger al push su `main`,
+quindi **tutto quanto è qui sotto è in produzione**.
 
-Il lavoro del 2026-08-26 è **unito a `main` in locale ma NON ancora pushato**, quindi non è online.
-Tre commit, tenuti separati apposta: `2824693` conversione a LF di `tema-serata.css` (sole fine
-riga), `1c81666` il gesso del tema lavagna, `dd54953` il fix di impaginazione della carta di puja
-(vedi sotto). Il ramo `tema-lavagna-gesso` punta agli stessi commit e si può cancellare.
-**Basta `git push` per mandare tutto e tre in produzione.**
+Il lavoro del 2026-08-26 è in tre commit tenuti separati apposta: `2824693` conversione a LF di
+`tema-serata.css` (sole fine riga), `1c81666` il gesso del tema lavagna, `dd54953` il fix di
+impaginazione della carta di puja (vedi sotto).
 
 **Quattro temi attivi** (`serata` default, `cuoio`, `lavagna`, `sala-giochi`), tutti con lo stesso
 pattern (ruoli `--sc-*` in `tema-serata.css` + token base in `style.css`, entrambi con un blocco
@@ -48,9 +46,9 @@ Due dei quattro temi cambiano anche i **caratteri** (`sala-giochi`: Press Start 
    l'Editor Visuale di Stile che scriveva quella riga è stato eliminato (vedi sotto). La riga
    `default` resta nel database, vuota, ma nessuno la legge più.
 
-Per portare online o tornare indietro: **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)** — attenzione, è
-fermo al vecchio toggle binario chiaro/scuro e alla palette chiara precedente, va riscritto per i
-quattro temi prima del prossimo deploy importante.
+Per portare online, tornare indietro o aggiungere un tema:
+**[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)** — riscritto il 2026-08-26 per i quattro temi, con i due
+cache-busting da non dimenticare prima di un push.
 
 ## Cambi recenti — "Lavagna al Neon" scritta a mano (2026-08-26)
 
@@ -311,7 +309,6 @@ con utenti veri loggati (in locale non ci sono le variabili Supabase).
   limite noto di tutte le sessioni finora — non ci sono credenziali di test.
 - Schermate Strategie, Editor Fasce e Griglia P/A: ereditano la palette ma non sono state guardate
   una per una in tutti e quattro i temi.
-- [docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md) descrive ancora il vecchio toggle binario — da riscrivere.
 - Ripristinare `.cc-strategia-info` su mobile: è l'unico `display:none` del tema che tocca
   contenuto vero e non decorazione.
 - Nel tema **scuro** il grigio più tenue (`--sc-tenue`) resta a 3.4:1 su testi da 9-10px. È così

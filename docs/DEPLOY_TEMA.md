@@ -1,190 +1,226 @@
-# Deploy del tema "Serata d'Asta"
+# Deploy dei temi
 
-Guida operativa per portare online il nuovo tema. Pensata per essere letta a freddo,
-senza rileggere la conversazione in cui è nato.
+Guida operativa per portare online un cambio di tema e per tornare indietro. Pensata per
+essere letta a freddo, senza rileggere la conversazione in cui è nata.
 
-Per il *perché* delle scelte vedi [DECISIONS.md](../DECISIONS.md).
+Per il *perché* delle scelte vedi [DECISIONS.md](../DECISIONS.md); per lo stato attuale del
+progetto [SESSION_SUMMARY.md](SESSION_SUMMARY.md).
 
 ---
 
-## Cosa cambia, in una riga
+## Come funziona, in una riga
 
-L'identità visiva passa da viola-neon-oro (che sembrava un'app di scommesse) a una sala
-di sera con una sola lampada accesa. **Nessuna regola di gioco è stata toccata.**
+Un solo foglio (`tema-serata.css`) contiene **quattro temi**. Quale sia attivo lo decide
+l'attributo `data-tema` su `<html>`; lo sceglie l'utente dal menu 🎨 e resta in
+`localStorage`. Non c'è niente da configurare sul server.
+
+| `data-tema` | Nome | Luce | Accento | Font |
+|---|---|---|---|---|
+| `serata` (default) | Serata d'Asta | scuro | ambra | Archivo + Space Mono |
+| `cuoio` | Cuoio | chiaro | cuoio, verde solo per il denaro | Archivo + Space Mono |
+| `lavagna` | Lavagna al Neon | scuro | ciano struttura, magenta brand/denaro | **Caveat + Kalam** (gesso), Pacifico per l'insegna |
+| `sala-giochi` | Sala Giochi | chiaro | cobalto, oro solo per il denaro | **Press Start 2P + Silkscreen** |
+
+Le **regole di composizione** (griglie, misure, container query) sono una serie sola valida
+per tutti e quattro: da tema a tema cambiano solo le *materie* — colori, fondi, caratteri.
 
 ## File coinvolti
 
-| File | Stato | Cosa fa |
-|---|---|---|
-| `frontend/css/style.css` | modificato (solo il blocco `:root`) | la palette. Cambiano i valori, i nomi delle variabili restano identici |
-| `frontend/css/tema-serata.css` | **nuovo** | la composizione: scena della puja, griglia squadre, schede, vista Admin |
-| `frontend/js/clessidra.js` | **nuovo** | disegna la clessidra e le legge il livello. Sempre attivo, ma solo cosmetico |
-| `frontend/js/comportamenti-asta.js` | **nuovo** | i tre comportamenti nuovi — **attivi** |
-| `frontend/index.html` | modificato (4 righe) | carica i font nuovi, il foglio del tema, la clessidra, il modulo |
+| File | Cosa fa |
+|---|---|
+| `frontend/css/style.css` | il foglio storico: palette in `:root`, layout, tutti i breakpoint |
+| `frontend/css/tema-serata.css` | composizione + le materie dei quattro temi. Caricato **dopo** style.css |
+| `frontend/js/clessidra.js` | disegna la clessidra del cronometro (SVG). Legge il tempo, non lo calcola |
+| `frontend/js/comportamenti-asta.js` | i comportamenti aggiuntivi della puja — **attivi** |
+| `frontend/index.html` | carica i font, i fogli e i moduli, e porta i `?v=` |
 
 Backend, Socket.io, Supabase, autenticazione, `calcolaMaxOfferta()`, svincoli, backup:
-**non toccati**. Nessun file in `backend/` è stato modificato.
-
-### Sulla clessidra: perché è JavaScript e perché è sicura
-
-Il cronometro non è più un anello ma una clessidra in SVG (vetro con riflessi,
-ghiere in ottone, sabbia con la grana, mucchio che cresce in basso). Il CSS da solo
-non può sapere quanta sabbia resta, quindi serve un file JS — ma quel file **non
-calcola niente**: osserva con un `MutationObserver` passivo l'attributo
-`stroke-dashoffset` che l'app già scrive sul vecchio anello, e ne ricava la
-frazione. Non sostituisce né avvolge nessuna funzione dell'app, non tocca lo stato
-di gioco, non parla col server. Se `clessidra.js` non venisse caricato, l'asta
-funzionerebbe identica (si vedrebbe l'anello vecchio, nascosto dal CSS).
+**mai toccati da un cambio di tema**.
 
 ---
 
-## Come si mette online
+## ⚠️ Prima di pushare: i due cache-busting
 
-Il deploy su Hostinger è automatico al push su `main`. Quindi:
+Sono la causa più probabile di "ho deployato ma non si vede niente".
 
-```bash
-git checkout main
-git merge claude/fantabar-visual-directions-64b4h6
-git push origin main
+**1. CSS e JS.** `index.html` li carica con `?v=<timestamp>`. Dopo *qualunque* modifica a
+`style.css`, `tema-serata.css`, `app.js`, `clessidra.js` o `comportamenti-asta.js` bisogna
+alzare a mano il `?v=` di quel file:
+
+```html
+<link rel="stylesheet" href="css/tema-serata.css?v=1787731305818">
 ```
 
-Da lì Hostinger fa il resto. Non serve altro.
+**2. Le immagini richiamate dai CSS con `url(...)`.** Hostinger serve gli statici con
+`cache-control: public, max-age=2592000, immutable`: chi ha già scaricato una di quelle foto
+non la richiede più per 30 giorni, **nemmeno con un hard refresh**. Se sostituisci il
+contenuto di un file tenendo lo stesso nome (`pizarra-lavagna.jpeg`, `pelota-cuoio.jpeg`,
+`fondo-cuoio.jpeg`), alza il `?v=N` in **ogni** punto dove è referenziato:
 
-> Tema e comportamenti sono entrambi attivi appena sale.
+```bash
+grep -n "pizarra-lavagna" frontend/css/*.css
+```
+
+## Come si mette online
+
+Il deploy su Hostinger è automatico al push su `main`. Non c'è nessun passo manuale dopo.
+
+```bash
+git push
+```
 
 ## Come si torna indietro
 
-Tre livelli, dal più leggero al più netto.
+Dal più leggero al più netto.
 
-**1. Spegnere solo il tema, lasciando tutto il resto** — commenta una riga in
-`frontend/index.html`:
+**1. Spegnere i temi, tenendo l'app** — commenta una riga in `frontend/index.html`:
 
 ```html
 <!-- <link rel="stylesheet" href="css/tema-serata.css?v=..."> -->
 ```
 
-Torna la composizione vecchia, resta la palette nuova.
+Resta la composizione di `style.css`. È il rollback più sicuro: non tocca il gioco.
 
-**2. Tornare del tutto all'aspetto precedente** — oltre alla riga sopra, ripristina il
-blocco `:root` di `style.css`:
-
-```bash
-git checkout <commit-precedente> -- frontend/css/style.css
-```
-
-**3. Annullare tutto** — il merge è un commit solo:
+**2. Annullare gli ultimi commit** — la cronologia è lineare (i merge dei rami di lavoro si
+fanno in fast-forward), quindi **non** serve `git revert -m 1`, che vale solo per i merge
+commit:
 
 ```bash
-git revert -m 1 <hash-del-merge>
-git push origin main
+git revert <hash>        # un commit solo
+git revert <da>..<a>     # una serie
+git push
 ```
+
+**3. Se un tema è rotto ma gli altri no** — non serve nessun deploy: chi lo sta usando cambia
+tema dal menu 🎨. È il vantaggio di avere l'attributo su `<html>` invece che un build.
 
 ---
 
-## I comportamenti nuovi (attivi)
+## Aggiungere o modificare un tema
 
-`comportamenti-asta.js` aggiunge tre cose, ed e' **acceso**.
+Un tema è fatto di cinque pezzi, tutti obbligatori:
 
-Per spegnerlo, in console del browser:
+1. **I ruoli colore** — un blocco `html[data-tema="<id>"]{ --sc-*: … }` in cima a
+   `tema-serata.css` (accanto agli altri tre).
+2. **I token base** — il corrispondente blocco `[data-tema="<id>"]` in `style.css`.
+3. **Le materie** — una sezione in fondo a `tema-serata.css`: fondi, bordi, ombre, e tutto
+   ciò che una variabile non può capovolgere da sola.
+4. **La voce nel menu** — una riga in `TEMI` dentro `app.js`.
+5. **La clessidra** — se resta visibile, una voce in `MATERIALI` di `clessidra.js`: i
+   gradienti SVG hanno gli `stop-color` fissi, il CSS non li raggiunge.
+
+### Se il tema cambia anche i caratteri
+
+Due cose in più, ed è facile dimenticarle:
+
+- **Aggiungi la famiglia al `<link>` di Google Fonts** in `index.html`. Se manca, il browser
+  ripiega in silenzio su un fallback e sembra che il CSS non funzioni.
+- **Non basta ridefinire `--font-main` / `--font-display`.** Il foglio di tema riscrive
+  `'Archivo'` e `'Space Mono'` a mano dentro ~43 regole con `!important`, che nessuna
+  variabile raggiunge: per quelle serve un elenco esplicito di selettori, prefissato con
+  `html[data-tema="<id>"]` per vincere di specificità. Vedi come lo fanno `lavagna` e
+  `sala-giochi`.
+- **`--font-mono` non si tocca**: il link da copiare (`.link-text`), le colonne numeriche
+  della Griglia P/A e i `<code>` usano il monospazio per allineamento, non per estetica.
+- **Misura la larghezza prima di adottare un carattere in una vista densa.** Silkscreen
+  applicato a tutto aveva allargato tre colonne delle Rose del 36%, cioè meno squadre a
+  schermo. Il metodo è in DECISIONS.md.
+
+### Regole che valgono per tutti i temi
+
+- **Nella zona puja le font-size si scrivono in `cqw`, mai in `vw`.** Il container "sala"
+  (`#asta-main-col`) si dimezza quando si apre Anteprima *senza che la finestra cambi*: una
+  regola in `vw` resta tarata sulla finestra e arriva a spezzare il nome del giocatore
+  lettera per lettera. È già successo.
+- **Una soglia responsive deve misurare la scatola che contiene davvero il testo**, non un
+  antenato che le somiglia. Tre bug con la stessa radice: il Riepilogo squadre in Admin, il
+  cabinato di Sala Giochi (`@media` invece di `@container`) e il nome del giocatore a 1280px
+  (misurava la sala invece della carta).
+- **Non si nasconde un dato per fare spazio.** Se due informazioni non stanno su una riga, si
+  usa una riga in più. Compattare è legittimo, eliminare no.
+- **Se aggiungi una regola "più giusta" per un selettore che esiste già altrove nel file,
+  cancella quella vecchia.** La specificità CSS non rispetta l'ordine di lettura: un ramo più
+  specifico in una regola più vecchia continua a vincere. È già costato un bug invisibile in
+  sola vista Partecipante.
+- **`tema-serata.css` è interamente a LF** e va tenuto così (convertito il 2026-08-26 in un
+  commit di sole fine riga). `app.js`, `index.html` e `style.css` hanno invece righe miste:
+  vedi [PROJECT.md](../PROJECT.md) prima di editarli.
+
+---
+
+## Il modulo dei comportamenti (attivo)
+
+`comportamenti-asta.js` aggiunge tre cose ed è **acceso**. Per spegnerlo, da console del
+browser:
 
 ```js
 localStorage.setItem('fantabar_comportamenti', '0')   // poi ricarica
 localStorage.removeItem('fantabar_comportamenti')     // per riaccenderlo
 ```
 
-| Cosa | Rischio | Perche' |
+| Cosa | Rischio | Perché |
 |---|---|---|
-| **La stanza si stringe** — sotto i 5 secondi il resto della schermata sfoca e resta solo prezzo/tempo/azione | basso | solo CSS guidato da un attributo |
-| **"Ancora in gioco"** — quante squadre possono ancora coprire l'offerta | nessuno | additivo, sola lettura, dati che il client gia' riceve |
+| **La stanza si stringe** — negli ultimi secondi il resto della schermata sfoca e restano prezzo, tempo e azione | basso | solo CSS guidato da un attributo |
+| **"Ancora in gioco"** — quante squadre possono ancora coprire l'offerta | nessuno | additivo, sola lettura, su dati che il client già riceve |
 | **La leva** — RILANCIA si tiene premuto e l'importo sale | contenuto (vedi sotto) | il tocco singolo resta identico a prima |
 
 ### Come si comporta la leva, esattamente
 
-- **Tocco breve** (< 260 ms): il modulo **non fa nulla**. Il rilancio lo manda il
-  click handler originale dell'app, `inviaRilancioRapido(1)`, come sempre.
-- **Tenuta**: l'importo sale accelerando; al rilascio parte un `socket.emit('rilancio')`
-  con lo stesso identico payload dell'app (`{ astaId, offerta }`), e il click dell'app
-  viene soppresso in fase di capture — cosi' **un gesto = un rilancio, mai due**.
-- L'importo e' limitato da `getMaxOfferta()`, la stessa funzione che l'app usa per
-  l'hint in UI: tenendo premuto all'infinito ci si ferma al massimo consentito.
-- Prima di emettere si passa da `canBid()`, lo stesso guard dell'app.
+- **Tocco breve** (< 260 ms): il modulo **non fa nulla**. Il rilancio lo manda il click
+  handler originale dell'app, `inviaRilancioRapido(1)`, come sempre.
+- **Tenuta**: l'importo sale accelerando; al rilascio parte un `socket.emit('rilancio')` con
+  lo stesso identico payload dell'app (`{ astaId, offerta }`), e il click dell'app viene
+  soppresso in fase di capture — così **un gesto = un rilancio, mai due**.
+- L'importo è limitato da `getMaxOfferta()`, la stessa funzione che l'app usa per l'hint in
+  UI, e prima di emettere si passa da `canBid()`, lo stesso guard dell'app.
 
-Il server continua comunque a validare ogni rilancio con `calcolaMaxOfferta()`:
-il limite lato client e' comodita', non sicurezza.
+Il server continua comunque a validare ogni rilancio con `calcolaMaxOfferta()`: il limite
+lato client è comodità, non sicurezza.
 
-### Effetto collaterale noto
+### Le soglie del finale sono due, e sono diverse apposta
 
-Con "la stanza si stringe", negli ultimi 5 secondi i crediti dei rivali si sfocano —
-proprio quando potresti volerli guardare. E' deliberato, e il contatore "ancora in
-gioco" in testata resta leggibile per compensare. Se da' fastidio, e' una riga in
-`tema-serata.css`: cerca `[data-fase="finale"] .panel-budget`.
+Il **rosso** scatta a 3 secondi, il **ticchettio sonoro** a 5. Non è una svista: è stato
+confermato esplicitamente. Non "allinearle" credendo di correggere un bug.
 
----
+### Effetto collaterale accettato
 
-## Cosa è stato verificato e cosa no
+Con "la stanza si stringe" i crediti dei rivali si sfocano proprio negli ultimi secondi. È
+deliberato, e il contatore "ancora in gioco" in testata resta leggibile per compensare. Se dà
+fastidio è una riga in `tema-serata.css`: cerca `[data-fase="finale"] .panel-budget`.
 
-**Verificato** (app reale servita da `npm run dev`, CSS letto dal disco, stato di gioco
-sintetico iniettato in console — nessuna finta):
+### Sulla clessidra: perché è JavaScript e perché è sicura
 
-- Schermata asta, vista partecipante — desktop e mobile
-- Schermata asta, vista Admin
-- Home, lobby, fine asta
-- Un modale (`Mia rosa`): contrasto corretto, fondo `#191411` su testo `#F2EADE`
-- Con 6 e con 12 squadre: la griglia orizzontale regge in entrambi i casi
-- Nessun errore JavaScript in console
-- La clessidra con la sabbia piena, a metà e agli ultimi secondi: il livello segue
-  il tempo reale dell'app (letto dall'anello nascosto), il getto si spegne a sabbia
-  finita, sotto i 5 secondi la sabbia diventa rossa e il getto accelera
-- L'insegna al neon (accensione a scatti e poi fissa) in testata e sulla Home
-- Riepilogo squadre: due righe per squadra invece di tre (riga 1: pallino, nome, crediti;
-  riga 2: `Tot: n/25`, portieri, svincoli). È una griglia a due righe fisse, non un flex che
-  va a capo, così l'altezza è identica per tutte le squadre e a cedere è solo il nome, con i
-  puntini. Misurato con 12 squadre a 2000/1440/1100/430px, vista Admin e partecipante:
-  nome e conteggi sempre visibili, nessun dato tagliato
-- I sei `display:none` del tema colpiscono solo pseudo-elementi decorativi (il riflesso
-  dorato, il glow, il pallone del cronometro, l'emoji del logo) — nessuno nasconde
-  qualcosa di funzionale
-
-**NON verificato** — da guardare al primo giro vero:
-
-- Un'asta live reale con login Supabase e più dispositivi (limite noto di tutte le
-  sessioni: non erano disponibili credenziali di test)
-- I modali critici con dati veri: **svincolo**, conferma RIC, plusvalenza/recompra,
-  annulla storico
-- Le schermate Strategie, Editor Fasce, Anteprima, Griglia P/A: ereditano la palette
-  dalle variabili ma non sono state guardate una per una
-- L'asta live vera con Anteprima aperta su piu' dispositivi (il reflow e' verificato in locale)
-
-## Tema chiaro — "Mattina al banco"
-
-Riadattato: bianco per i piani, argento e grigio perla per l'ombra, ottone per l'unico
-accento (lo stesso metallo della lampada del tema scuro, spento). Non c'e' piu' viola da
-nessuna parte.
-
-I colori del tema strutturale sono ora **ruoli** (`--sc-testo`, `--sc-ambra`, `--sc-carta`…)
-definiti due volte in `tema-serata.css`: `:root` per la sera, `html.theme-light` per il
-giorno. Le regole di composizione restano una serie sola. Le materie che non si possono
-capovolgere con una variabile — i fondi a gradiente, il vetro della clessidra, l'insegna —
-hanno la loro versione chiara nella sezione "MATTINA AL BANCO" in fondo al foglio.
-
-Contrasto misurato su tutti i testi della schermata asta: nessuno sotto 4.5:1 (3:1 per i
-corpi grandi). Nel tema **scuro** invece il grigio piu' tenue (`--sc-tenue`, `#6E645A`)
-resta a 3.4:1 su testi da 9-10px: e' cosi' da quando il tema e' online, non e' una
-regressione, ma se da fastidio si schiarisce cambiando una riga.
-
-**Perdita di informazione nota**: su mobile il tema nasconde `.cc-strategia-info` (l'info
-di fascia della Strategia sulla carta chiamata). È l'unico `display:none` che tocca
-contenuto vero, non decorazione. Cerca `cc-strategia-info` in `tema-serata.css` per
-rimetterla.
+Il CSS da solo non può sapere quanta sabbia resta, quindi serve un file JS — ma quel file
+**non calcola niente**: osserva con un `MutationObserver` passivo l'attributo
+`stroke-dashoffset` che l'app già scrive sul vecchio anello, e ne ricava la frazione. Non
+sostituisce né avvolge nessuna funzione dell'app, non tocca lo stato di gioco, non parla col
+server. Se `clessidra.js` non venisse caricato, l'asta funzionerebbe identica.
 
 ---
+
+## Perdite di informazione note
+
+- Su mobile il tema nasconde `.cc-strategia-info` (l'info di fascia della Strategia sulla
+  carta chiamata). È l'unico `display:none` che tocca contenuto vero e non decorazione:
+  cerca `cc-strategia-info` in `tema-serata.css` per rimetterla.
+
+## Contrasto
+
+Nel tema **scuro** il grigio più tenue (`--sc-tenue`, `#6E645A`) resta a 3.4:1 su testi da
+9-10px. È così da quando il tema è online, non è una regressione, ma si schiarisce con una
+riga. Gli altri tre temi sono stati misurati sopra 4.5:1 (3:1 per i corpi grandi).
 
 ## Se qualcosa si rompe
 
-Il sospetto numero uno è la specificità CSS: `style.css` difende la zona puja con circa 40
-regole `!important` sparse su tutti i breakpoint, e `tema-serata.css` deve vincerle usando
-`html body #puja-panel-slot` + `!important`. Se a una certa larghezza qualcosa torna viola
-o si scompone, è quasi certamente un breakpoint di `style.css` non coperto.
+Il sospetto numero uno è la **specificità CSS**: `style.css` difende la zona puja con circa
+40 regole `!important` sparse su tutti i breakpoint, e `tema-serata.css` deve vincerle usando
+`html body #puja-panel-slot` + `!important`. Se a una certa larghezza qualcosa si scompone, è
+quasi certamente un breakpoint di `style.css` non coperto.
 
-Ripulire quelle regole è il lavoro successivo naturale — **volutamente non fatto adesso**,
-per non mescolare un refactor rischioso con una modifica estetica.
+E non diagnosticare leggendo il CSS a occhio — la duplicazione storica del file lo rende
+inaffidabile. Il modo certo per sapere quale regola vince davvero è iterare
+`document.styleSheets` / `cssRules` nel browser reale e confrontare gli indici delle regole
+che matchano `el.matches(selectorText)`.
+
+Ripulire quelle `!important` è il lavoro successivo naturale — **volutamente non fatto**, per
+non mescolare un refactor rischioso con una modifica estetica.
