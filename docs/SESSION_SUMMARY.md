@@ -110,9 +110,23 @@ altri tre temi non sono stati toccati — si leggevano già bene.
 per giornata, quindi è più larga della pagina per costruzione. Deve scorrere DENTRO il suo piano,
 mai far scorrere la pagina in orizzontale.
 
+Nello stesso giro sono stati vestiti anche **tab, toggle Portieri/Attaccanti e sub-tab**, ultimi
+pezzi rimasti con le pastiglie generiche. Il tasto del toggle attivo aveva anche un difetto vero in
+tutti e quattro i temi: `linear-gradient(primary, fire)` con testo bianco, misurato **3.95:1**. Il
+gradiente è sparito (nessun altro punto dell'app lo usa) e si applica la stessa soluzione già scelta
+per le sub-tab: fondo d'accento pieno e testo `var(--sc-fondo)`.
+
+**Trappola di specificità, presa prima di spedirla**: `html[data-tema="x"] body .gk-mode-btn` e
+`html body .gk-mode-btn.active` hanno la STESSA specificità (2 elementi + 2 selettori di classe),
+quindi vince l'ultima scritta. Le mie regole di tema, essendo più in basso nel file, azzeravano il
+fondo dello stato attivo: in cuoio e lavagna attivo e inattivo erano diventati lo stesso colore,
+indistinguibili. Risolto ridichiarando l'attivo dentro ogni tema. È la terza volta che questo file
+morde nello stesso modo — vedi la regola già scritta in DEPLOY_TEMA.md.
+
 **Verificato** nei quattro temi a 1100px e 390px, su tutte le viste della Griglia (Ranking, Griglia,
-Impostazioni): il piano compare, nessun sbordo orizzontale della pagina, e su mobile misura 358px in
-tutti e quattro.
+Impostazioni): il piano compare, nessun sbordo orizzontale, su mobile misura 358px in tutti e
+quattro, e tab/toggle/sub-tab attivi sono sempre distinguibili dagli inattivi con contrasto
+6.1-10.9:1.
 
 ## Cambi recenti — chiuse le pendenze vecchie (2026-08-26)
 
@@ -384,9 +398,8 @@ con utenti veri loggati (in locale non ci sono le variabili Supabase).
   limite noto di tutte le sessioni finora — non ci sono credenziali di test.
 - ~~Schermate Strategie, Editor Fasce e Griglia P/A mai guardate nei quattro temi~~ — **fatto** il
   2026-08-26. Strategie ed Editor Fasce usavano già `.card`, quindi un piano ce l'avevano; la
-  Griglia P/A no, ed è stata vestita (vedi sotto). Restano da rifinire, se un giorno servirà, la
-  striscia di tab e il toggle Portieri/Attaccanti della Griglia, che usano ancora le pastiglie
-  generiche invece del linguaggio di ciascun tema: si leggono bene, non sono un difetto.
+  Griglia P/A no, ed è stata vestita — piano, righe della classifica, tab, toggle e sub-tab (vedi
+  sotto). Adesso tutte e tre parlano la lingua dei quattro temi.
 
 ## Prossimo passo
 

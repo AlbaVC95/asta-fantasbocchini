@@ -3536,3 +3536,82 @@ html[data-tema="sala-giochi"] body .gk-rank-card{
 html[data-tema="sala-giochi"] body .gk-rank-card:hover{
   border-color:#2440D8 !important;background:#FFFFFF !important;
 }
+
+/* ── I comandi della Griglia P/A: tab, toggle e sub-tab ────────────────
+   Ultimo pezzo rimasto con le pastiglie generiche mentre tutto il resto
+   della schermata parlava la lingua del tema — si vedeva soprattutto in
+   "sala-giochi", dove il piano ha gli angoli vivi e i bottoni sopra erano
+   arrotondati.
+
+   Il tasto Portieri/Attaccanti attivo aveva anche un difetto vero, in
+   TUTTI e quattro i temi: `linear-gradient(primary, fire)` con testo
+   bianco sopra, misurato **3.95:1**, sotto la soglia. Qui il gradiente
+   sparisce (nessun altro punto dell'app lo usa) e si applica la stessa
+   soluzione gia' scelta per le sub-tab: fondo d'accento pieno e testo
+   `var(--sc-fondo)`, che e' per costruzione l'opposto di ogni tema. */
+html body .gk-mode-btn.active{
+  background:var(--sc-ambra-piena) !important;
+  color:var(--sc-fondo) !important;
+  border-color:var(--sc-ambra-piena) !important;
+  box-shadow:none !important;
+}
+
+/* sala-giochi: angoli vivi e inchiostro, come la riga di tab dell'asta */
+html[data-tema="sala-giochi"] body .gk-tab,
+html[data-tema="sala-giochi"] body .gk-mode-btn,
+html[data-tema="sala-giochi"] body .gk-subtab{
+  border-radius:0 !important;
+  background:#F4F3EA !important;color:#4A465E !important;
+  border:2px solid rgba(20,16,36,.22) !important;
+  box-shadow:none !important;
+}
+html[data-tema="sala-giochi"] body .gk-tab:hover,
+html[data-tema="sala-giochi"] body .gk-mode-btn:hover,
+html[data-tema="sala-giochi"] body .gk-subtab:hover{
+  background:#FFFFFF !important;color:#141024 !important;border-color:#141024 !important;
+}
+html[data-tema="sala-giochi"] body .gk-tab.active,
+html[data-tema="sala-giochi"] body .gk-mode-btn.active,
+html[data-tema="sala-giochi"] body .gk-subtab.active{
+  background:#2440D8 !important;color:#FFFFFF !important;border-color:#141024 !important;
+}
+html[data-tema="sala-giochi"] body .gk-tabs{border-bottom:3px solid #141024 !important}
+
+/* lavagna: filo ciano e angoli appena accennati, come i piani del tema */
+html[data-tema="lavagna"] body .gk-tab,
+html[data-tema="lavagna"] body .gk-mode-btn{
+  background:rgba(17,19,24,.72) !important;
+  border:1px solid rgba(34,211,238,.22) !important;
+  color:#B8C4D0 !important;
+}
+html[data-tema="lavagna"] body .gk-tab.active{
+  background:rgba(34,211,238,.10) !important;
+  border-color:rgba(34,211,238,.55) !important;color:#7DE8F7 !important;
+}
+/* Lo stato attivo del toggle va ridichiarato QUI e non lasciato alla regola
+   generica piu' sopra: `html[data-tema="x"] body .gk-mode-btn` e
+   `html body .gk-mode-btn.active` hanno la STESSA specificita' (2 elementi +
+   2 selettori di classe), quindi vince l'ultima scritta — cioe' questa
+   sezione, che azzerava il fondo dell'attivo. Misurato: attivo e inattivo
+   erano diventati lo stesso colore, indistinguibili. */
+html[data-tema="lavagna"] body .gk-mode-btn.active{
+  background:#22D3EE !important;color:#0B0B0F !important;
+  border-color:#22D3EE !important;
+}
+html[data-tema="lavagna"] body .gk-tabs{border-bottom-color:rgba(34,211,238,.22) !important}
+
+/* cuoio: il filo di cuoio invece del bordo grigio di sistema */
+html[data-tema="cuoio"] body .gk-tab,
+html[data-tema="cuoio"] body .gk-mode-btn{
+  background:#FAF2E3 !important;border:1px solid rgba(58,36,20,.20) !important;
+  color:#5C4A3A !important;
+}
+html[data-tema="cuoio"] body .gk-tabs{border-bottom-color:rgba(58,36,20,.20) !important}
+/* stesso motivo di lavagna: senza questa riga l'attivo spariva */
+html[data-tema="cuoio"] body .gk-mode-btn.active{
+  background:#6E431F !important;color:#F3E7D0 !important;border-color:#6E431F !important;
+}
+html[data-tema="cuoio"] body .gk-tab.active{
+  background:rgba(107,68,35,.12) !important;
+  border-color:rgba(107,68,35,.45) !important;color:#6E431F !important;
+}
