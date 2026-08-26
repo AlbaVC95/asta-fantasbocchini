@@ -35,7 +35,10 @@
   --danger-glow:rgba(226,58,46,.28);
   --text-primary:#F2EADE;
   --text-secondary:#A79B8B;
-  --text-muted:#6E645A;
+  /* Alzato da #6E645A: erano 3.4:1 sul fondo scuro, sotto la soglia AA, e questo
+     grigio veste testi da 12px come .gk-header-sub. #8A8076 misura 4.9-5.0:1.
+     Stesso identico passo fatto su --sc-tenue in tema-serata.css. */
+  --text-muted:#8A8076;
   --border:rgba(242,234,222,.10);
   --border-light:rgba(242,234,222,.20);
   --font-main:Archivo,Inter,-apple-system,BlinkMacSystemFont,sans-serif;
@@ -1231,7 +1234,11 @@ body.app-role-admin .gk-config-actions.gk-admin-only{display:flex}
 /* ── Sub-tab Ranking (Coppie/Terzetti) ── */
 .gk-ranking-subtabs{display:flex;gap:6px;padding:10px 14px 6px}
 .gk-subtab{padding:5px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg-elevated);color:var(--text-secondary);font-size:.76rem;font-weight:600;cursor:pointer;transition:all .15s}
-.gk-subtab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+/* Il testo della subtab attiva era #fff fisso sopra l'accento del tema: nei due temi
+   con accento CHIARO (ambra di "serata", ciano di "lavagna") faceva 1.8:1, illeggibile.
+   var(--sc-fondo) e' il colore del fondo di ciascun tema, cioe' per costruzione il suo
+   opposto: una riga sola che va bene in tutti e quattro (misurato 7.4-16:1). */
+.gk-subtab.active{background:var(--primary);color:var(--sc-fondo);border-color:var(--primary)}
 
 /* ── Sub-tab inline Asta (Ranking/Analisi/Confronto) ── */
 .gki-subtabs{display:flex;gap:4px;padding:8px 10px 4px;background:var(--bg-main);border-bottom:1px solid var(--border)}

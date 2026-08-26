@@ -88,6 +88,47 @@ identiche font di prima** (controllo automatico su 12 selettori x 4 temi).
 alla parola. Non era del gesso (forzando Archivo restava identico) ed e' stato corretto a parte —
 vedi la sezione qui sotto.
 
+## Cambi recenti — chiuse le pendenze vecchie (2026-08-26)
+
+Quattro voci ferme da sessioni, chiuse in un giro solo.
+
+**Codice morto della catena foto — 214 righe.** La nota di debito diceva che `app.js` chiamava
+`/api/player-photo`, rotta inesistente, prendendo un 404 a ogni giocatore. **Era sbagliata**: la
+funzione non era chiamata da nessuno. Insieme a lei erano morte altre 13 funzioni della vecchia
+catena a fonti esterne (SportsDB, Wikidata, Wikipedia, API-Football, il filtro anti-nazionale e la
+lista dei 190 paesi), abbandonata quando si è deciso di usare solo le foto locali verificate a mano.
+Rimosse con uno script che, **dopo ogni singola rimozione, confronta l'insieme delle definizioni
+prima e dopo e annulla se è sparito qualcos'altro**. Quella guardia ha intercettato due volte un
+errore vero del brace-matching, che stava per cancellare `_withTimeout` (usata 4 volte) e
+`_teamPhotoFolders`: senza controllo sarebbe andata online una app con le foto rotte.
+
+**`.cc-strategia-info` su mobile.** Era l'unico `display:none` del tema che nascondeva un DATO
+(fascia di Strategia, titolarità, commento) invece di una decorazione — e proprio su mobile, dove
+serve di più perché non c'è la colonna Strategie accanto. Ora si compatta: una riga per voce, con i
+puntini se non ci sta, e il commento resta un bottone che apre il testo intero. Si stringe, non
+sparisce.
+
+**Contrasto.** `--sc-tenue` (tema scuro) da `#6E645A` a `#8A8076`: era 3.2-3.4:1 sui tre fondi su cui
+compare davvero, sotto la soglia AA, su testi da 9-10px. Ora 4.7-5.0:1. Stessa cosa per
+`--text-muted` in `style.css`, che aveva lo stesso identico valore e vestiva `.gk-header-sub`.
+
+**Due difetti trovati guardando le tre schermate mai controllate** (Strategie, Editor Fasce,
+Griglia P/A) nei quattro temi:
+- `.gk-subtab.active` aveva `color:#fff` fisso sopra l'accento del tema: nei due temi con accento
+  CHIARO (ambra di serata, ciano di lavagna) faceva **1.8:1**, illeggibile. Risolto con
+  `color:var(--sc-fondo)` — il fondo di ciascun tema è per costruzione il suo opposto, quindi una
+  riga sola copre tutti e quattro (7.4-16:1).
+- `--text-muted`, sopra.
+
+Nessuno **sbordo** orizzontale in nessuna delle otto schermate controllate, in nessuno dei quattro
+temi.
+
+**Nota di metodo, costata tre giri a vuoto**: leggere i colori con `getComputedStyle` subito dopo
+aver cambiato `data-tema` restituisce valori **in mezzo alla transizione CSS** — sembravano difetti
+e non lo erano. Va sempre atteso il termine della transizione (~450ms). E una sonda di contrasto in
+JS non sa leggere i pixel veri: sopra i fondi fotografici o a gradiente dà numeri inventati, quindi
+lì l'unico controllo valido resta guardare.
+
 ## Cambi recenti — la carta di puja a 1280px: il nome non si spezza piu' (2026-08-26)
 
 Segnalato dall'utente. In vista Partecipante a 1280px il nome del giocatore andava a capo in mezzo
@@ -298,9 +339,11 @@ con utenti veri loggati (in locale non ci sono le variabili Supabase).
   lavoro successivo naturale, tenuto fuori dagli interventi estetici per non mescolare un refactor
   rischioso con un cambio di aspetto. Nello stesso giro si può togliere il blocco
   `@media (min-width:901px)` in fondo a `style.css` (commit `039206b`).
-- `app.js` chiama `/api/player-photo`, una rotta che **non esiste** nel backend: la richiesta cade
-  sempre in 404 e si passa al fallback successivo della catena foto. Funziona per caso, andrebbe
-  tolta o implementata.
+- ~~`app.js` chiama `/api/player-photo`~~ — **la nota era sbagliata**: quella funzione non veniva
+  chiamata da nessuno, quindi nessun 404 partiva davvero. Era codice morto, insieme ad altre 13
+  funzioni della vecchia catena foto da fonti esterne (SportsDB/Wikidata/Wikipedia/API-Football),
+  abbandonata quando si è deciso di usare solo le foto locali verificate a mano. **Rimosse tutte
+  il 2026-08-26**: 214 righe.
 
 ## Pendenze
 
@@ -309,10 +352,6 @@ con utenti veri loggati (in locale non ci sono le variabili Supabase).
   limite noto di tutte le sessioni finora — non ci sono credenziali di test.
 - Schermate Strategie, Editor Fasce e Griglia P/A: ereditano la palette ma non sono state guardate
   una per una in tutti e quattro i temi.
-- Ripristinare `.cc-strategia-info` su mobile: è l'unico `display:none` del tema che tocca
-  contenuto vero e non decorazione.
-- Nel tema **scuro** il grigio più tenue (`--sc-tenue`) resta a 3.4:1 su testi da 9-10px. È così
-  da quando il tema è online, non è una regressione, ma si schiarisce con una riga.
 
 ## Prossimo passo
 

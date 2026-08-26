@@ -36,7 +36,12 @@
   --sc-brace:226,58,46;      /* lo stato d'allarme */
   --sc-testo:#F2EADE;
   --sc-medio:#A79B8B;
-  --sc-tenue:#6E645A;
+  /* Era #6E645A, cioe' 3.2-3.4:1 sui tre fondi su cui compare davvero: sotto la
+     soglia AA di 4.5:1, e questo grigio veste testi da 9-10px (etichette, meta,
+     "ancora in gioco"), non titoloni. #8A8076 e' il primo passo che passa ovunque —
+     misurato 4.89 sul fondo, 5.00 sui pannelli, 4.72 sulla carta della puja, che e'
+     il caso peggiore. Restare piu' scuri sarebbe stato "quasi": non conta. */
+  --sc-tenue:#8A8076;
   --sc-ambra-piena:#FFB04A;
   --sc-ambra-alta:#FFC578;
   --sc-brace-piena:#E23A2E;
@@ -521,7 +526,26 @@ html body #puja-panel-slot .btn-manuale{
   html body #puja-panel-slot .cc-offerta{font-size:3.9rem !important}
   html body #puja-panel-slot .cc-offerta-label{margin-top:8px !important;font-size:.54rem !important}
   html body #puja-panel-slot .cc-offerente{font-size:.85rem !important;white-space:normal !important}
-  html body #puja-panel-slot .cc-strategia-info{display:none !important}
+  /* Era `display:none`: l'unico punto del tema in cui si nascondeva un DATO (la fascia
+     di Strategia, la titolarita', il commento) invece di una decorazione — proprio su
+     mobile, dove serve di piu' perche' non c'e' la colonna Strategie accanto. Ora si
+     compatta: una riga sola per voce, con i puntini se non ci sta, e il commento resta
+     un bottone che apre il testo intero. Si stringe, non sparisce. */
+  html body #puja-panel-slot .cc-strategia-info{
+    display:block !important;padding:6px 0 0 !important;margin:0 !important;
+    font-size:.52rem !important;letter-spacing:.06em !important;line-height:1.35 !important;
+    max-width:100% !important;
+    overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;
+  }
+  html body #puja-panel-slot .cc-commento-preview{
+    display:flex !important;align-items:center !important;gap:5px !important;
+    width:100% !important;text-align:left !important;
+  }
+  html body #puja-panel-slot .cc-commento-preview span{
+    flex:1 1 auto !important;min-width:0 !important;
+    overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;
+  }
+  html body #puja-panel-slot .cc-commento-preview small{flex:0 0 auto !important}
 
   html body #puja-panel-slot .timer-ring-container{flex:0 0 auto !important}
   html body #puja-panel-slot .timer-ring{width:92px !important;height:92px !important}

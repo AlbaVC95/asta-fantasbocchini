@@ -2357,22 +2357,7 @@ function _getRuoloBadgeHTML(ruolo) {
   }).join('');
 }
 
-function _avatarInitials(nome) {
-  if (!nome) return '?';
-  const parts = nome.trim().split(/\s+/).filter(Boolean);
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return nome.trim().substring(0, 2).toUpperCase();
-}
 
-function _avatarColor(nome) {
-  const str = nome || '?';
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 31 + str.charCodeAt(i)) % 360;
-  }
-  const hue = Math.abs(hash);
-  return 'hsl(' + hue + ',48%,38%)';
-}
 
 let _chiamataAvatarVersion = 0;
 const _playerPhotoCache = {};
@@ -2386,72 +2371,8 @@ function _teamWords(s) {
       return w && ['fc','ac','ssc','us','as','calcio','club','ssd','asd','cfc'].indexOf(w) === -1;
     });
 }
-function _teamMatches(sourceTeam, squadraAssegnata) {
-  if (!sourceTeam) return false; // nessuna squadra indicata dalla fonte: non possiamo confermare, si scarta per sicurezza (evita foto di persone omonime sbagliate)
-  const aw = _teamWords(sourceTeam), bw = _teamWords(squadraAssegnata);
-  if (!aw.length || !bw.length) return false;
-  for (let i = 0; i < aw.length; i++) {
-    for (let j = 0; j < bw.length; j++) {
-      const x = aw[i], y = bw[j];
-      if (x.length < 4 || y.length < 4) continue;
-      if (x === y || x.indexOf(y) === 0 || y.indexOf(x) === 0) return true;
-    }
-  }
-  return false;
-}
 
-// Rileva testi/etichette relative al calcio femminile: usato per scartare foto di omonime
-// (es. "Russo A." maschile confuso con una calciatrice femminile con lo stesso cognome).
-function _isWomenText(s) {
-  const t = (s || '').toLowerCase();
-  const kws = ['women', "women's", 'female', 'femminile', 'donne', 'ladies', 'wfc', 'nwsl', 'wsl', 'frauen', 'feminine'];
-  for (let i = 0; i < kws.length; i++) { if (t.indexOf(kws[i]) > -1) return true; }
-  return false;
-}
 
-// Controlla le categorie Wikimedia Commons di un'immagine: restituisce true se la foto
-// e' chiaramente scattata durante una gara internazionale (Mondiale, Euro, Olimpiadi, ecc.)
-// In quel caso il giocatore indossa la maglia della nazionale, non del club — foto scartata.
-function _commonsFileTitle(imageUrl) {
-  try {
-    var u = new URL(imageUrl);
-    var parts = decodeURIComponent(u.pathname).split('/');
-    var filename = parts[parts.length - 1];
-    // rimuove prefix di dimensione tipo "330px-" generato dai thumbnail
-    filename = filename.replace(/^\d+px-/, '');
-    return 'File:' + filename.replace(/_/g, ' ');
-  } catch(e) { return null; }
-}
-var _nationalTeamCountries = ['afghanistan','albania','algeria','andorra','angola','argentina','armenia','australia','austria','azerbaijan','bahamas','bahrain','bangladesh','barbados','belarus','belgium','belize','benin','bhutan','bolivia','bosnia and herzegovina','botswana','brazil','brunei','bulgaria','burkina faso','burundi','cambodia','cameroon','canada','cape verde','central african republic','chad','chile','china','colombia','comoros','congo','costa rica','croatia','cuba','cyprus','czech republic','denmark','djibouti','dominica','dominican republic','democratic republic of the congo','ecuador','egypt','el salvador','equatorial guinea','eritrea','estonia','eswatini','ethiopia','fiji','finland','france','gabon','gambia','georgia','germany','ghana','greece','grenada','guatemala','guinea','guinea-bissau','guyana','haiti','honduras','hungary','iceland','india','indonesia','iran','iraq','ireland','israel','italy','ivory coast','jamaica','japan','jordan','kazakhstan','kenya','kiribati','kosovo','kuwait','kyrgyzstan','laos','latvia','lebanon','lesotho','liberia','libya','liechtenstein','lithuania','luxembourg','madagascar','malawi','malaysia','maldives','mali','malta','mauritania','mauritius','mexico','moldova','monaco','mongolia','montenegro','morocco','mozambique','myanmar','namibia','nepal','netherlands','new zealand','nicaragua','niger','nigeria','north korea','north macedonia','norway','oman','pakistan','palestine','panama','papua new guinea','paraguay','peru','philippines','poland','portugal','qatar','romania','russia','rwanda','saint kitts and nevis','saint lucia','samoa','san marino','saudi arabia','senegal','serbia','seychelles','sierra leone','singapore','slovakia','slovenia','solomon islands','somalia','south africa','south korea','south sudan','spain','sri lanka','sudan','suriname','sweden','switzerland','syria','taiwan','tajikistan','tanzania','thailand','togo','tonga','trinidad and tobago','tunisia','turkey','turkmenistan','tuvalu','uganda','ukraine','united arab emirates','united kingdom','england','scotland','wales','northern ireland','united states','uruguay','uzbekistan','vanuatu','venezuela','vietnam','yemen','zambia','zimbabwe'];
-function _isCountryName(s) { return _nationalTeamCountries.indexOf(s) > -1; }
-function _checkCommonsNotInternational(imageUrl) {
-  var title = _commonsFileTitle(imageUrl);
-  if (!title) return Promise.resolve(true); // non riusciamo a verificare: accettiamo
-  var url = 'https://commons.wikimedia.org/w/api.php?action=query&titles=' +
-    encodeURIComponent(title) + '&prop=categories&cllimit=50&format=json&origin=*';
-  return fetch(url).then(function(r) { return r.json(); }).then(function(data) {
-    var pages = data.query && data.query.pages;
-    if (!pages) return true;
-    var page = pages[Object.keys(pages)[0]];
-    var cats = (page.categories || []).map(function(c) { return c.title.replace(/^Category:/, '').toLowerCase(); });
-    var intlKw = ['fifa world cup', 'uefa european championship', 'uefa euro', 'copa america', 'copa américa',
-      'africa cup of nations', 'afcon', 'olympic football', 'confederations cup', 'nations league',
-      'conmebol', 'concacaf gold cup', 'afc asian cup', 'wcq', 'world cup qualifier'];
-    for (var i = 0; i < cats.length; i++) {
-      var c = cats[i];
-      for (var j = 0; j < intlKw.length; j++) {
-        if (c.indexOf(intlKw[j]) > -1) return false; // foto scattata durante un torneo internazionale specifico — scarta
-      }
-      // Segnali generici di contesto nazionale/internazionale (non legati a un torneo specifico):
-      // es. "Iceland national football team", "WikiPortraits at 2026 International Soccer Matches"
-      if (c.indexOf('national football team') > -1 || c.indexOf('national soccer team') > -1) return false;
-      if (c.indexOf('international') > -1 && (c.indexOf('soccer') > -1 || c.indexOf('football') > -1)) return false;
-      var _mvs = c.match(/^(.+?)\s+v(?:s\.?)?\s+(.+?)(?:,\s*\d.*)?$/);
-      if (_mvs && _isCountryName(_mvs[1].trim()) && _isCountryName(_mvs[2].trim())) return false; // categoria tipo "PaeseA vs PaeseB, <data>" = foto di nazionali
-    }
-    return true; // foto ok (contesto di club o neutro)
-  }).catch(function() { return true; }); // in caso di errore: accettiamo (evita blocchi inutili)
-}
 
 // Fallback finale: se nessuna foto reale del giocatore e' stata trovata, mostra un'illustrazione
 // generica con la maglia della squadra assegnata (immagini in /img/teams/), invece dell'avatar con iniziali.
@@ -2578,145 +2499,10 @@ function _tryLocalPhoto(nome, squadra) {
   }).catch(function() { return null; });
 }
 
-const _teamFallbackSlugs = ['atalanta','bologna','cagliari','como','fiorentina','frosinone','genoa','inter','juventus','lazio','lecce','milan','monza','napoli','parma','roma','sassuolo','torino','udinese','venezia'];
-function _teamFallbackImage(squadra) {
-  if (!squadra) return null;
-  const bw = _teamWords(squadra);
-  if (!bw.length) return null;
-  for (let i = 0; i < _teamFallbackSlugs.length; i++) {
-    const slug = _teamFallbackSlugs[i];
-    for (let j = 0; j < bw.length; j++) {
-      const w = bw[j];
-      if (w.length < 4) continue;
-      if (slug === w || slug.indexOf(w) === 0 || w.indexOf(slug) === 0) return 'img/teams/' + slug + '.png';
-    }
-  }
-  return null;
-}
 
-function _trySportsDB(nome, squadra) {
-  const url = 'https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=' + encodeURIComponent(nome);
-  return fetch(url).then(function(r) { return r.json(); }).then(function(data) {
-    const players = data && data.player;
-    if (!players || !players.length) return null;
-    for (let i = 0; i < players.length; i++) {
-      const p = players[i];
-      if (p.strSport && p.strSport !== 'Soccer') continue;
-      if (p.strGender && p.strGender.toLowerCase().indexOf('female') > -1) continue; // scarta calciatrici omonime
-      if (_isWomenText(p.strTeam) || _isWomenText(p.strLeague)) continue;
-      if (_teamMatches(p.strTeam, squadra)) {
-        const img = p.strCutout || p.strThumb || p.strRender;
-        if (img) return img;
-      }
-    }
-    return null;
-  }).catch(function() { return null; });
-}
 
-function _tryWikidata(nome, squadra) {
-  const searchUrl = 'https://www.wikidata.org/w/api.php?action=wbsearchentities&search=' +
-    encodeURIComponent(nome) + '&language=en&format=json&type=item&limit=5&origin=*';
-  return fetch(searchUrl).then(function(r) { return r.json(); }).then(function(data) {
-    const ids = (data.search || []).map(function(x) { return x.id; });
-    if (!ids.length) return null;
-    const values = ids.map(function(id) { return 'wd:' + id; }).join(' ');
-    const sparql = 'SELECT ?item ?image ?teamLabel ?occLabel ?sexLabel WHERE { VALUES ?item { ' + values + ' } ' +
-      'OPTIONAL { ?item wdt:P18 ?image. } ' +
-      'OPTIONAL { ?item wdt:P54 ?team. ?team rdfs:label ?teamLabel. FILTER(LANG(?teamLabel)="en") } ' +
-      'OPTIONAL { ?item wdt:P106 ?occ. ?occ rdfs:label ?occLabel. FILTER(LANG(?occLabel)="en") } ' +
-      'OPTIONAL { ?item wdt:P21 ?sex. ?sex rdfs:label ?sexLabel. FILTER(LANG(?sexLabel)="en") } }';
-    const url = 'https://query.wikidata.org/sparql?query=' + encodeURIComponent(sparql) + '&format=json';
-    return fetch(url, { headers: { 'Accept': 'application/sparql-results+json' } })
-      .then(function(r2) { return r2.json(); })
-      .then(function(data2) {
-        const bindings = (data2.results && data2.results.bindings) || [];
-        for (let i = 0; i < bindings.length; i++) {
-          const b = bindings[i];
-          const occ = ((b.occLabel && b.occLabel.value) || '').toLowerCase();
-          if (occ.indexOf('football') === -1 && occ.indexOf('soccer') === -1) continue;
-          const sex = ((b.sexLabel && b.sexLabel.value) || '').toLowerCase();
-          if (sex && sex.indexOf('male') === -1) continue; // esplicitamente non maschile: scarta (evita omonime)
-          if (_isWomenText(occ)) continue;
-          const team = b.teamLabel && b.teamLabel.value;
-          const image = b.image && b.image.value;
-          if (!image) continue;
-          if (_isWomenText(team)) continue;
-          if (_teamMatches(team, squadra)) {
-            // Verifica che la foto non sia scattata in un contesto di nazionale (es. Mondiale):
-            // in quel caso il club coincide nella carriera ma la maglia mostrata non e' quella del club.
-            return _checkCommonsNotInternational(image).then(function(ok) { return ok ? image : null; });
-          }
-        }
-        return null; // rimosso il fallback "nessuna squadra indicata": troppo rischioso, causava foto di persone omonime sbagliate
-      });
-  }).catch(function() { return null; });
-}
 
-function _tryWikipedia(nome, squadra) {
-  const searchUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
-    encodeURIComponent(nome + ' footballer') + '&format=json&srlimit=1&origin=*';
-  return fetch(searchUrl)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      const results = data.query && data.query.search;
-      if (!results || !results.length) return null;
-      const title = results[0].title;
-      return fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title))
-        .then(function(r2) { return r2.json(); })
-        .then(function(summary) {
-          const desc = (summary.description || '').toLowerCase();
-          const extract = (summary.extract || '').toLowerCase();
-          const url = summary.thumbnail && summary.thumbnail.source;
-          const isFootballer = desc.indexOf('footballer') > -1 || desc.indexOf('soccer') > -1 || desc.indexOf('calciatore') > -1;
-          if (!url || !isFootballer) return null;
-          if (_isWomenText(desc) || _isWomenText(extract)) return null; // scarta esplicitamente il calcio femminile (omonime)
-          if (!squadra) return url;
-          // Verifica il club tramite l'entita' Wikidata collegata alla pagina (sesso + squadra attuale/passata)
-          const pageInfoUrl = 'https://en.wikipedia.org/w/api.php?action=query&prop=pageprops&titles=' +
-            encodeURIComponent(title) + '&format=json&origin=*';
-          return fetch(pageInfoUrl).then(function(r3) { return r3.json(); }).then(function(pdata) {
-            const pages = pdata.query && pdata.query.pages;
-            const key = pages && Object.keys(pages)[0];
-            const qid = key && pages[key].pageprops && pages[key].pageprops.wikibase_item;
-            if (!qid) return null; // nessun collegamento Wikidata: non possiamo verificare squadra/sesso, scartiamo per sicurezza
-            const sparql = 'SELECT ?sexLabel ?teamLabel WHERE { OPTIONAL { wd:' + qid + ' wdt:P21 ?sex. ?sex rdfs:label ?sexLabel. FILTER(LANG(?sexLabel)="en") } ' +
-              'OPTIONAL { wd:' + qid + ' wdt:P54 ?team. ?team rdfs:label ?teamLabel. FILTER(LANG(?teamLabel)="en") } }';
-            const wdUrl = 'https://query.wikidata.org/sparql?query=' + encodeURIComponent(sparql) + '&format=json';
-            return fetch(wdUrl, { headers: { 'Accept': 'application/sparql-results+json' } })
-              .then(function(r4) { return r4.json(); })
-              .then(function(wd) {
-                const bindings = (wd.results && wd.results.bindings) || [];
-                if (!bindings.length) return null;
-                const sex = ((bindings[0].sexLabel && bindings[0].sexLabel.value) || '').toLowerCase();
-                if (sex && sex.indexOf('male') === -1) return null; // esplicitamente non maschile
-                for (let i = 0; i < bindings.length; i++) {
-                  const team = bindings[i].teamLabel && bindings[i].teamLabel.value;
-                  if (_isWomenText(team)) return null;
-                  if (_teamMatches(team, squadra)) {
-                    return _checkCommonsNotInternational(url).then(function(ok) { return ok ? url : null; });
-                  }
-                }
-                return null;
-              });
-          }).catch(function() { return null; });
-        });
-    })
-    .catch(function() { return null; });
-}
 
-// Applica un timeout a una promise: se la fonte esterna (SportsDB/Wikidata/Wikipedia)
-// e' lenta o irraggiungibile (rete lenta, firewall, blocco del browser), dopo "ms"
-// si passa comunque al fallback invece di restare bloccati per sempre senza mostrare nulla.
-// Ultima fonte prima del fallback allo scudo: API-Football (proxy sul backend,
-// che gestisce la chiave segreta e il limite di 100 richieste/giorno del piano free).
-// Ritorna una foto tipo tessera/profilo del giocatore (non foto di partita), quindi
-// non serve applicare il filtro anti-nazionale usato per le foto di Wikimedia Commons.
-function _tryApiFootball(nome, squadra) {
-  return fetch('/api/player-photo?name=' + encodeURIComponent(nome))
-    .then(function(r) { return r.json(); })
-    .then(function(data) { return (data && data.photo) || null; })
-    .catch(function() { return null; });
-}
 
 function _withTimeout(promise, ms, fallbackValue) {
   return new Promise(function(resolve) {
