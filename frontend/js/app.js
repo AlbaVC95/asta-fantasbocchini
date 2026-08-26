@@ -2913,7 +2913,7 @@ function _ruoliCompatibili(ruoloSlot, ruoloGiocatore) {
   return slotRoles.some(sr => gioRoles.includes(sr));
 }
 
-// Autorellenar: ordine delle "linee" del campo dalla piu' difensiva alla piu' offensiva —
+// Riempi campo: ordine delle "linee" del campo dalla piu' difensiva alla piu' offensiva —
 // richiesta esplicita dell'utente, indipendente dalle righe di ANTEPRIMA_FORMAZIONI (che
 // mischiano ruoli di linee diverse sulla stessa riga visiva, es. 'M/C' nella riga centrocampo
 // e' meta' linea M meta' linea C/E). Un ruolo composito (di uno slot o di un giocatore, es.
@@ -2935,7 +2935,7 @@ function _antLineaIndex(ruoloComposito) {
 // dove gareggia di nuovo solo per FMV. Tocca SOLO gli slot vuoti al momento del click (mai
 // quelli gia' piazzati a mano) ma ricalcola sempre da zero sulla Panchina attuale — nessuna
 // cache, due click di seguito senza cambi alla rosa non spostano nulla.
-// Valore di riferimento per il confronto FMV in Autorellenar: QUOT. (quotazione, dal Listino
+// Valore di riferimento per il confronto FMV in Riempi campo: QUOT. (quotazione, dal Listino
 // Ufficiale o da un Excel che la include) prima di tutto se e' presente — richiesta esplicita
 // dell'utente, non l'FM che spesso manca del tutto a seconda di come e' stata creata l'asta.
 // A cascata: Valore (Valore Algoritmico, dal JSON) -> FM -> MV -> nessun dato (ultima priorita').
