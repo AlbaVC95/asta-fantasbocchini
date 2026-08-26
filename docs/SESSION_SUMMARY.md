@@ -356,8 +356,12 @@ con utenti veri loggati (in locale non ci sono le variabili Supabase).
 - **Mai provato end-to-end in un'asta vera**: login Supabase, più dispositivi, modali critici
   (svincolo, conferma RIC, plusvalenza/recompra, annulla storico), il blocco popup-pendente. È il
   limite noto di tutte le sessioni finora — non ci sono credenziali di test.
-- Schermate Strategie, Editor Fasce e Griglia P/A: ereditano la palette ma non sono state guardate
-  una per una in tutti e quattro i temi.
+- Schermate Strategie, Editor Fasce e Griglia P/A: **guardate** il 2026-08-26 nei quattro temi.
+  Nessuno sbordo, e i due difetti di contrasto trovati sono corretti. Resta però un fatto di
+  *composizione*, non un bug: queste schermate ereditano i token ma non hanno un trattamento loro,
+  quindi il contenuto poggia direttamente sull'immagine d'ambiente invece che su un piano — nella
+  Griglia P/A si vede parecchio, su pergamena e sulla foto del bar. Vestirle è un lavoro della
+  stessa taglia di "le Rose vestite da sala giochi", cioè una sessione a sé, non una riga.
 
 ## Prossimo passo
 
