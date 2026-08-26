@@ -6,13 +6,14 @@ non accumulato. La cronologia sta in `git log`, il *perché* delle scelte in
 
 ## Stato attuale
 
-Il lavoro fino al 2026-08-25 è su `main`, committato e pushato (ultimo commit `8a85e67`), quindi
-in produzione su Hostinger (il deploy parte da solo al push su `main`).
+Il lavoro fino al 2026-08-25 è in produzione su Hostinger (il deploy parte da solo al push su
+`main`); l'ultimo commit online è `8a85e67`.
 
-Il lavoro del 2026-08-26 vive sul ramo **`tema-lavagna-gesso`**, non ancora unito a `main` e quindi
-non ancora online, in tre commit: la conversione a LF di `tema-serata.css`, il gesso del tema
-lavagna e il fix di impaginazione della carta di puja (vedi sotto). Per mandarlo in produzione va
-unito a `main` e pushato.
+Il lavoro del 2026-08-26 è **unito a `main` in locale ma NON ancora pushato**, quindi non è online.
+Tre commit, tenuti separati apposta: `2824693` conversione a LF di `tema-serata.css` (sole fine
+riga), `1c81666` il gesso del tema lavagna, `dd54953` il fix di impaginazione della carta di puja
+(vedi sotto). Il ramo `tema-lavagna-gesso` punta agli stessi commit e si può cancellare.
+**Basta `git push` per mandare tutto e tre in produzione.**
 
 **Quattro temi attivi** (`serata` default, `cuoio`, `lavagna`, `sala-giochi`), tutti con lo stesso
 pattern (ruoli `--sc-*` in `tema-serata.css` + token base in `style.css`, entrambi con un blocco
