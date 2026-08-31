@@ -3615,3 +3615,172 @@ html[data-tema="cuoio"] body .gk-tab.active{
   background:rgba(107,68,35,.12) !important;
   border-color:rgba(107,68,35,.45) !important;color:#6E431F !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   LA STRISCIA DI PUJA (vedi js/puja-sticky.js)
+
+   Compare SOLO quando il tasto RILANCIA non e' piu' raggiungibile.
+   Finche' lo e', la striscia e' `display:none` e non esiste per il
+   layout: verificato che sotto quella soglia l'app sia identica a
+   prima su 8 combinazioni vista x tema, 11 elementi ciascuna.
+
+   `position:fixed` e non `sticky` perche' deve funzionare in due
+   situazioni diverse: su desktop scorre la COLONNA (#asta-main-col),
+   su mobile scorre la PAGINA. `fixed` sul viewport le copre entrambe
+   senza sapere quale delle due si stia muovendo.
+
+   L'ordine degli elementi e' quello in cui servono per decidere:
+   chi e' (foto, ruoli, nome, squadra, fascia di Strategia) -> a quanto
+   sta e CHI ce l'ha -> quanto tempo resta -> il tasto.
+
+   z-index 800: sopra la testata ma sotto i modali, che devono coprirla.
+   ═══════════════════════════════════════════════════════════════════ */
+html body .puja-sticky{
+  display:none;
+  position:fixed !important;top:0;left:0;right:0;z-index:800;
+  align-items:center;gap:14px;
+  padding:7px 14px calc(7px + env(safe-area-inset-top, 0px));
+  border-bottom:1px solid rgba(var(--sc-carta),.14);
+  background:rgba(11,9,8,.96);
+  backdrop-filter:blur(14px);
+  animation:ps-entra .18s ease-out both;
+}
+html body .puja-sticky.visibile{display:flex}
+@keyframes ps-entra{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){ html body .puja-sticky{animation:none} }
+
+/* ── chi e' ── */
+html body .puja-sticky .ps-chi{
+  display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 auto;
+}
+html body .puja-sticky .ps-foto{
+  width:38px;height:46px;object-fit:cover;object-position:center top;
+  border-radius:2px;flex:0 0 auto;
+  border:1px solid rgba(var(--sc-carta),.16);
+  background:linear-gradient(180deg,#1E1814,#100D0B);
+}
+html body .puja-sticky .ps-foto.vuoto{display:none}
+html body .puja-sticky .ps-testi{display:flex;flex-direction:column;gap:2px;min-width:0}
+html body .puja-sticky .ps-riga-nome{display:flex;align-items:center;gap:7px;min-width:0}
+html body .puja-sticky .ps-ruoli{display:flex;align-items:center;gap:3px;flex:0 0 auto}
+html body .puja-sticky .ps-ruoli:empty{display:none}
+/* i badge sono cloni di quelli veri: qui si rimpiccioliscono e basta, il colore
+   per ruolo resta quello che ogni tema ha gia' deciso */
+html body .puja-sticky .ps-ruoli .badge-ruolo{
+  font-size:.5rem !important;padding:1px 4px !important;line-height:1.4 !important;
+}
+html body .puja-sticky .ps-nome{
+  font-family:var(--font-display);font-weight:900;
+  font-size:clamp(.85rem,2.4vw,1.08rem);letter-spacing:.01em;
+  color:var(--sc-testo);
+  /* il nome cede per primo: e' l'unico dato che si puo' accorciare senza
+     togliere la capacita' di decidere. Prezzo, offerente e tempo no. */
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;
+}
+html body .puja-sticky .ps-riga-meta{
+  display:flex;align-items:center;gap:8px;min-width:0;
+  font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--sc-medio);
+}
+html body .puja-sticky .ps-squadra:empty,
+html body .puja-sticky .ps-strategia.vuoto{display:none}
+html body .puja-sticky .ps-strategia{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;
+  text-transform:none;letter-spacing:.02em;color:var(--sc-tenue);
+}
+/* il filetto col colore della fascia, ripreso dalla carta grande */
+html body .puja-sticky .ps-strategia.con-fascia{
+  border-left:2px solid var(--ps-fascia,transparent);padding-left:7px;
+}
+
+/* ── a quanto sta ── */
+html body .puja-sticky .ps-soldi{
+  display:flex;align-items:baseline;gap:8px;flex:0 0 auto;
+}
+html body .puja-sticky .ps-offerta{
+  font-family:var(--font-display);font-weight:900;
+  font-size:clamp(1rem,3vw,1.35rem);color:var(--sc-ambra-piena);
+  font-variant-numeric:tabular-nums;
+}
+html body .puja-sticky .ps-offerente{
+  font-size:.66rem;letter-spacing:.06em;color:var(--sc-medio);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:20vw;
+}
+
+/* ── quanto manca, e il tasto ── */
+html body .puja-sticky .ps-destra{display:flex;align-items:center;gap:12px;flex:0 0 auto}
+html body .puja-sticky .ps-timer{
+  font-family:var(--font-display);font-weight:900;
+  font-size:clamp(1.1rem,3.4vw,1.5rem);line-height:1;
+  color:var(--sc-ambra-piena);font-variant-numeric:tabular-nums;
+  min-width:1.5em;text-align:right;
+}
+/* negli ultimi secondi la striscia si accende come il resto della scena: e'
+   guidata dalla stessa classe sul body, non da un cronometro suo */
+html body.puja-urgente .puja-sticky .ps-timer{color:var(--sc-brace-piena)}
+html body.puja-urgente .puja-sticky{border-bottom-color:rgba(var(--sc-brace),.55)}
+
+html body .puja-sticky .ps-rilancia{
+  flex:0 0 auto;cursor:pointer;border:none;
+  font-family:var(--font-display);font-weight:900;text-transform:uppercase;
+  font-size:clamp(.72rem,2.2vw,.86rem);letter-spacing:.04em;
+  padding:10px 18px;border-radius:2px;
+  background:var(--sc-testo);color:var(--sc-fondo);
+}
+html body .puja-sticky .ps-rilancia:disabled{opacity:.4;cursor:not-allowed}
+html body .puja-sticky .ps-rilancia:not(:disabled):active{transform:scale(.97)}
+
+/* Sullo stretto si toglie cio' che si puo' rileggere tornando su — la squadra
+   reale e la fascia — e si tengono nome, prezzo, chi offre e tempo. Niente
+   sparisce che serva a decidere adesso. */
+@media (max-width:640px){
+  html body .puja-sticky .ps-riga-meta{display:none}
+  html body .puja-sticky .ps-foto{width:32px;height:38px}
+}
+@media (max-width:430px){
+  html body .puja-sticky{gap:9px;padding-left:10px;padding-right:10px}
+  html body .puja-sticky .ps-offerente{display:none}
+  html body .puja-sticky .ps-rilancia{padding:10px 13px}
+}
+
+/* ── le materie, tema per tema ── */
+html[data-tema="cuoio"] body .puja-sticky{
+  background:rgba(243,231,208,.97);
+  border-bottom:1px solid rgba(58,36,20,.22);
+  box-shadow:0 6px 18px rgba(58,36,20,.18);
+}
+html[data-tema="lavagna"] body .puja-sticky{
+  background:rgba(11,11,15,.97);
+  border-bottom:1px solid rgba(34,211,238,.45);
+  box-shadow:0 6px 22px rgba(0,0,0,.55);
+}
+html[data-tema="sala-giochi"] body .puja-sticky{
+  background:#FFFFFF;
+  border-bottom:4px solid #141024;
+  box-shadow:0 6px 0 rgba(20,16,36,.18);
+  backdrop-filter:none;
+}
+html[data-tema="sala-giochi"] body .puja-sticky .ps-foto{
+  border:2px solid #141024;border-radius:0;background:#2440D8;
+}
+html[data-tema="sala-giochi"] body .puja-sticky .ps-rilancia{
+  background:#D4241C !important;color:#FFFFFF !important;
+  border:2px solid #141024 !important;border-radius:0 !important;
+}
+/* i caratteri del tema anche sulla striscia: senza, in "sala-giochi" restava
+   l'unico pezzo in Archivo dentro una schermata tutta a pixel */
+html[data-tema="sala-giochi"] body .puja-sticky .ps-nome,
+html[data-tema="sala-giochi"] body .puja-sticky .ps-rilancia{
+  font-family:'Press Start 2P',Archivo,sans-serif !important;
+  font-weight:400 !important;letter-spacing:0 !important;
+  font-size:clamp(.58rem,1.7vw,.74rem) !important;
+}
+html[data-tema="sala-giochi"] body .puja-sticky .ps-offerta,
+html[data-tema="sala-giochi"] body .puja-sticky .ps-timer{
+  font-family:'Press Start 2P',var(--font-mono) !important;font-weight:400 !important;
+  font-size:clamp(.78rem,2.3vw,.98rem) !important;
+}
+html[data-tema="sala-giochi"] body .puja-sticky .ps-riga-meta,
+html[data-tema="sala-giochi"] body .puja-sticky .ps-offerente{
+  font-family:'Silkscreen',var(--font-mono) !important;
+}

@@ -88,6 +88,37 @@ identiche font di prima** (controllo automatico su 12 selettori x 4 temi).
 alla parola. Non era del gesso (forzando Archivo restava identico) ed e' stato corretto a parte —
 vedi la sezione qui sotto.
 
+## Cambi recenti — la striscia di puja quando scorri via (2026-08-31)
+
+Richiesta dell'utente, con un video di Fantalab: scorrendo la pagina il pannello di puja esce dallo
+schermo e non si puo' piu' rilanciare. Riprodotto e misurato: a **1100x800**, vista Partecipante,
+senza nemmeno aprire Anteprima, il tasto RILANCIA finisce a **-137px**; su mobile a 390px a -88px.
+Resti a guardare le squadre senza poter rilanciare e senza sapere quanto tempo manca.
+
+Nuovo modulo **`frontend/js/puja-sticky.js`**, additivo come `clessidra.js` e
+`comportamenti-asta.js`: si costruisce il suo DOM da solo e finche' il tasto vero e' raggiungibile
+resta `display:none`. Contiene, nell'ordine in cui servono per decidere: foto, ruoli, nome, squadra,
+riga di Strategia, importo, **chi ha fatto l'ultima offerta**, timer e il tasto.
+
+**Non manda rilanci**: il suo tasto fa `.click()` sul vero `#btn-rilancio`. Verificato intercettando
+il socket che i due producano lo **stesso identico payload** (`{astaId, offerta:188}`). Un `.click()`
+programmatico non fa scattare la soppressione della "leva", che si arma solo su una pressione vera.
+
+**Tre errori miei, presi misurando prima di spedire:**
+1. Osservavo il *riquadro* di rilancio invece del tasto: a scroll finito ne restavano visibili 34px
+   su 226, quindi "intersecava" e la striscia non compariva mentre il tasto era gia' fuori.
+   **Il contenitore mente sul suo contenuto.**
+2. Soglia in percentuale (60%): in Admin il tasto e' visibile al 55% *a riposo*, quindi la striscia
+   restava accesa in permanenza — peggio del problema. Ora la soglia e' in **pixel** (44px, la
+   misura minima di un bersaglio toccabile): il criterio giusto e' "ci arrivo col dito".
+3. `IntersectionObserver` e `requestAnimationFrame` **non funzionano a pagina nascosta**: il primo
+   riporta intersezione zero per tutto, il secondo non viene servito. Sostituiti da un calcolo sul
+   rettangolo con throttle a tempo — deterministico, e soprattutto verificabile.
+
+**Verificato**: 8 combinazioni vista x tema, 11 elementi ciascuna, **zero differenze** rispetto
+all'app senza il modulo; comparsa/sparizione su desktop e mobile; ricompare da sola quando viene
+chiamato un giocatore nuovo senza che tu scrolli; rispetta il tasto disabilitato; nessuno sbordo.
+
 ## Cambi recenti — la Griglia P/A poggia su un piano (2026-08-26)
 
 Era l'ultima schermata senza un trattamento suo: `.gk-view` in `style.css` è pura impaginazione,
