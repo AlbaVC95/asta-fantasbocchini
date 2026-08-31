@@ -39,13 +39,27 @@
   var VEGLIA = 500;  // ms fra un controllo e l'altro, sempre: vedi nota su `sentinella`
 
   // Quanto tasto deve restare visibile perche' la striscia NON serva.
-  // Non una percentuale ma dei PIXEL, ed e' una correzione presa misurando:
-  // in vista Admin il tasto e' alto 134px e a riposo ne restano visibili 74,
-  // cioe' il 55%. Con una soglia in percentuale (0.6) la striscia risultava
-  // accesa in permanenza in Admin, che e' peggio del problema che risolve.
-  // 44px e' la misura minima di un bersaglio toccabile: sopra ci arrivi col
-  // dito, sotto no. Il criterio giusto e' quello, non "quanta parte se ne vede".
+  //
+  // Ci sono voluti due tentativi sbagliati per arrivarci, tutti e due segnalati
+  // dall'utente o misurati:
+  //
+  //  1. Percentuale (60%): in Admin a 1100x800 il tasto e' alto 134px e a riposo
+  //     ne restano visibili 74, cioe' il 55% — la striscia restava accesa in
+  //     permanenza, peggio del problema che risolve.
+  //  2. Pixel fissi (44, la misura minima di un bersaglio toccabile): in Admin a
+  //     1470x900 lo STESSO tasto e' alto 35px e si vede tutto, ma 35 < 44 e la
+  //     striscia compariva su un bottone perfettamente cliccabile.
+  //
+  // L'errore era confondere due cose diverse: quanto e' grande il bottone e
+  // quanta parte se ne vede. L'altezza del tasto cambia moltissimo col layout
+  // (35px o 134px a seconda di vista e larghezza), quindi la soglia non puo'
+  // essere ne' una percentuale sola ne' un numero fisso: e'
+  //     min(44px, altezza del tasto)
+  // cioe' "ti servono 44px di bottone, oppure tutto il bottone se e' piu' basso
+  // di 44". Cosi' un tasto interamente visibile non fa mai comparire la striscia,
+  // qualunque altezza abbia, e un tasto tagliato la fa comparire sempre.
   var MIN_TOCCABILE = 44;
+  var TOLLERANZA = 2;   // px: evita che un pixel di taglio faccia sfarfallare la striscia
 
   var barra = null, battito = null, sentinella = null, montata = false;
 
@@ -215,7 +229,9 @@
   function ricalcola() {
     var btn = document.getElementById('btn-rilancio');
     if (!btn) { mostra(false); return; }
-    mostra(altezzaVisibile(btn) < MIN_TOCCABILE && pujaInCorso());
+    var alto = btn.getBoundingClientRect().height;
+    var soglia = Math.min(MIN_TOCCABILE, alto);
+    mostra(altezzaVisibile(btn) + TOLLERANZA < soglia && pujaInCorso());
   }
 
   // Throttle a tempo e NON con requestAnimationFrame: rAF non viene servito

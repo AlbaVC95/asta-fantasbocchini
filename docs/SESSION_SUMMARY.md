@@ -104,13 +104,21 @@ riga di Strategia, importo, **chi ha fatto l'ultima offerta**, timer e il tasto.
 il socket che i due producano lo **stesso identico payload** (`{astaId, offerta:188}`). Un `.click()`
 programmatico non fa scattare la soppressione della "leva", che si arma solo su una pressione vera.
 
-**Tre errori miei, presi misurando prima di spedire:**
+**La soglia: tre tentativi, due sbagliati.** E' la parte che e' costata di piu', perche' l'altezza
+del tasto RILANCIA **cambia moltissimo col layout** — 35px in Admin su schermo largo, 62-64px in
+vista Partecipante, 134px in Admin a 1100x800.
 1. Osservavo il *riquadro* di rilancio invece del tasto: a scroll finito ne restavano visibili 34px
    su 226, quindi "intersecava" e la striscia non compariva mentre il tasto era gia' fuori.
    **Il contenitore mente sul suo contenuto.**
-2. Soglia in percentuale (60%): in Admin il tasto e' visibile al 55% *a riposo*, quindi la striscia
-   restava accesa in permanenza — peggio del problema. Ora la soglia e' in **pixel** (44px, la
-   misura minima di un bersaglio toccabile): il criterio giusto e' "ci arrivo col dito".
+2. Soglia in percentuale (60%): in Admin a 1100x800 il tasto e' visibile al 55% *a riposo*, quindi
+   la striscia restava accesa in permanenza — peggio del problema.
+3. Soglia in pixel fissi (44): **segnalato dall'utente**, in Admin su schermo largo il tasto e' alto
+   35px e si vede tutto, ma 35 < 44 e la striscia compariva su un bottone perfettamente cliccabile.
+
+   La soglia giusta e' **`min(44px, altezza del tasto)`**: ti servono 44px di bottone, oppure tutto
+   il bottone se e' piu' basso di 44. Cosi' un tasto interamente visibile non fa mai comparire la
+   striscia, qualunque altezza abbia. L'errore di fondo era confondere *quanto e' grande il bottone*
+   con *quanta parte se ne vede*.
 3. `IntersectionObserver` e `requestAnimationFrame` **non funzionano a pagina nascosta**: il primo
    riporta intersezione zero per tutto, il secondo non viene servito. Sostituiti da un calcolo sul
    rettangolo con throttle a tempo — deterministico, e soprattutto verificabile.
