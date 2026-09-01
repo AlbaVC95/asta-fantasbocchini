@@ -9,9 +9,8 @@ non accumulato. La cronologia sta in `git log`, il *perché* delle scelte in
 Branch `main`, allineato con `origin/main`. Deploy automatico su Hostinger al push su `main`,
 quindi **tutto quanto è qui sotto è in produzione**.
 
-Il lavoro del 2026-08-26 è in tre commit tenuti separati apposta: `2824693` conversione a LF di
-`tema-serata.css` (sole fine riga), `1c81666` il gesso del tema lavagna, `dd54953` il fix di
-impaginazione della carta di puja (vedi sotto).
+**Non ancora committato**: lo scorrimento della pagina d'asta su desktop e la vista a parte
+(`frontend/js/vista-esterna.js`, nuovo modulo). Vedi la prima sezione qui sotto.
 
 **Quattro temi attivi** (`serata` default, `cuoio`, `lavagna`, `sala-giochi`), tutti con lo stesso
 pattern (ruoli `--sc-*` in `tema-serata.css` + token base in `style.css`, entrambi con un blocco
@@ -45,10 +44,73 @@ Due dei quattro temi cambiano anche i **caratteri** (`sala-giochi`: Press Start 
 4. **Non vale più il vecchio promemoria "se un colore non torna, controlla `theme_overrides`"**:
    l'Editor Visuale di Stile che scriveva quella riga è stato eliminato (vedi sotto). La riga
    `default` resta nel database, vuota, ma nessuno la legge più.
+5. **Sopra i 769px la pagina d'asta scorre per intero, e l'area che scorre è UNA sola**
+   (`#screen-asta`, non `html`/`body`, non `#asta-main-col`, non la tab). Prima di aggiungere un
+   `overflow` o un `flex:1` in quella zona, leggere il blocco in fondo a `tema-serata.css`: le tre
+   scatole annidate sono a `flex:0 0 auto` apposta, ed è ciò che tiene le barre di scorrimento a
+   una sola. L'unico elemento ancorato in alto è la striscia di puja (`position:fixed`); se un
+   giorno la testata tornasse `sticky`, ha `z-index:1000` contro gli 800 della striscia e la
+   coprirebbe.
 
 Per portare online, tornare indietro o aggiungere un tema:
 **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)** — riscritto il 2026-08-26 per i quattro temi, con i due
 cache-busting da non dimenticare prima di un push.
+
+## Cambi recenti — la pagina scorre, e le Rose si staccano (2026-09-01)
+
+Due richieste dell'utente in un giro solo.
+
+**1. La pagina d'asta scorre per intero (da 769px in su).** Prima la schermata era alta esattamente
+un viewport e scorreva solo il contenuto della tab aperta: la carta di puja restava sempre a
+schermo, quindi la striscia di puja — costruita apposta per quando la scena scorre via — non aveva
+quasi mai occasione di comparire. Ora scorre la pagina e la striscia fa il suo lavoro. Non è un
+meccanismo nuovo (sotto i 768px c'era già, e in vista Partecipante scorreva già `#asta-main-col`):
+il cambio vero è che le aree che scorrono passano da **tre annidate a una**.
+
+Il blocco sta in fondo a `tema-serata.css`, non in `style.css` che sarebbe il foglio del layout: le
+regole da battere stanno lì e sono `!important`, e quel foglio è caricato dopo. Si toccano solo
+`flex` e `min-height`, mai un `overflow`: ad altezza automatica un `overflow:auto` non fa comparire
+barre e un `overflow:hidden` non ritaglia niente. `.rose-container` conserva intatto il suo
+`overflow-x:auto`, quindi la striscia di 12 colonne resta orizzontale.
+
+**Anteprima è esclusa apposta**: è una colonna sorella con `align-self:stretch`, si sarebbe stirata
+quanto le Rose col campo 3D minuscolo in cima. Resta alta un viewport, con lo scorrimento suo, e
+`sticky` per restare a portata. **Griglia P/A invece non si poteva escludere in modo pulito** —
+sarebbe servita un'altezza fissa in pixel, cioè l'errore già documentato tre volte in DECISIONS —
+e ora cresce verso il basso; il suo `overflow-x` interno, che è ciò che la definisce, è intatto.
+
+**Due effetti collaterali dichiarati**: nelle Rose la barra orizzontale è in fondo a un pannello
+alto (rotella e trackpad funzionano da ovunque, il cursore deve scendere), e nella mappa di calore
+della Griglia le intestazioni di colonna non seguono più lo scorrimento (le etichette di riga, che
+sono quelle che contano lì, sì).
+
+**2. Rose, Storico e Svincolati si aprono in una scheda a parte.** Nuovo modulo
+`frontend/js/vista-esterna.js`, additivo come `puja-sticky.js`: un bottone "⧉ Apri a parte" in
+ciascuna delle tre tab. **Non apre nessuna connessione in più** — nessun socket, nessun login,
+nessuna chiamata REST: la scheda è `about:blank` scritta dal modulo, che rispecchia l'`innerHTML`
+del nodo vero e si riallinea con un `MutationObserver`. Funziona perché quei tre `render*` girano
+ad ogni aggiornamento di stato, non solo quando la loro tab è aperta.
+
+I click nella scheda tornano al documento madre **per posizione nell'albero** e lì si fa `.click()`
+sull'elemento vero — stesso principio della striscia di puja con `#btn-rilancio`. A tutto schermo
+le colonne delle Rose vanno a capo invece di scorrere: è l'unico punto in cui la vista a parte si
+comporta diversamente dall'originale, ed è il motivo per cui la si voleva.
+
+**Tre difetti veri trovati provandolo, tutti corretti**: il titolo della scheda restava
+`about:blank` (`d.title` scritto prima di svuotare `<head>`, che se lo porta via); ogni click nello
+specchio finiva con un `ReferenceError` non gestito, perché l'HTML copiato si porta dietro gli
+`onclick` inline dell'app (`_toggleRoseSec`, `chiamaLibero`) che lì non esistono — risolto
+fermando l'evento in fase di cattura; e una scheda ricaricata con F5 restava bianca — ora il giro
+lento se ne accorge e la ricostruisce.
+
+**Verificato** in browser con stato sintetico: 8 combinazioni vista × tema a 1280px e le due viste
+a 900 / 1100 / 1280 / 1440 / 1920px, pagina che scorre e **zero sbordo orizzontale** ovunque; a
+375px le regole non si applicano e i valori calcolati sono identici a prima. Per la vista a parte,
+il codice reale del modulo è stato eseguito contro un `Window`/`Document` veri (un `<iframe>` al
+posto di `window.open`, che il browser di verifica blocca sempre): contenuto identico
+all'originale nelle tre viste, aggiornamento in diretta, click delegati che agiscono sull'elemento
+vero, tema che segue a caldo, ricostruzione dopo ricarica, zero errori in console.
+**Non verificato**: l'apertura vera di una scheda del browser, bloccata dallo strumento.
 
 ## Cambi recenti — "Lavagna al Neon" scritta a mano (2026-08-26)
 
@@ -294,23 +356,6 @@ rosa pregressa + nuovi acquisti -> 5 giocatori esportati invece di 2; asta inizi
 casi limite (idFantaleghe mancante, doppioni, rose vuote, prezzo assente) tutti con l'avviso
 giusto.
 
-## Cambi recenti — il cabinato attorno al ritratto, in "sala-giochi" (2026-08-25)
-
-Tre giri sullo stesso pezzo, riassunti qui: cornice a forma di macchina da sala giochi attorno alla
-foto del giocatore nella carta di puja (Admin e Partecipante, non le miniature), senza occupare piu'
-spazio. I gradienti CSS non bastavano — sanno fare bande e pallini, non la SAGOMA — quindi il mobile
-e' un **disegno SVG sovrapposto alla foto, con la finestra dello schermo ritagliata a buco**. Il
-ritratto cresce in altezza (rapporto 100:166) perche' su un cabinato vero lo schermo e' ~60% del
-frontale: cosi' la finestra resta grande quanto la foto di prima. Il mobile **essenziale** e' la
-regola base e il dettaglio ricco (lampadine, righe di scansione, leva, gettoniera) si aggiunge solo
-in `@container sala (min-width:1201px)`: col dettaglio ovunque la faccia scendeva al 48% dell'area,
-ora sta al 58-61% a ogni misura. Sotto i 700px il cabinato si spegne.
-
-Due trappole da ricordare: le soglie vanno su `@container sala`, **non** su `@media` (il ritratto
-rimpicciolisce con la colonna, non con la finestra — stesso errore fatto nel Riepilogo squadre); e
-ispezionare col `zoom` del browser inganna, perche' rimpicciolisce anche il container. Dettagli e le
-tre trappole CSS incontrate in [DECISIONS.md](../DECISIONS.md).
-
 ## Cambi recenti — ruoli in riga, ruoli colorati, rosso a 3 secondi (2026-08-25)
 
 Tre richieste dell'utente sulla carta di puja:
@@ -349,22 +394,6 @@ globale. Dettagli e il tranello di `justify-self` in [DECISIONS.md](../DECISIONS
 **Verificato** riproducendo prima il bug: 24 sovrapposizioni su 12 schede; dopo, zero nelle 8
 combinazioni vista×tema e su sei larghezze da 820 a 1400px, senza nessun testo troncato tranne la
 coda del nome (comportamento voluto). Il nome anzi guadagna spazio: da 52px fissi a 72-89px.
-
-## Cambi recenti — pastiglia del nome in Anteprima (2026-08-25)
-
-Segnalato dall'utente sul tema "sala-giochi": il cartellino bianco dietro al nome del giocatore
-non copriva tutto il nome. **Non era un difetto del tema**: `.ant-slot3d-label` era larga quanto
-la carta e sempre uguale (`left:0;width:100%`) mentre il testo, in uno span `width:auto` con
-etichetta a `overflow:visible`, cambiava larghezza col nome — quindi il difetto c'era in tutti e
-quattro i temi, ma su prato chiaro con bordo nero si vedeva e su fondo scuro no. Corretto con una
-regola sola (`width:max-content` + `left:50%` + `translateX(-50%)`, ristretta con
-`:has(.ant-slot3d-name-txt)` per non toccare i badge degli slot vuoti). Dettagli e metodo in
-[DECISIONS.md](../DECISIONS.md).
-
-**Verificato** in browser reale, riproducendo prima il bug e misurandolo: pastiglia fissa a
-42.3px contro nomi fino a 62.5px (CARNISECCHI sbordava di 20.2px); dopo la correzione lo sbordo
-è **zero su tutti gli 11 nomi**, in tutti e quattro i temi, a 980px e a 371px, senza nessuna
-sovrapposizione fra etichette vicine. Diff: 24 righe aggiunte, 0 rimosse.
 
 ## Cambi recenti — giro di sicurezza (2026-08-25)
 
@@ -450,14 +479,21 @@ con utenti veri loggati (in locale non ci sono le variabili Supabase).
   2026-08-26. Strategie ed Editor Fasce usavano già `.card`, quindi un piano ce l'avevano; la
   Griglia P/A no, ed è stata vestita — piano, righe della classifica, tab, toggle e sub-tab (vedi
   sotto). Adesso tutte e tre parlano la lingua dei quattro temi.
+- **L'apertura vera di una scheda del browser non è mai stata provata** (`window.open` in
+  `vista-esterna.js`): il browser integrato usato per la verifica blocca i pop-up sempre, quindi
+  di quel ramo si è visto solo l'avviso all'utente. Tutto il resto del modulo è stato provato sul
+  codice reale contro un `Window`/`Document` veri. Basta un click sul bottone "⧉ Apri a parte" in
+  un browser normale per chiudere questa pendenza.
 
 ## Prossimo passo
 
 Aprire un'asta di test reale, idealmente con 2+ dispositivi, e guardare in ordine: la schermata
 asta nei quattro temi, i modali di svincolo/plusvalenza/recompra con dati veri (incluso il blocco
 popup-pendente), i comportamenti della puja (leva su RILANCIA, drag & drop e Autorellenar in
-Anteprima) e — nuovo — che l'antiflood da 5 rilanci/secondo non dia fastidio a chi rilancia in
-fretta davvero, durante gli ultimi secondi di una puja combattuta.
+Anteprima), che l'antiflood da 5 rilanci/secondo non dia fastidio a chi rilancia in fretta davvero
+negli ultimi secondi di una puja combattuta, e — nuovo — che con la pagina che scorre la striscia
+di puja resti sempre raggiungibile mentre si guardano le Rose, e che il bottone "⧉ Apri a parte"
+apra davvero una scheda.
 
 ## Regola da non dimenticare: non si nasconde informazione
 

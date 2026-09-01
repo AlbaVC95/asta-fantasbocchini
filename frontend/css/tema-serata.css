@@ -3784,3 +3784,100 @@ html[data-tema="sala-giochi"] body .puja-sticky .ps-riga-meta,
 html[data-tema="sala-giochi"] body .puja-sticky .ps-offerente{
   font-family:'Silkscreen',var(--font-mono) !important;
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   LA PAGINA DELL'ASTA SCORRE PER INTERO (da 769px in su)
+
+   Richiesta dell'utente. Fino a qui, sopra i 768px, la schermata d'asta
+   era alta esattamente un viewport e l'unica cosa che scorreva era il
+   contenuto della tab aperta: la carta di puja restava sempre a schermo,
+   quindi la striscia di puja (js/puja-sticky.js) — che esiste apposta
+   per quando la scena scorre via — non aveva quasi mai occasione di
+   comparire. Ora la pagina scorre e la striscia fa il suo lavoro.
+
+   Non e' un meccanismo nuovo: sotto i 768px la pagina scorre gia' da
+   sempre (@media(max-width:768px) in style.css) e in vista Partecipante
+   scorreva gia' #asta-main-col (vedi "LO SCROLL" e il blocco delle tab
+   piu' su). Questo porta lo stesso comportamento a tutto il desktop e,
+   soprattutto, riduce le aree che scorrono da tre annidate a UNA.
+
+   Perche' in questo foglio e non in style.css, che e' quello del layout:
+   le regole da battere stanno QUI e sono !important (lo scroll di
+   #asta-main-col, l'altezza minima delle tab, il drawer di Anteprima).
+   Scriverle in style.css — che viene caricato prima — avrebbe voluto dire
+   inventare selettori piu' lunghi per vincere una cascata che parte gia'
+   perdente, e spargere una modifica sola su due file: in questo progetto
+   e' il modo sicuro di farli divergere (vedi le due soglie del rosso a 5s
+   e 4s, e la regola duplicata che vinceva per specificita').
+
+   Cosa resta ancorato in alto: SOLO la striscia di puja, che e'
+   `position:fixed` sul viewport. La testata se ne va con lo scorrimento
+   (e' gia' `position:relative`, riga ~1238) e con lei la barra delle tab:
+   scelta esplicita dell'utente.
+
+   Fuori da questo blocco, deliberatamente: ANTEPRIMA. Non e' una tab, e'
+   una colonna SORELLA di .asta-main-col con `align-self:stretch`: con la
+   colonna principale alta quanto le Rose si stirerebbe uguale e il campo
+   3D finirebbe minuscolo in cima a un pannello lunghissimo. Resta alta un
+   viewport, con lo scorrimento suo, e diventa `sticky` per restare a
+   portata mentre scorri il resto.
+   ════════════════════════════════════════════════════════════════════ */
+@media (min-width:769px){
+
+  /* Lo scroll va su #screen-asta, NON su html/body: quelli sono condivisi
+     con Home, Lobby, Strategie, Editor Fasce e Griglia P/A, che scorrono
+     gia' per conto loro dentro `.screen.active`. Di fatto questa riga
+     restituisce a #screen-asta il comportamento generico di
+     `.screen.active` (height:100vh + overflow-y:auto) che oggi era
+     annullato da `overflow:hidden`.
+     `overflow-x` resta hidden: non e' una clippatura nuova, e' esattamente
+     quella che lo shorthand `overflow:hidden` gia' faceva. */
+  html body #screen-asta.active{
+    height:100vh !important;overflow-y:auto !important;overflow-x:hidden !important;
+  }
+
+  /* Le scatole annidate erano `flex:1;min-height:0` per spartirsi
+     l'altezza fissa del viewport: ora devono crescere col contenuto.
+     `overflow` non si tocca da nessuna parte qui sotto — ad altezza
+     automatica un `overflow:auto` non fa comparire nessuna barra e un
+     `overflow:hidden` non ritaglia niente (a .tabs-panel serve ancora,
+     per tenere il contenuto dentro i suoi angoli arrotondati). */
+  html body .asta-live-layout{flex:0 0 auto !important;min-height:0 !important}
+  html body .tabs-panel{flex:0 0 auto !important;min-height:0 !important}
+  html body .tab-content.active{flex:0 0 auto !important;min-height:0 !important}
+
+  /* Le tre varianti servono davvero: `html body.layout-partecipante
+     .asta-row-tabs` esiste piu' su con `flex:1 1 auto` e un min-height da
+     420px, ed e' piu' specifico di `html body .asta-row-tabs` — senza il
+     ramo con la classe di layout vincerebbe lui.
+     Il min-height va a 0 di proposito: garantiva un'altezza usabile quando
+     le tab erano l'avanzo di un viewport, ma con la pagina che scorre
+     lascerebbe soltanto un pannello mezzo vuoto sotto uno Storico corto. */
+  html body .asta-row-tabs,
+  html body.layout-partecipante .asta-row-tabs,
+  html body.layout-admin .asta-row-tabs{flex:0 0 auto !important;min-height:0 !important}
+
+  /* Rose: la striscia di colonne resta ORIZZONTALE (`overflow-x:auto`
+     invariato: e' il modo in cui si guardano 12 squadre). In verticale non
+     c'e' piu' niente da scorrere, perche' il contenitore prende l'altezza
+     della colonna piu' alta. */
+  html body .tab-content.active.tab-rose-content{flex:0 0 auto !important;min-height:0 !important}
+  html body .rose-container{flex:0 0 auto !important;min-height:0 !important}
+
+  /* La colonna smette di essere un'area di scorrimento sua. Il bug che
+     quella regola risolveva (le tab spinte fuori dalla finestra e
+     irraggiungibili, vedi "LO SCROLL") ora lo risolve lo scroll della
+     pagina — meglio, e senza annidare due scrollbar una dentro l'altra,
+     che e' proprio cio' che quel commento diceva di evitare. */
+  html body.layout-partecipante #asta-main-col{
+    overflow-y:visible !important;overflow-x:visible !important;
+  }
+
+  /* Anteprima: vedi sopra. Batte la regola @media(min-width:761px) piu' su,
+     che le da' `align-self:stretch` + `max-height:100%` — con la pagina che
+     scorre, quel 100% sarebbe l'altezza intera delle Rose. */
+  html body #tab-anteprima.ant-drawer.drawer-open{
+    position:sticky !important;top:0 !important;align-self:flex-start !important;
+    max-height:100vh !important;overflow-y:auto !important;
+  }
+}

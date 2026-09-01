@@ -1560,3 +1560,160 @@ informazioni non stanno su una riga si usa una riga in piu', non si taglia un da
 quattro temi: una riga sola ovunque, cifra dell'offerta che non sborda piu' dalla carta, nome
 dell'offerente mai troncato. Fuori dalla fascia rotta (390, 1000, 1920) il risultato e' identico
 pixel per pixel a prima.
+
+## La pagina dell'asta scorre: una sola area, non tre annidate
+
+Richiesta dell'utente. Sopra i 768px la schermata d'asta era alta esattamente un viewport
+(`#screen-asta.active{height:100vh;overflow:hidden}`) e l'unica cosa che scorreva era il contenuto
+della tab aperta. Conseguenza non voluta: la carta di puja restava sempre a schermo, quindi la
+**striscia di puja** (`js/puja-sticky.js`), costruita apposta per quando la scena scorre via, non
+aveva quasi mai occasione di comparire. Si era pagato un modulo intero per un caso che il layout
+rendeva raro.
+
+Non e' un meccanismo nuovo. Sotto i 768px la pagina scorre da sempre, e in vista Partecipante
+scorreva gia' `#asta-main-col` (regola introdotta perche' con la sala stretta le tab venivano
+spinte fuori dalla finestra e diventavano **irraggiungibili**). C'erano quindi gia' tre aree di
+scorrimento possibili — colonna, riga delle tab, contenuto della tab — che si passavano il
+problema. Ora ce n'e' **una**: `#screen-asta`.
+
+Tre scelte non ovvie:
+
+1. **Lo scorrimento va su `#screen-asta`, non su `html`/`body`.** Quelli sono condivisi con Home,
+   Lobby, Strategie, Editor Fasce e Griglia P/A, che scorrono gia' per conto loro dentro
+   `.screen.active`. Toccarli avrebbe cambiato cinque schermate per sistemarne una. Di fatto la
+   regola nuova **restituisce** a `#screen-asta` il comportamento generico di `.screen.active`
+   (`height:100vh` + `overflow-y:auto`), che era annullato da `overflow:hidden`.
+
+2. **Il blocco sta in `tema-serata.css` e non in `style.css`, che sarebbe il foglio del layout.**
+   Le regole da battere stanno in quel file e sono `!important` (lo scroll di `#asta-main-col`, il
+   `min-height` delle tab, `align-self:stretch` + `max-height:100%` sul drawer di Anteprima), e
+   `style.css` viene caricato PRIMA: scrivere li' avrebbe voluto dire inventare selettori piu'
+   lunghi per vincere una cascata che parte gia' perdente, e spargere una modifica sola su due
+   file. In questo progetto due meta' della stessa cosa in due file finiscono sempre per divergere
+   — e' successo con le due soglie del rosso a 5s e 4s e con la regola duplicata che vinceva per
+   specificita'.
+
+3. **Non si tocca nessun `overflow`, solo `flex` e `min-height`.** Le scatole annidate erano
+   `flex:1;min-height:0` per spartirsi un'altezza fissa; passandole a `flex:0 0 auto` prendono
+   l'altezza del contenuto, e a quel punto un `overflow-y:auto` non fa comparire nessuna barra e un
+   `overflow:hidden` non ritaglia niente (a `.tabs-panel` serve ancora, per i suoi angoli
+   arrotondati). Vale anche per `.rose-container`, che conserva intatto il suo `overflow-x:auto`:
+   la striscia di 12 colonne resta orizzontale, com'e' giusto.
+
+**Anteprima e' l'unica esclusa, e non per capriccio.** Non e' una tab: e' una colonna SORELLA di
+`.asta-main-col` con `align-self:stretch`. Con la colonna principale alta quanto le Rose si
+stirerebbe uguale, e il campo 3D finirebbe minuscolo in cima a un pannello lunghissimo. Resta alta
+un viewport con lo scorrimento suo, e diventa `position:sticky;top:0` per restare a portata mentre
+scorri il resto.
+
+**Griglia P/A invece NON si puo' escludere in modo pulito**, ed e' bene sia scritto: appena
+`.tabs-panel` passa ad altezza automatica, il suo contenuto eredita quell'altezza anche mantenendo
+`flex:1`. Tenerle uno scorrimento interno avrebbe richiesto un'altezza fissa in pixel — cioe'
+esattamente l'errore gia' documentato tre volte qui dentro ("la soglia misurava la cosa
+sbagliata"). Cio' che definisce quella vista, l'`overflow-x:auto` della mappa di calore dentro al
+suo piano, non e' toccato: cambia solo che cresce verso il basso invece di scorrere dentro. Effetto
+collaterale accettato: le intestazioni di colonna della mappa sono `position:sticky;top:0` rispetto
+al loro contenitore, che ora non scorre piu' in verticale, quindi non seguono piu' lo scorrimento
+della pagina. Le etichette di riga (`left:0`), che servono sull'asse che conta li', funzionano
+come prima.
+
+**Effetto collaterale sulle Rose, dichiarato:** la barra di scorrimento orizzontale della striscia
+di colonne si trova ora in fondo a un pannello molto alto, quindi per raggiungerla col mouse
+bisogna scorrere fino in fondo. Rotella orizzontale e trackpad continuano a funzionare da
+qualunque punto. Si e' scartato di far andare a capo le colonne (`flex-wrap`) nell'app: cambierebbe
+parecchio la vista e va contro la "Visione compatta", che esiste per vedere piu' squadre in meno
+spazio. Nella vista a parte, dove lo spazio c'e', il wrap si fa (vedi sotto).
+
+**La testata non e' stata toccata**: era gia' `position:relative` (`tema-serata.css`), quindi se ne
+va con lo scorrimento da sola. Se un giorno tornasse `sticky` andrebbe ricordato che ha
+`z-index:1000` mentre la striscia di puja sta a 800: coprirebbe la striscia, non il contrario.
+
+**Verificato** in browser con stato d'asta sintetico: 8 combinazioni vista x tema a 1280px e le due
+viste a 900 / 1100 / 1280 / 1440 / 1920px — la pagina scorre in tutte, **zero sbordo orizzontale**
+in tutte. A 375px le regole non si applicano affatto (sono in `@media (min-width:769px)`) e i valori
+calcolati restano quelli di prima (`flex:1 1 0%` su `.tab-content` e `.rose-container`). Con la
+pagina scorsa di 352px la striscia di puja compare col giocatore, l'offerta, l'offerente e il tasto;
+il drawer di Anteprima resta incollato a `top:0` con `max-height` pari al viewport invece di
+stirarsi a 1250px.
+
+## La vista a parte: uno specchio del DOM, non una seconda app
+
+Richiesta dell'utente: poter aprire le Rose (e, per estensione, Storico e Svincolati) in una scheda
+del browser tutta loro, a tutto schermo. Nuovo modulo `frontend/js/vista-esterna.js`, additivo come
+`clessidra.js`, `comportamenti-asta.js` e `puja-sticky.js`.
+
+La scelta di fondo e' fra due strade molto diverse:
+
+- **una pagina vera** (`/rose.html?asta=ID`), bookmarcabile e ricaricabile, ma che apre un **secondo
+  socket per persona** (22 partecipanti = 44 connessioni una sera d'asta) e ha bisogno di un suo
+  login e di un suo `join-asta`;
+- **uno specchio**: `window.open('', nome)` su una scheda `about:blank` scritta da qui, che
+  rispecchia l'`innerHTML` del nodo vero.
+
+Scelto lo specchio, su indicazione dell'utente. Puo' funzionare per un motivo preciso che vale la
+pena scrivere: `renderRose`, `renderStorico` e `renderGiocatoriLiberi` girano ad **ogni**
+aggiornamento di stato, non solo quando la loro tab e' aperta (`app.js`, nel blocco che ridisegna
+tutto dopo `stato-asta`). Il nodo sorgente e' quindi sempre fresco anche mentre guardi un'altra
+tab: allo specchio basta copiarlo. Zero socket, zero REST, zero login in piu'.
+
+Tre decisioni dentro questa:
+
+1. **I click tornano indietro per POSIZIONE nell'albero.** Lo specchio e' una copia esatta
+   dell'`innerHTML`, quindi il percorso di indici fra i soli figli-elemento porta allo stesso
+   elemento nel documento madre, dove si fa `.click()` sull'elemento VERO. Nessuna conoscenza del
+   markup: funziona per le intestazioni pieghevoli delle Rose, per le righe degli Svincolati e per
+   qualunque cosa venga aggiunta domani. E' lo stesso principio della striscia di puja, che per
+   rilanciare fa `.click()` sul vero `#btn-rilancio` invece di emettere l'evento: un percorso solo,
+   con tutti i controlli dell'app in mezzo.
+2. **Il click si ferma SEMPRE nello specchio, anche quando il gemello non si trova.** Trovato
+   provando: l'HTML copiato si porta dietro anche gli `onclick` inline che l'app scrive nel markup
+   (`_toggleRoseSec(...)`, `chiamaLibero('p2')`), funzioni che in quella scheda non esistono — ogni
+   click finiva con un `ReferenceError` non gestito. Il listener sta in fase di **cattura** sul
+   documento, quindi `stopPropagation()` impedisce all'evento di arrivare all'elemento e al suo
+   handler inline di partire. Stessa tecnica con cui `comportamenti-asta.js` sopprime il click
+   dell'app sotto la leva. E' anche la regola del modulo scritta per intero: **lo specchio non
+   esegue mai niente per conto suo.**
+3. **La scheda si ricostruisce da sola se viene ricaricata.** Un F5 sullo specchio riporta il
+   documento a un `about:blank` vuoto, e senza rimedio resterebbe bianco. Il giro lento da un
+   secondo — che serve comunque ad accorgersi di una scheda chiusa — controlla se il contenitore
+   c'e' ancora e, se non c'e', rifa' la pagina. Era l'unico vero difetto della strada "specchio", e
+   costa cinque righe.
+
+Altri punti che vale la pena ricordare:
+
+- **`d.title` va scritto DOPO aver svuotato `<head>`, non prima.** `document.title` crea un
+  `<title>` dentro `<head>`: svuotare la testa dopo se lo porta via. Scritto nell'ordine sbagliato
+  la scheda restava intitolata `about:blank` — trovato solo perche' la verifica guardava il titolo.
+- Nello specchio si copiano `data-tema` sull'`<html>` e la `className` del `<body>`: senza, le
+  regole dei quattro temi (scritte su `html[data-tema=...]` e spesso su `body.layout-*`) non
+  aggancerebbero niente e la scheda uscirebbe col tema di default. Un `MutationObserver` su
+  `data-tema` la tiene allineata quando il tema cambia a caldo dal menu 🎨.
+- Si copiano anche i `<link>` di Google Fonts, non solo i due CSS: due temi su quattro cambiano i
+  caratteri, e senza quelli la scheda uscirebbe in Archivo mentre l'app e' in gesso o a pixel.
+- **Solo qui le colonne delle Rose vanno a capo** (`flex-wrap`): e' l'unico punto in cui la vista a
+  parte si comporta diversamente dall'originale, ed e' il motivo per cui la si voleva — a tutto
+  schermo 12 squadre stanno in tre file invece che dietro una barra orizzontale.
+- Lo stile della scheda vive **dentro il modulo**, non in `tema-serata.css` dove sta quello della
+  striscia di puja: la scheda e' un DOCUMENTO diverso, con un foglio che questo file deve comunque
+  scrivere da zero. Tenere le due meta' della stessa finestra in due posti e' il modo sicuro di
+  farle divergere. I colori sono tutti token (`--bg-elevated`, `--border-light`, ...), quindi la
+  scheda segue i quattro temi senza una regola per tema, come gia' fa il selettore 🎨.
+- Se il browser blocca la finestra, il modulo lo dice con un `alert` invece di non fare niente:
+  `toast()` vive in `app.js` e questo modulo non presuppone di averlo.
+
+**Verificato** in browser con stato sintetico. Il `window.open` non e' provabile dentro al browser
+integrato usato per la verifica (blocca i pop-up sempre — e quel ramo, l'avviso all'utente, e'
+stato visto scattare davvero). Il resto e' stato provato sul codice REALE del modulo, non su una
+copia, sostituendo temporaneamente `window.open` con il `contentWindow` di un `<iframe>`: e' un
+`Window` con un `Document` veri, quindi `costruisci`, `aggiorna` e `delega` girano per intero.
+Risultati: Rose 12 colonne e 216 giocatori identici all'originale, Storico 25 righe, Svincolati 60,
+titoli e fogli di stile giusti in tutte e tre; aggiornamento in diretta (cambiati i crediti di una
+squadra, lo specchio li mostra); click su un'intestazione dello specchio che piega la sezione VERA
+e si riflette indietro; click sul nome dentro una riga di Svincolati che arriva a
+`chiamaLibero('p2')`, esattamente l'id che quella riga porta nell'originale; cambio di tema a caldo
+che passa allo specchio e torna indietro; documento svuotato a mano e ricostruito dal giro lento
+entro un secondo; e, dopo la correzione, **zero errori** in console sia nello specchio sia nella
+scheda madre.
+
+**Non verificato**: l'apertura vera di una scheda del browser (bloccata dallo strumento di
+verifica), e il comportamento con un'asta reale e piu' dispositivi — il limite di sempre.

@@ -51,6 +51,9 @@ frontend/css/tema-serata.css← selettore multi-tema: composizione e materie dei
                             caricato DOPO style.css
 frontend/js/clessidra.js   ← la clessidra del cronometro (SVG); legge il tempo, non lo calcola
 frontend/js/comportamenti-asta.js ← comportamenti aggiuntivi della puja (leva, "ancora in gioco")
+frontend/js/puja-sticky.js ← la striscia fissa in alto quando la carta di puja scorre via
+frontend/js/vista-esterna.js← apre Rose/Storico/Svincolati in una scheda a parte (specchio dal vivo
+                             del nodo vero, nessun socket in piu')
 frontend/data/*.json       ← dati statici (calendario placeholder, index foto giocatori, override nomi)
 frontend/img/players/<Squadra>/<Nome>.jpg  ← foto giocatori locali, organizzate per squadra reale
                            (`player_name_overrides.json` serve per le eccezioni mirate:
