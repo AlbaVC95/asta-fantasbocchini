@@ -54,6 +54,8 @@ frontend/js/comportamenti-asta.js ← comportamenti aggiuntivi della puja (leva,
 frontend/js/puja-sticky.js ← la striscia fissa in alto quando la carta di puja scorre via
 frontend/js/vista-esterna.js← apre Rose/Storico/Svincolati in una scheda a parte (specchio dal vivo
                              del nodo vero, nessun socket in piu')
+frontend/js/videochiamata.js← incastona la videochiamata dell'asta (Jitsi via iframe; il fornitore
+                             sta tutto in `creaConferenza`, la stanza si ricava dall'astaId)
 frontend/data/*.json       ← dati statici (calendario placeholder, index foto giocatori, override nomi)
 frontend/img/players/<Squadra>/<Nome>.jpg  ← foto giocatori locali, organizzate per squadra reale
                            (`player_name_overrides.json` serve per le eccezioni mirate:

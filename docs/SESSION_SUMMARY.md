@@ -9,9 +9,9 @@ non accumulato. La cronologia sta in `git log`, il *perché* delle scelte in
 Branch `main`, allineato con `origin/main`. Deploy automatico su Hostinger al push su `main`,
 quindi **tutto quanto è qui sotto è in produzione**.
 
-Lo scorrimento della pagina d'asta e la vista a parte (`frontend/js/vista-esterna.js`, nuovo
-modulo) sono del 2026-09-01, in due commit: il primo giro e poi il tetto sul pannello delle tab,
-che ha restituito anche lo scorrimento interno. Vedi la prima sezione qui sotto.
+Il lavoro del 2026-09-01 è in tre commit: lo scorrimento della pagina d'asta con la vista a parte
+(`vista-esterna.js`), poi il tetto sul pannello delle tab che ha restituito anche lo scorrimento
+interno, poi la videochiamata (`videochiamata.js`). Vedi le prime due sezioni qui sotto.
 
 **Quattro temi attivi** (`serata` default, `cuoio`, `lavagna`, `sala-giochi`), tutti con lo stesso
 pattern (ruoli `--sc-*` in `tema-serata.css` + token base in `style.css`, entrambi con un blocco
@@ -58,6 +58,51 @@ Due dei quattro temi cambiano anche i **caratteri** (`sala-giochi`: Press Start 
 Per portare online, tornare indietro o aggiungere un tema:
 **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)** — riscritto il 2026-08-26 per i quattro temi, con i due
 cache-busting da non dimenticare prima di un push.
+
+## Cambi recenti — la videochiamata dentro l'asta (2026-09-01)
+
+Richiesta dell'utente: come su FantaLab, vedersi e sentirsi senza uscire dall'asta. Nuovo modulo
+`frontend/js/videochiamata.js`, additivo come `puja-sticky.js` e `vista-esterna.js`.
+
+**Non si costruisce niente di video.** A 12-22 persone il peer-to-peer puro non regge (21 salite a
+testa, si rompe verso i 5-6 partecipanti) e un server di media su Hostinger non è un'opzione. Si
+incastona un servizio di terzi in un `<iframe>`, e **tutto quello che sa quale servizio sia sta in
+una funzione** (`creaConferenza`). Oggi è Jitsi perché non chiede account né chiave; la stessa API
+ha una versione a pagamento, quindi passare a qualcosa con garanzie è cambiare un dominio.
+
+Un bottone "🎥 Chiamata" in testata; **non si entra da soli**. La stanza si ricava dall'`astaId`,
+quindi tutti quelli della stessa asta cadono nella stessa senza passarsi link; sotto la faccia si
+legge il nome della squadra. Franja in basso con **quattro misure** (pastiglia / piccola / media /
+grande), che si ricordano per dispositivo insieme allo stato della camera — la camera parte spenta
+solo la prima volta.
+
+**La franja riserva il suo posto invece di galleggiare**: altrimenti coprirebbe la barra orizzontale
+delle Rose, che a fondo pagina sta a 5px dal bordo. La riserva è in due punti, `padding-bottom` su
+`#screen-asta` e la stessa altezza sottratta al tetto di `.tabs-panel`, tramite la variabile
+`--h-chiamata` che scrive il modulo. Finché nessuno entra in chiamata vale `0px` e non cambia un
+pixel.
+
+**Su telefono non può stare in basso**: lì `.rilancio-box` è `position:fixed;bottom:0`, cioè
+RILANCIA vive in quel posto. Si appoggia sopra di lui misurandolo a runtime, e da "media" in su va a
+schermo intero, con la striscia di puja che resta sopra (z-index 800 contro 760) così si vedono
+comunque prezzo, tempo e tasto.
+
+**Negli ultimi secondi le facce si attenuano** come il resto della scena, agganciandosi alla classe
+`body.puja-urgente` che già esiste. L'audio non si tocca: è quando si urla.
+
+**Una correzione a un'obiezione mia, sbagliata**: avevo detto che la schermata d'asta "va giusta di
+rendimento". Misurata: 4,5 ms di mediana per redisegnare tutto a ogni rilancio su un bilancio di
+16,7, 61 fotogrammi al secondo, zero canvas attivi. Va larga. Resta vero che è **critica nel tempo**
+— il cronometro è del server e ogni rilancio lo azzera — ma è un'altra cosa, ed è il motivo del
+punto sopra sugli ultimi secondi, non un motivo per non fare la chiamata.
+
+**Verificato** con un fornitore finto che registra come viene chiamato, così gira il codice vero:
+stanza e nome corretti, microfono acceso e camera spenta al primo ingresso; le quattro misure
+riservano il posto (tetto del pannello 624/500/264/698 su 800), zero sbordo orizzontale, barra delle
+Rose mai coperta; uscendo il layout torna identico a prima; rientrando misura e camera sono quelle
+di prima; i quattro temi vestono la franja senza una regola per tema; su 375px non copre mai
+RILANCIA. Lo script vero di `meet.jit.si` si carica in 102ms.
+**Non verificato — ed è la parte che conta**: una chiamata vera. Vedi le pendenze.
 
 ## Cambi recenti — la pagina scorre, e le Rose si staccano (2026-09-01)
 
@@ -491,6 +536,12 @@ con utenti veri loggati (in locale non ci sono le variabili Supabase).
   2026-08-26. Strategie ed Editor Fasce usavano già `.card`, quindi un piano ce l'avevano; la
   Griglia P/A no, ed è stata vestita — piano, righe della classifica, tab, toggle e sub-tab (vedi
   sotto). Adesso tutte e tre parlano la lingua dei quattro temi.
+- **La videochiamata non è mai stata provata davvero.** Qui non c'è camera né microfono, e non ha
+  senso far entrare un partecipante finto in una stanza pubblica. Da provare voi, **non la sera
+  dell'asta**: qualità con 12+ persone, tenuta di una sessione lunga sull'istanza pubblica gratuita
+  di Jitsi (che non dà nessuna garanzia — è il motivo per cui il fornitore sta in una funzione sola)
+  e il permesso del microfono su iPhone, dove il link va aperto in Safari e non nel browser interno
+  di WhatsApp.
 - **L'apertura vera di una scheda del browser non è mai stata provata** (`window.open` in
   `vista-esterna.js`): il browser integrato usato per la verifica blocca i pop-up sempre, quindi
   di quel ramo si è visto solo l'avviso all'utente. Tutto il resto del modulo è stato provato sul

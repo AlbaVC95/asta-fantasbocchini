@@ -1748,3 +1748,89 @@ scheda madre.
 
 **Non verificato**: l'apertura vera di una scheda del browser (bloccata dallo strumento di
 verifica), e il comportamento con un'asta reale e piu' dispositivi — il limite di sempre.
+
+## Videochiamata: si incastona, non si costruisce — e il fornitore sta in una funzione
+
+Richiesta dell'utente ("come su FantaLab"). La domanda vera non era se si potesse, ma **cosa si
+costruisce e cosa no**.
+
+Non si costruisce niente di video. Con 12-22 persone il peer-to-peer puro non regge: ognuno
+manderebbe il proprio flusso a tutti gli altri, cioe' 21 salite a testa e oltre 400 flussi in
+totale, e si rompe intorno ai 5-6 partecipanti. La tentazione era forte perche' la segnalazione
+sembra gia' pronta — Socket.io c'e' — ed e' proprio per questo che vale la pena scriverlo: **il
+pezzo che manca non e' la segnalazione, e' il server di media.** Ospitarne uno su Hostinger non e'
+un'opzione (serve UDP, TURN, CPU e banda vera, con l'incidente di banda di agosto ancora fresco).
+
+Quindi: un servizio di terzi incastonato in un `<iframe>`, e tutta la conoscenza di QUALE servizio
+concentrata in una funzione sola (`creaConferenza` in `frontend/js/videochiamata.js`). Oggi e'
+Jitsi perche' non chiede account ne' chiave e si prova la sera stessa; la stessa API ha una
+versione ospitata a pagamento, quindi passare a un servizio con garanzie e' cambiare un dominio,
+non riscrivere. Con un fornitore diverso si riscrive quella funzione e basta.
+
+**Una correzione a un'obiezione che avevo posto io e che era sbagliata.** Avevo scritto che la
+schermata d'asta "va giusta di rendimento" e che quindi la chiamata andava tenuta leggera. Misurato:
+redisegnare TUTTO ad ogni rilancio (12 squadre da 25, 500 svincolati, 40 di storico) costa **4.5ms
+di mediana e 9.7 nel caso peggiore**, su un bilancio di 16.7ms per fotogramma; con Anteprima aperta
+5.9ms; 61 fotogrammi al secondo, 17MB di heap, zero canvas attivi. Va larga. E un `<iframe>` di un
+altro dominio gira in un **processo separato**, quindi non puo' nemmeno bloccare il thread della
+pagina. L'obiezione non stava in piedi e non va riusata.
+
+Resta invece vera una proprieta' diversa, che non c'entra col rendimento: **questa schermata e'
+critica nel tempo**. Il cronometro e' del server, ogni rilancio lo azzera, e negli ultimi secondi si
+martella il tasto (il motivo per cui l'antiflood e' passato da 5 a 10 rilanci/s). Un intoppo da
+300ms altrove e' una seccatura, qui costa un giocatore. Da li' due conseguenze concrete:
+
+1. **La chiamata si spegne con un clic**, senza ricaricare, e uscendo rimette il layout esattamente
+   com'era (verificato: tetto del pannello da 624 a 728, cioe' il valore di prima).
+2. **Negli ultimi secondi le facce si attenuano come tutto il resto.** `comportamenti-asta.js`
+   stringe gia' la scena e sfoca i crediti dei rivali sotto i 5 secondi; una striscia di video a
+   tutto colore mentre il resto si spegne combatterebbe contro quella regola. Basta agganciarsi alla
+   classe `body.puja-urgente` che esiste gia'. **L'audio non si tocca**: e' esattamente il momento
+   in cui si urla.
+
+Quattro scelte di forma, tutte con un perche':
+
+- **La franja RISERVA il suo posto, non galleggia.** Se galleggiasse coprirebbe la barra orizzontale
+  delle Rose, che a fondo pagina sta a 5px dal bordo inferiore — cioe' proprio la cosa sistemata
+  quando la pagina ha cominciato a scorrere. Si riserva in due punti, non uno: `padding-bottom` su
+  `#screen-asta` (perche' il fondo del documento si fermi sopra la franja) e la stessa altezza
+  sottratta al tetto di `.tabs-panel` (perche' pannello e franja ci stiano insieme). Il modulo scrive
+  `--h-chiamata` su `<html>` e il CSS fa il resto; finche' nessuno entra vale `0px` e non cambia un
+  pixel. Verificato in tutte e quattro le misure: la barra delle Rose non finisce mai sotto la franja.
+- **Su telefono la franja in basso non si puo' fare**: li' `.rilancio-box` e' `position:fixed;
+  bottom:0`, cioe' RILANCIA vive esattamente in quel posto. La chiamata si appoggia SOPRA di lui
+  misurandone l'altezza a runtime invece di indovinarla (cambia col layout), e da "media" in su passa
+  a schermo intero — su un telefono guardare l'asta e una griglia di facce insieme non funziona
+  comunque. La striscia di puja resta sopra (z-index 800 contro 760), quindi anche a schermo intero
+  si vedono prezzo, tempo e il tasto per rilanciare.
+- **Non si entra da soli**: ci si entra da un bottone. Nessuno vuole ritrovarsi in diretta per il
+  solo fatto di aver aperto la pagina. Per lo stesso motivo lo script del fornitore si scarica solo
+  al primo ingresso, non ad ogni caricamento — gia' successo con la `fetch('/api/theme')` che ogni
+  visitatore faceva per un editor che non apriva nessuno.
+- **La stanza si ricava dall'`astaId`** (`fantasbocchini-<id>`), come la chiave per-asta
+  dell'Anteprima: tutti quelli della stessa asta cadono nella stessa stanza senza passarsi un link e
+  senza che nessuno debba "crearla". Il nome sotto la faccia e' quello della squadra, non "Ospite".
+- **Misura e stato della camera si ricordano per dispositivo** (`localStorage`), non sul server:
+  stesso criterio gia' scelto per lo zoom del campo e l'animazione di assegnazione — una preferenza
+  visiva e personale non tocca lo stato d'asta condiviso. La camera parte spenta solo la PRIMA volta;
+  chi la accende la ritrova accesa.
+
+**Verificato** in browser con stato d'asta sintetico, sostituendo il fornitore con un finto che
+registra come viene chiamato — cosi' gira il codice vero del modulo: dominio, stanza
+(`fantasbocchini-asta-di-prova`, dall'`astaId`), nome mostrato (la squadra), microfono acceso e
+camera spenta al primo ingresso. Le quattro misure riservano il posto correttamente (tetto del
+pannello 624/500/264/698 su un viewport di 800, cioe' `800 - 72 - altezza`), **zero sbordo
+orizzontale** e la barra delle Rose mai coperta in nessuna delle quattro. In pastiglia il palco si
+nasconde ma la conferenza NON viene smontata (ripiegarla non deve disconnettere). Uscendo,
+`dispose()` chiamato una volta, `--h-chiamata` a 0 e layout identico a prima. Rientrando, misura e
+camera tornano come le avevi lasciate. `body.puja-urgente` porta le facce a opacita' .26 con
+sfocatura, come il resto della scena, e torna a 1 dopo. La franja segue i quattro temi senza una
+regola per tema (fondo scuro in serata/lavagna, pergamena in cuoio, bianco in sala-giochi). Su
+375px non copre mai `.rilancio-box` (franja 528..632, tasto 635..807) e non riserva spazio.
+Lo script vero di `meet.jit.si` e' raggiungibile e si carica in 102ms.
+
+**Non verificato, ed e' la parte che conta**: una chiamata VERA. Qui non c'e' camera ne' microfono,
+e non ha senso far entrare un partecipante finto in una stanza pubblica. Vanno provate da voi la
+qualita' con 12+ persone, la tenuta di una sessione lunga sull'istanza pubblica gratuita (che non
+da' nessuna garanzia: e' il motivo per cui il fornitore sta in una funzione sola) e il permesso
+del microfono su iPhone, dove va aperto in Safari e non nel browser interno di WhatsApp.

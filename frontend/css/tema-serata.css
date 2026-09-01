@@ -3845,6 +3845,17 @@ html[data-tema="sala-giochi"] body .puja-sticky .ps-offerente{
      quella che lo shorthand `overflow:hidden` gia' faceva. */
   html body #screen-asta.active{
     height:100vh !important;overflow-y:auto !important;overflow-x:hidden !important;
+    /* La franja della videochiamata (js/videochiamata.js) sta in fondo ed e'
+       `position:fixed`. A differenza della striscia di puja, che copre di
+       proposito la testata per sostituirla, questa NON deve coprire niente:
+       finirebbe proprio sopra la barra orizzontale delle Rose, che a fondo
+       pagina sta a 5px dal bordo inferiore. Quindi si riserva il posto in due
+       punti — questo padding, perche' il fondo del documento si fermi sopra la
+       franja, e il tetto del pannello qui sotto, perche' pannello e franja ci
+       stiano insieme nello schermo. `--h-chiamata` la scrive il modulo: vale
+       0px finche' nessuno entra in chiamata, quindi senza chiamata non cambia
+       un pixel. */
+    padding-bottom:var(--h-chiamata, 0px) !important;
   }
 
   /* Le scatole annidate erano `flex:1;min-height:0` per spartirsi
@@ -3885,7 +3896,7 @@ html[data-tema="sala-giochi"] body .puja-sticky .ps-offerente{
      quello che serve — bastava ridare al pannello un'altezza definita. */
   html body .tabs-panel{
     flex:0 0 auto !important;min-height:0 !important;
-    max-height:calc(100vh - 72px) !important;
+    max-height:calc(100vh - 72px - var(--h-chiamata, 0px)) !important;
   }
 
   /* Le tre varianti servono davvero: `html body.layout-partecipante
