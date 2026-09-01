@@ -1561,7 +1561,7 @@ quattro temi: una riga sola ovunque, cifra dell'offerta che non sborda piu' dall
 dell'offerente mai troncato. Fuori dalla fascia rotta (390, 1000, 1920) il risultato e' identico
 pixel per pixel a prima.
 
-## La pagina dell'asta scorre: una sola area, non tre annidate
+## La pagina dell'asta scorre: due aree con un mestiere ciascuna, non tre annidate
 
 Richiesta dell'utente. Sopra i 768px la schermata d'asta era alta esattamente un viewport
 (`#screen-asta.active{height:100vh;overflow:hidden}`) e l'unica cosa che scorreva era il contenuto
@@ -1574,7 +1574,35 @@ Non e' un meccanismo nuovo. Sotto i 768px la pagina scorre da sempre, e in vista
 scorreva gia' `#asta-main-col` (regola introdotta perche' con la sala stretta le tab venivano
 spinte fuori dalla finestra e diventavano **irraggiungibili**). C'erano quindi gia' tre aree di
 scorrimento possibili — colonna, riga delle tab, contenuto della tab — che si passavano il
-problema. Ora ce n'e' **una**: `#screen-asta`.
+problema. Ora ce ne sono **due**, e ciascuna ha un mestiere: la pagina (`#screen-asta`) toglie di
+mezzo il chrome — testata, riepilogo squadre, carta di puja — e il pannello delle tab scorre la
+lista lunga. La terza, la colonna in mezzo, non serviva a nessuno dei due mestieri.
+
+**Il primo giro ne aveva lasciata una sola, ed era troppo poco.** Senza tetto sul pannello, con 12
+rose la pagina diventava alta 2000px e ne uscivano tre difetti misurati: la barra orizzontale delle
+Rose finiva in fondo a un pannello altissimo, quindi irraggiungibile col cursore senza scorrere
+tutto; le intestazioni di colonna della Griglia P/A smettevano di seguire, perche' sono `sticky`
+rispetto al loro contenitore e quel contenitore non scorreva piu'; e per tornare alla barra delle
+tab bisognava risalire tutta la pagina. L'utente ha chiesto di riavere anche lo scorrimento interno.
+Un `max-height` sul pannello li risolve tutti e tre e **non toglie niente** al primo giro: la corsa
+della pagina resta 425-977px a seconda di vista, tema e larghezza, cioe' piu' che sufficiente a far
+comparire la striscia.
+
+**Il tetto e' `calc(100vh - 72px)`, e quei 72 non sono a occhio.** Vanno sottratti perche' la
+striscia di puja e' `position:fixed` e **non riserva spazio**: mette `ha-puja-sticky` sul `<body>`,
+ma nessuna regola CSS usa quella classe. Senza la sottrazione, arrivati in fondo alla pagina, il
+pannello toccherebbe il bordo superiore e la barra delle tab finirebbe proprio sotto la striscia.
+Misurata la striscia nei quattro temi: 61px in serata/cuoio/lavagna, 64 in sala-giochi (caratteri a
+pixel), piu' 8 di margine. Verificato dopo: a fondo pagina la striscia sta a 0..61 e la barra delle
+tab a 69..135, con 8px liberi. Se un giorno la striscia cambiasse altezza, e' l'unico numero da
+rivedere.
+
+Il pannello resta `flex:0 0 auto` **sotto** il tetto, cosi' uno Storico da tre righe si stringe sul
+contenuto invece di lasciare mezzo schermo vuoto. E non si ridichiara niente su
+`.tab-content`/`.rose-container`: le regole base di `style.css`
+(`flex:1;min-height:0;overflow-y:auto`) erano gia' esattamente quello che serve — bastava ridare al
+pannello un'altezza definita perche' tornassero a funzionare. Il secondo giro e' quindi **piu'
+piccolo** del primo: una dichiarazione aggiunta e tre anulazioni tolte.
 
 Tre scelte non ovvie:
 
@@ -1593,12 +1621,14 @@ Tre scelte non ovvie:
    — e' successo con le due soglie del rosso a 5s e 4s e con la regola duplicata che vinceva per
    specificita'.
 
-3. **Non si tocca nessun `overflow`, solo `flex` e `min-height`.** Le scatole annidate erano
-   `flex:1;min-height:0` per spartirsi un'altezza fissa; passandole a `flex:0 0 auto` prendono
-   l'altezza del contenuto, e a quel punto un `overflow-y:auto` non fa comparire nessuna barra e un
-   `overflow:hidden` non ritaglia niente (a `.tabs-panel` serve ancora, per i suoi angoli
-   arrotondati). Vale anche per `.rose-container`, che conserva intatto il suo `overflow-x:auto`:
-   la striscia di 12 colonne resta orizzontale, com'e' giusto.
+3. **Non si tocca nessun `overflow`, solo `flex`, `min-height` e un `max-height`.** Le scatole
+   erano `flex:1;min-height:0` per spartirsi un'altezza fissa. `.asta-live-layout` e
+   `.asta-row-tabs` passano a `flex:0 0 auto` e prendono l'altezza del contenuto; `.tabs-panel`
+   pure, ma con il tetto sopra, che gli ridà un'altezza definita — ed e' quell'altezza definita a
+   far tornare a funzionare da sole le regole base del contenuto, senza riscriverne nessuna.
+   `.rose-container` conserva intatto il suo `overflow-x:auto`: la striscia di 12 colonne resta
+   orizzontale, com'e' giusto, e ora la sua barra e' di nuovo a portata di cursore perche' il
+   pannello non e' piu' alto come la pagina.
 
 **Anteprima e' l'unica esclusa, e non per capriccio.** Non e' una tab: e' una colonna SORELLA di
 `.asta-main-col` con `align-self:stretch`. Con la colonna principale alta quanto le Rose si
@@ -1606,35 +1636,36 @@ stirerebbe uguale, e il campo 3D finirebbe minuscolo in cima a un pannello lungh
 un viewport con lo scorrimento suo, e diventa `position:sticky;top:0` per restare a portata mentre
 scorri il resto.
 
-**Griglia P/A invece NON si puo' escludere in modo pulito**, ed e' bene sia scritto: appena
-`.tabs-panel` passa ad altezza automatica, il suo contenuto eredita quell'altezza anche mantenendo
-`flex:1`. Tenerle uno scorrimento interno avrebbe richiesto un'altezza fissa in pixel — cioe'
-esattamente l'errore gia' documentato tre volte qui dentro ("la soglia misurava la cosa
-sbagliata"). Cio' che definisce quella vista, l'`overflow-x:auto` della mappa di calore dentro al
-suo piano, non e' toccato: cambia solo che cresce verso il basso invece di scorrere dentro. Effetto
-collaterale accettato: le intestazioni di colonna della mappa sono `position:sticky;top:0` rispetto
-al loro contenitore, che ora non scorre piu' in verticale, quindi non seguono piu' lo scorrimento
-della pagina. Le etichette di riga (`left:0`), che servono sull'asse che conta li', funzionano
-come prima.
+**Griglia P/A: nel primo giro non si poteva escludere, col tetto non serve piu' escluderla.**
+Senza tetto, appena `.tabs-panel` passava ad altezza automatica il contenuto ereditava quell'altezza
+anche mantenendo `flex:1`, e tenerle uno scorrimento interno avrebbe richiesto un'altezza fissa in
+pixel — cioe' esattamente l'errore gia' documentato tre volte qui dentro ("la soglia misurava la
+cosa sbagliata"). Col tetto sul pannello l'altezza definita c'e' di nuovo, quindi la Griglia torna a
+scorrere dentro di se' come le altre, e con lei tornano a funzionare le intestazioni di colonna
+della mappa di calore, che sono `position:sticky;top:0` rispetto al loro contenitore e nel primo
+giro avevano smesso di seguire. `100vh` non e' un'altezza fissa inventata: e' lo schermo.
 
-**Effetto collaterale sulle Rose, dichiarato:** la barra di scorrimento orizzontale della striscia
-di colonne si trova ora in fondo a un pannello molto alto, quindi per raggiungerla col mouse
-bisogna scorrere fino in fondo. Rotella orizzontale e trackpad continuano a funzionare da
-qualunque punto. Si e' scartato di far andare a capo le colonne (`flex-wrap`) nell'app: cambierebbe
+**Sulle Rose non si e' fatto andare a capo le colonne** (`flex-wrap`) nell'app: cambierebbe
 parecchio la vista e va contro la "Visione compatta", che esiste per vedere piu' squadre in meno
-spazio. Nella vista a parte, dove lo spazio c'e', il wrap si fa (vedi sotto).
+spazio. Nella vista a parte, dove lo spazio c'e', il wrap si fa (vedi sotto). Col tetto sul pannello
+la barra orizzontale torna comunque a stare a schermo — misurato: a fondo pagina il bordo inferiore
+del contenitore delle Rose e' a 795px su un viewport di 800.
 
 **La testata non e' stata toccata**: era gia' `position:relative` (`tema-serata.css`), quindi se ne
 va con lo scorrimento da sola. Se un giorno tornasse `sticky` andrebbe ricordato che ha
 `z-index:1000` mentre la striscia di puja sta a 800: coprirebbe la striscia, non il contrario.
 
-**Verificato** in browser con stato d'asta sintetico: 8 combinazioni vista x tema a 1280px e le due
-viste a 900 / 1100 / 1280 / 1440 / 1920px — la pagina scorre in tutte, **zero sbordo orizzontale**
-in tutte. A 375px le regole non si applicano affatto (sono in `@media (min-width:769px)`) e i valori
-calcolati restano quelli di prima (`flex:1 1 0%` su `.tab-content` e `.rose-container`). Con la
-pagina scorsa di 352px la striscia di puja compare col giocatore, l'offerta, l'offerente e il tasto;
-il drawer di Anteprima resta incollato a `top:0` con `max-height` pari al viewport invece di
-stirarsi a 1250px.
+**Verificato** in browser con stato d'asta sintetico, con rose da 30 giocatori apposta per far
+traboccare il pannello: 8 combinazioni vista x tema a 1280px piu' 900 / 1100 / 1920px — in tutte
+scorrono **tutte e due** le aree (corsa di pagina fra 425 e 977px, scorrimento interno presente) e
+in tutte il pannello sta dentro lo schermo con **zero sbordo orizzontale**. Provate anche separate:
+scorrendo il pannello la lista si muove di 200px e la pagina resta a 0; scorrendo la pagina la
+testata esce a -451, la striscia si accende e lo scorrimento interno resta dov'era. A fondo pagina
+la striscia sta a 0..61 e la barra delle tab a 69..135 — 8px liberi, non coperta. Storico e
+Svincolati scorrono al loro interno (Svincolati nel proprio `<ul>`, che e' li' il vero scroller:
+2529px di contenuto in 565). A 375px le regole non si applicano affatto (sono in
+`@media (min-width:769px)`): `max-height` calcolato `none` e `flex:1 1 0%` come prima. Il drawer di
+Anteprima resta incollato a `top:0` con `max-height` pari al viewport invece di stirarsi a 1250px.
 
 ## La vista a parte: uno specchio del DOM, non una seconda app
 

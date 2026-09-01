@@ -3798,8 +3798,19 @@ html[data-tema="sala-giochi"] body .puja-sticky .ps-offerente{
    Non e' un meccanismo nuovo: sotto i 768px la pagina scorre gia' da
    sempre (@media(max-width:768px) in style.css) e in vista Partecipante
    scorreva gia' #asta-main-col (vedi "LO SCROLL" e il blocco delle tab
-   piu' su). Questo porta lo stesso comportamento a tutto il desktop e,
-   soprattutto, riduce le aree che scorrono da tre annidate a UNA.
+   piu' su). Questo porta lo stesso comportamento a tutto il desktop e
+   riduce le aree che scorrono da TRE annidate a DUE, ciascuna con un
+   mestiere chiaro: la pagina toglie di mezzo il chrome (testata, riepilogo
+   squadre, carta di puja), il pannello delle tab scorre la lista lunga.
+   La terza — #asta-main-col, la colonna in mezzo — non serviva a nessuno
+   dei due mestieri e sparisce.
+
+   Le DUE aree sono volute: un primo giro ne aveva lasciata una sola, col
+   pannello alto quanto il contenuto, e l'utente ha chiesto di riavere anche
+   quello interno. Aveva ragione: con 12 rose la pagina diventava alta
+   2000px, la barra orizzontale delle Rose finiva irraggiungibile in fondo e
+   le intestazioni di colonna della Griglia P/A smettevano di seguire. Il
+   tetto sul pannello (vedi sotto) risolve tutti e tre.
 
    Perche' in questo foglio e non in style.css, che e' quello del layout:
    le regole da battere stanno QUI e sono !important (lo scroll di
@@ -3815,12 +3826,12 @@ html[data-tema="sala-giochi"] body .puja-sticky .ps-offerente{
    (e' gia' `position:relative`, riga ~1238) e con lei la barra delle tab:
    scelta esplicita dell'utente.
 
-   Fuori da questo blocco, deliberatamente: ANTEPRIMA. Non e' una tab, e'
-   una colonna SORELLA di .asta-main-col con `align-self:stretch`: con la
-   colonna principale alta quanto le Rose si stirerebbe uguale e il campo
-   3D finirebbe minuscolo in cima a un pannello lunghissimo. Resta alta un
-   viewport, con lo scorrimento suo, e diventa `sticky` per restare a
-   portata mentre scorri il resto.
+   ANTEPRIMA ha una regola sua, e non e' un capriccio: non e' una tab, e'
+   una colonna SORELLA di .asta-main-col con `align-self:stretch`, quindi
+   si stirerebbe quanto la colonna principale. Resta alta un viewport, con
+   lo scorrimento suo, e diventa `sticky` per restare a portata mentre
+   scorri il resto — cioe' la stessa forma che il tetto da' al pannello
+   delle tab, ottenuta in un altro modo perche' vive in un'altra colonna.
    ════════════════════════════════════════════════════════════════════ */
 @media (min-width:769px){
 
@@ -3843,8 +3854,39 @@ html[data-tema="sala-giochi"] body .puja-sticky .ps-offerente{
      `overflow:hidden` non ritaglia niente (a .tabs-panel serve ancora,
      per tenere il contenuto dentro i suoi angoli arrotondati). */
   html body .asta-live-layout{flex:0 0 auto !important;min-height:0 !important}
-  html body .tabs-panel{flex:0 0 auto !important;min-height:0 !important}
-  html body .tab-content.active{flex:0 0 auto !important;min-height:0 !important}
+
+  /* IL PANNELLO DELLE TAB HA UN TETTO, E DENTRO SI SCORRE (2026-09-01, secondo giro)
+     Richiesta dell'utente: servono TUTTI E DUE gli scorrimenti, non uno solo.
+     Il primo giro aveva tolto anche quello interno, e il pannello cresceva
+     quanto il contenuto: con 12 rose la pagina diventava alta 2000px, la
+     barra orizzontale delle Rose finiva irraggiungibile in fondo e le
+     intestazioni di colonna della Griglia P/A smettevano di seguire (sono
+     `sticky` rispetto al loro contenitore, che non scorreva piu').
+
+     Col tetto tornano tutti e due, ciascuno per il suo mestiere:
+     - la PAGINA scorre quel tanto che basta a togliere di mezzo testata,
+       riepilogo squadre e carta di puja — cioe' a far comparire la striscia;
+     - il PANNELLO scorre al suo interno per la lista lunga, come faceva
+       prima, e resta sempre alto quanto lo schermo.
+
+     Il tetto e' `100vh` meno l'altezza della striscia di puja: la striscia e'
+     `position:fixed` e NON riserva spazio (mette `ha-puja-sticky` sul body, ma
+     nessuna regola la usa), quindi senza quella sottrazione, arrivati in fondo
+     alla pagina, la barra delle tab finirebbe proprio sotto la striscia.
+     72px non e' un numero a occhio: misurata in tutti e quattro i temi sta fra
+     61 e 64px (64 in sala-giochi, che ha i caratteri a pixel), piu' 8 di
+     margine. Se un giorno la striscia cambiasse altezza, e' l'unico numero da
+     rivedere qui dentro.
+
+     Il `flex:0 0 auto` resta: sotto il tetto il pannello si stringe sul
+     contenuto, cosi' uno Storico da tre righe non lascia mezzo schermo vuoto.
+     Sotto NON si ridichiara `.tab-content`/`.rose-container`: le regole base di
+     style.css (`flex:1;min-height:0;overflow-y:auto`) sono gia' esattamente
+     quello che serve — bastava ridare al pannello un'altezza definita. */
+  html body .tabs-panel{
+    flex:0 0 auto !important;min-height:0 !important;
+    max-height:calc(100vh - 72px) !important;
+  }
 
   /* Le tre varianti servono davvero: `html body.layout-partecipante
      .asta-row-tabs` esiste piu' su con `flex:1 1 auto` e un min-height da
@@ -3857,18 +3899,12 @@ html[data-tema="sala-giochi"] body .puja-sticky .ps-offerente{
   html body.layout-partecipante .asta-row-tabs,
   html body.layout-admin .asta-row-tabs{flex:0 0 auto !important;min-height:0 !important}
 
-  /* Rose: la striscia di colonne resta ORIZZONTALE (`overflow-x:auto`
-     invariato: e' il modo in cui si guardano 12 squadre). In verticale non
-     c'e' piu' niente da scorrere, perche' il contenitore prende l'altezza
-     della colonna piu' alta. */
-  html body .tab-content.active.tab-rose-content{flex:0 0 auto !important;min-height:0 !important}
-  html body .rose-container{flex:0 0 auto !important;min-height:0 !important}
-
   /* La colonna smette di essere un'area di scorrimento sua. Il bug che
      quella regola risolveva (le tab spinte fuori dalla finestra e
      irraggiungibili, vedi "LO SCROLL") ora lo risolve lo scroll della
-     pagina — meglio, e senza annidare due scrollbar una dentro l'altra,
-     che e' proprio cio' che quel commento diceva di evitare. */
+     pagina. Restano due aree e non tre, ed e' voluto: una per il chrome
+     sopra (la pagina) e una per la lista (il pannello). La colonna in mezzo
+     non serviva a nessuna delle due. */
   html body.layout-partecipante #asta-main-col{
     overflow-y:visible !important;overflow-x:visible !important;
   }

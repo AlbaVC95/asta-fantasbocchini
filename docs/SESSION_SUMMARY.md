@@ -9,8 +9,9 @@ non accumulato. La cronologia sta in `git log`, il *perché* delle scelte in
 Branch `main`, allineato con `origin/main`. Deploy automatico su Hostinger al push su `main`,
 quindi **tutto quanto è qui sotto è in produzione**.
 
-**Non ancora committato**: lo scorrimento della pagina d'asta su desktop e la vista a parte
-(`frontend/js/vista-esterna.js`, nuovo modulo). Vedi la prima sezione qui sotto.
+Lo scorrimento della pagina d'asta e la vista a parte (`frontend/js/vista-esterna.js`, nuovo
+modulo) sono del 2026-09-01, in due commit: il primo giro e poi il tetto sul pannello delle tab,
+che ha restituito anche lo scorrimento interno. Vedi la prima sezione qui sotto.
 
 **Quattro temi attivi** (`serata` default, `cuoio`, `lavagna`, `sala-giochi`), tutti con lo stesso
 pattern (ruoli `--sc-*` in `tema-serata.css` + token base in `style.css`, entrambi con un blocco
@@ -44,13 +45,15 @@ Due dei quattro temi cambiano anche i **caratteri** (`sala-giochi`: Press Start 
 4. **Non vale più il vecchio promemoria "se un colore non torna, controlla `theme_overrides`"**:
    l'Editor Visuale di Stile che scriveva quella riga è stato eliminato (vedi sotto). La riga
    `default` resta nel database, vuota, ma nessuno la legge più.
-5. **Sopra i 769px la pagina d'asta scorre per intero, e l'area che scorre è UNA sola**
-   (`#screen-asta`, non `html`/`body`, non `#asta-main-col`, non la tab). Prima di aggiungere un
-   `overflow` o un `flex:1` in quella zona, leggere il blocco in fondo a `tema-serata.css`: le tre
-   scatole annidate sono a `flex:0 0 auto` apposta, ed è ciò che tiene le barre di scorrimento a
-   una sola. L'unico elemento ancorato in alto è la striscia di puja (`position:fixed`); se un
-   giorno la testata tornasse `sticky`, ha `z-index:1000` contro gli 800 della striscia e la
-   coprirebbe.
+5. **Sopra i 769px la pagina d'asta scorre, e le aree che scorrono sono DUE, ciascuna col suo
+   mestiere**: la pagina (`#screen-asta`, non `html`/`body`) toglie di mezzo testata, riepilogo
+   squadre e carta di puja; il pannello delle tab scorre la lista lunga, con un tetto di
+   `calc(100vh - 72px)`. I 72px sono l'altezza misurata della striscia di puja (61-64 secondo il
+   tema) più 8 di margine: la striscia è `position:fixed` e **non riserva spazio**, quindi senza
+   quella sottrazione a fondo pagina la barra delle tab finirebbe sotto di lei. È l'unico numero
+   da rivedere se la striscia cambiasse altezza. Prima di aggiungere un `overflow` o un `flex:1`
+   in quella zona, leggere il blocco in fondo a `tema-serata.css`. E se un giorno la testata
+   tornasse `sticky`: ha `z-index:1000` contro gli 800 della striscia, la coprirebbe.
 
 Per portare online, tornare indietro o aggiungere un tema:
 **[docs/DEPLOY_TEMA.md](DEPLOY_TEMA.md)** — riscritto il 2026-08-26 per i quattro temi, con i due
@@ -58,31 +61,37 @@ cache-busting da non dimenticare prima di un push.
 
 ## Cambi recenti — la pagina scorre, e le Rose si staccano (2026-09-01)
 
-Due richieste dell'utente in un giro solo.
+Due richieste dell'utente, la prima corretta subito dopo con una terza.
 
-**1. La pagina d'asta scorre per intero (da 769px in su).** Prima la schermata era alta esattamente
-un viewport e scorreva solo il contenuto della tab aperta: la carta di puja restava sempre a
-schermo, quindi la striscia di puja — costruita apposta per quando la scena scorre via — non aveva
-quasi mai occasione di comparire. Ora scorre la pagina e la striscia fa il suo lavoro. Non è un
-meccanismo nuovo (sotto i 768px c'era già, e in vista Partecipante scorreva già `#asta-main-col`):
-il cambio vero è che le aree che scorrono passano da **tre annidate a una**.
+**1. La pagina d'asta scorre (da 769px in su), e il pannello delle tab scorre al suo interno.**
+Prima la schermata era alta esattamente un viewport e scorreva solo il contenuto della tab aperta:
+la carta di puja restava sempre a schermo, quindi la striscia di puja — costruita apposta per
+quando la scena scorre via — non aveva quasi mai occasione di comparire. Non è un meccanismo nuovo
+(sotto i 768px c'era già, e in vista Partecipante scorreva già `#asta-main-col`): il cambio vero è
+che le aree che scorrono passano da **tre annidate a due, ciascuna col suo mestiere** — la pagina
+toglie di mezzo il chrome, il pannello scorre la lista.
+
+**Fatto in due giri, e vale la pena ricordarlo.** Il primo ne aveva lasciata una sola, col pannello
+alto quanto il contenuto: con 12 rose la pagina diventava alta 2000px, la barra orizzontale delle
+Rose finiva irraggiungibile in fondo e le intestazioni di colonna della Griglia P/A smettevano di
+seguire. L'utente ha chiesto di riavere anche lo scorrimento interno e aveva ragione. Il secondo
+giro è **più piccolo** del primo: un `max-height:calc(100vh - 72px)` sul pannello e via tre
+anulazioni, perché le regole base di `style.css` (`flex:1;min-height:0;overflow-y:auto`) erano già
+esattamente quello che serve — mancava solo un'altezza definita sul pannello.
+
+I 72px sono misurati, non a occhio: la striscia sta fra 61 e 64px secondo il tema, più 8 di
+margine. Servono perché la striscia è `position:fixed` e non riserva spazio; a fondo pagina la
+barra delle tab resta 8px sotto di lei invece che coperta.
 
 Il blocco sta in fondo a `tema-serata.css`, non in `style.css` che sarebbe il foglio del layout: le
-regole da battere stanno lì e sono `!important`, e quel foglio è caricato dopo. Si toccano solo
-`flex` e `min-height`, mai un `overflow`: ad altezza automatica un `overflow:auto` non fa comparire
-barre e un `overflow:hidden` non ritaglia niente. `.rose-container` conserva intatto il suo
-`overflow-x:auto`, quindi la striscia di 12 colonne resta orizzontale.
+regole da battere stanno lì e sono `!important`, e quel foglio è caricato dopo.
 
-**Anteprima è esclusa apposta**: è una colonna sorella con `align-self:stretch`, si sarebbe stirata
+**Anteprima ha una regola sua**: è una colonna sorella con `align-self:stretch`, si sarebbe stirata
 quanto le Rose col campo 3D minuscolo in cima. Resta alta un viewport, con lo scorrimento suo, e
-`sticky` per restare a portata. **Griglia P/A invece non si poteva escludere in modo pulito** —
-sarebbe servita un'altezza fissa in pixel, cioè l'errore già documentato tre volte in DECISIONS —
-e ora cresce verso il basso; il suo `overflow-x` interno, che è ciò che la definisce, è intatto.
-
-**Due effetti collaterali dichiarati**: nelle Rose la barra orizzontale è in fondo a un pannello
-alto (rotella e trackpad funzionano da ovunque, il cursore deve scendere), e nella mappa di calore
-della Griglia le intestazioni di colonna non seguono più lo scorrimento (le etichette di riga, che
-sono quelle che contano lì, sì).
+`sticky` per restare a portata — la stessa forma che il tetto dà al pannello, ottenuta in un altro
+modo perché vive in un'altra colonna. **Griglia P/A**, che nel primo giro non si poteva escludere,
+col tetto non ha più bisogno di essere esclusa: torna a scorrere dentro di sé come le altre, e con
+lei tornano a funzionare le intestazioni di colonna della mappa di calore.
 
 **2. Rose, Storico e Svincolati si aprono in una scheda a parte.** Nuovo modulo
 `frontend/js/vista-esterna.js`, additivo come `puja-sticky.js`: un bottone "⧉ Apri a parte" in
@@ -103,9 +112,12 @@ specchio finiva con un `ReferenceError` non gestito, perché l'HTML copiato si p
 fermando l'evento in fase di cattura; e una scheda ricaricata con F5 restava bianca — ora il giro
 lento se ne accorge e la ricostruisce.
 
-**Verificato** in browser con stato sintetico: 8 combinazioni vista × tema a 1280px e le due viste
-a 900 / 1100 / 1280 / 1440 / 1920px, pagina che scorre e **zero sbordo orizzontale** ovunque; a
-375px le regole non si applicano e i valori calcolati sono identici a prima. Per la vista a parte,
+**Verificato** in browser con stato sintetico, con rose da 30 giocatori apposta per far traboccare
+il pannello: 8 combinazioni vista × tema a 1280px più 900 / 1100 / 1920px, in tutte scorrono
+**tutte e due** le aree e **zero sbordo orizzontale**; provate anche separate (scorrendo il
+pannello la pagina non si muove e viceversa); a fondo pagina la barra delle tab resta scoperta di
+8px; a 375px le regole non si applicano e i valori calcolati sono identici a prima. Per la vista a
+parte,
 il codice reale del modulo è stato eseguito contro un `Window`/`Document` veri (un `<iframe>` al
 posto di `window.open`, che il browser di verifica blocca sempre): contenuto identico
 all'originale nelle tre viste, aggiornamento in diretta, click delegati che agiscono sull'elemento
