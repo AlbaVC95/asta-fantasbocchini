@@ -29,10 +29,17 @@ resa raggiungibile ogni immagine, compresi i giocatori senza squadra assegnata.
 - **`data/player_name_overrides.json`**: corretto `pellegrinom|parma`, puntava a
   `Fiorentina/Pellegrino_M..jpg` che nel nuovo export non esiste più (ora `Pellegrino.jpg`).
   Gli altri 3 override sono ancora validi.
+- **`data/player_name_overrides.json`**: aggiunto `forsono|monza` -> `_unmatched/Forson.jpg`.
+  Il listino scrive "Forson O." e il file è `Forson.jpg`: la ricerca globale è solo esatta e la
+  regola dell'abbreviazione vuole un file a due parti (`Nome_Cognome`), quindi serve l'override.
 - `index.html`: alzato il `?v=` di `app.js`.
 
 ## Verifiche fatte
 
+- **Copertura sul listino VERO** (531 righe di `listino_giocatori` su Supabase, passate una per
+  una dalla logica di ricerca reale estratta da `app.js`): **da 442/531 (83.2%) a 529/531
+  (99.6%)**. Nessun giocatore viene risolto su una cartella di squadra diversa dalla sua se non
+  tramite un override esplicito, quindi niente maglie sbagliate.
 - Tutte e 744 le immagini risultano raggiungibili dalla logica di ricerca (test su ogni nome
   file: 577/577 dalla propria squadra, 167/167 da `_unmatched`).
 - Nessuna regressione sui casi già funzionanti: match esatto, abbreviazione "Cognome Iniz.",
@@ -43,6 +50,9 @@ resa raggiungibile ogni immagine, compresi i giocatori senza squadra assegnata.
 
 ## Pendenze
 
+- **Due giocatori del listino restano senza foto perché l'immagine non esiste in nessuna
+  cartella dell'export**: `Omar Fayed` (Frosinone) e `Grabara` (Juventus). Non è un problema di
+  matching — vanno generate dallo script esterno. Finché mancano mostrano `unknown_anime.jpg`.
 - Nel nuovo export c'è un doppione in Bologna: `El_Azzouzi_O.jpg` e `El_Azzouzi_O..jpg` sono due
   immagini diverse dello stesso giocatore. Innocuo (una delle due resta semplicemente inusata),
   ma se si vuole pulire va rimosso dallo script che genera le immagini.
