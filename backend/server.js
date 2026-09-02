@@ -2143,6 +2143,112 @@ async function puliziaBackupFantasma() {
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   VIDEOCHIAMATA (JaaS) — configurazione e firma del token
+
+   Additivo: due rotte nuove, niente toccato di quello che c'era. Non
+   sfiora backup, autenticazione dell'asta ne' timer.
+
+   Perche' serve il backend per una cosa che vive nel browser: JaaS non
+   apre le sue stanze a chiunque, vuole un JWT firmato con una chiave
+   privata RSA. Quella chiave e' l'unico segreto vero di tutto questo, e
+   sta SOLO in una variabile d'ambiente. Il precedente e' scritto in
+   DECISIONS.md: THEME_EDITOR_SECRET era una stringa in chiaro nel
+   backend, quindi pubblica su GitHub, ed era l'unica protezione di una
+   rotta che riscriveva il CSS di tutti. Non si ripete.
+
+   Si firma con il `crypto` che Node ha gia' in casa, senza aggiungere
+   nessuna dipendenza: RS256 e' una firma RSA-SHA256 su
+   base64url(header).base64url(payload), e Buffer sa fare il base64.
+
+   La rotta del token RICHIEDE IL LOGIN, e non e' burocrazia: il piano
+   gratuito di JaaS conta 25 dispositivi al mese, quindi un endpoint
+   aperto sarebbe una quota che chiunque puo' bruciare. Chi e' in
+   un'asta e' gia' loggato con Supabase.
+   ══════════════════════════════════════════════════════════════════ */
+
+function chiavePrivataJaas() {
+  let k = process.env.JAAS_PRIVATE_KEY || '';
+  if (!k) return null;
+  // Le variabili d'ambiente non conservano gli a capo. Si accettano due
+  // forme, cosi' non c'e' un modo "sbagliato" di incollarla: la chiave
+  // con i \n scritti a mano, oppure tutta in base64 (piu' comoda).
+  if (k.indexOf('BEGIN') === -1) {
+    try { k = Buffer.from(k, 'base64').toString('utf8'); } catch (e) { return null; }
+  }
+  k = k.replace(/\\n/g, '\n');
+  return k.indexOf('BEGIN') === -1 ? null : k;
+}
+
+function jaasConfigurato() {
+  return !!(process.env.JAAS_APP_ID && process.env.JAAS_KID && chiavePrivataJaas());
+}
+
+function base64urlJaas(dato) {
+  return Buffer.from(dato).toString('base64')
+    .replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+function firmaTokenJaas(dati) {
+  const appId = process.env.JAAS_APP_ID;
+  const ora = Math.floor(Date.now() / 1000);
+  const testa = { alg: 'RS256', kid: process.env.JAAS_KID, typ: 'JWT' };
+  const corpo = {
+    aud: 'jitsi',
+    iss: 'chat',
+    sub: appId,
+    room: dati.stanza,
+    // 12 ore: un'asta ne dura 8-9, e il token si chiede al momento di
+    // entrare, quindi copre la serata da qualunque punto ci si unisca.
+    nbf: ora - 10,
+    exp: ora + 12 * 60 * 60,
+    context: {
+      user: {
+        id: dati.userId || '',
+        name: dati.nome || 'Ospite',
+        email: dati.email || '',
+        moderator: 'false'
+      },
+      features: {
+        livestreaming: 'false',
+        recording: 'false',
+        transcription: 'false',
+        'outbound-call': 'false'
+      }
+    }
+  };
+  const a = base64urlJaas(JSON.stringify(testa));
+  const b = base64urlJaas(JSON.stringify(corpo));
+  const firma = crypto.createSign('RSA-SHA256').update(a + '.' + b).end().sign(chiavePrivataJaas());
+  return a + '.' + b + '.' + base64urlJaas(firma);
+}
+
+// Pubblica e senza dati sensibili: l'AppID non e' un segreto (viaggia
+// nell'URL dello script e nel nome della stanza). Serve al client per
+// sapere se il bottone della chiamata deve esistere: finche' le variabili
+// d'ambiente non ci sono, risponde `attiva:false` e il bottone non compare.
+app.get('/api/chiamata/config', (req, res) => {
+  if (!jaasConfigurato()) return res.json({ attiva: false });
+  res.json({ attiva: true, dominio: '8x8.vc', appId: process.env.JAAS_APP_ID });
+});
+
+app.get('/api/chiamata/token', async (req, res) => {
+  if (!jaasConfigurato()) return res.status(503).json({ error: 'Videochiamata non configurata' });
+  const utente = await getUtenteDaToken(req);
+  if (!utente) return res.status(401).json({ error: 'Serve il login' });
+  // Solo lettere e cifre: il nome della stanza finisce dentro al claim
+  // `room` del JWT e nell'URL della conferenza.
+  const stanza = String(req.query.stanza || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 80);
+  if (!stanza) return res.status(400).json({ error: 'Stanza mancante' });
+  const nome = String(req.query.nome || '').slice(0, 60);
+  try {
+    res.json({ jwt: firmaTokenJaas({ stanza, nome, userId: utente.userId, email: utente.email }) });
+  } catch (e) {
+    console.error('[chiamata] firma del token fallita:', e.message);
+    res.status(500).json({ error: 'Firma del token fallita' });
+  }
+});
+
 // Load backups at startup
 loadBackups().catch(e => console.error('[loadBackups] fatale (non-fatale per il server, l\'asta parte comunque vuota):', e.message));
 loadBackupSupabaseAttivo().catch(e => console.error('[loadBackupSupabaseAttivo] fatale (non-fatale, resta il default true):', e.message));

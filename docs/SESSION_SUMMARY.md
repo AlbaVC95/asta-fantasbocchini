@@ -67,8 +67,8 @@ Richiesta dell'utente: come su FantaLab, vedersi e sentirsi senza uscire dall'as
 **Non si costruisce niente di video.** A 12-22 persone il peer-to-peer puro non regge (21 salite a
 testa, si rompe verso i 5-6 partecipanti) e un server di media su Hostinger non è un'opzione. Si
 incastona un servizio di terzi in un `<iframe>`, e **tutto quello che sa quale servizio sia sta in
-una funzione** (`creaConferenza`). Oggi è Jitsi perché non chiede account né chiave; la stessa API
-ha una versione a pagamento, quindi passare a qualcosa con garanzie è cambiare un dominio.
+una funzione** (`creaConferenza`). Che quell'isolamento servisse davvero si è visto subito: il
+fornitore è cambiato nel giro di poche ore (vedi più sotto).
 
 Un bottone "🎥 Chiamata" in testata; **non si entra da soli**. La stanza si ricava dall'`astaId`,
 quindi tutti quelli della stessa asta cadono nella stessa senza passarsi link; sotto la faccia si
@@ -96,13 +96,37 @@ rendimento". Misurata: 4,5 ms di mediana per redisegnare tutto a ogni rilancio s
 — il cronometro è del server e ogni rilancio lo azzera — ma è un'altra cosa, ed è il motivo del
 punto sopra sugli ultimi secondi, non un motivo per non fare la chiamata.
 
-**Verificato** con un fornitore finto che registra come viene chiamato, così gira il codice vero:
-stanza e nome corretti, microfono acceso e camera spenta al primo ingresso; le quattro misure
-riservano il posto (tetto del pannello 624/500/264/698 su 800), zero sbordo orizzontale, barra delle
-Rose mai coperta; uscendo il layout torna identico a prima; rientrando misura e camera sono quelle
-di prima; i quattro temi vestono la franja senza una regola per tema; su 375px non copre mai
-RILANCIA. Lo script vero di `meet.jit.si` si carica in 102ms.
-**Non verificato — ed è la parte che conta**: una chiamata vera. Vedi le pendenze.
+**Il fornitore è cambiato subito dopo il primo deploy, e il motivo va ricordato**: `meet.jit.si`
+incrustato **taglia la chiamata dopo 5 minuti** — è un uso "da demo" e lo dice con un avviso sopra
+il video. Visto dal vero. Si è passati a **JaaS** (lo stesso Jitsi, ospitato da loro), che è la
+stessa identica API: cambia il dominio, la stanza va preceduta dall'AppID e serve un token firmato
+dal backend. Il piano gratuito di JaaS conta **25 dispositivi al mese, minuti illimitati** — e
+siccome conta dispositivi e non minuti, il fatto che molte persone giochino in entrambe le leghe
+gioca a favore: chi ripete entra dallo stesso portatile e conta una volta sola. Le alternative a
+minuti (Daily 10.000, LiveKit 5.000, Whereby 2.000) non coprono due aste nello stesso mese.
+Auto-ospitarlo è escluso: l'hosting è *Unlimited Web Hosting*, cioè condiviso — niente root, niente
+UDP, e un'asta muove ~280 GB. Dettagli e numeri in [DECISIONS.md](../DECISIONS.md).
+
+Due rotte nuove nel backend, additive (non sfiorano backup, auth d'asta né timer):
+`GET /api/chiamata/config` e `GET /api/chiamata/token`. La chiave privata sta **solo** in una
+variabile d'ambiente; si firma con il `crypto` di Node, senza nuove dipendenze; e la rotta del
+token **richiede il login**, perché una quota da 25 dispositivi la brucia chiunque trovi
+l'indirizzo.
+
+**Il bottone esiste solo se il server è configurato.** Senza le variabili d'ambiente,
+`/api/chiamata/config` risponde `attiva:false` e il modulo non monta niente. È la lezione della
+serata: era finito online un bottone che dava una chiamata rotta.
+
+**Verificato** senza toccare nessun servizio reale: le funzioni di firma estratte dal `server.js`
+vero producono un JWT che si verifica con la chiave pubblica, con header e payload identici a
+quanto documenta 8x8; le tre forme di incollare la chiave funzionano; senza chiave il bottone non
+compare; con le variabili impostate compare; la rotta del token dà **401 senza login**; e con
+fornitore e token finti il modulo chiama l'API con dominio `8x8.vc`, `roomName` `<AppID>/<stanza>` e
+il jwt, la forma documentata. Più tutto il resto della franja: quattro misure che riservano il posto
+(tetto del pannello 624/500/264/698 su 800), zero sbordo orizzontale, barra delle Rose mai coperta,
+uscita che rimette il layout identico, quattro temi, e su 375px mai sopra RILANCIA.
+**Non verificato — ed è la parte che conta**: una chiamata vera contro JaaS. Servono le credenziali
+dell'utente. Vedi le pendenze.
 
 ## Cambi recenti — la pagina scorre, e le Rose si staccano (2026-09-01)
 
@@ -536,6 +560,10 @@ con utenti veri loggati (in locale non ci sono le variabili Supabase).
   2026-08-26. Strategie ed Editor Fasce usavano già `.card`, quindi un piano ce l'avevano; la
   Griglia P/A no, ed è stata vestita — piano, righe della classifica, tab, toggle e sub-tab (vedi
   sotto). Adesso tutte e tre parlano la lingua dei quattro temi.
+- **Faltan las credenciales de JaaS, y hasta entonces el botón no aparece.** Hay que crear la
+  cuenta, generar el par de claves, subir la pública y poner en Hostinger tres variables de
+  entorno: `JAAS_APP_ID`, `JAAS_KID` y `JAAS_PRIVATE_KEY` (la privada, en base64 o con los saltos
+  de línea escapados). En cuanto estén, el botón sale solo: no hace falta otro deploy.
 - **La videochiamata non è mai stata provata davvero.** Qui non c'è camera né microfono, e non ha
   senso far entrare un partecipante finto in una stanza pubblica. Da provare voi, **non la sera
   dell'asta**: qualità con 12+ persone, tenuta di una sessione lunga sull'istanza pubblica gratuita

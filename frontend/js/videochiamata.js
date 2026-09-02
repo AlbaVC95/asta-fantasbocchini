@@ -57,8 +57,20 @@
   'use strict';
 
   // ── il fornitore, tutto qui dentro ────────────────────────────────
-  var DOMINIO = 'meet.jit.si';
-  var SCRIPT_FORNITORE = 'https://meet.jit.si/external_api.js';
+  //
+  // Era `meet.jit.si`, e non si poteva tenere: incastonare l'istanza
+  // pubblica gratuita e' un uso "da demo" e la chiamata **si taglia dopo
+  // 5 minuti**, con tanto di avviso sopra il video. Verificato dal vero.
+  // Ora si usa JaaS (la versione ospitata dagli stessi che fanno Jitsi),
+  // che e' la stessa identica API: cambia il dominio, l'URL dello script
+  // e il fatto che serve un token firmato dal backend.
+  //
+  // Niente e' scritto qui a mano: dominio e AppID arrivano da
+  // /api/chiamata/config. Se il server non ha le variabili d'ambiente,
+  // risponde `attiva:false` e il bottone non viene nemmeno montato —
+  // cosi' un deploy senza credenziali non lascia in giro un bottone che
+  // non funziona.
+  var CONFIG = null;
 
   var CHIAVE_MISURA = 'ftb_chiamata_misura';
   var CHIAVE_CAMERA = 'ftb_chiamata_camera';
@@ -231,7 +243,8 @@
     return new Promise(function (risolvi, rifiuta) {
       if (window.JitsiMeetExternalAPI) return risolvi();
       var s = document.createElement('script');
-      s.src = SCRIPT_FORNITORE;
+      // In JaaS lo script sta sotto il proprio AppID, non alla radice.
+      s.src = 'https://' + CONFIG.dominio + '/' + CONFIG.appId + '/external_api.js';
       s.onload = function () {
         if (window.JitsiMeetExternalAPI) risolvi();
         else rifiuta(new Error('script caricato ma API assente'));
@@ -241,22 +254,47 @@
     });
   }
 
+  // Solo lettere e cifre, come il backend: il nome finisce dentro al claim
+  // `room` del token firmato, e i due devono coincidere esattamente.
   function nomeStanza() {
     var id = '';
     try { id = S.astaId || ''; } catch (e) {}
-    return 'fantasbocchini-' + (id || 'senza-asta');
+    return ('fantasbocchini' + (id || 'senzaasta')).replace(/[^A-Za-z0-9]/g, '').slice(0, 80);
   }
 
   function mioNome() {
     try { return S.miaSquadra || 'Ospite'; } catch (e) { return 'Ospite'; }
   }
 
+  // Il token lo firma il backend con la chiave privata di JaaS, che non
+  // deve mai passare per il browser. Richiede il login: chi e' in un'asta
+  // ce l'ha gia', e cosi' la quota di dispositivi del piano non e'
+  // bruciabile da chiunque trovi l'indirizzo.
+  function chiediToken() {
+    var intestazioni = {};
+    try {
+      return _headerAuthExports().then(function (h) {
+        intestazioni = h || {};
+        return fetch('/api/chiamata/token?stanza=' + encodeURIComponent(nomeStanza()) +
+                     '&nome=' + encodeURIComponent(mioNome()), { headers: intestazioni });
+      }).then(function (r) {
+        if (!r.ok) throw new Error(r.status === 401 ? 'serve il login' : 'token rifiutato (' + r.status + ')');
+        return r.json();
+      }).then(function (d) { return d.jwt; });
+    } catch (e) {
+      return Promise.reject(new Error('non si riesce a leggere la sessione'));
+    }
+  }
+
   // L'UNICO punto che sa quale servizio c'e' dietro. Cambiare fornitore
   // vuol dire riscrivere questa funzione, niente altro.
-  function creaConferenza(nodo) {
+  function creaConferenza(nodo, jwt) {
     var cameraAccesa = leggi(CHIAVE_CAMERA, '0') === '1';
-    return new window.JitsiMeetExternalAPI(DOMINIO, {
-      roomName: nomeStanza(),
+    return new window.JitsiMeetExternalAPI(CONFIG.dominio, {
+      // In JaaS la stanza va sempre preceduta dall'AppID: e' quello che
+      // tiene separate le stanze di un cliente da quelle di un altro.
+      roomName: CONFIG.appId + '/' + nomeStanza(),
+      jwt: jwt,
       parentNode: nodo,
       userInfo: { displayName: mioNome() },
       configOverwrite: {
@@ -297,9 +335,9 @@
     applicaMisura(parseInt(leggi(CHIAVE_MISURA, '1'), 10) || 1, false);
     if (etichettaConteggio) etichettaConteggio.textContent = 'connessione…';
 
-    caricaScript().then(function () {
+    caricaScript().then(chiediToken).then(function (jwt) {
       palco.innerHTML = '';
-      api = creaConferenza(palco);
+      api = creaConferenza(palco, jwt);
       api.addEventListener('videoConferenceJoined', aggiornaConteggio);
       api.addEventListener('participantJoined', aggiornaConteggio);
       api.addEventListener('participantLeft', aggiornaConteggio);
@@ -313,9 +351,13 @@
       inChiamata = false;
       if (bottoneEntra) { bottoneEntra.classList.remove('dentro'); bottoneEntra.disabled = false; }
       smonta();
-      // niente toast: `toast()` vive in app.js e questo modulo non lo presuppone
-      alert('Non si riesce a caricare la videochiamata (' + err.message + ').\n' +
-            'Se sei dietro a una rete che blocca i servizi di videoconferenza, provala da un\'altra connessione.');
+      // niente toast: `toast()` vive in app.js e questo modulo non lo presuppone.
+      // Il consiglio cambia con la causa: mandare chi ha solo la sessione
+      // scaduta a controllare il firewall e' un giro a vuoto garantito.
+      var consiglio = /login|sessione/i.test(err.message)
+        ? 'Esci e rientra con il tuo account, poi riprova.'
+        : 'Se sei dietro a una rete che blocca i servizi di videoconferenza, provala da un\'altra connessione.';
+      alert('Non si riesce a entrare nella videochiamata (' + err.message + ').\n' + consiglio);
     });
   }
 
@@ -341,10 +383,28 @@
     else if (guscio && mobile) applicaMisura(misura, false); // il tasto RILANCIA cambia altezza
   }
 
+  // Il bottone si monta SOLO se il server dice che la chiamata e'
+  // configurata. Senza le variabili d'ambiente di JaaS non compare
+  // niente: meglio nessun bottone che un bottone che non funziona —
+  // esattamente quello che era finito in produzione con l'istanza
+  // pubblica che tagliava a 5 minuti.
   function avvia() {
     if (montato) return;
+    if (!document.querySelector('.asta-header-right')) return;
+    montato = true;
+    fetch('/api/chiamata/config')
+      .then(function (r) { return r.ok ? r.json() : { attiva: false }; })
+      .then(function (c) {
+        if (!c || !c.attiva || !c.appId || !c.dominio) return;
+        CONFIG = c;
+        monta();
+      })
+      .catch(function () { /* senza config, nessun bottone: silenzio */ });
+  }
+
+  function monta() {
     var ancora = document.querySelector('.asta-header-right');
-    if (!ancora) return;
+    if (!ancora || document.querySelector('.vc-apri')) return;
     iniettaStile();
 
     bottoneEntra = document.createElement('button');
@@ -355,7 +415,6 @@
     bottoneEntra.addEventListener('click', function (ev) { ev.preventDefault(); entra(); });
     ancora.insertBefore(bottoneEntra, ancora.firstChild);
 
-    montato = true;
     sincronizzaMobile();
     window.matchMedia('(max-width:768px)').addEventListener('change', sincronizzaMobile);
     window.addEventListener('resize', function () { if (guscio) applicaMisura(misura, false); });

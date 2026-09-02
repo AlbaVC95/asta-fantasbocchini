@@ -1834,3 +1834,72 @@ e non ha senso far entrare un partecipante finto in una stanza pubblica. Vanno p
 qualita' con 12+ persone, la tenuta di una sessione lunga sull'istanza pubblica gratuita (che non
 da' nessuna garanzia: e' il motivo per cui il fornitore sta in una funzione sola) e il permesso
 del microfono su iPhone, dove va aperto in Safari e non nel browser interno di WhatsApp.
+
+## Videochiamata: perche' JaaS e non l'istanza pubblica, e cosa costa davvero
+
+Il primo giro puntava a `meet.jit.si`, l'istanza pubblica gratuita. **Non funziona, e va scritto
+qui perche' e' un dato misurato, non un'opinione**: incastonarla e' un uso "da demo" e la chiamata
+**si taglia dopo 5 minuti**, con un avviso sopra il video che rimanda a Jitsi as a Service. Visto
+dal vero al primo tentativo in produzione. Chiunque in futuro pensi "proviamo con il Jitsi
+pubblico, magari va" ha qui la risposta: no, e non e' questione di configurazione.
+
+Il resto del panorama, controllato prima di scegliere (numeri di riferimento: 14 persone x 9 ore =
+**7.560 minuti-partecipante per asta**, due leghe che fanno l'asta nello stesso mese):
+
+| | Piano gratuito | Ci stiamo? |
+|---|---|---|
+| JaaS (Jitsi ospitato) | 25 dispositivi/mese, minuti illimitati | **Si'**, perche' conta DISPOSITIVI |
+| Daily.co | 10.000 minuti-partecipante/mese | No con due leghe (15.120) |
+| LiveKit Cloud | 5.000 minuti | No |
+| Whereby | 2.000 minuti | No |
+| Agora | 10.000 minuti "standard" | Dubbio: il video HD consuma piu' di un minuto per minuto |
+
+**JaaS vince per il motivo meno ovvio**: conta dispositivi attivi al mese, non minuti ne' sessioni.
+Con due leghe in cui **molte persone giocano in entrambe**, chi ripete entra dallo stesso portatile
+e **conta una volta sola** — quindi la sovrapposizione, che con un piano a minuti sarebbe
+irrilevante, qui e' esattamente cio' che fa stare le due aste dentro il piano gratuito. Un piano a
+minuti non se ne accorge nemmeno: 15.120 restano 15.120.
+
+**Auto-ospitarlo non e' un'opzione su questo hosting.** Il piano e' *Unlimited Web Hosting*, cioe'
+condiviso: niente root, niente porte UDP (Jitsi manda il video sulla 10000) e nessuna banda
+sostenuta — una sola asta muove circa **280 GB in nove ore**, a ~70 Mbps continui. Non e' una
+limitazione da aggirare, e' il prodotto sbagliato. Su un VPS si potrebbe (Oracle ha un livello
+gratuito permanente con 10 TB di uscita al mese, cioe' 35 volte quel che serve), ma si passa ad
+amministrare un server, e Oracle spegne le istanze inattive dopo sette giorni sotto il 10% di CPU:
+esattamente il profilo di un server usato tre notti all'anno.
+
+Tre scelte di implementazione:
+
+1. **La chiave privata sta SOLO in una variabile d'ambiente** (`JAAS_PRIVATE_KEY`), mai nel
+   repository. Il precedente e' due sezioni piu' su: `THEME_EDITOR_SECRET` era scritta in chiaro
+   nel backend, quindi pubblica su GitHub, ed era l'unica protezione di una rotta che riscriveva il
+   CSS di tutti. La rotta accetta la chiave in tre forme (a capo veri, `\n` scritti a mano, base64)
+   perche' le variabili d'ambiente non conservano gli a capo e non deve esistere un modo
+   "sbagliato" di incollarla.
+2. **Si firma con il `crypto` di Node, senza nuove dipendenze.** RS256 e' una firma RSA-SHA256 su
+   `base64url(header).base64url(payload)`, e `Buffer` sa gia' fare il base64. La lista delle
+   dipendenze di questo progetto e' corta di proposito e non serve allungarla per questo.
+3. **La rotta del token richiede il login, e non e' burocrazia**: il piano gratuito conta 25
+   dispositivi al mese, quindi un endpoint aperto sarebbe una quota che chiunque trovi l'indirizzo
+   puo' bruciare. Chi e' dentro un'asta e' gia' autenticato con Supabase.
+
+E una scelta che vale per il deploy: **il bottone esiste solo se il server e' configurato.**
+`GET /api/chiamata/config` risponde `attiva:false` finche' mancano le variabili d'ambiente, e il
+modulo in quel caso non monta niente. E' la lezione di questa serata: era finito in produzione un
+bottone che dava una chiamata rotta a 5 minuti, perche' il codice presupponeva un fornitore che
+funzionasse. Ora un deploy senza credenziali non lascia in giro niente di rotto, e il giorno che le
+credenziali arrivano il bottone compare da solo senza un altro deploy.
+
+**Verificato** senza toccare un servizio reale: le funzioni di firma ESTRATTE dal `server.js` vero
+(non una copia riscritta) producono un JWT la cui firma si verifica con la chiave pubblica, con
+header e payload identici a quanto documenta 8x8 (`alg RS256`, `kid`, `aud jitsi`, `iss chat`,
+`sub` = AppID, `room`, `nbf`, `exp`, `context.user`, `context.features`); le tre forme di incollare
+la chiave funzionano tutte e senza chiave la rotta dice `attiva:false`. Con le variabili impostate,
+`/api/chiamata/config` risponde `{attiva:true, dominio:"8x8.vc", appId:...}` e il bottone compare;
+senza, non compare e non si inietta nemmeno lo stile. La rotta del token risponde **401 senza
+login**. Con fornitore e token finti, il modulo chiama l'API con dominio `8x8.vc`, `roomName`
+`<AppID>/<stanza>` e il jwt — esattamente la forma documentata. Il nome della stanza e' ridotto a
+lettere e cifre **dalle due parti**, perche' il claim `room` del token e la stanza vera devono
+coincidere.
+
+**Non verificato**: una chiamata vera contro JaaS. Servono le credenziali, che sono dell'utente.
