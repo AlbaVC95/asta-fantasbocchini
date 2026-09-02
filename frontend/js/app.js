@@ -4568,7 +4568,8 @@ window.apriModalAdminConfig = function() {
         '<div class="settings-field"><label>Slot PLUS</label>' +
         '<input type="number" min="0" value="' + (sq.slotsPLUS || 0) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', null, this.value, null)"></div>' +
         '<div class="settings-field"><label>Recompra</label>' +
-        '<input type="number" min="0" value="' + (sq.recompra !== undefined ? sq.recompra : 1) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', null, null, this.value)"></div>' +
+        '<input type="number" min="0" value="' + (sq.recompra !== undefined ? sq.recompra : 1) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', null, null, this.value, null)"></div>' +
+        (S.asta.tipoAsta === 'riparazione' ? ('<div class="settings-field"><label>Svincoli usati</label>' + '<input type="number" min="0" value="' + (sq.svincoliUsati || 0) + '" onblur="confermaAdminSlot(\'' + nomeEsc + '\', null, null, null, this.value)"></div>') : '') +
       '</div>' +
     '</div>';
   }).join('');
@@ -4610,11 +4611,12 @@ window.confermaAdminCrediti = function(squadraNome, crediti) {
   toast('Crediti di ' + squadraNome + ' aggiornati', 'success');
 };
 
-window.confermaAdminSlot = function(squadraNome, slotsRIC, slotsPLUS, recompra) {
+window.confermaAdminSlot = function(squadraNome, slotsRIC, slotsPLUS, recompra, svincoliUsati) {
   const payload = { astaId: S.astaId, squadraNome };
   if (slotsRIC !== null) payload.slotsRIC = parseInt(slotsRIC);
   if (slotsPLUS !== null) payload.slotsPLUS = parseInt(slotsPLUS);
   if (recompra !== null) payload.recompra = parseInt(recompra);
+  if (svincoliUsati !== null && svincoliUsati !== undefined) payload.svincoliUsati = parseInt(svincoliUsati);
   socket.emit('admin-update-slot', payload);
   toast('Slot di ' + squadraNome + ' aggiornati', 'success');
 };

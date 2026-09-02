@@ -1814,7 +1814,7 @@ io.on('connection', (socket) => {
     broadcastStato(astaId);
   });
 
-  socket.on('admin-update-slot', ({ astaId, squadraNome, slotsRIC, slotsPLUS, recompra }) => {
+  socket.on('admin-update-slot', ({ astaId, squadraNome, slotsRIC, slotsPLUS, recompra, svincoliUsati }) => {
     const asta = aste.get(astaId);
     if (!asta || !isAdmin(asta, socket.id)) return;
     const sq = getSquadra(asta, squadraNome);
@@ -1822,6 +1822,7 @@ io.on('connection', (socket) => {
     if (slotsRIC !== undefined) sq.slotsRIC = Math.max(0, parseInt(slotsRIC) || 0);
     if (slotsPLUS !== undefined) sq.slotsPLUS = Math.max(0, parseInt(slotsPLUS) || 0);
     if (recompra !== undefined) sq.recompra = Math.max(0, parseInt(recompra) || 0);
+    if (svincoliUsati !== undefined) sq.svincoliUsati = Math.max(0, parseInt(svincoliUsati) || 0);
     broadcastStato(astaId);
   });
 
