@@ -3103,7 +3103,7 @@ body.layout-admin .asta-row-puja .cc-avatar{width:108px!important;height:140px!i
 
 
 /* FIX: In Admin view, always place the timer above the rilancio box using CSS Grid */
-body.layout-admin .asta-row-puja {
+body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-puja {
     display: grid !important;
     grid-template-columns: 1fr max-content !important;
     grid-template-areas:
@@ -3112,27 +3112,27 @@ body.layout-admin .asta-row-puja {
     gap: 10px !important;
     align-items: center !important;
 }
-body.layout-admin .asta-row-puja .card-timer-group {
+body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-puja .card-timer-group {
     display: contents !important;
 }
-body.layout-admin .asta-row-puja .chiamata-card {
+body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-puja .chiamata-card {
     grid-area: card !important;
     max-width: none !important;
     height: 100% !important;
     margin: 0 !important;
 }
-body.layout-admin .asta-row-puja .timer-ring-container {
+body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-puja .timer-ring-container {
     grid-area: timer !important;
     justify-self: center !important;
     margin-bottom: -5px !important;
 }
-body.layout-admin .asta-row-puja .rilancio-box {
+body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-puja .rilancio-box {
     grid-area: rilancio !important;
     margin: 0 !important;
     max-width: 240px !important;
 }
-body.layout-admin .asta-row-puja .cc-nome,
-body.layout-admin .asta-row-puja .cc-offerente {
+body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-puja .cc-nome,
+body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-puja .cc-offerente {
     white-space: nowrap !important;
     overflow: visible !important;
     text-overflow: clip !important;
