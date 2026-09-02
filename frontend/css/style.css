@@ -3099,3 +3099,16 @@ body.layout-admin .asta-row-puja .cc-avatar{width:108px!important;height:140px!i
 }
 .timer-number{line-height:1}
 .timer-label-text{white-space:normal;word-break:break-word}
+
+/* FIX: Ensure player name and bidder wrap fully when Anteprima drawer is open in Admin view */
+body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-puja .cc-nome,
+body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-puja .cc-offerente {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  overflow-wrap: anywhere !important;
+}
+body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-puja .cc-body {
+  white-space: normal !important;
+  flex-wrap: wrap !important;
+}
