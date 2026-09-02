@@ -1505,7 +1505,7 @@ function handleExcelFile(file) {
 
       const colGiocatore = findCol('Giocatore', 'Nome', 'Calciatore');
       const colSquadra = findCol('Squadra', 'Team', 'Sq.');
-      const colRuolo = findCol('Ruolo', 'R', 'R.');
+      const colRuolo = findCol('R.MANTRA', 'R. Mantra') || findCol('Ruolo', 'R', 'R.');
       const colPgv = findCol('PGv');
       const colMv = findCol('MV');
       const colFm = findCol('FM');
