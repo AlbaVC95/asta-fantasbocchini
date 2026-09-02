@@ -32,6 +32,15 @@ resa raggiungibile ogni immagine, compresi i giocatori senza squadra assegnata.
 - **`data/player_name_overrides.json`**: aggiunto `forsono|monza` -> `_unmatched/Forson.jpg`.
   Il listino scrive "Forson O." e il file è `Forson.jpg`: la ricerca globale è solo esatta e la
   regola dell'abbreviazione vuole un file a due parti (`Nome_Cognome`), quindi serve l'override.
+- **67 immagini ridimensionate** da 896px a 398px di larghezza (quella del resto del set):
+  arrivavano dall'export a ~5x la risoluzione necessaria e pesavano 186 KB di media contro i
+  29 KB delle altre — 12,8 MB dei 33 MB totali. Si vedono al massimo a 152px di altezza
+  (`.ant-card-photo` 110x152, `.cc-avatar` 96x118), quindi 398px resta oversampling di 2,6x.
+  Ridotte con `sips --resampleWidth 398` a qualita' `normal`: la differenza media rispetto
+  all'originale e' 3,06/255 (~1%), contro 2,49/255 della qualita' `high` che pero' pesa il 73%
+  in piu'. Cartella `players/`: **33 MB -> 22 MB**, media 29 KB, uniforme con il resto.
+  Ratio di ogni immagine conservato (nessuna deformazione), e comunque irrilevante perche'
+  entrambi i consumatori usano `cover`.
 - `index.html`: alzato il `?v=` di `app.js`.
 
 ## Verifiche fatte
@@ -42,6 +51,8 @@ resa raggiungibile ogni immagine, compresi i giocatori senza squadra assegnata.
   tramite un override esplicito, quindi niente maglie sbagliate.
 - Tutte e 744 le immagini risultano raggiungibili dalla logica di ricerca (test su ogni nome
   file: 577/577 dalla propria squadra, 167/167 da `_unmatched`).
+- **745/745 immagini decodificate davvero dal browser** (`new Image()`, `naturalWidth > 0` — non
+  solo un 200 dal server), zero corrotte o troncate, prima e dopo il ridimensionamento.
 - Nessuna regressione sui casi già funzionanti: match esatto, abbreviazione "Cognome Iniz.",
   i 4 override manuali, e nome inesistente che resta correttamente senza foto.
 - Provato sul server di sviluppo vero: `%27` e i percorsi `_unmatched` vengono serviti 200, e il
