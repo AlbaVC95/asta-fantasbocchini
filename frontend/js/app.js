@@ -2418,6 +2418,49 @@ function _loadPlayerNameOverrides() {
     .catch(function() { _playerNameOverrides = {}; return {}; });
   return _playerNameOverridesPromise;
 }
+// Costruisce l'URL di una foto codificando SOLO il nome del file. Alcuni file hanno
+// l'apostrofo nel nome (N'Dri, N'Dicka) e la carta 3D di Anteprima inietta l'URL dentro
+// backgroundImage = "url('...')": li' l'apostrofo chiuderebbe la stringa CSS e la foto
+// non comparirebbe affatto. encodeURIComponent da solo NON basta: l'apostrofo e' fra i
+// caratteri che lascia intatti, quindi va codificato a parte in %27.
+function _urlFotoGiocatore(folder, file) {
+  return 'img/players/' + folder + '/' + encodeURIComponent(file).replace(/'/g, '%27');
+}
+// Ultimo scalino prima di arrendersi all'illustrazione generica: cerca il nome in TUTTE
+// le cartelle, non solo in quella della squadra. Serve per due casi reali:
+//  - la cartella '_unmatched', dove finiscono i giocatori a cui lo script che genera le
+//    immagini non ha saputo assegnare una squadra (167 giocatori veri, altrimenti mai
+//    raggiungibili perche' la ricerca normale e' vincolata alla cartella della squadra);
+//  - il giocatore ceduto, la cui foto e' archiviata sotto la squadra precedente (finora
+//    andava risolto a mano in data/player_name_overrides.json).
+// Qui il match e' SOLO esatto sul nome normalizzato: niente fallback 'contiene' come
+// dentro la cartella della squadra. Fuori dal perimetro della squadra un match
+// approssimativo metterebbe la faccia di un ALTRO giocatore, che e' peggio
+// dell'illustrazione generica. E se lo stesso nome esiste in due squadre diverse sono
+// omonimi: si rinuncia invece di tirare a indovinare.
+function _cercaFotoGlobale(idx, nome) {
+  const targetNorm = _normalizePhotoName(nome);
+  if (!idx || !targetNorm) return null;
+  let daSquadra = null; // match dentro una cartella di squadra (ha la precedenza)
+  let daSpaiati = null; // match dentro '_unmatched'
+  for (const folder in idx) {
+    const files = idx[folder];
+    if (!files) continue;
+    for (let i = 0; i < files.length; i++) {
+      const base = files[i].replace(/\.[a-zA-Z]+$/, '');
+      if (_normalizePhotoName(base.replace(/_/g, ' ')) !== targetNorm) continue;
+      if (folder === '_unmatched') {
+        if (!daSpaiati) daSpaiati = _urlFotoGiocatore(folder, files[i]);
+      } else {
+        // stesso nome gia' trovato in un'altra squadra: omonimi, non si puo' scegliere
+        if (daSquadra) return null;
+        daSquadra = _urlFotoGiocatore(folder, files[i]);
+      }
+      break; // al massimo un match per cartella
+    }
+  }
+  return daSquadra || daSpaiati;
+}
 // Cerca una foto locale (caricata manualmente) del giocatore, confrontando il nome
 // con i file disponibili nella cartella della sua squadra. Fonte prioritaria: e' garantita
 // al 100%, senza limiti di quota e senza rischio di maglia sbagliata.
@@ -2431,8 +2474,8 @@ function _tryLocalPhoto(nome, squadra) {
   }).then(function(hit) {
     if (hit) return hit;
     return _loadPlayerPhotoIndex().then(function(idx) {
-    if (!idx || !squadra) return null;
-    const bw = _teamWords(squadra);
+    if (!idx) return null;
+    const bw = squadra ? _teamWords(squadra) : [];
     let folder = null;
     for (let i = 0; i < bw.length; i++) {
       const w = bw[i];
@@ -2442,7 +2485,7 @@ function _tryLocalPhoto(nome, squadra) {
       }
       if (folder) break;
     }
-    if (!folder || !idx[folder]) return null;
+    if (!folder || !idx[folder]) return _cercaFotoGlobale(idx, nome);
     const targetNorm = _normalizePhotoName(nome);
     if (!targetNorm) return null;
     const files = idx[folder];
@@ -2490,8 +2533,8 @@ function _tryLocalPhoto(nome, squadra) {
         if (fnorm.indexOf(targetNorm) > -1 || targetNorm.indexOf(fnorm) > -1) { best = fname; break; }
       }
     }
-    if (!best) return null;
-    return 'img/players/' + folder + '/' + best;
+    if (!best) return _cercaFotoGlobale(idx, nome);
+    return _urlFotoGiocatore(folder, best);
     });
   }).catch(function() { return null; });
 }

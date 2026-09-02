@@ -60,6 +60,12 @@ frontend/data/*.json       ← dati statici (calendario placeholder, index foto 
 frontend/img/players/<Squadra>/<Nome>.jpg  ← foto giocatori locali, organizzate per squadra reale
                            (`player_name_overrides.json` serve per le eccezioni mirate:
                             giocatore archiviato sotto la squadra sbagliata, senza spostare file)
+frontend/img/players/_unmatched/<Nome>.jpg ← giocatori a cui lo script che genera le immagini non
+                           ha saputo assegnare una squadra. NON è una squadra: la ricerca normale
+                           è vincolata alla cartella della squadra, questi si raggiungono solo con
+                           la ricerca globale di `_cercaFotoGlobale` (vedi DECISIONS.md). Il nome
+                           della cartella è quello prodotto dallo script esterno: va lasciato
+                           com'è, così un nuovo export dello script si copia senza rinominare niente.
 ```
 
 ## Variabili d'ambiente
@@ -101,8 +107,8 @@ Senza di esse il server parte comunque ma tutte le funzionalità legate a Supaba
 - Nel frontend (`app.js`), le sezioni principali del file sono individuabili dai commenti `══` che le
   separano.
 - **Fine riga miste — mai l'Edit tool su `frontend/js/app.js`, `frontend/index.html`,
-  `frontend/css/style.css`**: hanno righe LF-only preesistenti (rispettivamente 240, 19 e 234 —
-  ricontate il 2026-08-25; il numero cresce man mano che si aggiungono righe nelle zone LF) e
+  `frontend/css/style.css`**: hanno righe LF-only preesistenti (rispettivamente 243, 19 e 234 —
+  ricontate il 2026-09-02; il numero cresce man mano che si aggiungono righe nelle zone LF) e
   l'Edit tool converte tutto il file a LF, producendo un diff enorme. Usare uno script Node/Python
   che legge il file grezzo e sostituisce stringhe esatte, e ricontare le righe LF-only prima e dopo.
   **Lo stile non e' uniforme in tutto il file**: alcune zone (es. le funzioni 3D dello stadio in

@@ -1903,3 +1903,48 @@ lettere e cifre **dalle due parti**, perche' il claim `room` del token e la stan
 coincidere.
 
 **Non verificato**: una chiamata vera contro JaaS. Servono le credenziali, che sono dell'utente.
+
+
+## Foto giocatori: una ricerca globale come ULTIMO scalino, e solo su match esatto
+
+Le foto locali si cercavano solo dentro la cartella della squadra del giocatore
+(`_tryLocalPhoto`): fuori da li' non si guardava, e se non c'era match si finiva
+sull'illustrazione generica `unknown_anime.jpg`. Lo script esterno che genera le immagini
+pero' produce anche una cartella `_unmatched`, con i giocatori a cui non ha saputo assegnare
+una squadra — 167 giocatori veri (Acerbi, Dumfries, Sommer, Milik, Openda...) che con la
+ricerca vincolata alla squadra sarebbero stati **irraggiungibili per definizione**.
+
+Si e' aggiunto `_cercaFotoGlobale`, che cerca il nome in TUTTE le cartelle, con tre paletti:
+
+- **e' l'ultimo scalino, non il primo**: l'ordine gia' collaudato (override manuale → cartella
+  della squadra: esatto → "Cognome Iniz." → contiene) resta identico e vince sempre. La ricerca
+  globale parte solo dove prima si restituiva `null`, quindi non puo' cambiare in peggio nessun
+  caso che oggi funziona;
+- **solo match esatto sul nome normalizzato**, mai il fallback "contiene" usato dentro la
+  cartella della squadra. Dentro la squadra un match approssimativo e' un rischio accettabile
+  (il giocatore *e'* di quella squadra); fuori, "Seck" pescherebbe "Bisseck" e metterebbe la
+  faccia di un altro giocatore — peggio dell'illustrazione generica, perche' sembra giusta;
+- **omonimi: si rinuncia**. Se lo stesso nome esiste in due cartelle di squadra diverse non c'e'
+  modo di scegliere, e si torna a `unknown` invece di tirare a indovinare. La cartella di squadra
+  ha comunque la precedenza su `_unmatched` (gli 8 nomi presenti in entrambe sono lo stesso
+  giocatore duplicato, non omonimi).
+
+Effetto collaterale utile: sparisce la ragione principale degli override manuali in
+`data/player_name_overrides.json`, cioe' il giocatore ceduto la cui foto e' archiviata sotto la
+squadra precedente — ora lo risolve la ricerca globale da sola. Gli override restano per i casi
+che il match esatto non copre (nomi scritti diversamente nel listino, es. "Pellegrino M." vs
+`Pellegrino.jpg`).
+
+## L'apostrofo nel nome del file rompeva la carta 3D, non l'`<img>`
+
+Il nuovo export delle immagini ha portato i primi due file con l'apostrofo nel nome
+(`Lecce/N'Dri.jpg`, `Roma/N'Dicka.jpg`). In Puja non si vedeva nulla di strano, perche' li'
+l'URL finisce in `img.src`. In Anteprima invece la carta 3D fa
+`el.style.backgroundImage = "url('" + url + "')"`: l'apostrofo del nome file **chiude la stringa
+CSS**, la dichiarazione diventa invalida e il `background-image` computato e' `none` — foto
+assente, senza nessun errore in console.
+
+Il nome del file viene percio' codificato in `_urlFotoGiocatore`. Attenzione: `encodeURIComponent`
+da solo NON basta, perche' l'apostrofo e' fra i caratteri che lascia intatti (come `!`, `(`, `)`,
+`*`); va sostituito a parte con `%27`. Si e' scelto di codificare nel codice invece di rinominare
+i due file, perche' il rinomino andrebbe rifatto ad ogni nuovo export dello script esterno.
