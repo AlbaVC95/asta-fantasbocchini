@@ -2250,8 +2250,26 @@ function firmaTokenJaas(dati) {
 // sapere se il bottone della chiamata deve esistere: finche' le variabili
 // d'ambiente non ci sono, risponde `attiva:false` e il bottone non compare.
 app.get('/api/chiamata/config', (req, res) => {
-  if (!jaasConfigurato()) return res.json({ attiva: false });
-  res.json({ attiva: true, dominio: '8x8.vc', appId: process.env.JAAS_APP_ID });
+  if (jaasConfigurato()) {
+    return res.json({ attiva: true, dominio: '8x8.vc', appId: process.env.JAAS_APP_ID });
+  }
+  // Quando NON e' configurata si dice anche perche'. Serve a distinguere i tre
+  // modi in cui si sbaglia — variabile assente, valore troncato dal pannello,
+  // chiave illeggibile — che dall'esterno sono indistinguibili e costano un
+  // pomeriggio di tentativi. Non esce mai niente della chiave: solo se c'e',
+  // quanto e' LUNGA e se si riesce ad aprirla. La lunghezza di una chiave non
+  // e' un segreto (e' nota dal tipo di chiave), il suo contenuto si'.
+  const grezza = process.env.JAAS_PRIVATE_KEY || '';
+  res.json({
+    attiva: false,
+    diagnostica: {
+      appId: process.env.JAAS_APP_ID ? 'c\'e\'' : 'MANCA',
+      kid: process.env.JAAS_KID ? 'c\'e\'' : 'MANCA',
+      chiave: grezza ? 'c\'e\'' : 'MANCA',
+      lunghezzaChiave: grezza.length,
+      chiaveApribile: chiavePrivataJaas() ? 'si' : 'NO'
+    }
+  });
 });
 
 app.get('/api/chiamata/token', async (req, res) => {
