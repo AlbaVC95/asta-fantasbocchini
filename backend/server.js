@@ -2177,7 +2177,18 @@ function chiavePrivataJaas() {
     try { k = Buffer.from(k, 'base64').toString('utf8'); } catch (e) { return null; }
   }
   k = k.replace(/\\n/g, '\n');
-  return k.indexOf('BEGIN') === -1 ? null : k;
+  if (k.indexOf('BEGIN') === -1) return null;
+  // Non basta che ci sia scritto BEGIN: se il campo delle variabili
+  // d'ambiente ha schiacciato gli a capo — cosa che succede spesso — la
+  // chiave e' sintatticamente presente ma inservibile. Meglio scoprirlo
+  // qui, dove diventa "il bottone non compare", che al momento di entrare
+  // in chiamata, dove diventa un errore incomprensibile.
+  try { crypto.createPrivateKey(k); } catch (e) {
+    console.error('[chiamata] JAAS_PRIVATE_KEY presente ma non valida:', e.message,
+                  '— incollala in base64, cosi\' non dipende dagli a capo.');
+    return null;
+  }
+  return k;
 }
 
 function jaasConfigurato() {
