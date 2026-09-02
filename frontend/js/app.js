@@ -1503,26 +1503,23 @@ function handleExcelFile(file) {
       const headers = Object.keys(rows[0]);
       const findCol = (...names) => headers.find(h => names.some(n => norm(h) === norm(n)));
 
-      const colGiocatore = findCol('Giocatore');
-      const colSquadra = findCol('Squadra');
-      const colRuolo = findCol('Ruolo');
+      const colGiocatore = findCol('Giocatore', 'Nome', 'Calciatore');
+      const colSquadra = findCol('Squadra', 'Team', 'Sq.');
+      const colRuolo = findCol('Ruolo', 'R', 'R.');
       const colPgv = findCol('PGv');
       const colMv = findCol('MV');
       const colFm = findCol('FM');
       const colFvmp600 = findCol('FVMp600');
       const colQam = findCol('QAM');
-      // QUOT. (quotazione): assente in questo formato Excel (a differenza del Listino
-      // Ufficiale) finche' l'utente non aggiorna il proprio export — richiesta esplicita per
-      // farla comparire sempre in Svincolati quando c'e', qui come nell'altro importatore.
       const colQuot = findCol('QUOT.', 'QUOT', 'Quotazione');
-      const colFantaSquadra = findCol('FantaSquadra');
-      const colCosto = findCol('Costo');
+      const colFantaSquadra = findCol('FantaSquadra', 'Fanta Squadra', 'Fanta Team', 'FantaTeam');
+      const colCosto = findCol('Costo', 'Prezzo', 'Acquisto');
       const colRP = findCol('R/P', 'RP');
       const colId = findCol('#', 'Id', 'ID');
 
       const obbligatorie = [
         ['Giocatore', colGiocatore], ['Ruolo', colRuolo],
-        ['FantaSquadra', colFantaSquadra], ['Costo', colCosto], ['R/P', colRP]
+        ['FantaSquadra', colFantaSquadra], ['Costo', colCosto]
       ];
       const mancanti = obbligatorie.filter(([_, c]) => !c).map(([nome]) => nome);
       if (mancanti.length) {
