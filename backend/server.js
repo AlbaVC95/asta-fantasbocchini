@@ -2184,6 +2184,17 @@ function jaasConfigurato() {
   return !!(process.env.JAAS_APP_ID && process.env.JAAS_KID && chiavePrivataJaas());
 }
 
+// Il `kid` che JaaS vuole nell'intestazione del JWT e' "<AppID>/<idChiave>",
+// ma la consola mostra le due meta' separate e non e' ovvio quale delle due
+// vada copiata. Si accettano entrambe: se manca la barra, la si compone.
+// Costa tre righe ed elimina un errore che altrimenti si manifesta solo come
+// un token rifiutato, cioe' nel modo piu' difficile da diagnosticare.
+function kidJaas() {
+  const k = (process.env.JAAS_KID || '').trim();
+  if (!k) return '';
+  return k.indexOf('/') === -1 ? (process.env.JAAS_APP_ID + '/' + k) : k;
+}
+
 function base64urlJaas(dato) {
   return Buffer.from(dato).toString('base64')
     .replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
@@ -2192,7 +2203,7 @@ function base64urlJaas(dato) {
 function firmaTokenJaas(dati) {
   const appId = process.env.JAAS_APP_ID;
   const ora = Math.floor(Date.now() / 1000);
-  const testa = { alg: 'RS256', kid: process.env.JAAS_KID, typ: 'JWT' };
+  const testa = { alg: 'RS256', kid: kidJaas(), typ: 'JWT' };
   const corpo = {
     aud: 'jitsi',
     iss: 'chat',
