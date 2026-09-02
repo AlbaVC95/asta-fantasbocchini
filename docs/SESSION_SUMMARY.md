@@ -560,10 +560,19 @@ con utenti veri loggati (in locale non ci sono le variabili Supabase).
   2026-08-26. Strategie ed Editor Fasce usavano già `.card`, quindi un piano ce l'avevano; la
   Griglia P/A no, ed è stata vestita — piano, righe della classifica, tab, toggle e sub-tab (vedi
   sotto). Adesso tutte e tre parlano la lingua dei quattro temi.
-- **Faltan las credenciales de JaaS, y hasta entonces el botón no aparece.** Hay que crear la
-  cuenta, generar el par de claves, subir la pública y poner en Hostinger tres variables de
-  entorno: `JAAS_APP_ID`, `JAAS_KID` y `JAAS_PRIVATE_KEY` (la privada, en base64 o con los saltos
-  de línea escapados). En cuanto estén, el botón sale solo: no hace falta otro deploy.
+- **JaaS è configurato in produzione, ma la chiamata non è ancora stata provata da nessuno.**
+  Le tre variabili d'ambiente (`JAAS_APP_ID`, `JAAS_KID`, `JAAS_PRIVATE_KEY`) sono su Hostinger e
+  `GET /api/chiamata/config` risponde `attiva:true`, che dal 2026-09-02 significa anche che la
+  chiave privata si apre davvero, non solo che c'è scritto qualcosa. Quindi il bottone "🎥
+  Chiamata" **è visibile a tutti** in produzione: la prima volta che qualcuno lo preme sarà un
+  uso reale, non un test controllato. Se qualcosa non va, fallisce con un avviso e **l'asta non
+  ne risente**: sono due connessioni separate.
+  **Da provare (l'utente lo farà con la compagna, che è chi gestisce le aste):** due persone, dai
+  dispositivi che useranno davvero, chiamata aperta venti minuti. Serve a due cose — che funzioni,
+  e soprattutto **che a 5 minuti NON si tagli** (era il muro dell'istanza pubblica). Subito dopo,
+  guardare la sezione **Activity** della consola JaaS: dice quanti dispositivi sono stati
+  consumati per davvero, e chiude la domanda se le due leghe stanno dentro i 25 gratuiti — finora
+  è una stima, non un dato.
 - **La videochiamata non è mai stata provata davvero.** Qui non c'è camera né microfono, e non ha
   senso far entrare un partecipante finto in una stanza pubblica. Da provare voi, **non la sera
   dell'asta**: qualità con 12+ persone, tenuta di una sessione lunga sull'istanza pubblica gratuita
