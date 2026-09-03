@@ -926,7 +926,15 @@ function setupLogin() {
     const errEl = document.getElementById('nuova-password-error');
     const okEl = document.getElementById('nuova-password-success');
     errEl.style.display = 'none'; okEl.style.display = 'none';
-    if (!pwd || pwd.length < 6) { errEl.textContent = 'La password deve avere almeno 6 caratteri'; errEl.style.display = 'block'; return; }
+    // Dieci, non sei: e' il minimo imposto su Supabase (vedi DECISIONS.md, la
+    // sezione sulla lunghezza minima al posto di HaveIBeenPwned). Qui il
+    // controllo diceva ancora 6, quindi una password di 7 caratteri passava il
+    // controllo locale e veniva poi rifiutata dal server con un messaggio in
+    // inglese: l'utente si ritrovava con un errore che il modulo stesso gli
+    // aveva appena detto di non aspettarsi. Quando una regola sta sul server,
+    // il controllo davanti deve dire la STESSA cosa, altrimenti non aiuta:
+    // confonde.
+    if (!pwd || pwd.length < 10) { errEl.textContent = 'La password deve avere almeno 10 caratteri'; errEl.style.display = 'block'; return; }
     if (pwd !== pwdConferma) { errEl.textContent = 'Le password non coincidono'; errEl.style.display = 'block'; return; }
     const { error } = await supa.auth.updateUser({ password: pwd });
     if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
