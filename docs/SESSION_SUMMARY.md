@@ -144,6 +144,10 @@ righe del campo in Anteprima. Contrasti tutti sopra AA. Dettagli in
   Contrasti misurati sulla carta nuova: principale 16.75:1, secondario 8.12:1, muted 5.25:1,
   cobalto 6.76:1, rosso 4.65:1, oro-testo 5.34:1 — tutti sopra AA. Gli altri tre temi hanno il
   fondo invariato (serata, lavagna, cuoio).
+- Barra del cronometro: una tacca per secondo (7 secondi → 7 tacche, ne cala una al secondo), fino
+  a un massimo di 12; sopra torna proporzionale. Provate le durate 3/5/7/8/12/13/20/60/120 e sei
+  conteggi di durata diversa in fila: nessuna tacca orfana, zero errori. L'ultima tacca accesa ha
+  sempre il colore della cifra, perché barra e cifre chiedono la soglia alla **stessa** funzione.
 - Cronometro arcade: provato col DOM vero del cronometro, riproducendo l'ordine con cui
   `updateTimer()` scrive anello e cifra. **Conteggio da 7**: `07` verde → `06` `05` verde → `04`
   ambra → `03` `02` `01` `00` rosso, barra 14→12→10→8→7→5→2→0. **Conteggio da 5**: `05` verde,

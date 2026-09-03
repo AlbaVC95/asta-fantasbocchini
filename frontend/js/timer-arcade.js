@@ -107,10 +107,15 @@
   // totale, con un minimo di 4 perche' sotto non ci sarebbe spazio fra ambra e
   // rosso: con 7 secondi fa 7-6-5 verde, 4 ambra, 3-2-1 rosso; con 60 fa ambra
   // dagli ultimi 24.
+  // Una funzione sola per la soglia, usata DA TUTTI E DUE: le cifre e le tacche
+  // della barra. Se ognuno se la calcolasse per conto suo, prima o poi
+  // divergerebbero e la barra direbbe una cosa e il numero un'altra.
+  function sogliaAmbraDi(totale) {
+    return Math.max(4, Math.round((totale || 10) * 0.4));
+  }
   function coloreDi(secondi, totale) {
     if (secondi <= 3) return ROSSO;
-    var sogliaAmbra = Math.max(4, Math.round((totale || 10) * 0.4));
-    if (secondi <= sogliaAmbra) return AMBRA;
+    if (secondi <= sogliaAmbraDi(totale)) return AMBRA;
     return VERDE;
   }
 
@@ -118,13 +123,24 @@
     return p.map(function (c) { return c[0] + ',' + c[1]; }).join(' ');
   }
 
-  // ── la barra: 14 tacche con la zona stampata addosso. Si accendono da
-  //    sinistra, quindi le prime sono le ULTIME a spegnersi: li' va il rosso.
-  var BLOCCHI = 14;
-  function zonaDi(i) {
-    if (i < 2) return ROSSO;
-    if (i < 5) return AMBRA;
-    return VERDE;
+  // ── la barra: UNA TACCA PER SECONDO.
+  // Con un timer da 7 escono 7 tacche e ne cala una ad ogni secondo, quindi la
+  // barra si legge senza doverla interpretare — e' il conto alla rovescia
+  // disegnato. Sopra le 12 tacche non si va: diventerebbero fili, e a quel punto
+  // ognuna vale piu' di un secondo e la barra torna proporzionale.
+  var TACCHE_MAX = 12;
+  function taccheDi(totale) {
+    return Math.max(1, Math.min(TACCHE_MAX, totale || 10));
+  }
+  // Le tacche si accendono da sinistra, quindi le prime sono le ULTIME a
+  // spegnersi: li' va il rosso. Con una tacca per secondo la tacca i-esima E'
+  // il secondo i+1, quindi il suo colore si chiede alla stessa funzione delle
+  // cifre: quando il numero diventa rosso, le tacche rimaste sono esattamente
+  // quelle rosse. Sopra le 12 la tacca copre piu' secondi e si usa il suo
+  // secondo piu' alto, che e' quello che si sta consumando.
+  function zonaDi(i, tacche, totale) {
+    var secondo = Math.round((i + 1) * (totale / tacche));
+    return coloreDi(secondo, totale);
   }
 
   // Le celle si centrano nello schermo, qualunque sia il modo.
@@ -154,15 +170,19 @@
     return s + '</g>';
   }
 
-  function disegnaBarra() {
+  function disegnaBarra(tacche, totale) {
     var s = '<g class="arc-barra">';
-    var x0 = 16, larghezza = 134 - 16, passo = larghezza / BLOCCHI;
-    for (var i = 0; i < BLOCCHI; i++) {
-      var x = (x0 + i * passo).toFixed(2), w = (passo - 2).toFixed(2);
+    var x0 = 16, larghezza = 134 - 16, passo = larghezza / tacche;
+    // Lo stacco fra le tacche si stringe quando sono poche, cosi' con 5 o 7 non
+    // diventano lastroni distanziati: resta una barra, non una fila di mattoni.
+    var stacco = tacche > 8 ? 2 : (tacche > 5 ? 2.6 : 3.2);
+    for (var i = 0; i < tacche; i++) {
+      var x = (x0 + i * passo).toFixed(2), w = (passo - stacco).toFixed(2);
+      var col = zonaDi(i, tacche, totale);
       s += '<rect class="arc-zona" x="' + x + '" y="98" width="' + w +
-           '" height="11" rx="1" fill="' + zonaDi(i) + '"/>';
+           '" height="11" rx="1" fill="' + col + '"/>';
       s += '<rect class="arc-blocco" data-blocco="' + i + '" x="' + x + '" y="98" width="' + w +
-           '" height="11" rx="1" fill="' + zonaDi(i) + '"/>';
+           '" height="11" rx="1" fill="' + col + '"/>';
     }
     return s + '</g>';
   }
@@ -224,7 +244,7 @@
         '<rect x="14" y="11" width="122" height="76" rx="3" fill="url(#arc-rifl)"/>' +
       '</g>' +
 
-      disegnaBarra() +
+      '<g class="arc-barra"></g>' +
       '<text class="arc-etichetta" x="75" y="122" text-anchor="middle">TIME</text>' +
     '</svg>';
   }
@@ -236,8 +256,9 @@
     if (!arco || !box || !display || box.querySelector('.arc-timer')) return;
 
     box.insertAdjacentHTML('afterbegin', disegna());
-    var blocchi = box.querySelectorAll('.arc-blocco');
+    var blocchi = [];
     var battito = box.querySelector('.arc-battito');
+    var taccheOra = 0, totaleBarra = 0;
     var ultimoNumero = null, totale = 10;
     var celleOra = 0, segmenti = [];
 
@@ -250,6 +271,17 @@
       var g = box.querySelector('.arc-cifre');
       g.outerHTML = disegnaCelle(celle);
       segmenti = box.querySelectorAll('.arc-seg, .arc-alone');
+    }
+
+    // La barra si rifa' quando cambia il TOTALE, non ad ogni secondo: cambiano
+    // sia quante tacche servono sia di che colore e', e sono due cose che
+    // dipendono solo dalla durata della chiamata.
+    function montaBarra(tacche, totale) {
+      if (tacche === taccheOra && totale === totaleBarra) return;
+      taccheOra = tacche; totaleBarra = totale;
+      var g = box.querySelector('.arc-barra');
+      g.outerHTML = disegnaBarra(tacche, totale);
+      blocchi = box.querySelectorAll('.arc-blocco');
     }
 
     function aggiorna() {
@@ -274,6 +306,7 @@
       }
 
       montaCelle(totale >= 100 ? 3 : 2);
+      montaBarra(taccheDi(totale), totale);
 
       // Zero davanti: "07", non "7".
       var testo = valido ? String(Math.min(n, 999)) : '';
@@ -293,10 +326,18 @@
         el.classList.toggle('acceso', !!acceso);
       }
 
-      // Si arrotonda per ECCESSO: finche' resta un briciolo di tempo deve
-      // restare accesa almeno una tacca, altrimenti la barra sembra a zero
-      // mentre il numero dice ancora 1.
-      var accesi = frazione > 0 ? Math.max(1, Math.ceil(frazione * BLOCCHI)) : 0;
+      // Quante tacche restano accese. Nel caso normale (una tacca per secondo)
+      // e' il numero stesso: nessun arrotondamento, nessuna sorpresa — la barra
+      // e' il conto alla rovescia disegnato. Solo sopra le 12 tacche si torna
+      // alla proporzione, arrotondata per ECCESSO perche' finche' resta un
+      // briciolo di tempo deve restare accesa almeno una tacca, altrimenti la
+      // barra sembra a zero mentre il numero dice ancora 1.
+      var accesi;
+      if (taccheOra === totale && valido) {
+        accesi = Math.max(0, Math.min(taccheOra, n));
+      } else {
+        accesi = frazione > 0 ? Math.max(1, Math.ceil(frazione * taccheOra)) : 0;
+      }
       for (var b = 0; b < blocchi.length; b++) {
         blocchi[b].classList.toggle('acceso', b < accesi);
       }

@@ -2308,3 +2308,37 @@ muted 5.25:1, cobalto 6.76:1, rosso 4.65:1, oro-testo 5.34:1. Tutti sopra AA. No
 ancora questi valori: l'oro come testo era stato scurito apposta fino a 5.9:1 **su bianco** (vedi il
 commento in palette); spostando il fondo e' sceso a 5.34:1, quindi resta il colore piu' fragile del
 tema e non va schiarito. Il rosso a 4.65:1 e' il secondo piu' vicino alla soglia.
+
+
+## La barra del cronometro: una tacca per secondo, non una barra proporzionale
+
+Idea dell'utente, ed e' migliore di quella che c'era. La barra aveva 14 tacche fisse e si svuotava
+in proporzione, quindi con un timer da 7 secondi calava di due tacche a volte e di una altre
+(arrotondamenti), e non voleva dire niente di preciso. Ora **il numero di tacche e' la durata**: 7
+secondi, 7 tacche, e ne cala esattamente una al secondo. La barra smette di essere un'illustrazione
+del tempo e diventa il conto alla rovescia disegnato — si legge senza interpretarla.
+
+Sopra le **12** si smette di aggiungerne: diventerebbero fili, e da li' in su ogni tacca vale piu'
+di un secondo e si torna alla proporzione. Il numero e' dell'utente e va bene cosi': con le durate
+vere (5-8) si sta sempre nel rapporto uno a uno.
+
+La conseguenza piu' bella non era prevista, ed e' il motivo per cui vale la pena scriverlo. Con una
+tacca per secondo, **la tacca i-esima E' il secondo i+1**: allora il suo colore si puo' chiedere
+alla stessa funzione che colora le cifre, invece di avere zone decise a occhio. Il risultato e' che
+quando il numero diventa rosso, le tacche rimaste accese sono esattamente quelle rosse, e l'ultima
+tacca accesa ha sempre il colore della cifra. Barra e display non possono piu' contraddirsi, perche'
+non sono due letture diverse dello stesso dato: sono la stessa regola applicata due volte. Per
+garantirlo, la soglia dell'ambra e' stata estratta in una funzione sola (`sogliaAmbraDi`) usata da
+entrambi — se ognuno se la ricalcolasse, prima o poi divergerebbero.
+
+Due dettagli d'attuazione: le tacche si accendono contando il numero e **non arrotondando la
+frazione** (nel caso uno a uno l'arrotondamento non serve e introdurrebbe solo errori); e la barra
+si rimonta quando cambia il TOTALE, non ad ogni secondo, perche' e' l'unica cosa da cui dipendono
+sia quante tacche servono sia di che colore sono. Lo stacco fra le tacche si stringe quando sono
+poche, altrimenti con 5 diventano lastroni distanziati invece di una barra.
+
+**Verificato** con durate 3, 5, 7, 8, 12, 13, 20, 60 e 120: fino a 12 il numero di tacche e' la
+durata e le accese sono il numero mostrato; sopra, restano 12 e tornano proporzionali (30 su 60 →
+6/12). Zone giuste in tutti i casi (con 7: tre rosse, una ambra, tre verdi). Alternando sei
+conteggi di durate diverse la barra si rifa' ogni volta senza lasciare tacche orfane (un solo
+gruppo barra, un solo gruppo cifre) e senza errori in console.
