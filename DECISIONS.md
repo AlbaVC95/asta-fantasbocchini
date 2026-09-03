@@ -2083,3 +2083,55 @@ sparisce e `--h-chiamata` torna a 0.
 **Non verificato**: che Jitsi onori davvero le chiavi nuove, cioe' l'unica parte che si vede
 usando. Serve una chiamata vera con le credenziali JaaS, che sono dell'utente e in locale non ci
 sono — senza, il bottone non viene nemmeno montato.
+
+
+## Griglia P/A a parte si', Anteprima no — e il perche' e' tecnico, non di gusto
+
+Richiesta dell'utente: il bottone "Apri a parte" anche per Griglia P/A e Anteprima. La prima si e'
+fatta, la seconda no, e la differenza sta in **cosa lo specchio sa copiare**.
+
+Lo specchio copia l'`innerHTML` del nodo sorgente e rimanda indietro i click per posizione
+nell'albero. Funziona per contenuti che sono **marcatura e clic**. Contato quello che c'e' dentro
+`#tab-portieri`: 16 bottoni, 9 `select`, **zero slider** — quelli di configurazione (pesi, budget,
+forza squadre) vivono in `#screen-gk-planner`, che e' un'altra schermata e non entra nella copia.
+Quindi Griglia P/A ci sta.
+
+Anteprima no, per due motivi che non si aggirano:
+
+1. **Il campo e' un `<canvas>` WebGL** (`#ant-stadio-3d`, Three.js, sempre attivo — non e' una
+   modalita' opzionale). Copiare l'HTML copia il riquadro, non i fotogrammi che il motore ci
+   disegna dentro: nello specchio si vedrebbe un rettangolo nero **al posto della cosa che si vuole
+   guardare**. Un canvas non e' contenuto del DOM, e' una superficie di disegno.
+2. **Trascinare non e' cliccare.** Spostare un giocatore fra campo e panchina sono 22 gestori di
+   drag & drop; lo specchio rimanda indietro solo i click.
+
+Le alternative sono state valutate e scartate: una foto del canvas rinfrescata ogni secondo
+darebbe una vista di sola lettura ma con `preserveDrawingBuffer` disattivato l'export puo' uscire
+bianco, e resterebbe comunque senza trascinamento; ricreare il 3D nella seconda scheda vuol dire
+che il modulo non e' piu' uno specchio ma **una seconda app**, cioe' la strada scartata quando la
+vista a parte e' nata (un socket in piu' per persona, 22 partecipanti = 44 connessioni). E il
+guadagno non c'era: Rose a schermo intero mette 12 squadre su tre file invece che dietro una barra
+orizzontale, Anteprima invece si apre gia' nel suo cassetto sulla stessa schermata.
+
+Due cose imparate facendo Griglia P/A, entrambe generali:
+
+- **`fonte` puo' essere la tab stessa**, e allora il bottone "Apri a parte" (che sta dentro la tab)
+  finisce dentro lo specchio. Va **nascosto con il CSS, non cancellato dalla copia**: la delega
+  risolve il gemello contando gli indici dei figli, quindi togliere un nodo dallo specchio
+  sfaserebbe tutti i fratelli successivi e i click andrebbero sull'elemento sbagliato. Invisibile
+  ma presente, gli indici restano quelli del documento madre.
+- **I `select` avevano bisogno di una delega loro.** Un menu a tendina non si aziona con un click,
+  quindi nello specchio i nove selettori di squadra si muovevano e non succedeva niente: i listener
+  non si copiano con l'`innerHTML`. Si porta il valore sull'elemento vero e si fa partire `change`
+  la', con l'evento costruito nel documento madre (dove vive il gemello). A differenza del click
+  qui NON si ferma la propagazione: non ci sono `onchange` inline da sopprimere e lasciando correre
+  l'evento la tendina mostra subito la scelta invece di sembrare bloccata fino alla copia dopo.
+
+**Verificato** col codice vero del modulo, sostituendo `window.open` con un `<iframe>` (finestra e
+documento veri): il bottone si monta in tutte e quattro le tab e nella barra delle sotto-tab per
+Griglia P/A; la scheda esce col titolo e col tema giusti e con lo stesso numero di figli
+dell'originale (indici allineati); un click su una sotto-tab dello specchio arriva a quella vera
+(`analisi`); un cambio nel `select` dello specchio porta `Roma` sull'originale e ne fa scattare il
+`change`; il bottone copiato e' `display:none`. **Nessuna regressione** sulle tre viste
+preesistenti: Rose, Storico e Svincolati rispecchiano e i click tornano indietro come prima.
+Zero errori in console.

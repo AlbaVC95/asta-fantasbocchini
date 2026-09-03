@@ -89,6 +89,16 @@ azzerata una volta sola la preferenza cambiando nome alla chiave. I tasti − e 
 ingrandire e rimpicciolire come prima, e la misura si ricorda. Dettagli in
 [DECISIONS.md](../DECISIONS.md).
 
+## Griglia P/A si apre in una scheda a parte
+
+Aggiunta al registro di `vista-esterna.js` come quarta vista. Due cose sono servite: nascondere
+col CSS il bottone "Apri a parte" dentro lo specchio (è l'unica vista in cui `fonte` è la tab
+stessa, quindi il bottone viene copiato) — nascosto e non cancellato, perché la delega dei click
+conta gli indici dei figli — e una delega nuova per i `select`, che non si azionano con un click.
+**Anteprima no**: il campo è un canvas WebGL, che non sopravvive alla copia dell'`innerHTML`, e
+spostare i giocatori è drag & drop, non click. Motivi e alternative scartate in
+[DECISIONS.md](../DECISIONS.md).
+
 ## Verifiche fatte
 
 - **Copertura sul listino VERO** (531 righe di `listino_giocatori` su Supabase, passate una per
@@ -108,6 +118,10 @@ ingrandire e rimpicciolire come prima, e la misura si ricorda. Dettagli in
 - Tema lavagna: carta di puja riprodotta col DOM vero e confrontata prima/dopo sulla texture
   reale. **Non verificate** le schermate fitte (Rose, Storico, Admin): il server locale non ha le
   credenziali Supabase e non si va oltre il login.
+- Vista a parte: provata col codice vero e `window.open` sostituito da un `<iframe>`. Griglia P/A
+  esce col titolo e il tema giusti e con gli indici allineati all'originale; click su una sotto-tab
+  e cambio di `select` arrivano all'elemento vero; il bottone copiato è `display:none`. Rose,
+  Storico e Svincolati **senza regressioni**. Zero errori in console.
 - Videochiamata: provata col codice vero del modulo e un doppio del fornitore che registra le
   opzioni. Si apre a 104px anche con una misura grande salvata prima; − e + percorrono le quattro
   misure, si spengono agli estremi e salvano; riaprendo con 0/1/2/3 esce la misura giusta (0

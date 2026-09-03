@@ -59,7 +59,21 @@
     { id: 'storico', tab: 'tab-storico', fonte: 'storico-list', titolo: 'Storico',
       ancora: null },
     { id: 'liberi',  tab: 'tab-liberi',  fonte: 'liberi-list',  titolo: 'Svincolati',
-      ancora: '#liberi-strategia-bar' }
+      ancora: '#liberi-strategia-bar' },
+    // Griglia P/A e' l'unica vista in cui `fonte` e' la tab STESSA: le altre tre
+    // hanno un contenitore interno (#rose-panel, #storico-list, #liberi-list),
+    // qui il contenuto utile sono i figli diretti della tab — il toggle
+    // Portieri/Attaccanti, le sotto-tab e le viste — e non c'e' un involucro
+    // solo. La conseguenza da tenere a mente e' che il bottone "Apri a parte",
+    // che sta dentro la tab, finisce dentro lo specchio: si nasconde con una
+    // regola nel foglio della scheda, NON si cancella dalla copia (vedi la nota
+    // in `aggiorna`).
+    //
+    // I comandi qui sono 16 bottoni e 9 `select`, zero slider: gli slider di
+    // configurazione (pesi, budget, forza squadre) stanno in #screen-gk-planner,
+    // che e' un'altra schermata e non entra nella copia.
+    { id: 'portieri', tab: 'tab-portieri', fonte: 'tab-portieri', titolo: 'Griglia P/A',
+      ancora: '.gki-subtabs' }
   ];
 
   var aperte = [];        // { w, vista }
@@ -81,7 +95,10 @@
     '.ve-apri:hover{color:var(--text-primary);border-color:var(--primary-bright)}',
     '.ve-apri .ve-icona{font-size:.82rem;line-height:1}',
     // dentro la riga della "Visione compatta" il bottone va all'altro capo
-    '.rose-compatta-row .ve-apri{margin-left:auto}'
+    '.rose-compatta-row .ve-apri{margin-left:auto}',
+    /* la barra delle sotto-tab di Griglia P/A e' una fila di quattro bottoni:
+       il nostro va spinto all'estremo destro per non sembrare il quinto */
+    '.gki-subtabs .ve-apri{margin-left:auto}'
   ].join('\n');
 
   /* ── lo stile della scheda a parte ────────────────────────────────── */
@@ -103,6 +120,13 @@
     '.ve-stato{margin-left:auto;font-size:.68rem;color:var(--text-muted);white-space:nowrap}',
     '.ve-stato.ve-morto{color:var(--danger,#ff4d2a)}',
     '.ve-corpo{padding:12px}',
+    /* Quando `fonte` e' la tab stessa (Griglia P/A) il bottone "Apri a parte"
+       viene copiato anche lui. Si NASCONDE e non si cancella: la delega dei
+       click risolve il gemello contando gli indici dei figli, quindi togliere
+       un nodo dallo specchio sfaserebbe tutti i fratelli che vengono dopo e i
+       click finirebbero sull'elemento sbagliato. Invisibile ma presente, gli
+       indici restano quelli del documento madre. */
+    '.ve-corpo .ve-apri,.ve-corpo .ve-riga{display:none !important}',
     // Rose: qui c'e' tutta la larghezza dello schermo, quindi le colonne
     // vanno a capo invece di scorrere in orizzontale. E' l'unico punto in
     // cui la vista a parte si comporta diversamente dall'originale, ed e'
@@ -340,6 +364,38 @@
         }
       }, 0);
     }, true);
+
+    // I `select` non si azionano con un click: senza questo, in Griglia P/A i
+    // nove menu a tendina (le squadre di Analisi e Confronto) si muoverebbero
+    // nello specchio senza che succeda niente, perche' i listener non si
+    // copiano con l'innerHTML. Si porta il valore sull'elemento VERO e si fa
+    // partire la' l'evento: stesso principio del click, un percorso solo, con
+    // la logica dell'app in mezzo. Lo specchio continua a non eseguire niente
+    // per conto suo.
+    //
+    // Qui NON si ferma la propagazione, al contrario del click: sui select non
+    // ci sono `onchange` inline da sopprimere (gk-planner-ui.js li aggancia con
+    // addEventListener), e lasciando correre l'evento la tendina nello specchio
+    // mostra subito la scelta invece di sembrare bloccata fino alla copia
+    // successiva.
+    d.addEventListener('change', function (ev) {
+      var bersaglio = ev.target;
+      if (!bersaglio || bersaglio.tagName !== 'SELECT') return;
+      var corpo = d.getElementById('ve-corpo');
+      var specchio = corpo && corpo.firstElementChild;
+      if (!specchio || !specchio.contains(bersaglio)) return;
+
+      var fonte = document.getElementById(vista.fonte);
+      var p = percorso(specchio, bersaglio);
+      var gemello = (p && fonte) ? risolvi(fonte, p) : null;
+      if (!gemello || gemello.tagName !== 'SELECT') return;
+      if (gemello.value === bersaglio.value) return;
+
+      gemello.value = bersaglio.value;
+      // L'evento si costruisce nel documento MADRE, che e' dove vive il
+      // gemello e dove stanno i suoi listener.
+      gemello.dispatchEvent(new Event('change', { bubbles: true }));
+    });
   }
 
   /* ══════ specchio ══════ */
