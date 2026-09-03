@@ -48,6 +48,14 @@ resa raggiungibile ogni immagine, compresi i giocatori senza squadra assegnata.
   cache (vedi DECISIONS.md); `Venezia/Pozzi.jpg` è l'unico sovrascritto in place.
 - `index.html`: alzato il `?v=` di `app.js`.
 
+## Tema "Lavagna al Neon": testo secondario leggibile
+
+`--text-muted` nel blocco `html[data-tema="lavagna"]` passa da `#8A96A3` (grigio neutro) a
+`#7DE8F7` (= `--primary-bright`, gia' in palette): contrasto da 5.7:1 a 12.1:1. Riguarda l'eta'
+del giocatore, "In attesa 1a offerta...", "Nessuna fascia assegnata" e ogni altro punto che usa
+`--text-muted` in quel tema (~140 occorrenze). Toccato solo il tema lavagna, gli altri tre non
+cambiano. Motivazioni e alternative scartate in [DECISIONS.md](../DECISIONS.md).
+
 ## Verifiche fatte
 
 - **Copertura sul listino VERO** (531 righe di `listino_giocatori` su Supabase, passate una per
@@ -62,7 +70,11 @@ resa raggiungibile ogni immagine, compresi i giocatori senza squadra assegnata.
   i 4 override manuali, e nome inesistente che resta correttamente senza foto.
 - Provato sul server di sviluppo vero: `%27` e i percorsi `_unmatched` vengono serviti 200, e il
   `backgroundImage` con `%27` produce un `url(...)` valido (con l'apostrofo grezzo dava `none`).
-- `app.js` resta a 243 righe LF-only come prima della modifica (fine riga non toccate).
+- `app.js` resta a 243 righe LF-only come prima della modifica (fine riga non toccate); anche
+  `style.css` resta a 277 dopo il cambio di palette del tema lavagna.
+- Tema lavagna: carta di puja riprodotta col DOM vero e confrontata prima/dopo sulla texture
+  reale. **Non verificate** le schermate fitte (Rose, Storico, Admin): il server locale non ha le
+  credenziali Supabase e non si va oltre il login.
 
 ## Pendenze
 

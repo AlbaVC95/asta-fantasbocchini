@@ -107,8 +107,8 @@ Senza di esse il server parte comunque ma tutte le funzionalità legate a Supaba
 - Nel frontend (`app.js`), le sezioni principali del file sono individuabili dai commenti `══` che le
   separano.
 - **Fine riga miste — mai l'Edit tool su `frontend/js/app.js`, `frontend/index.html`,
-  `frontend/css/style.css`**: hanno righe LF-only preesistenti (rispettivamente 243, 19 e 234 —
-  ricontate il 2026-09-02; il numero cresce man mano che si aggiungono righe nelle zone LF) e
+  `frontend/css/style.css`**: hanno righe LF-only preesistenti (rispettivamente 243, 19 e 277 —
+  ricontate il 2026-09-03; il numero cresce man mano che si aggiungono righe nelle zone LF) e
   l'Edit tool converte tutto il file a LF, producendo un diff enorme. Usare uno script Node/Python
   che legge il file grezzo e sostituisce stringhe esatte, e ricontare le righe LF-only prima e dopo.
   **Lo stile non e' uniforme in tutto il file**: alcune zone (es. le funzioni 3D dello stadio in
@@ -123,7 +123,7 @@ Senza di esse il server parte comunque ma tutte le funzionalità legate a Supaba
   ogni modifica al CSS appariva come un diff da 3000+ righe: convertito una volta per tutte in un
   commit di sole fine riga (`style: convert CRLF to LF in tema-serata.css`, 2026-08-26). **Va
   tenuto a LF**: se un giorno ricomparissero dei CR, si è tornati al problema di prima.
-  Conteggi righe LF-only al 2026-08-26: `app.js` 240, `index.html` 19, `style.css` 234.
+  Conteggi righe LF-only al 2026-09-03: `app.js` 243, `index.html` 19, `style.css` 277.
 - **`String.replace(x, stringa)` corrompe `app.js`**: le sequenze `$&`, `$'`, `$1` nella stringa di
   sostituzione vengono interpretate come pattern, e `app.js` contiene `['$,$,$']` (riga 293). Usare
   sempre un replacer come **funzione**: `str.replace(x, () => y)`.

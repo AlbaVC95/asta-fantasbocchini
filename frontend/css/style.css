@@ -1368,7 +1368,13 @@ html[data-tema="lavagna"]{
   --danger-glow:rgba(255,45,45,.28);
   --text-primary:#F0F4F8;
   --text-secondary:#B8C4D0;
-  --text-muted:#8A96A3;
+  /* Su questa lavagna il grigio neutro di prima (#8A96A3) spariva: il fondo non e' una tinta
+     piatta ma una foto di ardesia con striature di gesso chiare, e sopra quelle il testo secondario
+     non si leggeva piu' (contrasto nominale 5.7:1 sul colore del pannello, molto peggio sulle
+     striature). Qui vale --primary-bright, il ciano che il tema usa gia' per .cc-club: 12.1:1, e
+     nessun colore nuovo da giustificare. Il ciano resta l'accento strutturale, il magenta resta
+     riservato a brand e denaro (vedi DECISIONS.md). */
+  --text-muted:#7DE8F7;
   --border:rgba(240,244,248,.12);
   --border-light:rgba(240,244,248,.20);
 }

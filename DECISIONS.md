@@ -1971,3 +1971,35 @@ stessa foto in una versione precedente, non una foto sbagliata.
 Verificato dal vivo durante il lavoro: dopo aver ridotto le immagini, due file continuavano a
 misurare 896px nel browser mentre su disco erano gia' 398px — erano serviti dalla cache. Con
 `?cb=` tornavano 398px. E' esattamente il comportamento descritto qui.
+
+
+## Lavagna: il testo "muted" non poteva restare un grigio neutro
+
+Segnalato dall'utente: nel tema `lavagna` l'eta' del giocatore, "In attesa 1a offerta..." e
+"Nessuna fascia assegnata" quasi non si leggevano. Tutti e tre prendono `--text-muted`, che nel
+tema valeva `#8A96A3` — un grigio neutro, senza glow, mentre tutto cio' che si legge bene qui e'
+ciano (`.cc-club` usa `--primary-bright`, `.cc-offerta-label` usa `--primary`).
+
+Il contrasto nominale non raccontava il problema: `#8A96A3` sul colore del pannello (`#181B21`)
+da' 5.7:1, cioe' passa AA. Ma il fondo vero non e' quella tinta piatta — e' la foto di ardesia,
+con striature di gesso chiare, e sopra quelle il grigio spariva. Misurare il contrasto sul
+`background-color` di un elemento che ha anche un `background-image` fotografico dice poco.
+
+Scelto `#7DE8F7`, cioe' `--primary-bright`, gia' in palette: 12.1:1, nessun colore nuovo da
+giustificare, e i ruoli restano quelli fissati per il tema (ciano = accento strutturale, magenta
+= riservato a brand e denaro). Valutato e scartato un ciano piu' tenue (`#9FD6E4`, 10.9:1) perche'
+l'utente chiedeva esplicitamente qualcosa di piu' acceso; se un giorno le schermate fitte di
+testo secondario dovessero risultare rumorose, e' il candidato di ripiego.
+
+Scartato anche l'alone (`text-shadow`) su questi testi: aiuta sui titoli grandi come `.cc-nome`,
+ma su 8-9px impasta i tratti e si legge peggio, non meglio.
+
+Cambiata **solo** `--text-muted`, non `--text-secondary`: quest'ultima (`#B8C4D0`) e' piu' chiara
+e non era fra i casi segnalati. Effetto collaterale accettato: `--text-muted` diventa piu'
+luminosa di `--text-secondary`, quindi la rampa primary > secondary > muted si inverte fra le due
+piu' scure. In pratica non convivono quasi mai nello stesso blocco, e muted e' quella che finisce
+sui fondi piu' difficili.
+
+**Non verificato**: le schermate fitte (Rose, Storico, Admin) con il colore nuovo — il server di
+sviluppo locale non ha le credenziali Supabase, quindi non si arriva oltre il login. Verificati la
+carta di puja (il caso segnalato, riprodotta con il DOM vero) e la schermata di accesso.
