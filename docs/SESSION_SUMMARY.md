@@ -74,7 +74,10 @@ resa raggiungibile ogni immagine, compresi i giocatori senza squadra assegnata.
   immagini diverse dello stesso giocatore. Innocuo (una delle due resta semplicemente inusata),
   ma se si vuole pulire va rimosso dallo script che genera le immagini.
 - La cartella `_unmatched` è una toppa: se lo script esterno imparasse ad assegnare la squadra a
-  quei 167 giocatori, la ricerca globale resterebbe comunque utile per i trasferimenti.
+  quei giocatori, la ricerca globale resterebbe comunque utile per i trasferimenti. Ne è già
+  uscito uno: `El_Shaarawy.jpg` è stato spostato in `Genoa/`, quindi ora sono 166. Chi sa a che
+  squadra appartiene un file di `_unmatched` può spostarlo lì: passa dalla ricerca globale al
+  match esatto dentro la cartella della squadra, che è il percorso più solido.
 
 ## Prossimo passo
 
