@@ -70,6 +70,14 @@ staccato da un filo come nel tasto grande. `+1` e' fisso e regge: il click della
 programmatico su `#btn-rilancio`, agganciato a `inviaRilancioRapido(1)`, e un click programmatico
 non arma la "leva" di `comportamenti-asta.js` (l'unico modo di alzare di piu').
 
+## Lavagna: via i fregi disegnati in CSS
+
+Tolti i sei disegni del mockup (cancellino, bicchiere da cocktail, scintilla — due copie
+ciascuno, in cinque regole): non si capiva cosa fossero alle misure a cui uscivano. Tre stavano
+in `tema-serata.css` (sfondo di pagina e testata), tre in `style.css` (dentro la carta di
+chiamata). Regole cancellate, non neutralizzate. Solo il tema lavagna: il fregio proprio di
+"cuoio" è intatto. Motivazioni in [DECISIONS.md](../DECISIONS.md).
+
 ## Verifiche fatte
 
 - **Copertura sul listino VERO** (531 righe di `listino_giocatori` su Supabase, passate una per
@@ -89,6 +97,9 @@ non arma la "leva" di `comportamenti-asta.js` (l'unico modo di alzare di piu').
 - Tema lavagna: carta di puja riprodotta col DOM vero e confrontata prima/dopo sulla texture
   reale. **Non verificate** le schermate fitte (Rose, Storico, Admin): il server locale non ha le
   credenziali Supabase e non si va oltre il login.
+- Fregi lavagna: verificati a computed style tutti e cinque gli pseudo-elementi coinvolti — none
+  disegna più nulla — e controllati i quattro temi (lavagna: zero fregi; cuoio: il suo intatto).
+  `style.css` resta a 277 righe LF-only e `tema-serata.css` a zero CR.
 - Striscia di puja: montata su un banco di prova col DOM vero. Orologio e cifra hanno **sempre lo
   stesso colore**, anche in `body.puja-urgente` (rosso), e restano appaiati e centrati in tutti e
   quattro i temi (l'icona segue il font-size del contenitore: 22px dove la cifra e' 24px, 14px in

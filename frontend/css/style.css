@@ -1411,33 +1411,16 @@ html[data-tema="cuoio"] .pitch-bg::after{
   box-shadow:0 20px 30px rgba(58,36,20,.35);
   opacity:.85;
 }
-/* Cancellino + scintilla, dentro la carta di chiamata — dove sta la foto/il nome, non solo
-   sullo sfondo di pagina (li' restavano coperti dai pannelli, segnalato dall'utente). Un solo
-   pseudo-elemento esteso a tutta la carta (`inset:0`) con due fregi come layer di sfondo
-   separati (niente clip-path qui: taglierebbe l'intero pseudo-elemento, non solo una forma —
-   il bicchiere sotto usa invece ::before apposta, da solo, per poterlo usare). */
-html[data-tema="lavagna"] .chiamata-card::after{
-  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
-  background-image:
-    linear-gradient(100deg, rgba(138,106,74,.55) 0%, rgba(138,106,74,.55) 52%, rgba(228,222,210,.55) 52%, rgba(239,234,225,.55) 100%),
-    linear-gradient(90deg, transparent 42%, rgba(255,111,196,.8) 42%, rgba(255,111,196,.8) 58%, transparent 58%),
-    linear-gradient(0deg, transparent 42%, rgba(255,111,196,.8) 42%, rgba(255,111,196,.8) 58%, transparent 58%);
-  background-position:right 10px bottom 8px, right 30px top 10px, right 30px top 10px;
-  background-size:44px 20px, 13px 13px, 13px 13px;
-  background-repeat:no-repeat, no-repeat, no-repeat;
-}
-/* Il bicchiere da cocktail, vicino al ritratto — riusa .chiamata-card::before, disattivato
-   qui apposta dal foglio storico (era la linea animata in cima, nascosta dentro il tavolo
-   della puja): un content diverso in un contesto piu' specifico non e' in conflitto. */
-html[data-tema="lavagna"] body #puja-panel-slot .chiamata-card::before,
-html[data-tema="lavagna"] body.layout-admin .asta-row-puja .chiamata-card::before{
-  content:'';position:absolute;right:74px;bottom:10px;width:22px;height:30px;
-  display:block !important;animation:none !important;
-  background:linear-gradient(160deg, rgba(34,211,238,.7), rgba(255,60,172,.6));
-  clip-path:polygon(5% 6%,95% 6%,54% 54%,54% 82%,68% 96%,32% 96%,46% 82%,46% 54%);
-  filter:drop-shadow(0 0 4px rgba(255,60,172,.7));
-  pointer-events:none;z-index:2;
-}
+/* Qui stavano i tre fregi dentro la carta di chiamata in tema lavagna — cancellino e scintilla
+   come layer di sfondo su ::after, e il bicchiere da cocktail su ::before. TOLTI su richiesta
+   dell'utente: alle misure a cui uscivano (44x20 il cancellino, 13x13 la scintilla, 22x30 il
+   bicchiere) non si capiva cosa fossero. Gli altri tre stavano in tema-serata.css, sullo sfondo
+   di pagina e sulla testata: cercare li' la nota corrispondente.
+
+   Togliendo la regola del bicchiere, .chiamata-card::before torna da solo al display:none che
+   il foglio gia' gli impone dentro la puja (righe ~715 e ~738, piu' tema-serata.css ~182):
+   nessuna riga in piu' da scrivere per spegnerlo, e la linea animata in cima alla carta resta
+   nascosta li' dentro come e' sempre stata. */
 html[data-tema="cuoio"] #screen-strategie-lista.active,
 html[data-tema="cuoio"] #screen-strategia-form.active,
 html[data-tema="cuoio"] #screen-strategia-editor.active{

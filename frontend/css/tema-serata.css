@@ -2099,28 +2099,13 @@ html[data-tema="lavagna"] .pitch-bg{
   background-position:center, center, center, center !important;
   filter:none !important;
 }
-/* Il cancellino, come nel mockup: un blocchetto di legno e feltro appoggiato nell'angolo.
-   Su .pitch-bg (sfondo di pagina, dietro tutto) si vede solo nei rari angoli scoperti — la
-   schermata Asta e' piena bordo a bordo. Un'eco identica sta anche dentro la carta di
-   chiamata (piu' sotto, .chiamata-card::after) apposta per essere SEMPRE visibile li'. */
-html[data-tema="lavagna"] .pitch-bg::before{
-  content:'';position:absolute;right:26px;bottom:22px;width:72px;height:32px;
-  border-radius:5px;transform:rotate(-7deg);
-  background:linear-gradient(180deg, #8A6A4A 0%, #8A6A4A 52%, #E4DED2 52%, #EFEAE1 100%);
-  box-shadow:0 10px 18px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.18);
-  opacity:.6;
-}
-/* Il bicchiere da cocktail al neon del mockup, angolo opposto al cancellino. Una sagoma sola
-   (coppa+stelo+base) via clip-path invece di piu' elementi; il bagliore usa `filter` e non
-   `box-shadow` apposta — box-shadow segue il rettangolo dell'elemento, non la sagoma ritagliata
-   dal clip-path, quindi non seguirebbe il bicchiere. */
-html[data-tema="lavagna"] .pitch-bg::after{
-  content:'';position:absolute;left:28px;bottom:26px;width:34px;height:46px;
-  background:linear-gradient(160deg, rgba(34,211,238,.55), rgba(255,60,172,.45));
-  clip-path:polygon(5% 6%,95% 6%,54% 54%,54% 82%,68% 96%,32% 96%,46% 82%,46% 54%);
-  filter:drop-shadow(0 0 5px rgba(255,60,172,.8)) drop-shadow(0 0 3px rgba(34,211,238,.6));
-  opacity:.55;pointer-events:none;
-}
+/* I fregi del mockup — cancellino, bicchiere da cocktail, scintilla — sono stati TOLTI su
+   richiesta dell'utente: alle misure a cui comparivano davvero (16-44px) non si capiva cosa
+   fossero, e una sagoma illeggibile e' rumore, non atmosfera. Erano sei disegni in cinque
+   regole: due qui sullo sfondo di pagina, uno sulla testata (piu' sotto) e tre dentro la carta
+   di chiamata (style.css, cercare "lavagna" + .chiamata-card). Se un giorno si volessero
+   rimettere, vanno ridisegnati piu' grandi o non rimessi affatto. La lavagna resta caratterizzata
+   dalla foto, dai due neon e dal gesso scritto a mano — non le servivano i soprammobili. */
 html[data-tema="lavagna"] ::selection{background:rgba(34,211,238,.28);color:#F0F4F8}
 
 /* ── La testata: lavagna incorniciata d'ottone, insegna al neon magenta ── */
@@ -2128,18 +2113,6 @@ html[data-tema="lavagna"] .asta-header{
   background:linear-gradient(180deg,#111318 0%,#050508 100%) !important;
   border-bottom:2px solid #C9A227 !important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 6px 22px rgba(0,0,0,.6) !important;
-}
-/* La scintilla al neon del mockup, accanto all'insegna — un fregio, non un'icona cliccabile.
-   Su .asta-header-left::after (non .asta-header-title::after, gia' occupato altrove dal
-   "respiro" dell'insegna al neon, riga ~944 — un secondo content li' sarebbe stato in
-   conflitto) cosi' resta accanto al blocco logo+titolo a qualunque larghezza, mai sotto i
-   bottoni a destra. */
-html[data-tema="lavagna"] .asta-header-left::after{
-  content:'';position:absolute;top:2px;right:-28px;width:16px;height:16px;
-  background:#FF6FC4;
-  clip-path:polygon(50% 0%,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0% 50%,39% 39%);
-  box-shadow:0 0 8px rgba(255,60,172,.9), 0 0 18px rgba(255,60,172,.5);
-  opacity:.9;pointer-events:none;
 }
 html[data-tema="lavagna"] body .asta-header-title,
 html[data-tema="lavagna"] body .home-title{

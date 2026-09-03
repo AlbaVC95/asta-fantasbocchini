@@ -2003,3 +2003,35 @@ sui fondi piu' difficili.
 **Non verificato**: le schermate fitte (Rose, Storico, Admin) con il colore nuovo — il server di
 sviluppo locale non ha le credenziali Supabase, quindi non si arriva oltre il login. Verificati la
 carta di puja (il caso segnalato, riprodotta con il DOM vero) e la schermata di accesso.
+
+
+## Lavagna: tolti i fregi del mockup (cancellino, bicchiere, scintilla)
+
+Il mockup del tema aveva tre soprammobili disegnati in CSS, e nel tempo erano diventati sei
+disegni in cinque regole: cancellino e bicchiere sullo sfondo di pagina (`.pitch-bg::before` e
+`::after` in `tema-serata.css`), la scintilla accanto all'insegna (`.asta-header-left::after`,
+stesso file), e dentro la carta di chiamata un secondo cancellino + una seconda scintilla come
+layer di sfondo su `.chiamata-card::after` piu' un secondo bicchiere su `.chiamata-card::before`
+(tutti e tre in `style.css`). I tre nella carta erano stati aggiunti proprio perche' quelli sullo
+sfondo restavano coperti dai pannelli.
+
+Tolti tutti su richiesta dell'utente, e il motivo e' il loro punto debole: alle misure a cui
+uscivano davvero — 44x20 il cancellino, 13x13 la scintilla, 22x30 il bicchiere — non si capiva
+cosa fossero. Una sagoma illeggibile non aggiunge atmosfera, aggiunge rumore: sono macchie
+accanto a dati che si devono leggere in fretta sotto timer. Il tema resta caratterizzato dalla
+foto della lavagna, dai due neon e dal gesso scritto a mano, che sono le cose che funzionano.
+
+Cancellate le regole invece di neutralizzarle con `display:none`, per la ragione gia' imparata
+qui (vedi "una regola duplicata piu' vecchia batteva quella giusta"): lasciare regole morte in un
+foglio con questa storia di duplicazioni e' il modo di creare il prossimo bug di specificita'. Al
+loro posto restano due commenti che dicono cosa c'era e perche' non c'e' piu'.
+
+Un dettaglio che rende la cancellazione pulita: il bicchiere nella carta riusava
+`.chiamata-card::before`, che dentro la puja e' gia' spento da `display:none` in tre punti
+(`style.css` ~715 e ~738, `tema-serata.css` ~182). Tolta la regola del bicchiere, lo pseudo-elemento
+torna da solo a quello stato e la linea animata in cima alla carta resta nascosta li' dentro come
+e' sempre stata: zero righe in piu' per spegnerlo.
+
+Gli altri tre temi non sono toccati — tutte e cinque le regole erano dentro selettori
+`html[data-tema="lavagna"]`. Verificato che in "cuoio" il suo `.pitch-bg::after` (un fregio suo,
+diverso) sia ancora al suo posto.
