@@ -2379,3 +2379,38 @@ Tre cose che valeva la pena decidere:
 `#F5B01A` passa da 1.54:1 a 4.89:1 restando oro; il bianco puro diventa grigio a 4.55:1; il blu e
 l'inchiostro, che gia' passavano, **non vengono toccati**. Sui due scuri i gialli restano intatti e
 sono il blu e l'inchiostro a essere schiariti. Nessun colore esce sotto 4.5:1.
+
+
+## Correzione della correzione: leggibilita' e identita' non stanno nello stesso canale
+
+L'utente ha bocciato la soluzione della sezione precedente in una frase: "cosi' Top, Oro e Giallo
+sembrano lo stesso colore". Aveva ragione, e il motivo e' strutturale, non un difetto di taratura.
+
+Portare piu' colori allo **stesso contrasto** su un fondo vuol dire portarli alla **stessa
+luminanza**. Colori che si distinguono soprattutto per la luminanza — tre gialli, per dire, che
+hanno tinte a 41°, 51° e 54°, quindi quasi identiche — collassano per forza. Non era regolabile:
+scurendo di meno restavano illeggibili, scurendo il giusto diventavano lo stesso colore. **Chiedere
+a un solo canale di portare insieme la leggibilita' e l'identita' non si puo'**, e il colore delle
+fasce serve proprio a distinguerle a colpo d'occhio: la correzione rompeva la cosa che doveva
+proteggere.
+
+Si separano i due compiti. Nel gettone della lista (`.l-strategia-badge`, `stileFascia()`) il colore
+va nel **riempimento**, dove si vede a piena intensita' e resta quello scelto, e il testo sopra
+diventa nero o bianco a seconda di quale dei due contrasta di piu'. Misurato: la distanza fra i tre
+gialli passa da 19/27/28 a 48/68/62, cioe' due volte e mezza piu' lontani.
+
+Quasi sempre nero o bianco basta e il riempimento resta **esattamente** il colore scelto. Per le
+tinte di mezzo puo' non bastare — il rosa `#E91E63` col bianco si ferma a 4.35:1 — e in quel caso si
+sposta il RIEMPIMENTO del minimo indispensabile (diventa `rgb(219,28,93)`, 4.84:1) invece di
+rinunciare al bianco: muovere il fondo di un soffio cambia la tinta molto meno, e il colore resta
+distinto dagli altri. Su dodici colori provati, uno solo e' stato ritoccato.
+
+`coloreFasciaLeggibile()` (lo scurimento) **resta e si usa ancora**, ma solo dove il problema non
+esiste: nella carta di puja si vede una fascia per volta, quindi non c'e' nessun altro colore
+accanto con cui confonderla, e li' il nome colorato sul bordo colorato e' il disegno giusto. La
+regola generale che ne esce: **lo scurimento va bene per un colore solo, il riempimento serve quando
+i colori stanno vicini e vanno distinti.**
+
+**Verificato** con dodici colori, compresi bianco e nero puri, sui quattro temi: nessun gettone
+scende sotto 4.5:1 fra testo e riempimento, e il gettone esce identico in tutti e quattro i temi —
+il che e' anche piu' coerente di prima, visto che il colore della fascia non dipende dal tema.

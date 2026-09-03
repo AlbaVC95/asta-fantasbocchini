@@ -2668,6 +2668,51 @@ function coloreFasciaLeggibile(colore) {
   return out;
 }
 
+// ══ Il gettone di una fascia: il colore sta nel RIEMPIMENTO, non nel testo ══
+//
+// Prima versione di questa correzione: si scuriva il colore del testo finche' non
+// contrastava. Funzionava per leggerlo e sbagliava lo scopo, come ha fatto notare
+// subito l'utente — "Top", "Oro" e "Giallo" diventavano lo stesso colore.
+// Il motivo e' strutturale e vale la pena ricordarlo: portare piu' colori allo
+// STESSO contrasto vuol dire portarli alla stessa LUMINANZA, e colori che si
+// distinguono soprattutto per quella — tre gialli, per dire — collassano per forza.
+// Cercare leggibilita' e identita' nello stesso canale non si puo'.
+//
+// Quindi si separano: il colore va nel fondo del gettone, dove si vede a piena
+// intensita' e resta riconoscibile, e il testo diventa nero o bianco a seconda di
+// quale dei due contrasta di piu' col colore scelto. Il bordo e' lo stesso colore
+// scurito, perche' un gettone giallo chiaro su fondo panna altrimenti non ha un
+// contorno.
+function stileFascia(colore) {
+  const rgb = _rgbDaColore(colore);
+  if (!rgb) return 'border-color:' + colore + ';color:' + colore;
+  const chiave = 'fill|' + colore;
+  if (_cacheColoreFascia.has(chiave)) return _cacheColoreFascia.get(chiave);
+
+  const NERO = [20, 16, 36], BIANCO = [255, 255, 255];
+  const suNero = _contrasto(rgb, NERO) >= _contrasto(rgb, BIANCO);
+  const inchiostro = suNero ? NERO : BIANCO;
+
+  // Quasi sempre uno dei due passa e il riempimento resta il colore scelto.
+  // Per le tinte di mezzo puo' non bastare (il rosa #E91E63 col bianco si ferma
+  // a 4.35:1): allora si sposta il RIEMPIMENTO di quel poco che serve, non il
+  // testo. Muovere il fondo cambia la tinta molto meno di quanto la cambierebbe
+  // rinunciare al nero o al bianco, e soprattutto e' un ritocco piccolo — il
+  // colore resta riconoscibile e distinto dagli altri, che e' tutto il punto.
+  let pieno = rgb.slice();
+  for (let i = 0; i < 20 && _contrasto(pieno, inchiostro) < 4.5; i++) {
+    pieno = suNero
+      ? pieno.map(v => Math.min(255, Math.round(v + (255 - v) * .06)))
+      : pieno.map(v => Math.max(0, Math.round(v * .94)));
+  }
+  const testo = suNero ? 'rgb(20,16,36)' : '#FFFFFF';
+  // Il bordo: lo stesso colore portato piu' in basso, cosi' il gettone ha un
+  // contorno anche quando il riempimento e' quasi del colore della pagina.
+  const bordo = pieno.map(v => Math.max(0, Math.round(v * .72)));
+  const out = 'background:rgb(' + pieno.join(',') + ');border-color:rgb(' + bordo.join(',') + ');color:' + testo;
+  _cacheColoreFascia.set(chiave, out);
+  return out;
+}
 function _getChiamataStrategiaInfoHTML(g) {
   const strat = S.strategiaAsta;
   const cfg = strat ? strat.configByListinoId.get(String(g.idFantaleghe)) : null;
@@ -4219,8 +4264,7 @@ function _getLiberiStrategiaBadgeHTML(g) {
   const prezzoReale = prezzoRealeStrategia(cfg);
   const prezzoTxt = prezzoReale != null ? (' \u00b7 ' + prezzoReale + 'cr') : '';
   const titolaritaSuffix = titolaritaTxt ? (' ' + titolaritaTxt) : '';
-  const colFascia = coloreFasciaLeggibile(f.colore);
-  return '<span class="l-strategia-badge" style="border-color:' + colFascia + ';color:' + colFascia + '">' + escapeHTML(f.nome) + prezzoTxt + preferitoStar + titolaritaSuffix + '</span>';
+  return '<span class="l-strategia-badge" style="' + stileFascia(f.colore) + '">' + escapeHTML(f.nome) + prezzoTxt + preferitoStar + titolaritaSuffix + '</span>';
 }
 
 window.chiamaLibero = function(id) {
