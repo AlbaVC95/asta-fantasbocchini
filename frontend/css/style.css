@@ -1471,15 +1471,36 @@ html[data-tema="lavagna"] .badge-ruolo.r-XX{background:#191C22;color:var(--text-
    Le materie (retino, cornici, pixel) stanno in tema-serata.css, sezione
    "SALA GIOCHI". */
 html[data-tema="sala-giochi"]{
-  --bg-abyss:#E4E3D6;
-  --bg-deep:#F4F3EA;
-  --panel-glass-1:rgba(255,255,255,.98);
-  --panel-glass-2:rgba(250,250,245,.98);
-  --panel-glass-3:rgba(244,243,234,.96);
-  --bg-main:#FFFFFF;
-  --bg-card:#FFFFFF;
-  --bg-elevated:#F4F3EA;
-  --bg-glass:rgba(255,255,255,.95);
+  /* La carta del tema. Era bianco PURO su tutte le superfici grandi — pannelli,
+     carte, testata — e i partecipanti si lamentavano che abbagliava: un'asta si
+     gioca di sera, e una parete di #FFFFFF a schermo intero e' un faro. Il tema
+     resta identico (inchiostro, cobalto, rosso, bordi duri), scende solo il picco
+     di luminanza. Un bianco CALDO e non grigio: raffreddarlo lo farebbe sembrare
+     sporco invece che di carta.
+     Tutti i fondi bianchi passano da qui, cosi' il tono si regola in un punto
+     solo. NON passano di qui i bianchi che devono restare puri: il testo sui
+     bottoni pieni (cobalto, rosso) e le righe del campo in Anteprima, che sono
+     segnaletica su verde. */
+  --sg-carta:#F6F3E9;
+  /* Il piano su cui le carte sono appoggiate. Va tenuto un gradino sotto
+     --sg-carta, altrimenti carta e fondo si confondono e i pannelli non si
+     staccano piu': prima il salto era grande (bianco puro su carta), ora che
+     il bianco e' sceso deve scendere anche questo per conservarlo. */
+  --sg-fondo:#E7E3D5;
+  /* La superficie secondaria: bottoni a riposo, tab non attive, righe di
+     elenco. Sta FRA carta e fondo, e va tenuta li' in mezzo — se resta al
+     valore di prima (#F4F3EA) finisce sopra la carta nuova e i due piani si
+     invertono: le tab sembrerebbero piu' in rilievo del pannello. */
+  --sg-carta2:#EFEBDE;
+  --bg-abyss:#DBD7C7;
+  --bg-deep:var(--sg-fondo);
+  --panel-glass-1:rgba(246,243,233,.98);
+  --panel-glass-2:rgba(242,239,229,.98);
+  --panel-glass-3:rgba(237,234,223,.96);
+  --bg-main:var(--sg-carta);
+  --bg-card:var(--sg-carta);
+  --bg-elevated:#F1EEE3;
+  --bg-glass:rgba(246,243,233,.95);
   --primary:#2440D8;
   --primary-bright:#2440D8;   /* su carta il "bright" deve restare leggibile, non schiarire */
   --primary-dark:#1B2FA8;
@@ -1522,7 +1543,7 @@ html[data-tema="sala-giochi"] .cc-avatar{background:#2440D8;border-radius:0;bord
 /* La testata NON e' scura come in Cuoio: qui e' la marquee del cabinato, carta
    bianca con il filo d'inchiostro sotto. */
 html[data-tema="sala-giochi"] .asta-header{
-  background:#FFFFFF;
+  background:var(--sg-carta);
   border-bottom:4px solid #141024;
   box-shadow:none;
 }
@@ -1793,7 +1814,7 @@ html[data-tema="sala-giochi"] .ant-slot-role{
   border:2px solid #141024 !important;border-radius:0 !important;
 }
 html[data-tema="sala-giochi"] .ant-slot-player{
-  background:#FFFFFF !important;color:#141024 !important;
+  background:var(--sg-carta) !important;color:#141024 !important;
   border:2px solid #141024 !important;border-radius:0 !important;
   box-shadow:3px 3px 0 #141024 !important;
   font-family:'Silkscreen',Archivo,sans-serif !important;
@@ -1840,16 +1861,16 @@ html[data-tema="sala-giochi"] .ant-slot3d-empty{
    rimasta. Diventa un cartellino bianco col filo d'inchiostro. */
 html[data-tema="sala-giochi"] .ant-slot3d-label{
   font-family:'Silkscreen',Archivo,sans-serif !important;color:#141024 !important;
-  background:#FFFFFF !important;border:2px solid #141024 !important;
+  background:var(--sg-carta) !important;border:2px solid #141024 !important;
   border-radius:0 !important;text-shadow:none !important;padding:2px 3px !important;
 }
 html[data-tema="sala-giochi"] .ant-card{
-  background:linear-gradient(180deg,#FFFFFF,#F4F3EA) !important;
+  background:linear-gradient(180deg,var(--sg-carta),var(--sg-carta2)) !important;
   border:3px solid #141024 !important;border-radius:0 !important;
   box-shadow:4px 4px 0 #141024 !important;
 }
 html[data-tema="sala-giochi"] .ant-lista li{
-  background:#FFFFFF !important;border:2px solid #141024 !important;border-radius:0 !important;
+  background:var(--sg-carta) !important;border:2px solid #141024 !important;border-radius:0 !important;
 }
 #tab-anteprima{position:relative}
 .ant-picker{position:absolute;z-index:500;background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.4);padding:8px;max-height:280px;overflow-y:auto;min-width:200px;max-width:calc(100vw - 16px)}

@@ -2269,3 +2269,42 @@ si', la seconda no — il primo sospetto e' un'eccezione a meta' funzione, non l
 che non si vede.** E la console va guardata mentre il caso gira, perche' il suo storico contiene
 anche gli errori dei caricamenti precedenti: qui gli stessi messaggi restavano visibili dopo il
 fix, e la prova pulita e' stata contare gli errori NUOVI durante un conteggio intero (zero).
+
+
+## Sala Giochi: il bianco puro abbagliava, e i tre piani si regolano da tre token
+
+Segnalato dai partecipanti tramite l'utente: il tema "e' troppo bianco, stanca la vista". Non era
+un'impressione. Tutte le superfici grandi — testata, carte, pannelli, tavolo della puja — stavano a
+`#FFFFFF` pieno, e l'asta si gioca di sera: una parete di bianco puro a schermo intero e' un faro.
+La richiesta era esplicita e va rispettata alla lettera: **lasciare il tema com'e' e abbassare solo
+il picco di luminanza**.
+
+Il tema non e' cambiato di una virgola nella sostanza (inchiostro `#141024`, cobalto, rosso, bordi
+duri, ombre stampate, caratteri a pixel): sono scesi i fondi. Un bianco **caldo** e non grigio —
+raffreddarlo lo avrebbe fatto sembrare sporco invece che di carta.
+
+La parte che conta per il futuro e' come, non quanto. Il tema aveva i fondi scritti a mano in
+quaranta punti, quindi la prima cosa e' stata **portarli tutti su tre token**, perche' il tono si
+regoli in un posto solo:
+
+- `--sg-carta` (`#F6F3E9`) — carte, pannelli, testata: il piano piu' alto;
+- `--sg-carta2` (`#EFEBDE`) — bottoni a riposo, tab non attive, righe di elenco: il piano di mezzo;
+- `--sg-fondo` (`#E7E3D5`) — il tavolo su cui tutto e' appoggiato.
+
+**Vanno mossi insieme, ed e' il punto meno ovvio.** Abbassando solo la carta, quella finiva quasi
+identica al fondo (`#F6F3E9` contro `#F4F3EA`) e i pannelli smettevano di staccarsi; e la superficie
+secondaria, restando al vecchio `#F4F3EA`, sarebbe finita SOPRA la carta nuova, invertendo i piani —
+le tab sarebbero sembrate piu' in rilievo del pannello che le contiene. Quando si abbassa il bianco
+di un tema chiaro bisogna far scendere l'intera scala, non il solo valore piu' alto.
+
+**Quali bianchi NON sono stati toccati**, e perche' un cerca-e-sostituisci qui sarebbe stato un
+errore: dei 77 bianchi puri dentro le regole del tema, solo quelli usati come **fondo** sono scesi.
+Restano puri i 14 usati come `color` sui bottoni pieni (cobalto, rosso), dove il bianco e' testo su
+tinta satura e ammorbidirlo avrebbe abbassato il contrasto e sporcato il bottone, e i 5 delle righe
+del campo in Anteprima, che sono segnaletica bianca su verde.
+
+**Contrasti dopo il cambio** (misurati, non stimati): testo principale 16.75:1, secondario 8.12:1,
+muted 5.25:1, cobalto 6.76:1, rosso 4.65:1, oro-testo 5.34:1. Tutti sopra AA. Nota per chi tocchera'
+ancora questi valori: l'oro come testo era stato scurito apposta fino a 5.9:1 **su bianco** (vedi il
+commento in palette); spostando il fondo e' sceso a 5.34:1, quindi resta il colore piu' fragile del
+tema e non va schiarito. Il rosso a 4.65:1 e' il secondo piu' vicino alla soglia.

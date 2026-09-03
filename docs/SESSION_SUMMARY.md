@@ -112,6 +112,15 @@ l'ambra è proporzionale al totale perché con 7 secondi una soglia fissa a 10 n
 vedere il verde. Nel solo tema `sala-giochi` sostituisce clessidra e cifra normale. Dettagli in
 [DECISIONS.md](../DECISIONS.md).
 
+## Sala Giochi: il bianco non abbaglia più
+
+I partecipanti si lamentavano che il tema stanca la vista. Tutte le superfici grandi stavano a
+`#FFFFFF` pieno. Il tema resta identico: sono scesi solo i fondi, portati su **tre token**
+(`--sg-carta`, `--sg-carta2`, `--sg-fondo`) così il tono si regola in un punto solo. Vanno mossi
+insieme, altrimenti i piani si invertono. Restano bianchi puri il testo sui bottoni pieni e le
+righe del campo in Anteprima. Contrasti tutti sopra AA. Dettagli in
+[DECISIONS.md](../DECISIONS.md).
+
 ## Verifiche fatte
 
 - **Copertura sul listino VERO** (531 righe di `listino_giocatori` su Supabase, passate una per
@@ -131,6 +140,10 @@ vedere il verde. Nel solo tema `sala-giochi` sostituisce clessidra e cifra norma
 - Tema lavagna: carta di puja riprodotta col DOM vero e confrontata prima/dopo sulla texture
   reale. **Non verificate** le schermate fitte (Rose, Storico, Admin): il server locale non ha le
   credenziali Supabase e non si va oltre il login.
+- Bianco di sala-giochi: confrontato prima/dopo affiancando due copie della pagina vera.
+  Contrasti misurati sulla carta nuova: principale 16.75:1, secondario 8.12:1, muted 5.25:1,
+  cobalto 6.76:1, rosso 4.65:1, oro-testo 5.34:1 — tutti sopra AA. Gli altri tre temi hanno il
+  fondo invariato (serata, lavagna, cuoio).
 - Cronometro arcade: provato col DOM vero del cronometro, riproducendo l'ordine con cui
   `updateTimer()` scrive anello e cifra. **Conteggio da 7**: `07` verde → `06` `05` verde → `04`
   ambra → `03` `02` `01` `00` rosso, barra 14→12→10→8→7→5→2→0. **Conteggio da 5**: `05` verde,
