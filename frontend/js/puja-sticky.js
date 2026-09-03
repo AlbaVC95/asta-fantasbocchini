@@ -61,6 +61,15 @@
   var MIN_TOCCABILE = 44;
   var TOLLERANZA = 2;   // px: evita che un pixel di taglio faccia sfarfallare la striscia
 
+  // Quadrante e lancette, niente numeri: a 1em di lato le tacche sarebbero
+  // fango. `currentColor` su tutti i tratti e' il punto: il colore lo decide
+  // .ps-tempo, quindi l'orologio segue la cifra anche quando diventa rossa.
+  var OROLOGIO_SVG =
+    '<svg class="ps-orologio" viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+    + '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>'
+    + '<path d="M12 6.6V12l3.5 2.1" fill="none" stroke="currentColor" stroke-width="2"'
+    + ' stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
   var barra = null, battito = null, sentinella = null, montata = false;
 
   function el(tag, cls, testo) {
@@ -99,7 +108,17 @@
 
     // ── quanto manca, e il tasto
     var destra = el('div', 'ps-destra');
-    destra.appendChild(el('span', 'ps-timer'));
+    // Il numero da solo non diceva di essere un tempo: nella striscia sta accanto
+    // al prezzo e a "+1", cioe' fra altri numeri, e si leggeva come una cifra
+    // qualsiasi. L'orologio e' un SVG e non un'emoji perche' deve prendere il
+    // colore dal testo (`currentColor`): cosi' negli ultimi secondi diventa rosso
+    // insieme alla cifra, guidato dalla stessa classe sul body, senza una regola
+    // sua. Sta FUORI da .ps-timer, che scriviSe() riscrive col textContent: dentro,
+    // verrebbe cancellato ad ogni allineamento.
+    var tempo = el('div', 'ps-tempo');
+    tempo.innerHTML = OROLOGIO_SVG;
+    tempo.appendChild(el('span', 'ps-timer'));
+    destra.appendChild(tempo);
     var btn = el('button', 'ps-rilancia');
     btn.type = 'button';
     btn.id = 'ps-rilancia';
@@ -108,6 +127,19 @@
       var vero = document.getElementById('btn-rilancio');
       if (vero && !vero.disabled) vero.click();
     });
+    // Il tasto grande mostra "RILANCIA" e, in un ::after alimentato da data-tot,
+    // il TOTALE che pagheresti. Qui quella meta' non c'era e restava un "RILANCIA"
+    // muto, che non diceva di quanto alza. Si scrive l'incremento, non il totale:
+    // e' l'informazione che mancava, ed e' quella che questo tasto garantisce.
+    //
+    // "+1" e' fisso, e regge: il click qui e' programmatico su #btn-rilancio, che
+    // e' agganciato a inviaRilancioRapido(1) — un 1 letterale in app.js — e un
+    // click programmatico non arma la "leva" di comportamenti-asta.js, che si
+    // carica solo su una pressione vera e sarebbe l'unico modo di alzare di piu'.
+    // Le due meta' stanno in due span perche' allinea() riscrive solo l'etichetta:
+    // un textContent sul bottone spazzerebbe via anche il "+1".
+    btn.appendChild(el('span', 'ps-rilancia-testo'));
+    btn.appendChild(el('span', 'ps-rilancia-inc', '+1'));
     destra.appendChild(btn);
 
     barra.appendChild(chi);
@@ -193,7 +225,8 @@
     var btn = barra.querySelector('.ps-rilancia');
     btn.disabled = !(vero && !vero.disabled);
     var etichetta = vero ? (vero.textContent || '').trim() : '';
-    if (btn.textContent !== (etichetta || 'Rilancia')) btn.textContent = etichetta || 'Rilancia';
+    var testoBtn = barra.querySelector('.ps-rilancia-testo');
+    if (testoBtn.textContent !== (etichetta || 'Rilancia')) testoBtn.textContent = etichetta || 'Rilancia';
   }
 
   function mostra(si) {

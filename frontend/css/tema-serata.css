@@ -3730,6 +3730,31 @@ html body .puja-sticky .ps-rilancia{
 html body .puja-sticky .ps-rilancia:disabled{opacity:.4;cursor:not-allowed}
 html body .puja-sticky .ps-rilancia:not(:disabled):active{transform:scale(.97)}
 
+/* L'orologio accanto ai secondi. Nella striscia la cifra del tempo sta in fila
+   con il prezzo e con il "+1" del tasto: fra altri numeri non si capiva che
+   fosse un tempo. La scala la detta .ps-tempo e l'icona vale 1em, cosi' basta
+   cambiare il font-size del contenitore perche' cifra e quadrante restino
+   appaiati (vedi l'override di "sala-giochi", che rimpicciolisce entrambi).
+   Il colore sta sul contenitore, non sulla cifra: l'SVG disegna in
+   currentColor, quindi negli ultimi secondi diventa rosso insieme al numero
+   senza bisogno di una regola propria. */
+html body .puja-sticky .ps-tempo{
+  display:flex;align-items:center;gap:7px;flex:0 0 auto;
+  color:var(--sc-ambra-piena);
+  font-size:clamp(1.1rem,3.4vw,1.5rem);
+}
+html body.puja-urgente .puja-sticky .ps-tempo{color:var(--sc-brace-piena)}
+html body .puja-sticky .ps-orologio{width:.92em;height:.92em;flex:0 0 auto;opacity:.8}
+
+/* Il tasto: "RILANCIA" e, staccato da un filo, di quanto alza. E' lo stesso
+   modo in cui il tasto grande separa l'etichetta dal totale (un ::after con
+   border-left), qui applicato all'incremento. */
+html body .puja-sticky .ps-rilancia{display:inline-flex;align-items:center;justify-content:center;gap:10px}
+html body .puja-sticky .ps-rilancia-inc{
+  font-variant-numeric:tabular-nums;
+  padding-left:10px;border-left:1px solid currentColor;opacity:.62;
+}
+
 /* Sullo stretto si toglie cio' che si puo' rileggere tornando su — la squadra
    reale e la fascia — e si tengono nome, prezzo, chi offre e tempo. Niente
    sparisce che serva a decidere adesso. */
@@ -3778,6 +3803,9 @@ html[data-tema="sala-giochi"] body .puja-sticky .ps-rilancia{
 html[data-tema="sala-giochi"] body .puja-sticky .ps-offerta,
 html[data-tema="sala-giochi"] body .puja-sticky .ps-timer{
   font-family:'Press Start 2P',var(--font-mono) !important;font-weight:400 !important;
+  font-size:clamp(.78rem,2.3vw,.98rem) !important;
+}
+html[data-tema="sala-giochi"] body .puja-sticky .ps-tempo{
   font-size:clamp(.78rem,2.3vw,.98rem) !important;
 }
 html[data-tema="sala-giochi"] body .puja-sticky .ps-riga-meta,

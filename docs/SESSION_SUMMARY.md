@@ -56,6 +56,20 @@ del giocatore, "In attesa 1a offerta...", "Nessuna fascia assegnata" e ogni altr
 `--text-muted` in quel tema (~140 occorrenze). Toccato solo il tema lavagna, gli altri tre non
 cambiano. Motivazioni e alternative scartate in [DECISIONS.md](../DECISIONS.md).
 
+## Striscia di puja: orologio e "+1"
+
+Nella striscia che compare quando la carta di puja scorre via, la cifra dei secondi stava fra
+altri numeri (il prezzo, e ora l'incremento) e non si capiva che fosse un tempo: le e' stato messo
+accanto un orologio SVG, che disegna in `currentColor` e quindi diventa rosso insieme alla cifra
+negli ultimi secondi, senza una regola sua.
+
+Il tasto mostrava un "RILANCIA" muto. Il motivo: `comportamenti-asta.js` riscrive l'etichetta del
+tasto vero a `'Rilancia'` e mette il totale in `data-tot`, che il tema rende in un `::after` — la
+striscia copiava solo il `textContent` e perdeva quella meta'. Ora accanto all'etichetta c'e' `+1`,
+staccato da un filo come nel tasto grande. `+1` e' fisso e regge: il click della striscia e'
+programmatico su `#btn-rilancio`, agganciato a `inviaRilancioRapido(1)`, e un click programmatico
+non arma la "leva" di `comportamenti-asta.js` (l'unico modo di alzare di piu').
+
 ## Verifiche fatte
 
 - **Copertura sul listino VERO** (531 righe di `listino_giocatori` su Supabase, passate una per
@@ -75,6 +89,13 @@ cambiano. Motivazioni e alternative scartate in [DECISIONS.md](../DECISIONS.md).
 - Tema lavagna: carta di puja riprodotta col DOM vero e confrontata prima/dopo sulla texture
   reale. **Non verificate** le schermate fitte (Rose, Storico, Admin): il server locale non ha le
   credenziali Supabase e non si va oltre il login.
+- Striscia di puja: montata su un banco di prova col DOM vero. Orologio e cifra hanno **sempre lo
+  stesso colore**, anche in `body.puja-urgente` (rosso), e restano appaiati e centrati in tutti e
+  quattro i temi (l'icona segue il font-size del contenitore: 22px dove la cifra e' 24px, 14px in
+  "sala-giochi" dove e' 15.7px). A 390px di larghezza — con il `@media (max-width:430px)` davvero
+  attivo, provato dentro un iframe — la striscia sta in 385x53 senza sbordare e senza scroll
+  orizzontale. Un click sui due span nuovi arriva comunque al tasto vero (3 click su 3).
+  "sala-giochi" e' verificato a misure, non a occhio.
 
 ## Pendenze
 
