@@ -2596,6 +2596,78 @@ function _applyPlayerPhoto(url, version) {
   img.src = url;
 }
 
+// ══ Il colore di una fascia, reso leggibile sul tema corrente ══
+//
+// Il colore delle fasce lo sceglie l'utente nella sua Strategia (input type=color,
+// finisce su Supabase): e' un DATO, non una tinta del tema. Finche' i temi erano
+// scuri qualunque colore si vedeva, ma sui due temi chiari — Cuoio e Sala Giochi —
+// un giallo o un ciano pallido su fondo panna e' illeggibile. Segnalato dall'utente
+// con un gettone "Top - 113cr" giallo su carta.
+//
+// Non si puo' "cambiare quel giallo": il prossimo utente ne sceglie un altro. Si
+// corregge invece il colore in arrivo, e SOLO quando serve davvero: si misura il
+// contrasto col fondo vero e, se sta sotto 4.5:1, lo si porta verso il nero (su
+// fondo chiaro) o verso il bianco (su fondo scuro) a piccoli passi, fermandosi
+// appena passa. Cosi' un giallo resta un giallo — scurito quanto basta — invece di
+// diventare un colore deciso da noi, e chi ha scelto colori gia' leggibili non vede
+// cambiare niente.
+function _lumRel(r, g, b) {
+  const f = c => { c /= 255; return c <= .03928 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4); };
+  return .2126 * f(r) + .7152 * f(g) + .0722 * f(b);
+}
+function _rgbDaColore(c) {
+  if (!c) return null;
+  const t = String(c).trim();
+  let m = t.match(/^#([0-9a-f]{3})$/i);
+  if (m) return [0,1,2].map(i => parseInt(m[1][i] + m[1][i], 16));
+  m = t.match(/^#([0-9a-f]{6})$/i);
+  if (m) return [0,2,4].map(i => parseInt(m[1].substr(i, 2), 16));
+  m = t.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+  if (m) return [+m[1], +m[2], +m[3]];
+  return null;
+}
+function _contrasto(a, b) {
+  const l1 = _lumRel(a[0], a[1], a[2]), l2 = _lumRel(b[0], b[1], b[2]);
+  const [x, y] = l1 > l2 ? [l1, l2] : [l2, l1];
+  return (x + .05) / (y + .05);
+}
+// Il fondo su cui i gettoni stanno davvero. Si legge una volta e si ricalcola solo
+// quando cambia il tema: leggerlo per ogni riga costerebbe un reflow a giocatore, e
+// le liste qui arrivano a 500 righe.
+let _fondoTema = null, _cacheColoreFascia = new Map();
+function _fondoCorrente() {
+  if (_fondoTema) return _fondoTema;
+  const c = getComputedStyle(document.body).backgroundColor;
+  _fondoTema = _rgbDaColore(c) || [17, 17, 17];
+  return _fondoTema;
+}
+if (typeof MutationObserver === 'function') {
+  new MutationObserver(() => { _fondoTema = null; _cacheColoreFascia.clear(); })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ['data-tema'] });
+}
+function coloreFasciaLeggibile(colore) {
+  const rgb = _rgbDaColore(colore);
+  if (!rgb) return colore;
+  const fondo = _fondoCorrente();
+  const chiave = colore + '|' + fondo.join(',');
+  if (_cacheColoreFascia.has(chiave)) return _cacheColoreFascia.get(chiave);
+
+  let out = colore;
+  if (_contrasto(rgb, fondo) < 4.5) {
+    // Verso il nero se il fondo e' chiaro, verso il bianco se e' scuro.
+    const versoNero = _lumRel(fondo[0], fondo[1], fondo[2]) > .4;
+    let cur = rgb.slice();
+    for (let i = 0; i < 24 && _contrasto(cur, fondo) < 4.5; i++) {
+      cur = versoNero
+        ? cur.map(v => Math.max(0, Math.round(v * .88)))
+        : cur.map(v => Math.min(255, Math.round(v + (255 - v) * .12)));
+    }
+    out = 'rgb(' + cur.join(',') + ')';
+  }
+  _cacheColoreFascia.set(chiave, out);
+  return out;
+}
+
 function _getChiamataStrategiaInfoHTML(g) {
   const strat = S.strategiaAsta;
   const cfg = strat ? strat.configByListinoId.get(String(g.idFantaleghe)) : null;
@@ -2612,7 +2684,8 @@ function _getChiamataStrategiaInfoHTML(g) {
     const prezzoTxt = prezzoReale != null ? (prezzoReale + ' cr') : '—';
     const pctTxt = cfg.percentuale != null ? (' (' + cfg.percentuale + '%)') : '';
     const preferitoTxt = cfg.preferito ? ' ⭐ Preferito' : '';
-    fasciaHTML = '<p class="cc-strategia-info" style="border-color:' + f.colore + '">📊 <strong style="color:' + f.colore + '">' + escapeHTML(f.nome) + '</strong> · ' + prezzoTxt + pctTxt + preferitoTxt + '</p>';
+    const colFascia = coloreFasciaLeggibile(f.colore);
+    fasciaHTML = '<p class="cc-strategia-info" style="border-color:' + colFascia + '">📊 <strong style="color:' + colFascia + '">' + escapeHTML(f.nome) + '</strong> · ' + prezzoTxt + pctTxt + preferitoTxt + '</p>';
   }
   // Titolarità e commento sono di sola lettura qui: si editano solo nell'editor Strategia.
   const titolaritaHTML = haTitolarita
@@ -4146,7 +4219,8 @@ function _getLiberiStrategiaBadgeHTML(g) {
   const prezzoReale = prezzoRealeStrategia(cfg);
   const prezzoTxt = prezzoReale != null ? (' \u00b7 ' + prezzoReale + 'cr') : '';
   const titolaritaSuffix = titolaritaTxt ? (' ' + titolaritaTxt) : '';
-  return '<span class="l-strategia-badge" style="border-color:' + f.colore + ';color:' + f.colore + '">' + escapeHTML(f.nome) + prezzoTxt + preferitoStar + titolaritaSuffix + '</span>';
+  const colFascia = coloreFasciaLeggibile(f.colore);
+  return '<span class="l-strategia-badge" style="border-color:' + colFascia + ';color:' + colFascia + '">' + escapeHTML(f.nome) + prezzoTxt + preferitoStar + titolaritaSuffix + '</span>';
 }
 
 window.chiamaLibero = function(id) {

@@ -121,6 +121,15 @@ insieme, altrimenti i piani si invertono. Restano bianchi puri il testo sui bott
 righe del campo in Anteprima. Contrasti tutti sopra AA. Dettagli in
 [DECISIONS.md](../DECISIONS.md).
 
+## Colore delle fasce leggibile su tutti i temi
+
+Sui temi chiari i gettoni delle fasce con colori pallidi (il giallo su tutti) non si leggevano. Il
+colore è un **dato** scelto dall'utente nella sua Strategia, non una tinta del tema, quindi non si
+poteva "cambiare quel giallo": ora `coloreFasciaLeggibile()` misura il contrasto col fondo vero e
+scurisce (temi chiari) o schiarisce (temi scuri) solo quando sta sotto 4.5:1, fermandosi appena
+passa. Chi ha colori già leggibili non vede cambiare niente. Dettagli in
+[DECISIONS.md](../DECISIONS.md).
+
 ## Verifiche fatte
 
 - **Copertura sul listino VERO** (531 righe di `listino_giocatori` su Supabase, passate una per
@@ -144,6 +153,9 @@ righe del campo in Anteprima. Contrasti tutti sopra AA. Dettagli in
   Contrasti misurati sulla carta nuova: principale 16.75:1, secondario 8.12:1, muted 5.25:1,
   cobalto 6.76:1, rosso 4.65:1, oro-testo 5.34:1 — tutti sopra AA. Gli altri tre temi hanno il
   fondo invariato (serata, lavagna, cuoio).
+- Colore fasce: provati 9 colori (bianco e nero puri compresi) sui quattro temi. Sui chiari
+  `#F5B01A` passa da 1.54:1 a 4.89:1 restando oro; sui scuri sono il blu e l'inchiostro a essere
+  schiariti. I colori che già passavano restano identici. Nessuno esce sotto 4.5:1.
 - Barra del cronometro: una tacca per secondo (7 secondi → 7 tacche, ne cala una al secondo), fino
   a un massimo di 12; sopra torna proporzionale. Provate le durate 3/5/7/8/12/13/20/60/120 e sei
   conteggi di durata diversa in fila: nessuna tacca orfana, zero errori. L'ultima tacca accesa ha

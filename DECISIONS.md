@@ -2342,3 +2342,40 @@ durata e le accese sono il numero mostrato; sopra, restano 12 e tornano proporzi
 6/12). Zone giuste in tutti i casi (con 7: tre rosse, una ambra, tre verdi). Alternando sei
 conteggi di durate diverse la barra si rifa' ogni volta senza lasciare tacche orfane (un solo
 gruppo barra, un solo gruppo cifre) e senza errori in console.
+
+
+## Colore delle fasce: si corregge il contrasto, non si cambia il colore
+
+Segnalato dall'utente con una foto: sui temi chiari il gettone giallo di una fascia ("Top - 113cr")
+non si legge. Il punto e' che **quel giallo non e' una tinta del tema, e' un dato**: il colore delle
+fasce lo sceglie ogni utente nella sua Strategia con un `input type=color` e finisce su Supabase.
+
+Quindi "cambiamo quel giallo" non era la richiesta giusta da esaudire alla lettera: il prossimo
+utente ne sceglie un altro e il problema torna. E nemmeno si poteva imporre una palette, perche' i
+colori delle fasce sono di chi li ha scelti — servono a riconoscere le proprie fasce a colpo
+d'occhio.
+
+Si corregge invece il colore **in arrivo**, e solo quando serve: `coloreFasciaLeggibile()` misura il
+contrasto fra il colore e il fondo VERO del tema corrente e, se sta sotto 4.5:1, lo porta a piccoli
+passi verso il nero (fondo chiaro) o verso il bianco (fondo scuro), fermandosi appena passa. Un
+giallo resta un giallo — scurito quanto basta — invece di diventare un colore deciso da noi, e chi
+ha scelto colori gia' leggibili non vede cambiare niente.
+
+Tre cose che valeva la pena decidere:
+
+- **La correzione va in tutte e due le direzioni.** Cercando il caso segnalato e' venuto fuori il
+  suo speculare, che nessuno aveva ancora notato: un colore SCURO su un tema scuro e' altrettanto
+  illeggibile (il cobalto #2440D8 su Lavagna fa 2.62:1). La stessa funzione lo schiarisce.
+- **Si legge il fondo, non si indovina il tema.** Il contrasto si misura contro il
+  `background-color` calcolato del `body`, quindi la cosa continua a funzionare se un domani si
+  aggiunge un quinto tema o si cambia il fondo di uno esistente — cosa appena successa, visto che
+  Sala Giochi ha cambiato fondo due commit fa.
+- **Si mette in cache e si invalida sul cambio tema.** Le liste qui arrivano a 500 righe e ogni
+  riga ha un gettone: leggere `getComputedStyle` per riga significherebbe 500 reflow. Il fondo si
+  legge una volta, i colori corretti si tengono in una `Map`, e un `MutationObserver` su
+  `data-tema` svuota tutto quando il tema cambia a caldo dal selettore.
+
+**Verificato** con 9 colori (compresi bianco e nero puri) sui quattro temi. Sui due chiari il giallo
+`#F5B01A` passa da 1.54:1 a 4.89:1 restando oro; il bianco puro diventa grigio a 4.55:1; il blu e
+l'inchiostro, che gia' passavano, **non vengono toccati**. Sui due scuri i gialli restano intatti e
+sono il blu e l'inchiostro a essere schiariti. Nessun colore esce sotto 4.5:1.
