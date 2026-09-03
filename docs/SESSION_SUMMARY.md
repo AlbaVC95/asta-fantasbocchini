@@ -143,6 +143,15 @@ quello di Render. **La correzione vera è nel pannello Supabase**, non qui. Nel 
 aggiunto `emailRedirectTo` alla registrazione, che non lo passava affatto. Vedi
 [DECISIONS.md](../DECISIONS.md).
 
+## Recupero password: il link della mail ora apre il modale
+
+Dopo il cambio degli URL su Supabase, il link portava alla schermata di accesso senza aprire
+niente. Causa di **tempi**: `onAuthStateChange` era registrato in fondo al `DOMContentLoaded`,
+dopo due attese di rete, e `PASSWORD_RECOVERY` — che non viene rigiocato a chi arriva tardi — era
+già passato. Ora l'ascoltatore si registra subito **e** si guarda direttamente l'URL
+(`type=recovery`), che non dipende da nessun evento. Gestito anche il link scaduto, che prima
+finiva nel nulla. Dettagli in [DECISIONS.md](../DECISIONS.md).
+
 ## Verifiche fatte
 
 - **Copertura sul listino VERO** (531 righe di `listino_giocatori` su Supabase, passate una per
@@ -166,6 +175,9 @@ aggiunto `emailRedirectTo` alla registrazione, che non lo passava affatto. Vedi
   Contrasti misurati sulla carta nuova: principale 16.75:1, secondario 8.12:1, muted 5.25:1,
   cobalto 6.76:1, rosso 4.65:1, oro-testo 5.34:1 — tutti sopra AA. Gli altri tre temi hanno il
   fondo invariato (serata, lavagna, cuoio).
+- Recupero password: provati con caricamenti VERI (non basta cambiare il frammento, che non
+  ricarica) i tre casi — link valido con e senza query nell'URL → il modale si apre; link scaduto
+  → il messaggio compare sulla schermata di accesso e il modale resta chiuso.
 - Colore fasce: provati 12 colori (bianco e nero puri compresi) sui quattro temi. Nessun gettone
   scende sotto 4.5:1 fra testo e riempimento; **un solo** colore su dodici ha avuto bisogno di un
   ritocco del riempimento (il rosa, 4.35 → 4.84:1), tutti gli altri restano esattamente quelli
@@ -202,9 +214,8 @@ aggiunto `emailRedirectTo` alla registrazione, che non lo passava affatto. Vedi
 
 ## Pendenze
 
-- **Da fare su Supabase, non nel codice** (Authentication → URL Configuration): mettere il dominio
-  Hostinger come *Site URL* e aggiungerlo alle *Redirect URLs*. Finché non si fa, le mail di
-  recupero password e di conferma registrazione continuano a puntare al sito vecchio.
+- Gli URL su Supabase (Site URL e Redirect URLs) sono stati aggiornati dall'utente al dominio
+  Hostinger: fatto.
 
 - `Venezia/Pozzi.jpg` è stato sostituito **mantenendo lo stesso nome**, perché il giocatore si
   chiama "Pozzi" senza iniziale e qualunque rinomina romperebbe il match esatto. Chi ha aperto

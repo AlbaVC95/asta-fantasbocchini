@@ -135,6 +135,66 @@ const SUPABASE_URL = 'https://boupigtvlowxajvwkuwr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvdXBpZ3R2bG93eGFqdndrdXdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NTA3MDYsImV4cCI6MjEwMDMyNjcwNn0.3GkbaKaJu7_6mZYkavDLAx7cW8qgraSyVKizMPYbXAA';
 const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// ══ RITORNO DAL LINK DI RECUPERO PASSWORD ══
+//
+// Segnalato dall'utente: cliccando il link nella mail si finiva sulla schermata di
+// accesso, senza nessun modo di impostare la password nuova.
+//
+// La causa era di TEMPI, non di logica. Supabase legge il link e annuncia
+// PASSWORD_RECOVERY appena il client viene creato, cioe' qui. L'ascoltatore pero'
+// stava dentro setupLogin(), che gira in fondo al DOMContentLoaded, DOPO due attese
+// di rete (lo stato manutenzione e checkSessioneUtente): quando finalmente si
+// registrava, l'annuncio era passato da un pezzo. E PASSWORD_RECOVERY non viene
+// ripetuto a chi arriva tardi — a differenza della sessione iniziale, che invece
+// viene rigiocata. Da qui il sintomo: nessun errore da nessuna parte, semplicemente
+// non succedeva niente.
+//
+// Ora si fanno due cose, e la seconda e' quella che regge:
+//  1. l'ascoltatore si registra QUI, subito, non in fondo all'avvio;
+//  2. si guarda direttamente l'URL. Il link di recupero porta `type=recovery`, e
+//     leggerlo non dipende da nessun evento ne' da quando parte il nostro codice.
+//     Se un domani Supabase cambia il nome dell'evento o il momento in cui lo manda,
+//     questo continua a funzionare.
+let _recuperoPasswordInAttesa = false;
+function _apriModaleNuovaPassword() {
+  const campo = document.getElementById('nuova-password');
+  if (!campo) return false;   // DOM non pronto: ci pensa l'avvio
+  campo.value = '';
+  document.getElementById('nuova-password-conferma').value = '';
+  document.getElementById('nuova-password-error').style.display = 'none';
+  document.getElementById('nuova-password-success').style.display = 'none';
+  openModal('modal-nuova-password');
+  _recuperoPasswordInAttesa = false;
+  return true;
+}
+supa.auth.onAuthStateChange((event) => {
+  if (event !== 'PASSWORD_RECOVERY') return;
+  if (!_apriModaleNuovaPassword()) _recuperoPasswordInAttesa = true;
+});
+// L'URL lo si guarda subito: `type=recovery` sta nel frammento con il flusso
+// implicito e nella query con quello PKCE, quindi si controllano tutti e due —
+// ma SEPARATAMENTE, non incollandoli. Attaccarli faceva finire la query subito
+// dopo il frammento (`...&type=recovery` + `?id=xyz`), e li' l'ancora di fine
+// non combaciava piu': il link veniva ignorato proprio quando l'utente arrivava
+// da una pagina con dei parametri, che qui e' normale (i link d'invito sono
+// `/?id=...`). Preso mentre lo si provava.
+function _pezziUrl() {
+  return [window.location.hash.replace(/^#/, ''), window.location.search.replace(/^\?/, '')];
+}
+if (_pezziUrl().some(p => /(^|&)type=recovery(&|$)/.test(p))) {
+  _recuperoPasswordInAttesa = true;
+}
+// Un link scaduto o gia' usato torna con l'errore nel frammento. Prima finiva nel
+// nulla — stessa schermata di accesso, nessuna spiegazione — ed e' indistinguibile
+// da "non ha funzionato". Si tiene da parte per dirlo all'utente.
+let _erroreRecupero = null;
+(function () {
+  for (const pezzo of _pezziUrl()) {
+    const m = pezzo.match(/(^|&)error_description=([^&]*)/);
+    if (m) { _erroreRecupero = decodeURIComponent(m[2].replace(/\+/g, ' ')); return; }
+  }
+})();
+
 // ══ SOUND SYSTEM ════════════════════════
 let _audioCtx = null;
 function _initAudio() { if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -628,6 +688,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     try { fn(); } catch (e) { console.error('[init] errore in ' + (fn.name || 'setup anonimo') + ':', e); }
   }
   [setupHome, setupLobby, setupAsta, setupFilters, setupTabs, setupLogin, setupMenu, setupStrategie, setupEditor, setupStrategiaAsta, setupAnteprima, setupRoseCompatta, setupAstaMobileAccordion, setupRipristinaDaFile].forEach(safeSetup);
+  // Il recupero password si apre QUI, in fondo: a questo punto il DOM c'e' e i
+  // gestori dei bottoni sono agganciati, quindi il modale e' subito usabile. Prima
+  // di `checkSessioneUtente` si aprirebbe su una pagina ancora senza gestori.
+  if (_recuperoPasswordInAttesa) _apriModaleNuovaPassword();
+  else if (_erroreRecupero) {
+    const err = document.getElementById('login-error');
+    if (err) { err.textContent = _erroreRecupero; err.style.display = 'block'; }
+  }
+
   // Warn before leaving page if in active asta
   window.addEventListener('beforeunload', (e) => {
     if (S.astaId && S.asta && S.asta.stato === 'in_corso') {
@@ -951,15 +1020,6 @@ function setupLogin() {
     }, 1500);
   });
 
-  supa.auth.onAuthStateChange((event) => {
-    if (event === 'PASSWORD_RECOVERY') {
-      document.getElementById('nuova-password').value = '';
-      document.getElementById('nuova-password-conferma').value = '';
-      document.getElementById('nuova-password-error').style.display = 'none';
-      document.getElementById('nuova-password-success').style.display = 'none';
-      openModal('modal-nuova-password');
-    }
-  });
 
   const btnChoiceListino = document.getElementById('btn-choice-listino');
   const inpListino = document.getElementById('inp-listino-excel');

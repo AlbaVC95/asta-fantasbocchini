@@ -2438,3 +2438,40 @@ passava nessun `emailRedirectTo`, quindi il link di conferma usava il Site URL *
 quando la lista non combaciava. Aggiunto, cosi' anche quella mail punta al dominio da cui ci si e'
 registrati. Da qui la regola: se un domani il dominio cambia di nuovo, **non si tocca il codice** —
 prende gia' quello giusto da solo — si aggiorna la configurazione su Supabase.
+
+
+## Il link di recupero password non apriva niente: era un problema di TEMPI
+
+Segnalato dall'utente dopo aver sistemato gli URL su Supabase: cliccando il link nella mail si
+finiva sulla schermata di accesso, senza nessun modo di impostare la password nuova. Nessun errore
+in console, nessun messaggio: semplicemente non succedeva niente.
+
+La logica c'era ed era giusta. Supabase legge il link e annuncia `PASSWORD_RECOVERY` **appena il
+client viene creato**. L'ascoltatore pero' stava dentro `setupLogin()`, che gira in fondo al
+`DOMContentLoaded`, **dopo due attese di rete** (lo stato manutenzione e `checkSessioneUtente`):
+quando finalmente si registrava, l'annuncio era passato da un pezzo. E `PASSWORD_RECOVERY` **non
+viene ripetuto** a chi arriva tardi, a differenza della sessione iniziale che invece viene
+rigiocata — quindi l'evento si perdeva senza lasciare traccia.
+
+**Da riusare**: un ascoltatore di eventi che dipende da qualcosa gia' successo va registrato il
+prima possibile, non dove capita nel flusso di avvio. E se l'evento e' "una tantum" e non viene
+rigiocato, non basta registrarlo presto: serve anche un modo di accorgersene guardando lo STATO
+invece dell'evento.
+
+Qui lo stato e' l'URL: il link di recupero porta `type=recovery`, e leggerlo non dipende da nessun
+evento ne' da quando parte il nostro codice. Se un domani Supabase cambia il nome dell'evento o il
+momento in cui lo manda, questo continua a funzionare. L'ascoltatore resta, registrato subito, ma
+e' la cintura: la bretella e' l'URL.
+
+**Un difetto trovato mentre lo si provava**, e vale come promemoria sul come si testa. La prima
+versione incollava frammento e query (`location.hash + location.search`) e cercava
+`type=recovery(&|$)`: cosi' la query finiva **dopo** il frammento e l'ancora di fine non
+combaciava piu'. Sarebbe passata inosservata, perche' il link di recupero normale non ha query —
+ma questa app usa `/?id=...` per gli inviti, quindi il caso si sarebbe presentato davvero. Ora i
+due pezzi si esaminano separati. Il difetto e' emerso solo perche' per forzare un caricamento vero
+si era aggiunto un parametro all'URL: **cambiare solo il frammento non ricarica la pagina**, quindi
+le prime prove stavano guardando il modale della prova precedente rimasto aperto.
+
+Aggiunto anche il caso del **link scaduto o gia' usato**: torna con `error_description` nel
+frammento e prima finiva nel nulla — stessa schermata di accesso, nessuna spiegazione,
+indistinguibile da "non funziona". Ora il messaggio si vede sulla schermata di accesso.
