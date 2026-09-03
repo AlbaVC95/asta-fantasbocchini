@@ -2135,3 +2135,47 @@ dell'originale (indici allineati); un click su una sotto-tab dello specchio arri
 `change`; il bottone copiato e' `display:none`. **Nessuna regressione** sulle tre viste
 preesistenti: Rose, Storico e Svincolati rispecchiano e i click tornano indietro come prima.
 Zero errori in console.
+
+
+## Sala Giochi: il cronometro diventa un display a sette segmenti
+
+Richiesta dell'utente, con un riferimento fotografico (un pannello a LED rosso/giallo/verde). In
+`sala-giochi` il cronometro era l'unico pezzo rimasto degli altri temi: una **clessidra da tavolo**
+piu' la cifra in `Press Start 2P`. In una sala giochi un orologio a sabbia non c'entra niente.
+
+Nuovo modulo `frontend/js/timer-arcade.js`, additivo come `clessidra.js`: disegna un pannello SVG
+con tre cifre a sette segmenti e la barra del tempo sotto, e **non calcola niente**. Le cifre le
+legge da `#timer-display`, la frazione rimasta da `#timer-progress` (`stroke-dashoffset`) — la
+stessa identica sorgente da cui la clessidra ricava il livello della sabbia. L'anello resta nel DOM
+nascosto proprio per questo. Nel tema, clessidra e cifra normale spariscono: il pannello le
+sostituisce entrambe, non ci si affianca.
+
+Quattro cose che valeva la pena decidere, non solo disegnare:
+
+- **I segmenti spenti si vedono.** E' quello che distingue un display vero da un numero colorato:
+  su un pannello a LED l'otto completo e' sempre li' in trasparenza e le cifre sono i segmenti
+  accesi sopra quel fantasma. Due poligoni sovrapposti per segmento, il fantasma a opacita' .09.
+- **Le celle restano SEMPRE tre, anche sotto i 100 secondi.** Il timer arriva a 120
+  (`inp-timer-prima`, `max=120`), quindi tre cifre servono; ma farle comparire e sparire
+  allargherebbe e stringerebbe il pannello. Sotto i 100 la prima cella semplicemente non si
+  accende e resta fantasma — che e' anche il comportamento giusto di un display vero. Le altre due
+  sono sempre a due cifre (`07`, non `7`), come su qualunque macchina.
+- **Il colore segue le soglie che gia' esistono**: rosso da 3 secondi, ambra da 10, verde sopra.
+  Sono quelle di `updateTimer()` in `app.js` e di `fase()` in `comportamenti-asta.js`. Inventarne
+  altre avrebbe fatto diventare rossa meta' della scena in un momento e meta' in un altro — errore
+  gia' documentato qui a proposito del rosso a 3 secondi. Il ticchettio sonoro resta a 5: e' un
+  avviso diverso, con una soglia sua.
+- **La barra arrotonda per ECCESSO.** Finche' resta un briciolo di tempo deve restare acceso almeno
+  un blocco: con l'arrotondamento normale la barra andava a zero mentre il display diceva ancora 1,
+  e due indicatori dello stesso dato che si contraddicono sono peggio di uno solo.
+
+Un dettaglio di sincronia che si sarebbe visto subito e che val la pena ricordare: `updateTimer()`
+scrive **prima** l'anello e **poi** la cifra. Osservando solo l'anello si leggerebbe il numero del
+secondo precedente — il pannello sarebbe sempre indietro di uno. Servono due `MutationObserver`,
+uno per sorgente.
+
+**Verificato** in browser col DOM vero del cronometro, riproducendo l'ordine di scrittura di
+`updateTimer()`: le cifre accendono i segmenti giusti a 60/45/12/10/7/3/1/0 e a 120 (dove si accende
+anche la terza cella); i colori cambiano alle soglie giuste; la barra fa 12/12, 9/12, 3/12, 1/12, 0;
+clessidra e cifra normale sono nascoste solo in `sala-giochi` e restano al loro posto negli altri
+tre temi. Zero errori in console.

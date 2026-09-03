@@ -99,6 +99,15 @@ conta gli indici dei figli — e una delega nuova per i `select`, che non si azi
 spostare i giocatori è drag & drop, non click. Motivi e alternative scartate in
 [DECISIONS.md](../DECISIONS.md).
 
+## Sala Giochi: cronometro a sette segmenti
+
+Nuovo modulo `frontend/js/timer-arcade.js` (additivo, come `clessidra.js`): un pannello SVG con
+tre cifre a sette segmenti — fantasma dei segmenti spenti compreso — la barra del tempo e
+l'etichetta TIME. Verde, ambra sotto i 10 secondi, rosso sotto i 3, con le soglie che l'app ha
+già. Non calcola niente: legge le cifre da `#timer-display` e la frazione da `#timer-progress`,
+la stessa sorgente della clessidra. Nel solo tema `sala-giochi` sostituisce clessidra e cifra
+normale. Dettagli in [DECISIONS.md](../DECISIONS.md).
+
 ## Verifiche fatte
 
 - **Copertura sul listino VERO** (531 righe di `listino_giocatori` su Supabase, passate una per
@@ -118,6 +127,10 @@ spostare i giocatori è drag & drop, non click. Motivi e alternative scartate in
 - Tema lavagna: carta di puja riprodotta col DOM vero e confrontata prima/dopo sulla texture
   reale. **Non verificate** le schermate fitte (Rose, Storico, Admin): il server locale non ha le
   credenziali Supabase e non si va oltre il login.
+- Cronometro arcade: provato col DOM vero del cronometro, riproducendo l'ordine con cui
+  `updateTimer()` scrive anello e cifra. Segmenti giusti a 60/45/12/10/7/3/1/0 e a 120 (terza cella
+  accesa); colori alle soglie giuste; barra 12/12 → 9/12 → 3/12 → 1/12 → 0. Visibile **solo** in
+  `sala-giochi`: negli altri tre temi restano clessidra e cifra normale. Zero errori in console.
 - Vista a parte: provata col codice vero e `window.open` sostituito da un `<iframe>`. Griglia P/A
   esce col titolo e il tema giusti e con gli indici allineati all'originale; click su una sotto-tab
   e cambio di `select` arrivano all'elemento vero; il bottone copiato è `display:none`. Rose,

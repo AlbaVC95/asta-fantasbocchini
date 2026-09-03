@@ -2925,6 +2925,57 @@ html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .btn-rilancia{
   50%{transform:translate(3px,3px);box-shadow:3px 3px 0 #141024}
 }
 
+/* ══ IL CRONOMETRO DEL CABINATO ══
+   Qui la clessidra non c'entra niente: in una sala giochi il tempo lo dice un
+   display a sette segmenti con la barra sotto. Il disegno lo fa
+   js/timer-arcade.js (che NON calcola il tempo: lo legge da dove lo legge gia'
+   la clessidra), qui ci sono solo materia e misura.
+   Il colore lo scrive il JS in --arc-colore, perche' dipende dai secondi che
+   restano e le soglie stanno nel codice, non nel foglio. */
+html[data-tema="sala-giochi"] body #puja-panel-slot .clessidra,
+html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .clessidra,
+html[data-tema="sala-giochi"] body #puja-panel-slot .timer-inner,
+html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .timer-inner{
+  display:none !important;
+}
+/* fuori da sala-giochi il pannello non esiste: il modulo lo costruisce sempre
+   (come fa la clessidra, nascosta in "lavagna") e qui si decide chi lo vede */
+html body .arc-timer{display:none}
+html[data-tema="sala-giochi"] body #puja-panel-slot .arc-timer,
+html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .arc-timer{
+  display:block !important;flex:0 0 auto !important;
+  width:132px !important;height:auto !important;overflow:visible !important;
+}
+html[data-tema="sala-giochi"] .arc-scocca{
+  fill:#141024;stroke:#141024;stroke-width:2;
+}
+html[data-tema="sala-giochi"] .arc-schermo{fill:#07060F}
+/* il fantasma: l'otto sempre presente, appena percettibile. E' questo che fa
+   leggere il pannello come un display vero invece che come un numero colorato */
+html[data-tema="sala-giochi"] .arc-ghost{fill:var(--arc-colore,#3DF07A);opacity:.09}
+html[data-tema="sala-giochi"] .arc-seg{
+  fill:var(--arc-colore,#3DF07A);opacity:0;
+  transition:opacity .12s linear;
+}
+html[data-tema="sala-giochi"] .arc-seg.acceso{
+  opacity:1;filter:drop-shadow(0 0 3px var(--arc-colore,#3DF07A));
+}
+html[data-tema="sala-giochi"] .arc-blocco{
+  fill:var(--arc-colore,#3DF07A);opacity:.13;transition:opacity .12s linear;
+}
+html[data-tema="sala-giochi"] .arc-blocco.acceso{opacity:.92}
+html[data-tema="sala-giochi"] .arc-etichetta{
+  font-family:'Press Start 2P',var(--font-mono);font-size:8px;
+  fill:var(--arc-colore,#3DF07A);opacity:.75;letter-spacing:1px;
+}
+/* ultimi secondi: il pannello lampeggia, come una macchina che sta per finire
+   il tempo. Solo il display — l'audio non si tocca, e' il momento in cui si urla */
+html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .arc-timer,
+html[data-tema="sala-giochi"] body.puja-urgente .asta-row-puja .arc-timer{
+  animation:arc-lampeggio .5s steps(1,end) infinite;
+}
+@keyframes arc-lampeggio{0%,60%{opacity:1}61%,100%{opacity:.45}}
+
 /* ── Il cronometro: cifre da punteggio ── */
 html[data-tema="sala-giochi"] body #puja-panel-slot .timer-number,
 html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .timer-number{

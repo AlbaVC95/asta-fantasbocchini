@@ -50,6 +50,8 @@ frontend/css/tema-serata.css← selettore multi-tema: composizione e materie dei
                             `cuoio`/`lavagna`/`sala-giochi`, attributo `data-tema` su `<html>`),
                             caricato DOPO style.css
 frontend/js/clessidra.js   ← la clessidra del cronometro (SVG); legge il tempo, non lo calcola
+frontend/js/timer-arcade.js← il cronometro del tema "sala-giochi": display a sette segmenti +
+                             barra del tempo. Stessa regola della clessidra: legge, non calcola
 frontend/js/comportamenti-asta.js ← comportamenti aggiuntivi della puja (leva, "ancora in gioco")
 frontend/js/puja-sticky.js ← la striscia fissa in alto quando la carta di puja scorre via
 frontend/js/vista-esterna.js← apre Rose/Storico/Svincolati in una scheda a parte (specchio dal vivo
