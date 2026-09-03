@@ -2927,11 +2927,13 @@ html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .btn-rilancia{
 
 /* ══ IL CRONOMETRO DEL CABINATO ══
    Qui la clessidra non c'entra niente: in una sala giochi il tempo lo dice un
-   display a sette segmenti con la barra sotto. Il disegno lo fa
+   display a sette segmenti dietro il vetro, con la barra sotto. Il disegno lo fa
    js/timer-arcade.js (che NON calcola il tempo: lo legge da dove lo legge gia'
    la clessidra), qui ci sono solo materia e misura.
-   Il colore lo scrive il JS in --arc-colore, perche' dipende dai secondi che
-   restano e le soglie stanno nel codice, non nel foglio. */
+   Il colore delle cifre lo scrive il JS in --arc-colore, perche' dipende dai
+   secondi che restano e le soglie stanno nel codice, non nel foglio. Le tacche
+   della barra invece hanno il colore STAMPATO nell'SVG: sono zone fisse, come
+   la spia della benzina, e non devono seguire il tempo. */
 html[data-tema="sala-giochi"] body #puja-panel-slot .clessidra,
 html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .clessidra,
 html[data-tema="sala-giochi"] body #puja-panel-slot .timer-inner,
@@ -2944,39 +2946,65 @@ html body .arc-timer{display:none}
 html[data-tema="sala-giochi"] body #puja-panel-slot .arc-timer,
 html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .arc-timer{
   display:block !important;flex:0 0 auto !important;
-  width:132px !important;height:auto !important;overflow:visible !important;
+  width:150px !important;height:auto !important;overflow:visible !important;
+  /* l'ombra dura del tema, la stessa dei pannelli: e' un oggetto appoggiato */
+  filter:drop-shadow(5px 5px 0 rgba(20,16,36,.9));
 }
-html[data-tema="sala-giochi"] .arc-scocca{
-  fill:#141024;stroke:#141024;stroke-width:2;
+/* il mobile: scocca scura, un filo di plastica piu' chiara sotto la luce,
+   e la rima in cobalto — l'accento strutturale del tema */
+html[data-tema="sala-giochi"] .arc-scocca{fill:#141024}
+html[data-tema="sala-giochi"] .arc-rilievo{
+  fill:none;stroke:#3B3468;stroke-width:1.2;
 }
-html[data-tema="sala-giochi"] .arc-schermo{fill:#07060F}
+html[data-tema="sala-giochi"] .arc-rima{
+  fill:none;stroke:#2440D8;stroke-width:2;
+}
+html[data-tema="sala-giochi"] .arc-vite{fill:#2B2550;stroke:#0B0917;stroke-width:.8}
+html[data-tema="sala-giochi"] .arc-taglio{fill:#0B0917}
+html[data-tema="sala-giochi"] .arc-schermo{fill:#05040C}
+/* il vetro non deve intercettare i click: e' decorazione sopra le cifre */
+html[data-tema="sala-giochi"] .arc-vetro{pointer-events:none}
+
 /* il fantasma: l'otto sempre presente, appena percettibile. E' questo che fa
    leggere il pannello come un display vero invece che come un numero colorato */
-html[data-tema="sala-giochi"] .arc-ghost{fill:var(--arc-colore,#3DF07A);opacity:.09}
-html[data-tema="sala-giochi"] .arc-seg{
-  fill:var(--arc-colore,#3DF07A);opacity:0;
+html[data-tema="sala-giochi"] .arc-ghost{fill:var(--arc-colore,#3DF07A);opacity:.085}
+/* l'alone: lo stesso segmento sfocato sotto quello vero, cioe' la luce del LED
+   che sborda sul vetro. Sfocato una volta con un filtro SVG, non con un
+   box-shadow: l'ombra seguirebbe il rettangolo dell'elemento, non la sagoma */
+html[data-tema="sala-giochi"] .arc-alone{
+  fill:var(--arc-colore,#3DF07A);opacity:0;filter:url(#arc-bagliore);
   transition:opacity .12s linear;
 }
-html[data-tema="sala-giochi"] .arc-seg.acceso{
-  opacity:1;filter:drop-shadow(0 0 3px var(--arc-colore,#3DF07A));
+html[data-tema="sala-giochi"] .arc-alone.acceso{opacity:.55}
+html[data-tema="sala-giochi"] .arc-seg{
+  fill:var(--arc-colore,#3DF07A);opacity:0;transition:opacity .12s linear;
 }
-html[data-tema="sala-giochi"] .arc-blocco{
-  fill:var(--arc-colore,#3DF07A);opacity:.13;transition:opacity .12s linear;
+html[data-tema="sala-giochi"] .arc-seg.acceso{opacity:1}
+
+/* la barra: la zona stampata sotto, sempre visibile ma spenta; la tacca vera
+   sopra, che si accende. I due strati hanno lo STESSO colore per tacca */
+html[data-tema="sala-giochi"] .arc-zona{opacity:.14}
+html[data-tema="sala-giochi"] .arc-blocco{opacity:0;transition:opacity .12s linear}
+html[data-tema="sala-giochi"] .arc-blocco.acceso{opacity:.95}
+
+/* il puntino che batte ad ogni tick del server */
+html[data-tema="sala-giochi"] .arc-battito{
+  fill:var(--arc-colore,#3DF07A);opacity:.16;transition:opacity .18s linear;
 }
-html[data-tema="sala-giochi"] .arc-blocco.acceso{opacity:.92}
+html[data-tema="sala-giochi"] .arc-battito.acceso{opacity:.95}
+
 html[data-tema="sala-giochi"] .arc-etichetta{
   font-family:'Press Start 2P',var(--font-mono);font-size:8px;
-  fill:var(--arc-colore,#3DF07A);opacity:.75;letter-spacing:1px;
+  fill:#6E7BC8;letter-spacing:1.5px;
 }
 /* Ultimi secondi: lampeggia SOLO l'etichetta.
    Prima l'animazione stava sull'intero .arc-timer, ed era sbagliata per due
    motivi, il primo segnalato dall'utente:
-   - la barra sembrava allungarsi e accorciarsi da sola. Non cambiava: i blocchi
-     spenti stanno a opacita' .13 e, moltiplicati per il .45 del lampeggio,
-     finivano a .06, cioe' invisibili. Spariva la parte gia' consumata e la
-     barra sembrava piu' corta, poi tornava. Attenuare un contenitore attenua
-     anche cio' che dentro e' gia' tenue di suo, e i rapporti fra i livelli si
-     perdono;
+   - la barra sembrava allungarsi e accorciarsi da sola. Non cambiava: le tacche
+     spente stanno a opacita' bassa e, moltiplicate per il .45 del lampeggio,
+     finivano invisibili. Spariva la parte gia' consumata e la barra sembrava
+     piu' corta, poi tornava. Attenuare un contenitore attenua anche cio' che
+     dentro e' gia' tenue di suo, e i rapporti fra i livelli si perdono;
    - e far lampeggiare la cifra proprio negli ultimi tre secondi va contro il
      suo mestiere: e' il momento in cui la si legge di piu'.
    L'etichetta non porta nessun dato, quindi puo' lampeggiare quanto vuole. */
@@ -2984,7 +3012,7 @@ html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .arc-etichetta,
 html[data-tema="sala-giochi"] body.puja-urgente .asta-row-puja .arc-etichetta{
   animation:arc-lampeggio .5s steps(1,end) infinite;
 }
-@keyframes arc-lampeggio{0%,60%{opacity:.75}61%,100%{opacity:.12}}
+@keyframes arc-lampeggio{0%,60%{opacity:1}61%,100%{opacity:.15}}
 
 /* ── Il cronometro: cifre da punteggio ── */
 html[data-tema="sala-giochi"] body #puja-panel-slot .timer-number,

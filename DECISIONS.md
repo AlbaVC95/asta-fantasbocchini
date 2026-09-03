@@ -2193,3 +2193,79 @@ clessidra e cifra normale sono nascoste solo in `sala-giochi` e restano al loro 
 tre temi. Zero errori in console. Dopo la correzione, campionando le opacita' calcolate lungo un
 ciclo di lampeggio in stato urgente: pannello fisso a 1, blocco acceso fisso a .92, blocco spento
 fisso a .13, cifra fissa a 1, e solo l'etichetta che alterna .75 e .12.
+
+
+## Il cronometro del cabinato, secondo giro: cosa fa sembrare acceso un display
+
+L'utente ha chiesto di renderlo "molto piu' curato". Le aggiunte non sono decorazione a caso: ogni
+pezzo risponde a una domanda su cosa distingue un oggetto disegnato da un oggetto acceso.
+
+- **L'alone.** Sotto ogni segmento acceso c'e' lo STESSO poligono sfocato (un `feGaussianBlur` in
+  un filtro SVG). E' la luce del LED che sborda sul vetro, ed e' la cosa che piu' di tutte fa
+  leggere il pannello come acceso invece che come disegnato. Sfocato con un filtro e non con un
+  `box-shadow`: l'ombra seguirebbe il rettangolo dell'elemento, non la sagoma del segmento —
+  stessa ragione per cui il bicchiere del tema lavagna usava `filter` e non `box-shadow`.
+- **Il vetro davanti**, in tre strati: scanline, vignettatura, riflesso obliquo. Va **sopra** le
+  cifre, non sotto, e con `pointer-events:none`.
+- **Le viti agli angoli e la rima in cobalto.** Sono quelle che fanno leggere la cornice come un
+  pezzo di mobile avvitato invece che come un rettangolo arrotondato, e il cobalto e' l'accento
+  strutturale che il tema usa gia' ovunque.
+- **La barra diventa un indicatore con le zone STAMPATE** (due tacche rosse, tre ambra, il resto
+  verde), non piu' una striscia monocolore che segue il colore del tempo. Le tacche si accendono da
+  sinistra, quindi le rosse sono le ultime a spegnersi: la barra dice a che punto sei anche
+  guardandola di sfuggita, come la spia della benzina. Il colore delle zone sta nell'SVG e NON in
+  `--arc-colore`, perche' e' una proprieta' fissa dello strumento, non dello stato.
+- **Il puntino che batte** si accende e si spegne quando il NUMERO cambia, non a tempo: e' l'unica
+  parte animata che dice qualcosa di vero — il cronometro sta ricevendo i tick del server.
+
+Due misure sbagliate al primo tentativo, trovate guardando il pannello ingrandito e non alle
+dimensioni vere (a 150px sembravano a posto):
+
+1. **Le cifre erano alte 58 in uno schermo alto 62**, cioe' due pixel di margine: sembravano
+   tagliate dal bordo del vetro. Portate a 48 in un riquadro da 62. Un display ha sempre aria
+   attorno alle cifre.
+2. **Le scanline erano 2 righe scure su 4 a opacita' .34**: tagliavano i segmenti in strisce e il
+   numero si leggeva peggio dell'originale. Portate a 1 su 3 a .22, e la vignettatura da .55 a .38.
+   La scanline deve dire "c'e' un vetro", non competere col numero.
+
+**Da riusare**: un pannello del genere va guardato a 3-4 volte la sua dimensione vera per
+accorgersi degli errori di misura, e alla dimensione vera per capire se si legge. Servono
+entrambe le prove — la prima versione passava la seconda e falliva la prima.
+
+
+## Il cronometro del cabinato, terzo giro: dimensionato sui 7 secondi veri
+
+L'utente ha detto una cosa che ha cambiato il disegno: **l'asta gira quasi sempre fra 7 e 8
+secondi**. I valori di partenza del progetto lo confermano — `inp-timer-prima` vale 7 e
+`inp-timer-rilancio` vale 5. Due cose diventavano allora difetti veri, non rifiniture:
+
+- **Il verde non si vedeva mai.** Le soglie erano assolute: verde sopra 10, ambra sotto 10, rosso
+  sotto 3. Un conteggio da 7 NASCEVA gia' ambra. Ora la soglia dell'ambra e' **proporzionale al
+  totale** (40%, con un minimo di 4 perche' sotto non resterebbe spazio fra ambra e rosso), mentre
+  il rosso resta inchiodato a 3 secondi perche' e' la soglia dell'app. Con 7 fa 7-6-5 verde, 4
+  ambra, 3-2-1 rosso; con 5 fa 5 verde, 4 ambra, 3-2-1 rosso; con 60 l'ambra parte da 24.
+- **La terza cella non si accendeva mai** e si mangiava un terzo dello schermo, tenendo le cifre
+  piccole. Ora le celle sono **due**, con cifre quasi il doppio, e diventano tre solo se il timer
+  parte da 100 o piu'. La scelta si fa sul TOTALE e non sul valore corrente, cosi' dentro una
+  chiamata la larghezza non cambia mai a meta' conteggio — che era la ragione per cui la prima
+  versione teneva tre celle fisse.
+
+**Il totale non ce l'ha nessuno, qui: si ricava.** `S` in `app.js` e' un `const` di primo livello,
+quindi non e' una proprieta' di `window` — la stessa trappola gia' documentata per
+`puja-sticky.js`, che infatti guarda il DOM. Ma il modulo legge gia' due cose che bastano:
+`frazione = secondi/totale` dall'anello e `secondi` dal display, quindi `totale = secondi/frazione`.
+Nessuna sorgente nuova, nessun aggancio a `updateTimer`.
+
+**Un errore mio che vale la pena raccontare**, perche' e' il modo in cui e' stato trovato. Rifacendo
+la geometria delle cifre in modo parametrico, la sostituzione del blocco si e' portata via anche la
+mappa `CIFRE` (stava fra i due punti che delimitavano il taglio). Il risultato in pagina non era una
+schermata bianca: il colore cambiava correttamente ogni secondo, ma **nessun segmento si accendeva e
+la barra restava ferma a tutte le tacche**. Cioe' sembrava un problema di CSS o di osservatori.
+La causa era una `ReferenceError` dentro `aggiorna()`, che moriva subito dopo la riga del colore:
+tutto quello che veniva prima funzionava, tutto quello che veniva dopo non esisteva. Trovata
+mettendo un `window.addEventListener('error')` e facendo girare il cronometro, non leggendo il
+codice. **Da riusare: quando un aggiornamento periodico fa a meta' il suo lavoro — la prima parte
+si', la seconda no — il primo sospetto e' un'eccezione a meta' funzione, non la logica della parte
+che non si vede.** E la console va guardata mentre il caso gira, perche' il suo storico contiene
+anche gli errori dei caricamenti precedenti: qui gli stessi messaggi restavano visibili dopo il
+fix, e la prova pulita e' stata contare gli errori NUOVI durante un conteggio intero (zero).

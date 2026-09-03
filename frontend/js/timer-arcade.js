@@ -1,10 +1,10 @@
 // ═══════════════════════════════════════════════════════════════════
 // IL CRONOMETRO DEL CABINATO — solo tema "sala-giochi"
 //
-// Un display a sette segmenti con la barra del tempo sotto, al posto
-// della clessidra: in una sala giochi un orologio a sabbia non c'entra
-// niente, e le due letture (esatta e a colpo d'occhio) si dicono in
-// lingua arcade.
+// Un display a sette segmenti dietro il vetro, con la barra del tempo
+// sotto, al posto della clessidra: in una sala giochi un orologio a
+// sabbia non c'entra niente, e le due letture (esatta e a colpo d'occhio)
+// si dicono in lingua arcade.
 //
 // Da dove vengono i dati — questo file NON calcola il tempo, come la
 // clessidra:
@@ -15,7 +15,7 @@
 //     tutti i temi ma resta nel DOM proprio per questo: e' la sorgente.
 // Se questo file non venisse caricato, l'asta funzionerebbe identica.
 //
-// Due cose che sembrano dettagli e non lo sono:
+// Le cose che sembrano dettagli e non lo sono:
 //
 // 1. I SEGMENTI SPENTI SI VEDONO. E' quello che distingue un display
 //    vero da un numero colorato: su un pannello a LED l'otto completo e'
@@ -25,106 +25,208 @@
 //    il suo fantasma resta e il pannello non cambia larghezza. Un
 //    display che si allarga e si stringe non e' un display.
 //
-// 2. IL COLORE SEGUE LE SOGLIE CHE GIA' ESISTONO: rosso da 3 secondi,
-//    ambra da 10, verde sopra. Sono le stesse di `updateTimer()` in
-//    app.js (che accende `.urgent`) e di `fase()` in
+// 2. IL COLORE DELLE CIFRE SEGUE LE SOGLIE CHE GIA' ESISTONO: rosso da 3
+//    secondi, ambra da 10, verde sopra. Sono le stesse di `updateTimer()`
+//    in app.js (che accende `.urgent`) e di `fase()` in
 //    comportamenti-asta.js (che accende `body.puja-urgente`). Se qui se
 //    ne inventassero altre, meta' della scena diventerebbe rossa in un
-//    momento e meta' in un altro — l'errore e' gia' documentato in
-//    DECISIONS.md a proposito del rosso a 3 secondi.
-//    Il ticchettio sonoro parte da 5 e NON si tocca: e' un avviso
-//    diverso, con una soglia sua, e sta dov'e'.
+//    momento e meta' in un altro — errore gia' documentato in
+//    DECISIONS.md. Il ticchettio sonoro parte da 5 e NON si tocca: e' un
+//    avviso diverso, con una soglia sua.
+//
+// 3. LA BARRA E' UN INDICATORE CON LE ZONE STAMPATE, non una striscia
+//    monocolore. Le tacche hanno un colore FISSO — le ultime a spegnersi
+//    sono rosse, poi ambra, poi verde — quindi dice a che punto sei anche
+//    guardandola di sfuggita e anche se non hai visto il numero cambiare.
+//    E' come la spia della benzina: la zona rossa e' rossa sempre, non
+//    solo quando ci arrivi.
+//
+// 4. IL PUNTINO CHE BATTE. Un LED che si accende e si spegne ad ogni
+//    tick del server: e' l'unica parte animata che dice qualcosa di vero
+//    (il cronometro sta ricevendo dati), invece di muoversi per bellezza.
 // ═══════════════════════════════════════════════════════════════════
 (function () {
   'use strict';
 
   var CIRCONFERENZA = 339.292;   // r=54, come l'SVG dell'anello in index.html
-  var CELLE = 3;                 // il timer arriva a 120s (inp-timer-prima, max=120)
 
-  // Le sette lastre di una cifra, nel sistema di riferimento della cella
-  // (34 x 58). Nomi standard dei segmenti:
+  // ── una cifra a sette segmenti, disegnata su misura
   //      aaa
   //     f   b
   //      ggg
   //     e   c
   //      ddd
-  var T = 6;                     // spessore
-  function orizzontale(y, x0, x1) {
-    var m = T / 2;
-    return [[x0 + m, y - m], [x1 - m, y - m], [x1, y], [x1 - m, y + m], [x0 + m, y + m], [x0, y]];
+  // La misura non e' fissa: dipende da quante celle servono (vedi MODI). Con
+  // due celle le cifre sono quasi il doppio, ed e' il caso che conta — l'asta
+  // gira con timer da 5 a 8 secondi.
+  function segmentiPer(W, H, T) {
+    var m = T / 2, o = T + 1, meta = H / 2;
+    function oriz(y, x0, x1) {
+      return [[x0 + m, y - m], [x1 - m, y - m], [x1, y], [x1 - m, y + m], [x0 + m, y + m], [x0, y]];
+    }
+    function vert(x, y0, y1) {
+      return [[x - m, y0 + m], [x, y0], [x + m, y0 + m], [x + m, y1 - m], [x, y1], [x - m, y1 - m]];
+    }
+    return {
+      a: oriz(m, o, W - o),
+      b: vert(W - m, o, meta - m - 1),
+      c: vert(W - m, meta + m + 1, H - o),
+      d: oriz(H - m, o, W - o),
+      e: vert(m, meta + m + 1, H - o),
+      f: vert(m, o, meta - m - 1),
+      g: oriz(meta, o, W - o)
+    };
   }
-  function verticale(x, y0, y1) {
-    var m = T / 2;
-    return [[x - m, y0 + m], [x, y0], [x + m, y0 + m], [x + m, y1 - m], [x, y1], [x - m, y1 - m]];
-  }
-  var SEGMENTI = {
-    a: orizzontale(4, 6, 28),
-    b: verticale(29, 7, 26),
-    c: verticale(29, 32, 51),
-    d: orizzontale(54, 6, 28),
-    e: verticale(5, 32, 51),
-    f: verticale(5, 7, 26),
-    g: orizzontale(29, 6, 28)
+
+  // Lo schermo utile e' x 14..136, y 11..87. Due modi:
+  //  - DUE celle, il caso normale: cifre grandi, tutta la larghezza per loro;
+  //  - TRE celle, solo se il timer parte da 100 o piu' (il massimo configurabile
+  //    e' 120). La scelta si fa sul TOTALE, non sul valore corrente, cosi'
+  //    dentro una stessa chiamata la larghezza non cambia mai a meta' conteggio.
+  var MODI = {
+    2: { W: 44, H: 66, T: 8, stacco: 12 },
+    3: { W: 34, H: 56, T: 6, stacco: 8 }
   };
+
   // Quali segmenti accende ogni cifra.
   var CIFRE = {
-    '0': 'abcdef', '1': 'bc',    '2': 'abged', '3': 'abgcd', '4': 'fgbc',
-    '5': 'afgcd',  '6': 'afgedc', '7': 'abc',  '8': 'abcdefg', '9': 'abcdfg'
+    '0': 'abcdef', '1': 'bc',     '2': 'abged', '3': 'abgcd', '4': 'fgbc',
+    '5': 'afgcd',  '6': 'afgedc', '7': 'abc',   '8': 'abcdefg', '9': 'abcdfg'
   };
-
   var ORDINE = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
 
-  // Verde finche' c'e' tempo, ambra a 10, rosso a 3: le soglie dell'app.
-  function coloreDi(secondi) {
-    if (secondi <= 3)  return '#FF2D2D';
-    if (secondi <= 10) return '#FFC61E';
-    return '#3DF07A';
+  var VERDE = '#3DF07A', AMBRA = '#FFC61E', ROSSO = '#FF2D2D';
+
+  // Il ROSSO resta a 3 secondi fissi: e' la soglia dell'app (updateTimer accende
+  // `.urgent`, comportamenti-asta.js accende `body.puja-urgente`) e non si tocca,
+  // altrimenti meta' della scena diventa rossa in un momento e meta' in un altro.
+  //
+  // L'AMBRA invece era a 10 secondi fissi, ed era sbagliata: quest'asta gira con
+  // timer da 5 a 8 secondi (i valori di partenza sono 7 e 5), quindi il conteggio
+  // NASCEVA gia' ambra e il verde non si vedeva mai. Ora e' proporzionale al
+  // totale, con un minimo di 4 perche' sotto non ci sarebbe spazio fra ambra e
+  // rosso: con 7 secondi fa 7-6-5 verde, 4 ambra, 3-2-1 rosso; con 60 fa ambra
+  // dagli ultimi 24.
+  function coloreDi(secondi, totale) {
+    if (secondi <= 3) return ROSSO;
+    var sogliaAmbra = Math.max(4, Math.round((totale || 10) * 0.4));
+    if (secondi <= sogliaAmbra) return AMBRA;
+    return VERDE;
   }
 
   function punti(p) {
     return p.map(function (c) { return c[0] + ',' + c[1]; }).join(' ');
   }
 
-  function disegnaCella(i) {
-    var x = 10 + i * 38;
-    var s = '<g transform="translate(' + x + ',10)">';
-    for (var k = 0; k < ORDINE.length; k++) {
-      var nome = ORDINE[k];
-      // Due poligoni sovrapposti per segmento: il fantasma sempre acceso a
-      // bassissima opacita', e sopra quello vero che si accende e si spegne.
-      // Cosi' l'otto completo resta sempre leggibile in trasparenza, come su
-      // un pannello a LED spento.
-      s += '<polygon class="arc-ghost" points="' + punti(SEGMENTI[nome]) + '"/>';
-      s += '<polygon class="arc-seg" data-cella="' + i + '" data-seg="' + nome +
-           '" points="' + punti(SEGMENTI[nome]) + '"/>';
+  // ── la barra: 14 tacche con la zona stampata addosso. Si accendono da
+  //    sinistra, quindi le prime sono le ULTIME a spegnersi: li' va il rosso.
+  var BLOCCHI = 14;
+  function zonaDi(i) {
+    if (i < 2) return ROSSO;
+    if (i < 5) return AMBRA;
+    return VERDE;
+  }
+
+  // Le celle si centrano nello schermo, qualunque sia il modo.
+  function disegnaCelle(celle) {
+    var m = MODI[celle];
+    var seg = segmentiPer(m.W, m.H, m.T);
+    var larghezza = celle * m.W + (celle - 1) * m.stacco;
+    var x0 = 14 + (122 - larghezza) / 2;
+    var y0 = 11 + (76 - m.H) / 2;
+    var s = '<g class="arc-cifre">';
+    for (var i = 0; i < celle; i++) {
+      s += '<g transform="translate(' + (x0 + i * (m.W + m.stacco)).toFixed(1) + ',' + y0.toFixed(1) + ')">';
+      for (var k = 0; k < ORDINE.length; k++) {
+        var nome = ORDINE[k], p = punti(seg[nome]);
+        // Tre poligoni sovrapposti per segmento:
+        //  - il fantasma, sempre acceso a bassissima opacita' (il display spento);
+        //  - l'alone, lo stesso poligono sfocato: la luce del LED che sborda sul
+        //    vetro, ed e' cio' che fa sembrare il pannello acceso invece che
+        //    disegnato;
+        //  - il segmento vero.
+        s += '<polygon class="arc-ghost" points="' + p + '"/>';
+        s += '<polygon class="arc-alone" data-cella="' + i + '" data-seg="' + nome + '" points="' + p + '"/>';
+        s += '<polygon class="arc-seg"   data-cella="' + i + '" data-seg="' + nome + '" points="' + p + '"/>';
+      }
+      s += '</g>';
     }
     return s + '</g>';
   }
 
-  var BLOCCHI = 12;   // le tacche della barra del tempo
-
   function disegnaBarra() {
     var s = '<g class="arc-barra">';
-    var x0 = 10, larghezza = 124 - 10, passo = larghezza / BLOCCHI;
+    var x0 = 16, larghezza = 134 - 16, passo = larghezza / BLOCCHI;
     for (var i = 0; i < BLOCCHI; i++) {
-      s += '<rect class="arc-blocco" data-blocco="' + i + '" x="' +
-           (x0 + i * passo).toFixed(2) + '" y="78" width="' + (passo - 2.4).toFixed(2) +
-           '" height="9" rx="1"/>';
+      var x = (x0 + i * passo).toFixed(2), w = (passo - 2).toFixed(2);
+      s += '<rect class="arc-zona" x="' + x + '" y="98" width="' + w +
+           '" height="11" rx="1" fill="' + zonaDi(i) + '"/>';
+      s += '<rect class="arc-blocco" data-blocco="' + i + '" x="' + x + '" y="98" width="' + w +
+           '" height="11" rx="1" fill="' + zonaDi(i) + '"/>';
     }
     return s + '</g>';
+  }
+
+  // Quattro viti agli angoli: e' il dettaglio che fa leggere la cornice come
+  // un pezzo di mobile avvitato, non come un rettangolo arrotondato.
+  function disegnaViti() {
+    var s = '', p = [[9, 9], [141, 9], [9, 121], [141, 121]];
+    for (var i = 0; i < p.length; i++) {
+      s += '<circle class="arc-vite" cx="' + p[i][0] + '" cy="' + p[i][1] + '" r="3.2"/>';
+      s += '<rect class="arc-taglio" x="' + (p[i][0] - 2.1) + '" y="' + (p[i][1] - .55) +
+           '" width="4.2" height="1.1" rx=".5" transform="rotate(35 ' + p[i][0] + ' ' + p[i][1] + ')"/>';
+    }
+    return s;
   }
 
   function disegna() {
     return '' +
-      '<svg class="arc-timer" viewBox="0 0 134 104" aria-hidden="true" focusable="false">' +
-        // il mobiletto: plastica scura con il bordo duro del tema
-        '<rect class="arc-scocca" x="1" y="1" width="132" height="102" rx="7"/>' +
-        // lo schermo incassato
-        '<rect class="arc-schermo" x="6" y="6" width="122" height="66" rx="3"/>' +
-        disegnaCella(0) + disegnaCella(1) + disegnaCella(2) +
-        disegnaBarra() +
-        '<text class="arc-etichetta" x="67" y="99" text-anchor="middle">TIME</text>' +
-      '</svg>';
+    '<svg class="arc-timer" viewBox="0 0 150 130" aria-hidden="true" focusable="false">' +
+      '<defs>' +
+        // Righe da 1 su 3 e non da 2 su 4: la prima versione tagliava le cifre
+        // in strisce e si leggevano peggio. La scanline deve dire "c'e' un
+        // vetro", non competere con il numero.
+        '<pattern id="arc-scan" width="3" height="3" patternUnits="userSpaceOnUse">' +
+          '<rect width="3" height="1" fill="#000" opacity=".22"/>' +
+        '</pattern>' +
+        // la vignettatura: il vetro si scurisce ai bordi
+        '<radialGradient id="arc-vign" cx="50%" cy="45%" r="72%">' +
+          '<stop offset="58%" stop-color="#000" stop-opacity="0"/>' +
+          '<stop offset="100%" stop-color="#000" stop-opacity=".38"/>' +
+        '</radialGradient>' +
+        // il riflesso obliquo sul vetro
+        '<linearGradient id="arc-rifl" x1="0" y1="0" x2="1" y2="1">' +
+          '<stop offset="0%"  stop-color="#fff" stop-opacity=".14"/>' +
+          '<stop offset="38%" stop-color="#fff" stop-opacity=".03"/>' +
+          '<stop offset="39%" stop-color="#fff" stop-opacity="0"/>' +
+        '</linearGradient>' +
+        // l\'alone dei LED sul vetro
+        '<filter id="arc-bagliore" x="-60%" y="-60%" width="220%" height="220%">' +
+          '<feGaussianBlur stdDeviation="2.6"/>' +
+        '</filter>' +
+      '</defs>' +
+
+      // il mobile: scocca, bordo di plastica, rilievo in alto
+      '<rect class="arc-scocca" x="1" y="1" width="148" height="128" rx="9"/>' +
+      '<rect class="arc-rilievo" x="3.5" y="3.5" width="143" height="123" rx="7.5"/>' +
+      '<rect class="arc-rima" x="6" y="6" width="138" height="118" rx="6"/>' +
+      disegnaViti() +
+
+      // lo schermo incassato
+      '<rect class="arc-schermo" x="14" y="11" width="122" height="76" rx="3"/>' +
+      '<g class="arc-cifre"></g>' +
+      // il puntino che batte ad ogni tick, sul bordo destro del vetro
+      '<circle class="arc-battito" cx="130" cy="18" r="2.6"/>' +
+      // il vetro sopra le cifre: scanline, vignetta, riflesso
+      '<g class="arc-vetro">' +
+        '<rect x="14" y="11" width="122" height="76" rx="3" fill="url(#arc-scan)"/>' +
+        '<rect x="14" y="11" width="122" height="76" rx="3" fill="url(#arc-vign)"/>' +
+        '<rect x="14" y="11" width="122" height="76" rx="3" fill="url(#arc-rifl)"/>' +
+      '</g>' +
+
+      disegnaBarra() +
+      '<text class="arc-etichetta" x="75" y="122" text-anchor="middle">TIME</text>' +
+    '</svg>';
   }
 
   function avvia() {
@@ -134,22 +236,54 @@
     if (!arco || !box || !display || box.querySelector('.arc-timer')) return;
 
     box.insertAdjacentHTML('afterbegin', disegna());
-    var segmenti = box.querySelectorAll('.arc-seg');
     var blocchi = box.querySelectorAll('.arc-blocco');
+    var battito = box.querySelector('.arc-battito');
+    var ultimoNumero = null, totale = 10;
+    var celleOra = 0, segmenti = [];
+
+    // Le celle si (ri)montano solo quando cambia il loro NUMERO, cioe' quando
+    // parte una chiamata con un totale di ordine diverso. Dentro un conteggio
+    // non si tocca niente.
+    function montaCelle(celle) {
+      if (celle === celleOra) return;
+      celleOra = celle;
+      var g = box.querySelector('.arc-cifre');
+      g.outerHTML = disegnaCelle(celle);
+      segmenti = box.querySelectorAll('.arc-seg, .arc-alone');
+    }
 
     function aggiorna() {
       var n = parseInt((display.textContent || '').replace(/[^0-9]/g, ''), 10);
       var valido = !isNaN(n) && n >= 0;
-      // Zero davanti fino a due cifre: "07", non "7". La terza cella si accende
-      // solo oltre i 99 secondi e per il resto resta fantasma (vedi la nota in
-      // testa: la larghezza del pannello non deve mai cambiare).
-      var testo = valido ? String(Math.min(n, 999)) : '';
-      if (valido && testo.length < 2) testo = '0' + testo;
-      var cifre = testo.split('');
-      while (cifre.length < CELLE) cifre.unshift(null);   // le celle in piu' restano spente
 
-      var colore = valido ? coloreDi(n) : '#3DF07A';
-      box.style.setProperty('--arc-colore', colore);
+      // La barra: stessa sorgente della sabbia della clessidra.
+      // stroke-dashoffset 0 = tempo pieno, CIRCONFERENZA = scaduto.
+      var off = parseFloat(arco.style.strokeDashoffset ||
+                           arco.getAttribute('stroke-dashoffset') || 0);
+      var frazione = Math.max(0, Math.min(1, 1 - (off / CIRCONFERENZA)));
+
+      // Il TOTALE non ce l'ha nessuno qui: `S` in app.js e' un const di primo
+      // livello, quindi non e' una proprieta' di window (lo stesso motivo per
+      // cui puja-sticky.js guarda il DOM invece di window.S). Ma si ricava dai
+      // due dati che gia' leggiamo: frazione = secondi/totale, quindi
+      // totale = secondi/frazione. Serve solo per scegliere quante celle e
+      // dove mettere l'ambra, quindi un arrotondamento basta e avanza.
+      if (valido && frazione > 0.02) {
+        var t = Math.round(n / frazione);
+        if (t >= 1 && t <= 999) totale = t;
+      }
+
+      montaCelle(totale >= 100 ? 3 : 2);
+
+      // Zero davanti: "07", non "7".
+      var testo = valido ? String(Math.min(n, 999)) : '';
+      if (valido && testo.length < celleOra) {
+        while (testo.length < Math.min(2, celleOra)) testo = '0' + testo;
+      }
+      var cifre = testo.split('');
+      while (cifre.length < celleOra) cifre.unshift(null);
+
+      box.style.setProperty('--arc-colore', valido ? coloreDi(n, totale) : VERDE);
 
       for (var i = 0; i < segmenti.length; i++) {
         var el = segmenti[i];
@@ -159,17 +293,19 @@
         el.classList.toggle('acceso', !!acceso);
       }
 
-      // La barra: stessa sorgente della sabbia della clessidra.
-      // stroke-dashoffset 0 = tempo pieno, CIRCONFERENZA = scaduto.
-      var off = parseFloat(arco.style.strokeDashoffset ||
-                           arco.getAttribute('stroke-dashoffset') || 0);
-      var frazione = Math.max(0, Math.min(1, 1 - (off / CIRCONFERENZA)));
       // Si arrotonda per ECCESSO: finche' resta un briciolo di tempo deve
-      // restare acceso almeno un blocco, altrimenti la barra sembra a zero
+      // restare accesa almeno una tacca, altrimenti la barra sembra a zero
       // mentre il numero dice ancora 1.
       var accesi = frazione > 0 ? Math.max(1, Math.ceil(frazione * BLOCCHI)) : 0;
       for (var b = 0; b < blocchi.length; b++) {
         blocchi[b].classList.toggle('acceso', b < accesi);
+      }
+
+      // Il puntino batte ad ogni tick VERO, cioe' quando il numero cambia:
+      // non e' un'animazione a tempo, e' il segno che i dati stanno arrivando.
+      if (valido && n !== ultimoNumero) {
+        ultimoNumero = n;
+        battito.classList.toggle('acceso');
       }
     }
 

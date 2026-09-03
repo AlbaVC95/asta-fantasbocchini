@@ -102,11 +102,15 @@ spostare i giocatori è drag & drop, non click. Motivi e alternative scartate in
 ## Sala Giochi: cronometro a sette segmenti
 
 Nuovo modulo `frontend/js/timer-arcade.js` (additivo, come `clessidra.js`): un pannello SVG con
-tre cifre a sette segmenti — fantasma dei segmenti spenti compreso — la barra del tempo e
-l'etichetta TIME. Verde, ambra sotto i 10 secondi, rosso sotto i 3, con le soglie che l'app ha
-già. Non calcola niente: legge le cifre da `#timer-display` e la frazione da `#timer-progress`,
-la stessa sorgente della clessidra. Nel solo tema `sala-giochi` sostituisce clessidra e cifra
-normale. Dettagli in [DECISIONS.md](../DECISIONS.md).
+le cifre a sette segmenti dietro il vetro — fantasma dei segmenti spenti, alone dei LED, scanline,
+vignettatura, viti agli angoli — la barra del tempo con le **zone stampate** (rosso/ambra/verde
+fissi, come la spia della benzina) e un puntino che batte ad ogni tick del server. Non calcola
+niente: legge le cifre da `#timer-display` e la frazione da `#timer-progress`, la stessa sorgente
+della clessidra, e da quelle due **ricava il totale**. Dimensionato sull'uso vero (7-8 secondi):
+due celle grandi, tre solo se il timer parte da 100+; il rosso resta a 3 secondi come nell'app,
+l'ambra è proporzionale al totale perché con 7 secondi una soglia fissa a 10 non avrebbe mai fatto
+vedere il verde. Nel solo tema `sala-giochi` sostituisce clessidra e cifra normale. Dettagli in
+[DECISIONS.md](../DECISIONS.md).
 
 ## Verifiche fatte
 
@@ -128,9 +132,11 @@ normale. Dettagli in [DECISIONS.md](../DECISIONS.md).
   reale. **Non verificate** le schermate fitte (Rose, Storico, Admin): il server locale non ha le
   credenziali Supabase e non si va oltre il login.
 - Cronometro arcade: provato col DOM vero del cronometro, riproducendo l'ordine con cui
-  `updateTimer()` scrive anello e cifra. Segmenti giusti a 60/45/12/10/7/3/1/0 e a 120 (terza cella
-  accesa); colori alle soglie giuste; barra 12/12 → 9/12 → 3/12 → 1/12 → 0. Visibile **solo** in
-  `sala-giochi`: negli altri tre temi restano clessidra e cifra normale. Zero errori in console.
+  `updateTimer()` scrive anello e cifra. **Conteggio da 7**: `07` verde → `06` `05` verde → `04`
+  ambra → `03` `02` `01` `00` rosso, barra 14→12→10→8→7→5→2→0. **Conteggio da 5**: `05` verde,
+  `04` ambra, `03`-`00` rosso. Due celle; tre solo partendo da 120, e la larghezza non cambia a
+  metà conteggio. Il puntino alterna ad ogni tick. Visibile **solo** in `sala-giochi`: negli altri
+  tre temi restano clessidra e cifra normale. Zero errori NUOVI durante un conteggio intero.
 - Vista a parte: provata col codice vero e `window.open` sostituito da un `<iframe>`. Griglia P/A
   esce col titolo e il tema giusti e con gli indici allineati all'originale; click su una sotto-tab
   e cambio di `select` arrivano all'elemento vero; il bottone copiato è `display:none`. Rose,
