@@ -2968,13 +2968,23 @@ html[data-tema="sala-giochi"] .arc-etichetta{
   font-family:'Press Start 2P',var(--font-mono);font-size:8px;
   fill:var(--arc-colore,#3DF07A);opacity:.75;letter-spacing:1px;
 }
-/* ultimi secondi: il pannello lampeggia, come una macchina che sta per finire
-   il tempo. Solo il display — l'audio non si tocca, e' il momento in cui si urla */
-html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .arc-timer,
-html[data-tema="sala-giochi"] body.puja-urgente .asta-row-puja .arc-timer{
+/* Ultimi secondi: lampeggia SOLO l'etichetta.
+   Prima l'animazione stava sull'intero .arc-timer, ed era sbagliata per due
+   motivi, il primo segnalato dall'utente:
+   - la barra sembrava allungarsi e accorciarsi da sola. Non cambiava: i blocchi
+     spenti stanno a opacita' .13 e, moltiplicati per il .45 del lampeggio,
+     finivano a .06, cioe' invisibili. Spariva la parte gia' consumata e la
+     barra sembrava piu' corta, poi tornava. Attenuare un contenitore attenua
+     anche cio' che dentro e' gia' tenue di suo, e i rapporti fra i livelli si
+     perdono;
+   - e far lampeggiare la cifra proprio negli ultimi tre secondi va contro il
+     suo mestiere: e' il momento in cui la si legge di piu'.
+   L'etichetta non porta nessun dato, quindi puo' lampeggiare quanto vuole. */
+html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .arc-etichetta,
+html[data-tema="sala-giochi"] body.puja-urgente .asta-row-puja .arc-etichetta{
   animation:arc-lampeggio .5s steps(1,end) infinite;
 }
-@keyframes arc-lampeggio{0%,60%{opacity:1}61%,100%{opacity:.45}}
+@keyframes arc-lampeggio{0%,60%{opacity:.75}61%,100%{opacity:.12}}
 
 /* ── Il cronometro: cifre da punteggio ── */
 html[data-tema="sala-giochi"] body #puja-panel-slot .timer-number,

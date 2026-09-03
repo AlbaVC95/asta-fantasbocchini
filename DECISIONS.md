@@ -2174,8 +2174,22 @@ scrive **prima** l'anello e **poi** la cifra. Osservando solo l'anello si legger
 secondo precedente — il pannello sarebbe sempre indietro di uno. Servono due `MutationObserver`,
 uno per sorgente.
 
+**Correzione dopo la prima prova dell'utente: "la barra cresce e decresce tutto il tempo".**
+Il lampeggio degli ultimi secondi stava sull'INTERO pannello, con l'opacita' che andava da 1 a .45.
+La barra non cambiava affatto: i blocchi spenti stanno a `.13`, e moltiplicati per quel `.45`
+finivano a `.06`, cioe' invisibili — spariva la parte gia' consumata e la barra sembrava
+accorciarsi, poi tornava. **Attenuare un contenitore attenua anche cio' che dentro e' gia' tenue di
+suo, e i rapporti fra i livelli si perdono**: e' il motivo per cui un'opacita' su un genitore non e'
+mai equivalente alla stessa opacita' sui figli, e vale per qualunque cosa abbia elementi "spenti"
+che servono a far leggere quelli accesi. Il lampeggio e' passato sulla sola etichetta `TIME`, che
+non porta nessun dato. C'era anche una seconda ragione per spostarlo, indipendente: far lampeggiare
+la cifra negli ultimi tre secondi va contro il suo mestiere, perche' e' il momento in cui la si
+legge di piu'.
+
 **Verificato** in browser col DOM vero del cronometro, riproducendo l'ordine di scrittura di
 `updateTimer()`: le cifre accendono i segmenti giusti a 60/45/12/10/7/3/1/0 e a 120 (dove si accende
 anche la terza cella); i colori cambiano alle soglie giuste; la barra fa 12/12, 9/12, 3/12, 1/12, 0;
 clessidra e cifra normale sono nascoste solo in `sala-giochi` e restano al loro posto negli altri
-tre temi. Zero errori in console.
+tre temi. Zero errori in console. Dopo la correzione, campionando le opacita' calcolate lungo un
+ciclo di lampeggio in stato urgente: pannello fisso a 1, blocco acceso fisso a .92, blocco spento
+fisso a .13, cifra fissa a 1, e solo l'etichetta che alterna .75 e .12.
