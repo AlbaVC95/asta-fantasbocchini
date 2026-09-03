@@ -72,7 +72,13 @@
   // non funziona.
   var CONFIG = null;
 
-  var CHIAVE_MISURA = 'ftb_chiamata_misura';
+  // La chiave ha il '2' apposta. Chi ha gia' usato la chiamata si porta dietro
+  // una misura salvata quando la finestra DOVEVA essere grande (c'era la
+  // schermata di anteingresso di Jitsi, vedi creaConferenza), e con la vecchia
+  // chiave si sarebbe ritrovato la finestra grande anche adesso che non serve
+  // piu'. Cambiare nome alla chiave fa ripartire tutti da 'piccola' una volta
+  // sola; da li' in poi la misura si ricorda come prima.
+  var CHIAVE_MISURA = 'ftb_chiamata_misura2';
   var CHIAVE_CAMERA = 'ftb_chiamata_camera';
 
   // Le quattro misure. La pastiglia non e' "spenta": sei ancora in
@@ -303,8 +309,36 @@
         // volta sola — stesso criterio del tema e dello zoom del campo.
         startWithAudioMuted: false,
         startWithVideoMuted: !cameraAccesa,
+        // Niente schermata di anteingresso ("Join meeting" col nome e la prova
+        // di microfono e camera): si entra dritti. Quella schermata era il vero
+        // motivo per cui la finestra doveva essere grande — un modulo per il
+        // nome e due anteprime video non stanno in una franja da 104px — e qui
+        // non serve a niente: il nome lo passiamo gia' noi (e' la squadra, vedi
+        // userInfo) e lo stato della camera se lo ricorda il modulo.
+        //
+        // Vanno scritte ENTRAMBE le chiavi. `prejoinPageEnabled` e' quella
+        // storica ed e' l'unica che c'era qui: Jitsi l'ha spostata dentro
+        // `prejoinConfig` e nelle versioni recenti la vecchia viene ignorata in
+        // silenzio, che e' esattamente il motivo per cui la schermata usciva
+        // lo stesso. Si tengono tutte e due perche' una chiave sconosciuta
+        // viene semplicemente scartata, quindi non costa niente e copre sia i
+        // server aggiornati sia quelli fermi a prima.
+        prejoinConfig: { enabled: false },
         prejoinPageEnabled: false,
-        disableDeepLinking: true
+        disableDeepLinking: true,
+        // Stessa trappola di `prejoinPageEnabled`: la lista dei tasti stava solo
+        // in `interfaceConfigOverwrite.TOOLBAR_BUTTONS`, che Jitsi ha spostato
+        // in `configOverwrite.toolbarButtons`. Se la vecchia viene ignorata
+        // esce la barra COMPLETA, che in una franja da 104px e' quasi tutta
+        // l'altezza disponibile. Cinque tasti: parlare, farsi vedere, vedere
+        // tutti, impostazioni, uscire — il resto qui non serve.
+        toolbarButtons: ['microphone', 'camera', 'tileview', 'settings', 'hangup'],
+        // In 104px di alto ogni riga di scritte e' spazio tolto alle facce:
+        // il nome della stanza e il cronometro della chiamata non servono
+        // (la stanza e' sempre quella dell'asta, e il tempo che conta e' quello
+        // del rilancio, che sta gia' due dita piu' su).
+        hideConferenceSubject: true,
+        hideConferenceTimer: true
       },
       interfaceConfigOverwrite: {
         TOOLBAR_BUTTONS: ['microphone', 'camera', 'tileview', 'settings', 'hangup'],
@@ -332,7 +366,12 @@
     inChiamata = true;
     if (bottoneEntra) { bottoneEntra.classList.add('dentro'); bottoneEntra.disabled = true; }
     if (!guscio) costruisci();
-    applicaMisura(parseInt(leggi(CHIAVE_MISURA, '1'), 10) || 1, false);
+    // `|| 1` era sbagliato: la pastiglia e' l'indice 0, e `0 || 1` fa 1 — chi
+    // usciva col minimo se lo ritrovava piu' grande al rientro. Serve un
+    // controllo su NaN, non sulla verita' del numero.
+    var salvata = parseInt(leggi(CHIAVE_MISURA, '1'), 10);
+    if (isNaN(salvata)) salvata = 1;
+    applicaMisura(salvata, false);
     if (etichettaConteggio) etichettaConteggio.textContent = 'connessione…';
 
     caricaScript().then(chiediToken).then(function (jwt) {

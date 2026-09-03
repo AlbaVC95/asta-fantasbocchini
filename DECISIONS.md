@@ -2035,3 +2035,51 @@ e' sempre stata: zero righe in piu' per spegnerlo.
 Gli altri tre temi non sono toccati — tutte e cinque le regole erano dentro selettori
 `html[data-tema="lavagna"]`. Verificato che in "cuoio" il suo `.pitch-bg::after` (un fregio suo,
 diverso) sia ancora al suo posto.
+
+
+## Videochiamata: si apriva grande per colpa di due chiavi di Jitsi spostate
+
+Segnalato dall'utente: la chiamata si apre grande e mangia la schermata d'asta, con dentro la
+pagina "Join meeting" di Jitsi (nome, prova di microfono e camera). Le quattro misure e il tasto
+per rimpicciolire c'erano gia': il difetto non era la finestra, era **cosa Jitsi ci metteva
+dentro**. Una schermata con un modulo per il nome e due anteprime video non sta in una franja da
+104px, quindi la finestra doveva per forza essere grande.
+
+Il modulo *chiedeva gia'* di saltarla, con `configOverwrite.prejoinPageEnabled: false`. Jitsi pero'
+ha spostato quell'opzione dentro `prejoinConfig.enabled`, e le versioni recenti **ignorano la
+vecchia chiave senza dire niente**: la richiesta partiva e non aveva alcun effetto. Stessa
+identica trappola per la barra dei comandi, che stava solo in
+`interfaceConfigOverwrite.TOOLBAR_BUTTONS` mentre oggi si legge da `configOverwrite.toolbarButtons`
+— con la vecchia ignorata usciva la barra COMPLETA, che in 104px e' quasi tutta l'altezza
+disponibile. Si scrivono ora entrambe le forme di entrambe le chiavi: una chiave sconosciuta viene
+semplicemente scartata, quindi tenerle non costa niente e copre sia i server aggiornati sia quelli
+fermi a prima. **Lezione da riusare**: quando una `configOverwrite` di un servizio esterno non ha
+effetto, il primo sospetto e' che la chiave sia stata spostata, non che il valore sia sbagliato —
+non c'e' errore in console, quindi il codice sembra a posto.
+
+Aggiunti anche `hideConferenceSubject` e `hideConferenceTimer`: in una franja bassa ogni riga di
+scritte e' spazio tolto alle facce, e li' quei due dati non servono (la stanza e' sempre quella
+dell'asta, e il tempo che conta e' quello del rilancio, due dita piu' su).
+
+Due difetti minori dello stesso giro:
+
+- `parseInt(leggi(CHIAVE_MISURA,'1'),10) || 1` sbagliava sul minimo: la pastiglia e' l'indice **0**
+  e `0 || 1` fa `1`, quindi chi usciva col formato piu' piccolo se lo ritrovava piu' grande al
+  rientro. Serve un controllo su `isNaN`, non sulla verita' del numero — vale per qualunque indice
+  che parta da zero.
+- La misura salvata e' stata azzerata **una volta sola** cambiando nome alla chiave
+  (`ftb_chiamata_misura` → `ftb_chiamata_misura2`). Senza, chi aveva gia' usato la chiamata si
+  portava dietro un valore scelto quando la finestra DOVEVA essere grande, e avrebbe continuato ad
+  aprirla grande pur essendo sparito il motivo. Da li' in poi la misura si ricorda come prima: la
+  richiesta era "che si apra piccola", non "che non si possa piu' ingrandire".
+
+**Verificato** col codice vero del modulo, sostituendo il fornitore con un doppio che registra le
+opzioni ricevute: si apre a 104px anche con una misura grande nella vecchia chiave; le opzioni
+passate contengono `prejoinConfig:{enabled:false}`, `toolbarButtons` e i due `hide*`; i tasti − e +
+percorrono tutte e quattro le misure, si spengono agli estremi e salvano ogni cambio; riaprendo con
+0/1/2/3 salvato esce la misura giusta (0 compreso, che prima non funzionava); uscendo, il guscio
+sparisce e `--h-chiamata` torna a 0.
+
+**Non verificato**: che Jitsi onori davvero le chiavi nuove, cioe' l'unica parte che si vede
+usando. Serve una chiamata vera con le credenziali JaaS, che sono dell'utente e in locale non ci
+sono — senza, il bottone non viene nemmeno montato.

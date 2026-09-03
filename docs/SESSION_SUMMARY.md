@@ -78,6 +78,17 @@ in `tema-serata.css` (sfondo di pagina e testata), tre in `style.css` (dentro la
 chiamata). Regole cancellate, non neutralizzate. Solo il tema lavagna: il fregio proprio di
 "cuoio" è intatto. Motivazioni in [DECISIONS.md](../DECISIONS.md).
 
+## Videochiamata: si apre piccola
+
+Si apriva grande perché dentro usciva la pagina "Join meeting" di Jitsi, che in una franja da
+104px non ci sta. Il modulo chiedeva già di saltarla, ma con una chiave che Jitsi ha spostato
+(`prejoinPageEnabled` → `prejoinConfig.enabled`) e che le versioni recenti ignorano in silenzio;
+stessa cosa per la barra dei comandi (`TOOLBAR_BUTTONS` → `toolbarButtons`). Ora si scrivono
+entrambe le forme. Corretto anche `0 || 1` sulla misura salvata (la pastiglia è l'indice 0) e
+azzerata una volta sola la preferenza cambiando nome alla chiave. I tasti − e + restano: si può
+ingrandire e rimpicciolire come prima, e la misura si ricorda. Dettagli in
+[DECISIONS.md](../DECISIONS.md).
+
 ## Verifiche fatte
 
 - **Copertura sul listino VERO** (531 righe di `listino_giocatori` su Supabase, passate una per
@@ -97,6 +108,11 @@ chiamata). Regole cancellate, non neutralizzate. Solo il tema lavagna: il fregio
 - Tema lavagna: carta di puja riprodotta col DOM vero e confrontata prima/dopo sulla texture
   reale. **Non verificate** le schermate fitte (Rose, Storico, Admin): il server locale non ha le
   credenziali Supabase e non si va oltre il login.
+- Videochiamata: provata col codice vero del modulo e un doppio del fornitore che registra le
+  opzioni. Si apre a 104px anche con una misura grande salvata prima; − e + percorrono le quattro
+  misure, si spengono agli estremi e salvano; riaprendo con 0/1/2/3 esce la misura giusta (0
+  compreso, che prima saliva a 1); uscendo, `--h-chiamata` torna a 0. **Non verificato** che Jitsi
+  onori le chiavi nuove: servono le credenziali JaaS, che in locale non ci sono.
 - Fregi lavagna: verificati a computed style tutti e cinque gli pseudo-elementi coinvolti — none
   disegna più nulla — e controllati i quattro temi (lavagna: zero fregi; cuoio: il suo intatto).
   `style.css` resta a 277 righe LF-only e `tema-serata.css` a zero CR.
