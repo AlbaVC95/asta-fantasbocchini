@@ -1948,3 +1948,26 @@ Il nome del file viene percio' codificato in `_urlFotoGiocatore`. Attenzione: `e
 da solo NON basta, perche' l'apostrofo e' fra i caratteri che lascia intatti (come `!`, `(`, `)`,
 `*`); va sostituito a parte con `%27`. Si e' scelto di codificare nel codice invece di rinominare
 i due file, perche' il rinomino andrebbe rifatto ad ogni nuovo export dello script esterno.
+
+
+## Sostituire una foto gia' pubblicata: si RINOMINA il file, non si sovrascrive
+
+Le immagini sono servite con `Cache-Control: public, max-age=2592000, immutable` (vedi il filtro in
+`server.js`). `immutable` significa che il browser non richiede piu' quel file per 30 giorni
+**nemmeno con un hard refresh**: chi ha gia' aperto l'app resta con la versione vecchia. Sovrascrivere
+un `.jpg` gia' in produzione quindi non aggiorna niente per quelle persone.
+
+La contromisura e' cambiare URL, cioe' il nome del file: si cancella il vecchio e si aggiunge il
+nuovo con un nome diverso, purche' il nome nuovo resti risolvibile da `_tryLocalPhoto` (match esatto
+sul nome normalizzato, oppure la regola "Cognome Iniz." per i file `Nome_Cognome`). Esempi reali:
+`Cagliari/Rodriguez_Ju..jpg` -> `Cagliari/Ju._Rodriguez.jpg` (risolto dalla regola
+dell'abbreviazione) e `Parma/Romero_D..jpg` -> `Parma/Romero.jpg`.
+
+Non e' sempre possibile: se il giocatore si chiama come il file (es. `Venezia/Pozzi.jpg` per "Pozzi",
+senza iniziale) qualunque rinomina rompe il match esatto. In quel caso si sovrascrive e si accetta
+che chi ha gia' l'immagine in cache veda la vecchia fino alla scadenza. Non e' un guasto: e' la
+stessa foto in una versione precedente, non una foto sbagliata.
+
+Verificato dal vivo durante il lavoro: dopo aver ridotto le immagini, due file continuavano a
+misurare 896px nel browser mentre su disco erano gia' 398px — erano serviti dalla cache. Con
+`?cb=` tornavano 398px. E' esattamente il comportamento descritto qui.

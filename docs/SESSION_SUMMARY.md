@@ -41,13 +41,18 @@ resa raggiungibile ogni immagine, compresi i giocatori senza squadra assegnata.
   in piu'. Cartella `players/`: **33 MB -> 22 MB**, media 29 KB, uniforme con il resto.
   Ratio di ogni immagine conservato (nessuna deformazione), e comunque irrilevante perche'
   entrambi i consumatori usano `cover`.
+- **5 foto aggiunte/sostituite** (export `anime_update_5`, ridotte a 398px come le altre):
+  `Frosinone/Omar_Fayed.jpg` e `Juventus/Grabara.jpg` sono nuove e completano il listino al 100%;
+  `Cagliari/Rodriguez_Ju..jpg` -> `Ju._Rodriguez.jpg` e `Parma/Romero_D..jpg` -> `Romero.jpg`
+  sostituiscono le precedenti **rinominando**, così l'URL cambia e nessuno resta con la vecchia in
+  cache (vedi DECISIONS.md); `Venezia/Pozzi.jpg` è l'unico sovrascritto in place.
 - `index.html`: alzato il `?v=` di `app.js`.
 
 ## Verifiche fatte
 
 - **Copertura sul listino VERO** (531 righe di `listino_giocatori` su Supabase, passate una per
-  una dalla logica di ricerca reale estratta da `app.js`): **da 442/531 (83.2%) a 529/531
-  (99.6%)**. Nessun giocatore viene risolto su una cartella di squadra diversa dalla sua se non
+  una dalla logica di ricerca reale estratta da `app.js`): **da 442/531 (83.2%) a 531/531
+  (100%)**. Nessun giocatore viene risolto su una cartella di squadra diversa dalla sua se non
   tramite un override esplicito, quindi niente maglie sbagliate.
 - Tutte e 744 le immagini risultano raggiungibili dalla logica di ricerca (test su ogni nome
   file: 577/577 dalla propria squadra, 167/167 da `_unmatched`).
@@ -61,9 +66,10 @@ resa raggiungibile ogni immagine, compresi i giocatori senza squadra assegnata.
 
 ## Pendenze
 
-- **Due giocatori del listino restano senza foto perché l'immagine non esiste in nessuna
-  cartella dell'export**: `Omar Fayed` (Frosinone) e `Grabara` (Juventus). Non è un problema di
-  matching — vanno generate dallo script esterno. Finché mancano mostrano `unknown_anime.jpg`.
+- `Venezia/Pozzi.jpg` è stato sostituito **mantenendo lo stesso nome**, perché il giocatore si
+  chiama "Pozzi" senza iniziale e qualunque rinomina romperebbe il match esatto. Chi ha aperto
+  l'app fra il 2026-09-02 e oggi può continuare a vedere la versione precedente di quella sola
+  foto fino a 30 giorni (`immutable`). Non è un guasto: è la stessa persona, versione vecchia.
 - Nel nuovo export c'è un doppione in Bologna: `El_Azzouzi_O.jpg` e `El_Azzouzi_O..jpg` sono due
   immagini diverse dello stesso giocatore. Innocuo (una delle due resta semplicemente inusata),
   ma se si vuole pulire va rimosso dallo script che genera le immagini.
