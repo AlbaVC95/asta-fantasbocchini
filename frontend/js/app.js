@@ -861,7 +861,21 @@ function setupLogin() {
     if (!termsAccepted) { errEl.textContent = 'Devi accettare le Condizioni di partecipazione alla Closed Beta per registrarti'; errEl.style.display = 'block'; return; }
     const { data, error } = await supa.auth.signUp({
       email, password,
-      options: { data: { nome, cognome, dataNascita, termsAccepted: true, termsVersion: '2026-08-08' } }
+      options: {
+        // Senza questo, il link nella mail di conferma lo decide il Site URL
+        // configurato su Supabase — che era rimasto quello di Render dopo il
+        // passaggio a Hostinger, quindi la mail mandava sul sito vecchio. Il
+        // recupero password lo passava gia' (piu' sotto), la registrazione no.
+        //
+        // ATTENZIONE: da solo non basta. Supabase onora `emailRedirectTo` e
+        // `redirectTo` SOLO se l'URL sta nella lista Redirect URLs del pannello
+        // (Authentication -> URL Configuration); altrimenti li ignora in
+        // silenzio e usa il Site URL. Se un giorno il dominio cambia di nuovo,
+        // va aggiornato LI', non qui: qui si prende gia' quello da cui l'utente
+        // sta navigando.
+        emailRedirectTo: window.location.origin + window.location.pathname,
+        data: { nome, cognome, dataNascita, termsAccepted: true, termsVersion: '2026-08-08' }
+      }
     });
     if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
     if (data.session) {

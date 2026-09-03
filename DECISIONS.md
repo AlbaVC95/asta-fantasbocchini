@@ -2414,3 +2414,27 @@ i colori stanno vicini e vanno distinti.**
 **Verificato** con dodici colori, compresi bianco e nero puri, sui quattro temi: nessun gettone
 scende sotto 4.5:1 fra testo e riempimento, e il gettone esce identico in tutti e quattro i temi —
 il che e' anche piu' coerente di prima, visto che il colore della fascia non dipende dal tema.
+
+
+## Le mail di Supabase puntavano al sito vecchio: la causa e' nel pannello, non nel codice
+
+Segnalato dall'utente: il link per recuperare la password porta al sito vecchio (Render) invece che
+a quello nuovo (Hostinger).
+
+Il codice del recupero **era gia' giusto**: passa `redirectTo: window.location.origin +
+window.location.pathname`, cioe' il dominio da cui l'utente sta effettivamente navigando. Il punto,
+che vale la pena scrivere perche' non e' intuitivo, e' che **Supabase onora `redirectTo` e
+`emailRedirectTo` solo se l'URL e' nella lista Redirect URLs** del pannello (Authentication → URL
+Configuration). Se non c'e', **non da' errore**: ignora il parametro in silenzio e usa il Site URL.
+E il Site URL era rimasto quello di Render dal trasloco. Quindi il sintomo era "il codice non
+funziona" mentre il codice non c'entrava.
+
+**La correzione vera e' nel pannello e non e' in questo repository** (le API MCP di Supabase non
+espongono la configurazione auth): Site URL sul dominio nuovo, e il dominio nuovo aggiunto alle
+Redirect URLs.
+
+Cercando questo e' venuto fuori un secondo caso, peggiore e non segnalato: la **registrazione** non
+passava nessun `emailRedirectTo`, quindi il link di conferma usava il Site URL **sempre**, non solo
+quando la lista non combaciava. Aggiunto, cosi' anche quella mail punta al dominio da cui ci si e'
+registrati. Da qui la regola: se un domani il dominio cambia di nuovo, **non si tocca il codice** —
+prende gia' quello giusto da solo — si aggiorna la configurazione su Supabase.

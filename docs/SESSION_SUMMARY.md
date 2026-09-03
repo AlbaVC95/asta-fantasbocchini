@@ -134,6 +134,15 @@ distingue proprio per quella collassa. Ora nel gettone della lista il colore sta
 (`coloreFasciaLeggibile()`) resta per la carta di puja, dove si vede una fascia per volta e non c'è
 niente accanto con cui confonderla. Dettagli in [DECISIONS.md](../DECISIONS.md).
 
+## Mail di Supabase che puntavano al sito vecchio
+
+Il link di recupero password portava a Render invece che a Hostinger. Il codice era già giusto
+(passa `redirectTo` col dominio corrente): Supabase onora quel parametro **solo se l'URL è nella
+lista Redirect URLs del pannello**, altrimenti lo ignora in silenzio e usa il Site URL, rimasto
+quello di Render. **La correzione vera è nel pannello Supabase**, non qui. Nel codice è stato
+aggiunto `emailRedirectTo` alla registrazione, che non lo passava affatto. Vedi
+[DECISIONS.md](../DECISIONS.md).
+
 ## Verifiche fatte
 
 - **Copertura sul listino VERO** (531 righe di `listino_giocatori` su Supabase, passate una per
@@ -192,6 +201,10 @@ niente accanto con cui confonderla. Dettagli in [DECISIONS.md](../DECISIONS.md).
   "sala-giochi" e' verificato a misure, non a occhio.
 
 ## Pendenze
+
+- **Da fare su Supabase, non nel codice** (Authentication → URL Configuration): mettere il dominio
+  Hostinger come *Site URL* e aggiungerlo alle *Redirect URLs*. Finché non si fa, le mail di
+  recupero password e di conferma registrazione continuano a puntare al sito vecchio.
 
 - `Venezia/Pozzi.jpg` è stato sostituito **mantenendo lo stesso nome**, perché il giocatore si
   chiama "Pozzi" senza iniziale e qualunque rinomina romperebbe il match esatto. Chi ha aperto
