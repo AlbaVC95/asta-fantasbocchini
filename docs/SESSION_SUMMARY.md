@@ -2,17 +2,17 @@
 
 ## Stato attuale
 
-Il tema "Il Bar" è stato arricchito sostituendo la classica clessidra con un boccale di birra che si svuota a tempo, coerente con l'ambientazione del tema.
+Il tema "Il Bar" è stato perfezionato a livello visivo:
+1. **La jarra de cerveza (boccale) ahora es más grande** para tener más presencia visual en la tarjeta de puja, respondiendo mejor a su contenedor original.
+2. **El efecto Polaroid de la imagen del jugador ahora se aplica también en la vista de administrador**, solucionando un problema de especificidad en los selectores CSS que limitaban el efecto solo a la vista de usuario (`#puja-panel-slot`).
 
 ## Cosa è cambiato
 
-- **Boccale di birra (`frontend/js/clessidra.js`)**: Creato il nuovo componente SVG `clessidra--boccale` che subentra solo quando il tema attivo è "bar". 
-- **Fisica del bicchiere**: 
-  - Il liquido scende e la schiuma si affloscia gradualmente.
-  - Generazione di bolle in continuo che esistono solo sotto il pelo del liquido.
-  - I "merletti" di schiuma restano sul vetro quando il livello scende, sparendo dolcemente nel tempo.
-- **Urgenza (`frontend/css/tema-serata.css`)**: Negli ultimi secondi, invece di tingere la birra di rosso (il che sembrerebbe un errore), si arrossa il vetro con un alone, e le bolle si agitano (aumenta la velocità dell'animazione).
-- Il meccanismo di polling/osservazione (`MutationObserver`) in `clessidra.js` scala automaticamente e ricarica i nodi a seconda del modello (clessidra o boccale) necessario dal `data-tema`.
+- **`frontend/css/tema-serata.css`**: 
+  - Aggiunte media queries dedicate a `.clessidra--boccale` per imporre larghezze maggiori rispetto alla clessidra originale (es. 104px vs 72px base).
+  - Estesi i quattro selettori CSS (base, `-img`, `::before`, `::after`) dell'effetto Polaroid per includere anche `body.layout-admin .asta-row-puja`.
+- **`frontend/index.html`**:
+  - Aggiornato il cache-busting timestamp (`?v=20260904134500`) per `tema-serata.css` e `clessidra.js`.
 
 ## Pendenze
 
@@ -20,4 +20,4 @@ Nessuna.
 
 ## Prossimo passo
 
-Commit e push dei nuovi effetti grafici nel branch principale.
+Fine sessione corrente.

@@ -413,6 +413,25 @@ html[data-tema="bar"] body #puja-panel-slot .clessidra{
 html[data-tema="bar"] .clessidra--boccale .boc-bolla{
   animation:boc-bolle 5.4s linear infinite;
 }
+
+/* Il Boccale e' piu' largo della clessidra originale per occupare meglio lo spazio */
+html[data-tema="bar"] body #puja-panel-slot .clessidra--boccale,
+html[data-tema="bar"] body.layout-admin .asta-row-puja .clessidra--boccale{
+  width:104px !important;
+}
+@media (max-width:1200px){
+  html[data-tema="bar"] body #puja-panel-slot .clessidra--boccale,
+  html[data-tema="bar"] body.layout-admin .asta-row-puja .clessidra--boccale{
+    width:84px !important;
+  }
+}
+@media (max-width:900px){
+  html[data-tema="bar"] body #puja-panel-slot .clessidra--boccale,
+  html[data-tema="bar"] body.layout-admin .asta-row-puja .clessidra--boccale{
+    width:68px !important;
+  }
+}
+
 @keyframes boc-bolle{
   0%   {transform:translateY(138px);opacity:0}
   12%  {opacity:.55}
@@ -446,7 +465,8 @@ html[data-tema="bar"] .timer-ring-container.urgent .clessidra--boccale .boc-boll
    foto non sborda comunque, e' 100% della sua area con object-fit:cover.
    La rotazione allarga di ~7px il rettangolo letto da getBoundingClientRect()
    nell'animazione di assegnazione (app.js): scarto voluto e impercettibile. */
-html[data-tema="bar"] body #puja-panel-slot .cc-avatar{
+html[data-tema="bar"] body #puja-panel-slot .cc-avatar,
+html[data-tema="bar"] body.layout-admin .asta-row-puja .cc-avatar{
   --pol:9px; --pol-giu:24px;
   overflow:visible !important;
   padding:0 !important;
@@ -460,18 +480,21 @@ html[data-tema="bar"] body #puja-panel-slot .cc-avatar{
              inset 0 0 0 1px rgba(120,100,72,.22) !important;
 }
 /* la stampa: sbiadita e calda, non il bianco e nero degli altri temi */
-html[data-tema="bar"] body #puja-panel-slot .cc-avatar-img{
+html[data-tema="bar"] body #puja-panel-slot .cc-avatar-img,
+html[data-tema="bar"] body.layout-admin .asta-row-puja .cc-avatar-img{
   filter:grayscale(.18) sepia(.26) saturate(.92) contrast(1.02) brightness(1.03) !important;
   border-radius:0 !important;
 }
-html[data-tema="bar"] body #puja-panel-slot .cc-avatar::after{
+html[data-tema="bar"] body #puja-panel-slot .cc-avatar::after,
+html[data-tema="bar"] body.layout-admin .asta-row-puja .cc-avatar::after{
   background:linear-gradient(200deg, rgba(232,163,61,.20) 0%, rgba(168,58,42,.06) 50%, rgba(28,19,12,.26) 100%) !important;
 }
 /* ::before regge due cose che non stanno nello stesso rettangolo: la luce sulla
    stampa (dentro la foto) e la puntina (sulla carta, fuori). Lo pseudo-elemento
    si allarga fino al bordo esterno per la puntina, e la luce passa in box-shadow
    inset, che resta agganciato a quel bordo con le stesse due misure. */
-html[data-tema="bar"] body #puja-panel-slot .cc-avatar::before{
+html[data-tema="bar"] body #puja-panel-slot .cc-avatar::before,
+html[data-tema="bar"] body.layout-admin .asta-row-puja .cc-avatar::before{
   inset:calc(var(--pol) * -1) calc(var(--pol) * -1) calc(var(--pol-giu) * -1) !important;
   z-index:6 !important;
   background:
