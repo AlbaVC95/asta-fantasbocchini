@@ -5198,30 +5198,33 @@ html:not([data-tema]) body.puja-urgente #puja-panel-slot .btn-rilancia {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ████████████████████  IL BAR — EQUILIBRIO LEGNO & OTTONE  ██████████████████
+   ████████████████  IL BAR — DETTAGLI SELEZIONATI IN LEGNO NOBILE  ██████████
    ═══════════════════════════════════════════════════════════════════════════
-   Equilibrio perfetto:
-   - SFONDO: le doghe di legno di noce caldo della taverna con la luce della lampada.
-   - PANNELLI: superficie in cuoio scuro da bancone (#1c140e) con cornici e viti d'ottone dorato.
-   - TAVOLO D'ASTA: lastra scura nobile bordata d'ottone, leggibile e pulita (zero sovraccarico).
-   - TABELLONE GIOCO: panno verde inglese da biliardo.
+   Filosofia:
+   - LEGNO PRESENTE MA NON INVASIVO:
+     * Travatura di testa della sala in rovere massello tornito
+     * Listello superiore del bancone d'asta in legno mogano lucidato a cera
+     * Targhette dei titoli in legno caldo con incisione dorata
+     * Basetta della polaroid e cornici d'ottone con viti da ferramenta
+     * Sfondo della taverna a doghe calde d'ambiente, con luce tenue
+   - I pannelli restano leggibili e puliti (cuoio/ardesia da bancone e panno verde)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ─── BODY & PITCH-BG: LE DOGHE DI LEGNO NELL'AMBIENTE ──────────────────── */
+/* ─── BODY & PITCH-BG: DOGHE D'AMBIENTE ACCOGLIENTI ─────────────────────── */
 html[data-tema="bar"] body,
 html[data-tema="bar"] .pitch-bg {
-  background-color: #2e1a0e !important;
+  background-color: #2b170c !important;
   background-image:
-    /* Luce calda della lampada del bar al centro */
-    radial-gradient(ellipse 90% 65% at 50% 15%, rgba(255,200,120,0.16) 0%, transparent 65%),
-    /* Fuga tra i listoni di legno di fondo ogni 180px */
+    /* Luce ambrata morbida della lampada a sospensione */
+    radial-gradient(ellipse 90% 60% at 50% 12%, rgba(255,200,120,0.18) 0%, transparent 65%),
+    /* Fuga scura tra i listoni di legno ogni 170px con bisello d'ombra e luce */
     repeating-linear-gradient(90deg,
       rgba(15,7,3,0.85) 0px 3px,
-      rgba(180,130,80,0.22) 3px 5px,
-      rgba(50,25,12,0) 5px 177px,
-      rgba(15,7,3,0.60) 177px 180px),
-    /* Gradiente caldo della boiserie */
-    linear-gradient(180deg, #3d2313 0%, #2e1a0e 50%, #1f1108 100%) !important;
+      rgba(190,135,80,0.20) 3px 5px,
+      rgba(50,25,12,0) 5px 167px,
+      rgba(15,7,3,0.60) 167px 170px),
+    /* Boiserie di noce scura calda */
+    linear-gradient(180deg, #381f10 0%, #29150a 50%, #1a0d06 100%) !important;
   background-attachment: fixed !important;
   filter: none !important;
 }
@@ -5236,17 +5239,41 @@ html[data-tema="bar"] .pitch-bg::after {
     radial-gradient(ellipse 100% 100% at 50% 50%, transparent 45%, rgba(15,7,3,0.50) 100%) !important;
 }
 
-/* ─── TAVOLO D'ASTA CENTRALE: LASTRA SCURA ELEGANTE IN CORNICE D'OTTONE ──── */
+/* ─── TRAVE SUPERIORE DEL BAR (HEADER IN ROVERE MASSELLO) ────────────────── */
+html[data-tema="bar"] body .asta-header {
+  background:
+    /* Riflesso di cera sul legno della trave */
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,215,140,0.15) 0%, transparent 65%),
+    linear-gradient(180deg, #3d2313 0%, #2b170b 100%) !important;
+  border-bottom: 3px solid #C9A257 !important;
+  box-shadow:
+    0 4px 18px rgba(0,0,0,0.65),
+    0 1px 0 rgba(255,230,160,0.25) inset !important;
+  position: relative !important;
+}
+
+html[data-tema="bar"] body .asta-header::after {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important; right: 0 !important; bottom: -3px !important; height: 3px !important;
+  pointer-events: none !important;
+  background: linear-gradient(90deg,
+    rgba(122,96,58,0) 0%, #C9A257 10%, #F3DEB0 26%, #A88547 44%,
+    #F3DEB0 62%, #C9A257 80%, rgba(122,96,58,0) 100%) !important;
+  box-shadow: 0 0 10px rgba(228,180,90,0.40) !important;
+}
+
+/* ─── TAVOLO D'ASTA: MOSTRINA IN LEGNO MOGANO SUL BORDO SUPERIORE ────────── */
 html[data-tema="bar"] body #puja-panel-slot,
 html[data-tema="bar"] body.layout-admin .asta-row-puja {
   position: relative !important;
   border: 4px solid transparent !important;
   border-radius: 12px !important;
   background:
-    /* Riflesso morbido sul piano lucido */
+    /* Riflesso morbido sulla lastra */
     radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,210,130,0.12) 0%, transparent 60%) padding-box,
-    /* Lastra nobile in cuoio/ardesia da taverna scura (pulita e leggibile) */
-    linear-gradient(180deg, #1f1610 0%, #160f0a 100%) padding-box,
+    /* Piano in cuoio brunito del bancone da bar */
+    linear-gradient(180deg, #1e150f 0%, #140e09 100%) padding-box,
     /* Cornice in massello d'ottone dorato */
     linear-gradient(152deg,
       #FFE9C4 0%, #D6BA8E 12%, #97815F 28%,
@@ -5257,15 +5284,46 @@ html[data-tema="bar"] body.layout-admin .asta-row-puja {
     inset 0 1px 0 rgba(255,230,170,0.15) !important;
 }
 
-/* Carta del giocatore dentro l'asta: pulita e trasparente */
-html[data-tema="bar"] .puja-panel-slot .chiamata-card,
-html[data-tema="bar"] body.layout-admin .asta-row-puja .chiamata-card {
-  background: none !important;
-  border: none !important;
-  box-shadow: none !important;
+/* Listello di legno mogano cerato che incorona il tavolo dell'asta */
+html[data-tema="bar"] body #puja-panel-slot::before,
+html[data-tema="bar"] body.layout-admin .asta-row-puja::before {
+  display: block !important;
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important; right: 0 !important; top: 0 !important;
+  height: 5px !important;
+  background: linear-gradient(180deg, #6c4122 0%, #4a2a14 100%) !important;
+  border-bottom: 1px solid rgba(255,220,150,0.25) !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.45) !important;
+  z-index: 5 !important;
+  border-radius: 8px 8px 0 0 !important;
 }
 
-/* ─── PANNELLI DI DATI: CUOIO SCURO DA BANCONE CON VITI D'OTTONE ─────────── */
+/* Polaroid del giocatore: basetta calda di legno sotto la foto */
+html[data-tema="bar"] body #puja-panel-slot .cc-avatar,
+html[data-tema="bar"] body.layout-admin .asta-row-puja .cc-avatar {
+  border: 3px solid #FDFBF7 !important;
+  border-bottom: 10px solid #FDFBF7 !important;
+  border-radius: 4px !important;
+  box-shadow:
+    0 8px 20px rgba(0,0,0,0.6),
+    0 0 0 1px #3a2213 !important;
+  background: #111 !important;
+}
+
+/* ─── TARGHETTE IN LEGNO CALDO SUI TITOLI DEI PANNELLI ───────────────────── */
+html[data-tema="bar"] body .panel-budget-hdr,
+html[data-tema="bar"] body .mio-panel-header {
+  background: linear-gradient(180deg, rgba(74,42,22,0.55) 0%, rgba(42,22,10,0.60) 100%) !important;
+  border: 1px solid rgba(201,162,87,0.35) !important;
+  border-radius: 5px !important;
+  padding: 5px 10px !important;
+  margin-bottom: 8px !important;
+  color: #F8E7C6 !important;
+  box-shadow: inset 0 1px 0 rgba(255,230,160,0.2), 0 2px 6px rgba(0,0,0,0.3) !important;
+}
+
+/* ─── PANNELLI DI DATI: CUOIO BRUNITO CON CORNICE E VITI D'OTTONE ────────── */
 html[data-tema="bar"] body .card,
 html[data-tema="bar"] body .admin-panel,
 html[data-tema="bar"] body #mio-panel,
@@ -5276,7 +5334,7 @@ html[data-tema="bar"] body #budget-bar {
   border-radius: 10px !important;
   background:
     radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255,210,130,0.08) 0%, transparent 60%) padding-box,
-    linear-gradient(180deg, #1c140e 0%, #130d08 100%) padding-box,
+    linear-gradient(180deg, #1b130d 0%, #120c08 100%) padding-box,
     linear-gradient(152deg,
       #F0DCB4 0%, #C9AE84 12%, #8A755A 30%,
       #5A4A38 48%, #8A755A 66%, #E4CFA6 84%, #6E5C46 100%) border-box !important;
@@ -5304,20 +5362,10 @@ html[data-tema="bar"] body .tabs-panel {
     inset 0 1px 0 rgba(255,236,200,0.15) !important;
 }
 
-/* ─── HEADER BAR: TRAVE D'OTTONE DORATA ──────────────────────────────────── */
-html[data-tema="bar"] body .asta-header {
-  background: linear-gradient(180deg, #2a190d 0%, #1b1007 100%) !important;
-  border-bottom: 2px solid #C9A257 !important;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.6), 0 1px 0 rgba(255,230,160,0.25) inset !important;
-}
-
-html[data-tema="bar"] body .asta-header::after {
-  content: '' !important;
-  position: absolute !important;
-  left: 0 !important; right: 0 !important; bottom: -3px !important; height: 3px !important;
-  pointer-events: none !important;
-  background: linear-gradient(90deg,
-    rgba(122,96,58,0) 0%, #C9A257 10%, #F3DEB0 26%, #A88547 44%,
-    #F3DEB0 62%, #C9A257 80%, rgba(122,96,58,0) 100%) !important;
-  box-shadow: 0 0 10px rgba(228,180,90,0.40) !important;
+/* Carta del giocatore dentro l'asta: trasparente */
+html[data-tema="bar"] .puja-panel-slot .chiamata-card,
+html[data-tema="bar"] body.layout-admin .asta-row-puja .chiamata-card {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
