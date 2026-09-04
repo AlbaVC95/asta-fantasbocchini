@@ -2680,3 +2680,35 @@ neri e l'unico separatore e' un bianco al 10% che a distanza non esiste.
 l'immagine arriva come allegato, non come file, quindi non c'e' modo di leggerne i pixel. Le
 proporzioni e la struttura sono fedeli, le tinte sono vicine ma non garantite identiche. Se
 servisse la precisione esatta, la strada e' avere i valori esadecimali del disegno.
+
+
+## "Il Bar", quarta passata: i colori campionati dal file, non stimati a occhio
+
+Le tre passate precedenti avevano un difetto comune, e non era di gusto: **stavo indovinando i
+colori guardando l'immagine**, perche' arrivava come allegato e non come file. L'utente ha poi
+detto che il file stava nei download, e a quel punto si e' potuto leggerne i pixel.
+
+Il risultato ha ribaltato l'assunto su cui erano costruite tutte e tre. Campionando le zone piatte
+del disegno:
+
+```
+suolo / cornice   #180E08   legno molto scuro
+PANNELLO          #422C1E   bruno medio      ← lo "scaffale"
+riquadri dentro   #222222   grigio scuro     ← gli "oggetti" appoggiati sopra
+carta di puja     #2C2C2C
+bordo             #A6927C   ottone
+verde pieno       #124E2A   bottoni e tab attiva
+verde vivo        #2A9C5A   badge
+ambra             #E4961E / #FCE4A8
+```
+
+**Il pannello e' piu' CHIARO del suolo, e i riquadri dentro sono piu' SCURI del pannello.** Io
+avevo costruito l'esatto contrario (legno chiaro, pannelli quasi neri) e prima ancora tutto alzato
+in blocco. Il salto e' doppio e va nelle due direzioni: e' questo, piu' di qualunque tinta, che fa
+leggere dodici squadre in tre colonne — ognuna e' un oggetto su un ripiano, non una riga in un
+elenco.
+
+**Da riusare, ed e' il punto generale**: quando il riferimento e' un'immagine, chiedere il FILE.
+Tre passate di lavoro sono state spese a dedurre a occhio una struttura che dieci righe di
+campionamento hanno chiarito in un colpo — e che avevo dedotto sbagliata due volte su due, in
+direzioni opposte. Un colore stimato guardando uno schermo non e' un dato, e' un'ipotesi.

@@ -186,11 +186,12 @@ I partecipanti hanno bocciato "Serata d'Asta" (*troppo scura e uniforme*). Serat
 toccata**: il tema nuovo si aggiunge accanto, ed è soprattutto una paletta (la composizione è
 scritta contro le variabili `--sc-*` e si eredita).
 
-Regola del tema in una riga: **pannelli scuri su legno chiaro, con cornici d'ottone visibili**. Il
-contrasto sta fra il pannello e il piano su cui appoggia. La prima passata alzava tutto in blocco
-ed era sbagliata: alzare ogni piano della stessa quantità lascia le differenze dov'erano. Il legno
-è fatto con gradienti (nessuna immagine nuova) e il verde del panno è un accento vero: conferma,
-tab attiva, stati positivi. **Va guardato in un'asta vera.** Dettagli in
+Struttura **campionata dal file del disegno** (non stimata a occhio): suolo `#180E08` legno scuro,
+pannello `#422C1E` bruno — lo "scaffale" — e riquadri dentro `#222222`, più scuri del pannello. Il
+pannello è più chiaro del suolo e i riquadri sono più scuri del pannello: il salto è doppio e nelle
+due direzioni, ed è questo che fa leggere dodici squadre in tre colonne. Bordi in ottone `#A6927C`,
+verde `#124E2A` per bottoni e tab attiva, `#2A9C5A` per i badge. Il legno è fatto con gradienti
+(nessuna immagine nuova). **Va guardato in un'asta vera.** Dettagli in
 [DECISIONS.md](../DECISIONS.md).
 
 ## Verifiche fatte

@@ -1322,47 +1322,49 @@ body::before{display:none}
       motivo opposto ma con la stessa causa: se i piani non si distinguono per
       tono, l'occhio non sa dove finisce una cosa e comincia l'altra. */
 html[data-tema="bar"]{
-  /* IL SUOLO e' il legno del locale, ed e' CHIARO. I pannelli sono scuri e ci stanno
-     sopra con una cornice d'ottone. E' l'opposto della prima passata di questo tema,
-     che alzava tutto in blocco: alzare tutto toglie contrasto, e il contrasto era il
-     problema. Qui il salto e' fra il pannello e il piano su cui appoggia, non dentro
-     al pannello — cosi' i bordi si vedono da soli e non serve fidarsi di un filetto. */
-  --bg-abyss:#3A2717;
-  --bg-deep:#6B4A2E;        /* il legno */
-  --panel-glass-1:rgba(28,21,15,.96);
-  --panel-glass-2:rgba(24,18,13,.96);
-  --panel-glass-3:rgba(20,15,11,.94);
-  --bg-main:#1C150F;        /* i pannelli: scuri, appoggiati sul legno */
-  --bg-card:#241B13;
-  --bg-elevated:#2E2318;
-  --bg-glass:rgba(28,21,15,.94);
-  --primary:#E8A33D;        /* l'ottone delle cornici e la lampada */
-  --primary-bright:#FFC470;
-  --primary-dark:#B87A1E;
-  --primary-glow:rgba(232,163,61,.34);
-  --primary-subtle:rgba(232,163,61,.12);
-  --gold:#E8B44A;
-  --gold-bright:#FFD27A;
-  --gold-deep:#B98A1E;
-  --gold-glow:rgba(232,180,74,.30);
-  --gold-subtle:rgba(232,180,74,.12);
-  --fire:#E2503A;
+  /* Valori CAMPIONATI dal disegno fornito dall'utente (letto come file, non a occhio).
+     La struttura vera e' a tre livelli, e non e' quella che avevo indovinato nelle
+     prime passate:
+       marco/suolo  #180E08  legno molto scuro
+       PANNELLO     #422C1E  bruno medio  ← lo "scaffale"
+       riquadri     #222222  grigio scuro ← gli "oggetti" appoggiati sopra
+     Cioe' il pannello e' PIU' CHIARO del suolo e i riquadri dentro sono piu' scuri
+     del pannello. Il salto e' doppio e in due direzioni, ed e' questo che rende ogni
+     blocco un oggetto separato invece di una zona. */
+  --bg-abyss:#120A05;
+  --bg-deep:#180E08;        /* il legno, scuro */
+  --panel-glass-1:rgba(66,44,30,.97);
+  --panel-glass-2:rgba(60,40,27,.97);
+  --panel-glass-3:rgba(52,34,23,.96);
+  --bg-main:#422C1E;        /* il pannello bruno */
+  --bg-card:#222222;        /* i riquadri dentro */
+  --bg-elevated:#2C2C2C;    /* la carta di puja */
+  --bg-glass:rgba(66,44,30,.95);
+  --primary:#E4961E;
+  --primary-bright:#FCD29C;
+  --primary-dark:#A66A12;
+  --primary-glow:rgba(228,150,30,.34);
+  --primary-subtle:rgba(228,150,30,.12);
+  --gold:#E4961E;
+  --gold-bright:#FCE4A8;
+  --gold-deep:#A66A12;
+  --gold-glow:rgba(228,150,30,.30);
+  --gold-subtle:rgba(228,150,30,.12);
+  --fire:#D64A3A;
   --fire-bright:#FF6E55;
-  --fire-glow:rgba(226,80,58,.32);
-  /* Il verde del panno: qui e' un accento VERO, non solo il denaro. Conferma, tab
-     attiva, stati positivi. Con un accento solo tutto il resto ricade nel grigio,
-     che era letteralmente la lamentela su Serata. */
-  --success:#3FA860;
-  --success-glow:rgba(63,168,96,.30);
-  --danger:#E2503A;
-  --danger-glow:rgba(226,80,58,.28);
-  --text-primary:#F7EFE2;
-  --text-secondary:#CDB99F;
-  --text-muted:#A79070;
-  /* I filetti sono d'ottone e si VEDONO: nei temi scuri sono un bianco al 10%, qui
-     la cornice e' parte del mobile. */
-  --border:rgba(232,163,61,.34);
-  --border-light:rgba(232,163,61,.55);
+  --fire-glow:rgba(214,74,58,.32);
+  --success:#2A9C5A;        /* il verde dei badge, campionato */
+  --success-glow:rgba(42,156,90,.30);
+  --danger:#D64A3A;
+  --danger-glow:rgba(214,74,58,.28);
+  --text-primary:#FFF7E4;
+  --text-secondary:#D8C3A4;
+  --text-muted:#A89078;
+  /* L'ottone campionato dai bordi: #A6927C. Nei temi scuri il filetto e' un bianco
+     al 10% perche' il pannello sta su un fondo altrettanto scuro; qui la cornice e'
+     parte del mobile e si vede. */
+  --border:rgba(166,146,124,.45);
+  --border-light:rgba(166,146,124,.72);
 }
 html[data-tema="cuoio"]{
   --bg-abyss:#E9DCC0;
