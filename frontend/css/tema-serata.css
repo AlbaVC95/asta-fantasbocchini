@@ -5106,33 +5106,30 @@ html:not([data-tema]) body.puja-urgente #puja-panel-slot .btn-rilancia {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ████████████████████  IL BAR — AUTENTICO LEGNO E OTTONE  ██████████████████
+   ████████████████████  IL BAR — EQUILIBRIO LEGNO & OTTONE  ██████████████████
    ═══════════════════════════════════════════════════════════════════════════
-   Obiettivo: LA MADERA DEVE VEDERSI CHIARAMENTE!
-   - Pavimento/sfondo a doghe di legno di noce caldo con fughe e venature
-   - Pannelli in legno massello verniciato con cornici e viti di ottone dorato
-   - Tavolo d'asta centrale in caldo legno mogano/noce lucido
-   - Panno verde per il tabellone di gioco
+   Equilibrio perfetto:
+   - SFONDO: le doghe di legno di noce caldo della taverna con la luce della lampada.
+   - PANNELLI: superficie in cuoio scuro da bancone (#1c140e) con cornici e viti d'ottone dorato.
+   - TAVOLO D'ASTA: lastra scura nobile bordata d'ottone, leggibile e pulita (zero sovraccarico).
+   - TABELLONE GIOCO: panno verde inglese da biliardo.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ─── BODY & PITCH-BG: DOGHE DI LEGNO CALDE E VIVE ───────────────────────── */
+/* ─── BODY & PITCH-BG: LE DOGHE DI LEGNO NELL'AMBIENTE ──────────────────── */
 html[data-tema="bar"] body,
 html[data-tema="bar"] .pitch-bg {
-  background-color: #3b2313 !important;
+  background-color: #2e1a0e !important;
   background-image:
     /* Luce calda della lampada del bar al centro */
-    radial-gradient(ellipse 90% 70% at 50% 15%, rgba(255,200,120,0.18) 0%, transparent 65%),
-    /* Fuga scura tra i listoni di legno ogni 160px con bisello illuminato */
+    radial-gradient(ellipse 90% 65% at 50% 15%, rgba(255,200,120,0.16) 0%, transparent 65%),
+    /* Fuga tra i listoni di legno di fondo ogni 180px */
     repeating-linear-gradient(90deg,
-      rgba(20,10,5,0.85) 0px 3px,
-      rgba(200,150,95,0.30) 3px 5px,
-      rgba(70,40,20,0) 5px 157px,
-      rgba(20,10,5,0.60) 157px 160px),
-    /* Vena del legno a rilievo (rumore fine) */
-    url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27200%27%20height%3D%27200%27%3E%3Cfilter%20id%3D%27w%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.015%200.25%27%20numOctaves%3D%274%27%20seed%3D%277%27%2F%3E%3CfeColorMatrix%20type%3D%27matrix%27%20values%3D%270.3%200%200%200%200.25%200%200.18%200%200%200.13%200%200%200.08%200%200.05%200%200%200%200.35%200%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27200%27%20height%3D%27200%27%20filter%3D%27url%28%23w%29%27%2F%3E%3C%2Fsvg%3E"),
-    /* Gradiente di calore del legno */
-    linear-gradient(180deg, #4d2f19 0%, #3a2212 50%, #29170a 100%) !important;
-  background-size: auto, auto, 200px 200px, auto !important;
+      rgba(15,7,3,0.85) 0px 3px,
+      rgba(180,130,80,0.22) 3px 5px,
+      rgba(50,25,12,0) 5px 177px,
+      rgba(15,7,3,0.60) 177px 180px),
+    /* Gradiente caldo della boiserie */
+    linear-gradient(180deg, #3d2313 0%, #2e1a0e 50%, #1f1108 100%) !important;
   background-attachment: fixed !important;
   filter: none !important;
 }
@@ -5143,44 +5140,40 @@ html[data-tema="bar"] .pitch-bg::after {
   inset: 0 !important;
   pointer-events: none !important;
   background:
-    radial-gradient(ellipse 65% 50% at 50% 5%, rgba(255,215,140,0.16) 0%, transparent 60%),
-    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 40%, rgba(15,7,3,0.45) 100%) !important;
+    radial-gradient(ellipse 65% 50% at 50% 5%, rgba(255,215,140,0.14) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 45%, rgba(15,7,3,0.50) 100%) !important;
 }
 
-/* ─── IL TAVOLO D'ASTA CENTRALE: MASSELLO DI NOCE & OTTONE ──────────────── */
+/* ─── TAVOLO D'ASTA CENTRALE: LASTRA SCURA ELEGANTE IN CORNICE D'OTTONE ──── */
 html[data-tema="bar"] body #puja-panel-slot,
 html[data-tema="bar"] body.layout-admin .asta-row-puja {
   position: relative !important;
   border: 4px solid transparent !important;
   border-radius: 12px !important;
   background:
-    /* Riflesso caldo sul piano lucido del bancone */
-    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(255,210,130,0.20) 0%, transparent 60%) padding-box,
-    /* Vena del massello di noce */
-    url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27200%27%20height%3D%27200%27%3E%3Cfilter%20id%3D%27g%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.02%200.3%27%20numOctaves%3D%273%27%20seed%3D%273%27%2F%3E%3CfeColorMatrix%20type%3D%27matrix%27%20values%3D%270.4%200%200%200%200.3%200%200.25%200%200%200.17%200%200%200.1%200%200.08%200%200%200%200.4%200%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27200%27%20height%3D%27200%27%20filter%3D%27url%28%23g%29%27%2F%3E%3C%2Fsvg%3E") padding-box,
-    /* Legno noce caldo e ricco */
-    linear-gradient(180deg, #462c18 0%, #341f10 50%, #26160b 100%) padding-box,
+    /* Riflesso morbido sul piano lucido */
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,210,130,0.12) 0%, transparent 60%) padding-box,
+    /* Lastra nobile in cuoio/ardesia da taverna scura (pulita e leggibile) */
+    linear-gradient(180deg, #1f1610 0%, #160f0a 100%) padding-box,
     /* Cornice in massello d'ottone dorato */
     linear-gradient(152deg,
       #FFE9C4 0%, #D6BA8E 12%, #97815F 28%,
       #60503C 48%, #97815F 65%, #F0D9AC 84%, #77644C 100%) border-box !important;
-  background-size: auto, 200px 200px, auto, auto !important;
   box-shadow:
     0 16px 36px rgba(0,0,0,0.65),
-    inset 0 2px 8px rgba(0,0,0,0.4),
-    inset 0 1px 0 rgba(255,230,170,0.22) !important;
+    inset 0 2px 6px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,230,170,0.15) !important;
 }
 
-/* Carta del giocatore dentro l'asta: si fonde col legno */
+/* Carta del giocatore dentro l'asta: pulita e trasparente */
 html[data-tema="bar"] .puja-panel-slot .chiamata-card,
 html[data-tema="bar"] body.layout-admin .asta-row-puja .chiamata-card {
-  background: rgba(36, 21, 11, 0.50) !important;
-  border: 1px solid rgba(214, 186, 142, 0.20) !important;
-  border-radius: 8px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.35) !important;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
-/* ─── PANNELLI LATERALI E ADMIN: LEGNO NOBILE CON VITI D'OTTONE ─────────── */
+/* ─── PANNELLI DI DATI: CUOIO SCURO DA BANCONE CON VITI D'OTTONE ─────────── */
 html[data-tema="bar"] body .card,
 html[data-tema="bar"] body .admin-panel,
 html[data-tema="bar"] body #mio-panel,
@@ -5190,27 +5183,25 @@ html[data-tema="bar"] body #budget-bar {
   border: 3px solid transparent !important;
   border-radius: 10px !important;
   background:
-    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255,210,130,0.14) 0%, transparent 60%) padding-box,
-    url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27180%27%20height%3D%27180%27%3E%3Cfilter%20id%3D%27g%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.02%200.3%27%20numOctaves%3D%273%27%20seed%3D%272%27%2F%3E%3CfeColorMatrix%20type%3D%27matrix%27%20values%3D%270.4%200%200%200%200.3%200%200.25%200%200%200.17%200%200%200.1%200%200.08%200%200%200%200.4%200%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27180%27%20height%3D%27180%27%20filter%3D%27url%28%23g%29%27%2F%3E%3C%2Fsvg%3E") padding-box,
-    linear-gradient(180deg, #442a17 0%, #321e10 50%, #24140a 100%) padding-box,
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255,210,130,0.08) 0%, transparent 60%) padding-box,
+    linear-gradient(180deg, #1c140e 0%, #130d08 100%) padding-box,
     linear-gradient(152deg,
       #F0DCB4 0%, #C9AE84 12%, #8A755A 30%,
       #5A4A38 48%, #8A755A 66%, #E4CFA6 84%, #6E5C46 100%) border-box !important;
-  background-size: auto, 180px 180px, auto, auto !important;
   box-shadow:
     0 10px 24px rgba(0,0,0,0.55),
-    inset 0 2px 6px rgba(0,0,0,0.35),
-    inset 0 1px 0 rgba(255,236,200,0.18) !important;
+    inset 0 2px 5px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,236,200,0.12) !important;
 }
 
-/* ─── TABS PANEL: PANNO VERDE DA BILIARDO / POKER CON CORNICE D'OTTONE ──── */
+/* ─── TABS PANEL: IL PANNO VERDE INGLESE CON CORNICE D'OTTONE ───────────── */
 html[data-tema="bar"] body .tabs-panel {
   position: relative !important;
   border: 3px solid transparent !important;
   border-radius: 10px !important;
   background:
     url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27200%27%20height%3D%27200%27%3E%3Cfilter%20id%3D%27p%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%271.2%27%20numOctaves%3D%272%27%20seed%3D%279%27%2F%3E%3CfeColorMatrix%20type%3D%27saturate%27%20values%3D%270%27%2F%3E%3CfeComponentTransfer%3E%3CfeFuncA%20type%3D%27linear%27%20slope%3D%270.6%27%2F%3E%3C%2FfeComponentTransfer%3E%3C%2Ffilter%3E%3Crect%20width%3D%27200%27%20height%3D%27200%27%20filter%3D%27url%28%23p%29%27%2F%3E%3C%2Fsvg%3E") padding-box,
-    linear-gradient(180deg, #184227 0%, #11311d 100%) padding-box,
+    linear-gradient(180deg, #173d24 0%, #102d1a 100%) padding-box,
     linear-gradient(152deg,
       #F0DCB4 0%, #C9AE84 12%, #8A755A 30%,
       #5A4A38 48%, #8A755A 66%, #E4CFA6 84%, #6E5C46 100%) border-box !important;
@@ -5218,14 +5209,14 @@ html[data-tema="bar"] body .tabs-panel {
   box-shadow:
     0 10px 24px rgba(0,0,0,0.55),
     inset 0 2px 6px rgba(0,0,0,0.35),
-    inset 0 1px 0 rgba(255,236,200,0.18) !important;
+    inset 0 1px 0 rgba(255,236,200,0.15) !important;
 }
 
 /* ─── HEADER BAR: TRAVE D'OTTONE DORATA ──────────────────────────────────── */
 html[data-tema="bar"] body .asta-header {
-  background: linear-gradient(180deg, #321e10 0%, #201309 100%) !important;
+  background: linear-gradient(180deg, #2a190d 0%, #1b1007 100%) !important;
   border-bottom: 2px solid #C9A257 !important;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.6), 0 1px 0 rgba(255,230,160,0.3) inset !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6), 0 1px 0 rgba(255,230,160,0.25) inset !important;
 }
 
 html[data-tema="bar"] body .asta-header::after {
