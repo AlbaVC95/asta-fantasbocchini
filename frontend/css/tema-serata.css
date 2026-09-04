@@ -4636,3 +4636,43 @@ html[data-tema="bar"] .ant-slot3d-name-txt {
 html[data-tema="bar"] .ant-slot3d-shadow {
   display: none !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   FIX DEFINITIVO PALETTE BASE (SERATA D'ASTA)
+   Sovrascrive qualsiasi rimasuglio di nero/marrone e l'immagine di sfondo
+   che sporcava il nuovo design "Slate".
+   ═══════════════════════════════════════════════════════════════════ */
+html:not([data-tema]) .pitch-bg,
+html[data-tema="base"] .pitch-bg {
+  background-image: 
+    radial-gradient(ellipse at 50% 0%, rgba(30,41,59,0.5) 0%, transparent 60%),
+    linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-abyss) 100%) !important;
+  filter: none !important;
+}
+
+html:not([data-tema]) body,
+html[data-tema="base"] body {
+  background: var(--bg-deep) !important;
+}
+
+
+/* Fix visibilità chiamata-card (Renderla visibile come un vero pannello) */
+html:not([data-tema]) .puja-panel-slot .chiamata-card,
+html[data-tema="base"] .puja-panel-slot .chiamata-card,
+html:not([data-tema]) body.layout-admin .asta-row-puja .chiamata-card,
+html[data-tema="base"] body.layout-admin .asta-row-puja .chiamata-card {
+  background: var(--bg-main) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+  border-radius: 12px !important;
+}
+
+/* Fix visibilità commento FantaLab */
+html:not([data-tema]) .cc-commento-preview,
+html[data-tema="base"] .cc-commento-preview {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 176, 74, 0.3) !important;
+  color: var(--text-secondary) !important;
+  padding: 8px 10px !important;
+  border-radius: 6px !important;
+}

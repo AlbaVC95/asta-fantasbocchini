@@ -3415,3 +3415,18 @@ html[data-tema="base"] body.layout-admin .asta-row-puja .chiamata-card {
   padding: 8px 10px !important;
   border-radius: 6px !important;
 }
+
+/* Fix per forzare la visibilità della palette Base (sovrascrive l'immagine di background che impastava i colori) */
+html:not([data-tema]) .pitch-bg,
+html[data-tema="base"] .pitch-bg {
+  background-image: 
+    radial-gradient(ellipse at 50% 0%, rgba(30,41,59,0.5) 0%, transparent 60%),
+    linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-abyss) 100%) !important;
+  filter: none !important;
+}
+
+html:not([data-tema]) body,
+html[data-tema="base"] body {
+  background: var(--bg-deep) !important;
+}
+

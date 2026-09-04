@@ -2,16 +2,14 @@
 
 ## Stato attuale
 
-Risolto definitivamente il problema di "piattezza" visiva e leggibilità del tema base ("Serata d'Asta"). Un precedente tentativo di aggiornamento della palette base aveva fallito il parsing del CSS; ora il tema è stato correttamente migrato a una palette Slate/Navy ad alto contrasto.
+Corretto un problema critico di ereditarietà CSS che impediva ai nuovi colori "Slate" del tema Base ("Serata d'Asta") di applicarsi correttamente. 
 
 ## Cosa è cambiato
 
-- **`frontend/css/style.css`**: 
-  - **Palette Slate/Navy**: I colori di sfondo profondi (`--bg-abyss`, `--bg-deep`, `--bg-main`, ecc.) sono stati aggiornati via Python Regex da neri/marroni sordi a ricchi e puliti blu ardesia scuri (`#0b0f19`, `#1e293b`).
-  - **Testo ad Alto Contrasto**: Il testo secondario (`--text-muted`, `--text-secondary`) è stato notevolmente schiarito in scala dei grigi (es. `#94a3b8`) per risaltare perfettamente sui nuovi sfondi ardesia.
-  - **Pannello Giocatore (`.chiamata-card`)**: Ripristinato il background (prima forzato a `transparent` da vecchie regole CSS), ora utilizza `var(--bg-main)` con un bordo solido per distaccarsi nettamente dallo sfondo scuro, risolvendo l'effetto "buco nero" visto nello screenshot.
-  - **Box Commento FantaLab**: Aggiunto un leggero sfondo semitrasparente bianco (`rgba(255,255,255,0.05)`) e bordi dorati soffusi per renderlo altamente leggibile e visivamente separato dal resto dei dati del giocatore.
-- **`frontend/index.html`**: Cache-busting aggiornato a `20260904165300`.
+- **`frontend/css/tema-serata.css` e `style.css`**: 
+  - Rimossa del tutto l'immagine di sfondo hardcodata (`fantabar-bg.jpg`) e i suoi filtri scurenti che bloccavano la nuova palette. Ora il tema base utilizza un pulitissimo background a gradiente CSS che riflette i veri colori *slate*.
+  - Ri-spostate e forzate (`!important`) le regole per ripristinare il colore di sfondo della carta giocatore (`.chiamata-card`) e del box commenti direttamente in coda a `tema-serata.css`, l'ultimo foglio caricato, per garantire che abbiano la priorità assoluta su tutto il resto.
+- **`frontend/index.html`**: Cache-busting aggiornato per TUTTI i fogli di stile (non solo uno) a `20260904170600` per forzare il refresh completo.
 
 ## Pendenze
 
