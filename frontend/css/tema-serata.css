@@ -5188,3 +5188,530 @@ html:not([data-tema]) body.puja-urgente #puja-panel-slot .btn-rilancia {
   box-shadow: 0 4px 20px rgba(220,38,38,0.45) !important;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ████████  SERATA D'ASTA — PERSONALITÀ E CARATTERE  ████████████████████████
+   
+   Palette definitiva:
+   - AMBRA CALDA  #FFB04A / #FFA322  — il protagonista, la lampada
+   - VIOLETTO     #7C3AED / #6D28D9  — il lusso, la sala
+   - INDACO       #3B82F6            — dati secondari, badge
+   - VERDE FREDDO #22C55E            — stati positivi
+   
+   Due assi cromatici = personalità. Prima c'era uno solo (ambra) e
+   il resto nero. Adesso i pannelli hanno un'anima viola scura,
+   il protagonista brilla di ambra, i dati parlano tre lingue di colore.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── BODY: NOTTURNO CON PROFONDITÀ ──────────────────────────────────────── */
+html[data-tema="serata"] body,
+html:not([data-tema]) body {
+  background:
+    radial-gradient(ellipse 80% 50% at 15% 0%, rgba(109,40,217,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 85% 100%, rgba(251,191,36,0.07) 0%, transparent 50%),
+    radial-gradient(ellipse 100% 80% at 50% 50%, rgba(17,24,39,1) 40%, rgba(10,10,20,1) 100%),
+    #08091a !important;
+  background-attachment: fixed !important;
+}
+
+html[data-tema="serata"] .pitch-bg,
+html:not([data-tema]) .pitch-bg {
+  background:
+    radial-gradient(ellipse 70% 50% at 10% -10%, rgba(109,40,217,0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 35% at 90% 110%, rgba(251,191,36,0.08) 0%, transparent 50%),
+    #08091a !important;
+  filter: none !important;
+}
+
+/* ─── HEADER: insegna di una sala importante ─────────────────────────────── */
+html[data-tema="serata"] body .asta-header,
+html:not([data-tema]) body .asta-header {
+  background: rgba(8, 9, 26, 0.95) !important;
+  border-bottom: 1px solid rgba(251,191,36,0.22) !important;
+  backdrop-filter: blur(24px) !important;
+  box-shadow:
+    0 1px 0 rgba(109,40,217,0.15),
+    0 4px 32px rgba(0,0,0,0.6) !important;
+}
+
+html[data-tema="serata"] body .asta-header-title,
+html:not([data-tema]) body .asta-header-title {
+  background: linear-gradient(135deg, #FFB04A 0%, #FFA322 40%, #e8820c 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  filter: drop-shadow(0 0 8px rgba(251,191,36,0.35)) !important;
+}
+
+/* ─── PANNELLO ADMIN: viola scuro con bordo ambra ────────────────────────── */
+html[data-tema="serata"] body .admin-panel,
+html:not([data-tema]) body .admin-panel {
+  background:
+    radial-gradient(ellipse 100% 80% at 50% -20%, rgba(109,40,217,0.10) 0%, transparent 60%),
+    linear-gradient(160deg, rgba(20,16,40,0.98) 0%, rgba(13,10,26,0.99) 100%) !important;
+  border: 1px solid rgba(251,191,36,0.20) !important;
+  border-top: 1px solid rgba(251,191,36,0.35) !important;
+  border-radius: 10px !important;
+  box-shadow:
+    0 1px 0 rgba(251,191,36,0.12) inset,
+    0 8px 32px rgba(0,0,0,0.5),
+    0 0 60px rgba(109,40,217,0.06) !important;
+}
+
+/* ─── PANNELLO BUDGET: tonalità viola notte ──────────────────────────────── */
+html[data-tema="serata"] body .panel-budget,
+html:not([data-tema]) body .panel-budget {
+  background:
+    radial-gradient(ellipse 80% 60% at 100% 100%, rgba(109,40,217,0.08) 0%, transparent 55%),
+    linear-gradient(170deg, rgba(16,14,34,0.98) 0%, rgba(10,8,22,0.99) 100%) !important;
+  border: 1px solid rgba(124,58,237,0.18) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+}
+
+/* ─── PANNELLO MIO: viola caldo ──────────────────────────────────────────── */
+html[data-tema="serata"] body #mio-panel,
+html:not([data-tema]) body #mio-panel {
+  background:
+    radial-gradient(ellipse 80% 60% at 0% 0%, rgba(109,40,217,0.10) 0%, transparent 55%),
+    linear-gradient(160deg, rgba(16,14,34,0.98) 0%, rgba(10,8,22,0.99) 100%) !important;
+  border: 1px solid rgba(124,58,237,0.18) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+}
+
+/* Budget grande: cifra ambra importante */
+html[data-tema="serata"] body #mio-panel .crediti-badge,
+html:not([data-tema]) body #mio-panel .crediti-badge {
+  color: #FFB04A !important;
+  font-size: 2.2rem !important;
+  font-weight: 900 !important;
+  text-shadow: 0 0 20px rgba(251,191,36,0.30) !important;
+  background: none !important;
+  border: none !important;
+}
+
+/* ─── PANNELLO TABS: fondo scuro con linea viola ─────────────────────────── */
+html[data-tema="serata"] body .tabs-panel,
+html:not([data-tema]) body .tabs-panel {
+  background:
+    linear-gradient(180deg, rgba(14,12,30,0.99) 0%, rgba(8,9,26,1.0) 100%) !important;
+  border: 1px solid rgba(124,58,237,0.15) !important;
+  border-top: 2px solid rgba(124,58,237,0.30) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35) !important;
+}
+
+/* ─── TABS: stile cassetto elegante ──────────────────────────────────────── */
+html[data-tema="serata"] body .tabs-nav,
+html:not([data-tema]) body .tabs-nav {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(124,58,237,0.20) !important;
+  padding: 0 8px !important;
+  gap: 2px !important;
+}
+
+html[data-tema="serata"] body .tab-btn,
+html:not([data-tema]) body .tab-btn {
+  background: none !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  color: rgba(167,139,250,0.50) !important;
+  font-size: 0.68rem !important;
+  letter-spacing: 0.10em !important;
+  text-transform: uppercase !important;
+  padding: 12px 18px !important;
+  transition: color 0.2s, border-color 0.2s !important;
+  font-weight: 500 !important;
+}
+
+html[data-tema="serata"] body .tab-btn:hover,
+html:not([data-tema]) body .tab-btn:hover {
+  color: rgba(251,191,36,0.75) !important;
+}
+
+html[data-tema="serata"] body .tab-btn.active,
+html:not([data-tema]) body .tab-btn.active {
+  background: rgba(251,191,36,0.06) !important;
+  color: #FFB04A !important;
+  border-bottom: 2px solid #FFB04A !important;
+  border-radius: 0 !important;
+}
+
+/* ─── LEVEL 2: AREA ASTA — PROTAGONISTA ASSOLUTO ────────────────────────── */
+
+html[data-tema="serata"] body #puja-panel-slot,
+html:not([data-tema]) body #puja-panel-slot {
+  background:
+    radial-gradient(ellipse 60% 50% at 5% 50%, rgba(109,40,217,0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 95% 50%, rgba(251,191,36,0.10) 0%, transparent 50%),
+    linear-gradient(150deg,
+      rgba(20, 16, 40, 0.99) 0%,
+      rgba(14, 11, 30, 0.99) 50%,
+      rgba(18, 13, 34, 0.99) 100%
+    ) !important;
+  border: 1px solid rgba(251,191,36,0.28) !important;
+  border-radius: 14px !important;
+  box-shadow:
+    0 0 0 1px rgba(109,40,217,0.12) inset,
+    0 1px 0 rgba(251,191,36,0.15) inset,
+    0 24px 60px rgba(0,0,0,0.55),
+    0 0 100px rgba(251,191,36,0.05),
+    0 0 80px rgba(109,40,217,0.06) !important;
+}
+
+html[data-tema="serata"] body.layout-admin .asta-row-puja,
+html:not([data-tema]) body.layout-admin .asta-row-puja {
+  background:
+    radial-gradient(ellipse 60% 50% at 5% 50%, rgba(109,40,217,0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 95% 50%, rgba(251,191,36,0.10) 0%, transparent 50%),
+    linear-gradient(150deg,
+      rgba(20, 16, 40, 0.99) 0%,
+      rgba(14, 11, 30, 0.99) 50%,
+      rgba(18, 13, 34, 0.99) 100%
+    ) !important;
+  border: 1px solid rgba(251,191,36,0.28) !important;
+  border-radius: 14px !important;
+  box-shadow:
+    0 0 0 1px rgba(109,40,217,0.12) inset,
+    0 1px 0 rgba(251,191,36,0.15) inset,
+    0 24px 60px rgba(0,0,0,0.55),
+    0 0 100px rgba(251,191,36,0.05),
+    0 0 80px rgba(109,40,217,0.06) !important;
+}
+
+/* Miccia ambra che respira sopra la puja */
+html[data-tema="serata"] body #puja-panel-slot::before,
+html:not([data-tema]) body #puja-panel-slot::before,
+html[data-tema="serata"] body.layout-admin .asta-row-puja::before,
+html:not([data-tema]) body.layout-admin .asta-row-puja::before {
+  display: block !important;
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important; right: 0 !important; top: 0 !important;
+  height: 2px !important;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(124,58,237,0.5) 10%,
+    rgba(251,191,36,0.9) 35%,
+    #FFB04A 50%,
+    rgba(251,191,36,0.9) 65%,
+    rgba(124,58,237,0.5) 90%,
+    transparent 100%
+  ) !important;
+  z-index: 10 !important;
+  border-radius: 14px 14px 0 0 !important;
+  animation: miccia-ambar 3s ease-in-out infinite !important;
+}
+
+@keyframes miccia-ambar {
+  0%, 100% { opacity: 0.7; filter: blur(0px); }
+  50% { opacity: 1.0; filter: blur(0.5px); box-shadow: 0 0 12px rgba(251,191,36,0.5); }
+}
+
+html[data-tema="serata"] body #puja-panel-slot::after,
+html:not([data-tema]) body #puja-panel-slot::after,
+html[data-tema="serata"] body.layout-admin .asta-row-puja::after,
+html:not([data-tema]) body.layout-admin .asta-row-puja::after {
+  display: none !important;
+}
+
+/* ─── OFFERTA/PREZZO: ambra grande e luminosa ────────────────────────────── */
+html[data-tema="serata"] body .cc-offerta,
+html:not([data-tema]) body .cc-offerta {
+  color: #FFB04A !important;
+  text-shadow:
+    0 0 20px rgba(251,191,36,0.4),
+    0 0 50px rgba(251,191,36,0.15),
+    0 2px 8px rgba(0,0,0,0.5) !important;
+}
+
+/* Il "500" nel pannello Mio */
+html[data-tema="serata"] body #mio-panel .crediti-badge,
+html:not([data-tema]) body #mio-panel .crediti-badge {
+  color: #FFB04A !important;
+  text-shadow: 0 0 20px rgba(251,191,36,0.30) !important;
+}
+
+/* ─── RILANCIO: ambra caldo, non piatto ──────────────────────────────────── */
+html[data-tema="serata"] body #puja-panel-slot .btn-rilancia,
+html:not([data-tema]) body #puja-panel-slot .btn-rilancia,
+html[data-tema="serata"] body .asta-row-puja .btn-rilancia,
+html:not([data-tema]) body .asta-row-puja .btn-rilancia {
+  background: linear-gradient(135deg,
+    #FFA322 0%, #e8820c 60%, #d97706 100%
+  ) !important;
+  color: #1a0a00 !important;
+  border: none !important;
+  border-bottom: 3px solid #92400e !important;
+  border-radius: 8px !important;
+  box-shadow:
+    0 4px 20px rgba(217,119,6,0.45),
+    0 1px 0 rgba(255,220,100,0.25) inset !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.25) !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .btn-rilancia:hover,
+html:not([data-tema]) body #puja-panel-slot .btn-rilancia:hover {
+  box-shadow:
+    0 6px 28px rgba(217,119,6,0.6),
+    0 1px 0 rgba(255,220,100,0.3) inset !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ─── QUICK BIDS: stile bottoni viola scuro ──────────────────────────────── */
+html[data-tema="serata"] body #puja-panel-slot .quick-bids-row,
+html:not([data-tema]) body #puja-panel-slot .quick-bids-row {
+  background: rgba(20,16,40,0.7) !important;
+  border: 1px solid rgba(124,58,237,0.25) !important;
+  border-radius: 8px !important;
+  overflow: visible !important;
+  gap: 4px !important;
+  padding: 4px !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .btn-quick,
+html:not([data-tema]) body #puja-panel-slot .btn-quick {
+  border-radius: 6px !important;
+  background: rgba(124,58,237,0.08) !important;
+  color: rgba(167,139,250,0.8) !important;
+  border: 1px solid rgba(124,58,237,0.20) !important;
+  font-weight: 700 !important;
+  transition: all 0.15s !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .btn-quick:hover,
+html:not([data-tema]) body #puja-panel-slot .btn-quick:hover {
+  background: rgba(251,191,36,0.14) !important;
+  color: #FFB04A !important;
+  border-color: rgba(251,191,36,0.35) !important;
+}
+
+/* ─── CONFERMA: verde deciso ─────────────────────────────────────────────── */
+html[data-tema="serata"] body #btn-conferma-assegnazione,
+html:not([data-tema]) body #btn-conferma-assegnazione {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+  color: #f0fdf4 !important;
+  border: none !important;
+  border-bottom: 3px solid #14532d !important;
+  border-radius: 8px !important;
+  box-shadow:
+    0 4px 20px rgba(22,163,74,0.40),
+    0 1px 0 rgba(134,239,172,0.20) inset !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+/* ─── ADMIN BADGE: ambra visibile ────────────────────────────────────────── */
+html[data-tema="serata"] body .admin-badge,
+html:not([data-tema]) body .admin-badge {
+  background: rgba(251,191,36,0.10) !important;
+  border: 1px solid rgba(251,191,36,0.35) !important;
+  color: #FFB04A !important;
+  border-radius: 5px !important;
+  font-size: 0.65rem !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+}
+
+/* ─── CONFERMA BOX (timer scaduto): viola con bordo ambra ───────────────── */
+html[data-tema="serata"] body .admin-conferma-box,
+html:not([data-tema]) body .admin-conferma-box {
+  background: rgba(20,16,40,0.85) !important;
+  border: 1px solid rgba(251,191,36,0.30) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 0 30px rgba(251,191,36,0.08) !important;
+}
+
+html[data-tema="serata"] body .conferma-titolo,
+html:not([data-tema]) body .conferma-titolo {
+  color: #FFB04A !important;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.15em !important;
+  text-transform: uppercase !important;
+}
+
+/* ─── SQUADRE: gerarchia visiva forte ────────────────────────────────────── */
+html[data-tema="serata"] body .sidebar-squadra,
+html:not([data-tema]) body .sidebar-squadra {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(124,58,237,0.10) !important;
+  border-left: 2px solid transparent !important;
+  border-radius: 0 !important;
+  padding: 5px 8px !important;
+  transition: background 0.2s, border-left-color 0.2s !important;
+}
+
+html[data-tema="serata"] body .sidebar-squadra:hover,
+html:not([data-tema]) body .sidebar-squadra:hover {
+  background: rgba(124,58,237,0.05) !important;
+}
+
+html[data-tema="serata"] body .sidebar-squadra.mia-squadra,
+html:not([data-tema]) body .sidebar-squadra.mia-squadra {
+  border-left: 2px solid rgba(251,191,36,0.6) !important;
+  background: rgba(251,191,36,0.05) !important;
+}
+
+html[data-tema="serata"] body .sidebar-squadra.mia-squadra .sq-nome,
+html:not([data-tema]) body .sidebar-squadra.mia-squadra .sq-nome {
+  color: #FFB04A !important;
+  font-weight: 700 !important;
+}
+
+html[data-tema="serata"] body .sidebar-squadra.offerente-attuale,
+html:not([data-tema]) body .sidebar-squadra.offerente-attuale {
+  border-left: 2px solid #22C55E !important;
+  background: rgba(34,197,94,0.06) !important;
+}
+
+html[data-tema="serata"] body .sidebar-squadra.offerente-attuale .sq-crediti,
+html:not([data-tema]) body .sidebar-squadra.offerente-attuale .sq-crediti {
+  color: #22C55E !important;
+  text-shadow: 0 0 12px rgba(34,197,94,0.30) !important;
+}
+
+html[data-tema="serata"] body .sidebar-squadra.offerente-attuale .sq-nome,
+html:not([data-tema]) body .sidebar-squadra.offerente-attuale .sq-nome {
+  color: #bbf7d0 !important;
+}
+
+html[data-tema="serata"] body .sq-crediti,
+html:not([data-tema]) body .sq-crediti {
+  color: #e2e8f0 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* ─── STORICO/LISTE: zebra viola ─────────────────────────────────────────── */
+html[data-tema="serata"] body .storico-list li,
+html:not([data-tema]) body .storico-list li {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(124,58,237,0.10) !important;
+  border-radius: 0 !important;
+}
+
+html[data-tema="serata"] body .storico-list li:nth-child(even),
+html:not([data-tema]) body .storico-list li:nth-child(even) {
+  background: rgba(124,58,237,0.03) !important;
+}
+
+/* ─── BOTTONI HEADER ADMIN ───────────────────────────────────────────────── */
+html[data-tema="serata"] body .btn-success,
+html:not([data-tema]) body .btn-success {
+  background: rgba(34,197,94,0.10) !important;
+  border: 1px solid rgba(34,197,94,0.30) !important;
+  color: #22C55E !important;
+  border-radius: 6px !important;
+  font-weight: 700 !important;
+}
+
+html[data-tema="serata"] body .btn-danger,
+html:not([data-tema]) body .btn-danger {
+  background: rgba(239,68,68,0.10) !important;
+  border: 1px solid rgba(239,68,68,0.30) !important;
+  color: #f87171 !important;
+  border-radius: 6px !important;
+  font-weight: 700 !important;
+}
+
+html[data-tema="serata"] body .btn-secondary,
+html:not([data-tema]) body .btn-secondary {
+  background: rgba(124,58,237,0.08) !important;
+  border: 1px solid rgba(124,58,237,0.22) !important;
+  color: rgba(167,139,250,0.85) !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+}
+
+html[data-tema="serata"] body .btn-primary,
+html:not([data-tema]) body .btn-primary {
+  background: rgba(251,191,36,0.10) !important;
+  border: 1px solid rgba(251,191,36,0.30) !important;
+  color: #FFB04A !important;
+  border-radius: 6px !important;
+  font-weight: 700 !important;
+}
+
+/* ─── TIMER: ambra viva ───────────────────────────────────────────────────── */
+html[data-tema="serata"] body #timer-grad-start,
+html:not([data-tema]) body #timer-grad-start {
+  stop-color: #FFB04A !important;
+}
+
+html[data-tema="serata"] body #timer-grad-end,
+html:not([data-tema]) body #timer-grad-end {
+  stop-color: #92400e !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .timer-ring-container,
+html:not([data-tema]) body #puja-panel-slot .timer-ring-container {
+  filter: drop-shadow(0 0 12px rgba(251,191,36,0.20)) !important;
+}
+
+/* ─── FILTRI (STORICO/ROSE): viola molto ridotto ─────────────────────────── */
+html[data-tema="serata"] body .storico-filtro-btn,
+html[data-tema="serata"] body .filtro-btn,
+html:not([data-tema]) body .storico-filtro-btn,
+html:not([data-tema]) body .filtro-btn {
+  background: rgba(124,58,237,0.07) !important;
+  border: 1px solid rgba(124,58,237,0.20) !important;
+  color: rgba(167,139,250,0.65) !important;
+  border-radius: 5px !important;
+}
+
+html[data-tema="serata"] body .storico-filtro-btn.active,
+html[data-tema="serata"] body .filtro-btn.active,
+html:not([data-tema]) body .storico-filtro-btn.active,
+html:not([data-tema]) body .filtro-btn.active {
+  background: rgba(251,191,36,0.12) !important;
+  border-color: rgba(251,191,36,0.40) !important;
+  color: #FFB04A !important;
+}
+
+/* ─── CARD NELLA HOME / LOGIN ────────────────────────────────────────────── */
+html[data-tema="serata"] body .card,
+html:not([data-tema]) body .card {
+  background: linear-gradient(160deg,
+    rgba(18,14,36,0.98) 0%,
+    rgba(12,10,26,0.99) 100%
+  ) !important;
+  border: 1px solid rgba(124,58,237,0.15) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
+}
+
+/* ─── URGENZA: rosso netto sopra tutto ───────────────────────────────────── */
+html[data-tema="serata"] body.puja-urgente #puja-panel-slot,
+html:not([data-tema]) body.puja-urgente #puja-panel-slot {
+  border-color: rgba(239,68,68,0.40) !important;
+  box-shadow:
+    0 0 0 1px rgba(239,68,68,0.08) inset,
+    0 24px 60px rgba(0,0,0,0.55),
+    0 0 80px rgba(239,68,68,0.08) !important;
+}
+
+html[data-tema="serata"] body.puja-urgente #puja-panel-slot::before,
+html:not([data-tema]) body.puja-urgente #puja-panel-slot::before {
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(239,68,68,0.6) 20%,
+    #ef4444 50%,
+    rgba(239,68,68,0.6) 80%,
+    transparent 100%
+  ) !important;
+}
+
+html[data-tema="serata"] body.puja-urgente #puja-panel-slot .btn-rilancia,
+html:not([data-tema]) body.puja-urgente #puja-panel-slot .btn-rilancia {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+  color: #fff1f2 !important;
+  border-bottom-color: #7f1d1d !important;
+  box-shadow: 0 4px 24px rgba(220,38,38,0.50) !important;
+}
+
