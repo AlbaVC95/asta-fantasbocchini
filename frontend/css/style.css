@@ -246,7 +246,7 @@ html[data-tema="lavagna"] .chiamata-card{
 .chiamata-card.flash{animation:rilancio-flash .6s ease-out}
 @keyframes card-enter{0%{opacity:0;transform:scale(.85) translateY(15px)}100%{opacity:1;transform:scale(1) translateY(0)}}
 .card-enter{animation:card-enter .4s cubic-bezier(.34,1.56,.64,1)}
-@keyframes price-up{0%{transform:scale(1.35);color:var(--gold-bright);filter:brightness(1.5)}100%{transform:scale(1);color:var(--gold);filter:brightness(1)}}
+@keyframes price-up{0%{transform:scale(1.4);color:var(--gold-bright);filter:brightness(1.8);text-shadow:0 0 20px rgba(255,176,74,0.9),0 0 40px rgba(255,176,74,0.5)}100%{transform:scale(1);color:var(--gold);filter:brightness(1);text-shadow:0 0 0px rgba(255,176,74,0)}}
 .price-bump{animation:price-up .35s ease-out}
 .badge-ruolo{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;padding:0 6px;border-radius:6px;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;flex-shrink:0}
 .badge-ruolo.r-Por{background:linear-gradient(135deg,#f5a623,#e09000);color:#000}
@@ -3344,4 +3344,54 @@ html[data-tema="base"] .sidebar-squadra.offerente-attuale {
 html:not([data-tema]) .sidebar-squadra.offerente-attuale .sq-nome,
 html[data-tema="base"] .sidebar-squadra.offerente-attuale .sq-nome {
   text-shadow: 0 0 8px rgba(255, 176, 74, 0.4) !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   MIGLIORAMENTI UX "ON FIRE" E DETTAGLI (Richiesta Utente)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* 1. Latido per Budget Critico (Sirena rossa visiva) */
+@keyframes crit-pulse {
+  0% { opacity: 1; box-shadow: 0 0 8px var(--danger); }
+  50% { opacity: 0.5; box-shadow: 0 0 2px var(--danger); }
+  100% { opacity: 1; box-shadow: 0 0 8px var(--danger); }
+}
+.budget-progress-fill.crit {
+  animation: crit-pulse 1.2s ease-in-out infinite !important;
+}
+
+/* 2. Scrollbars Premium per Tema Base (Ambra/Slate) */
+html:not([data-tema]) ::-webkit-scrollbar,
+html[data-tema="base"] ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+html:not([data-tema]) ::-webkit-scrollbar-track,
+html[data-tema="base"] ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+html:not([data-tema]) ::-webkit-scrollbar-thumb,
+html[data-tema="base"] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 176, 74, 0.2);
+  border-radius: 4px;
+}
+html:not([data-tema]) ::-webkit-scrollbar-thumb:hover,
+html[data-tema="base"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 176, 74, 0.4);
+}
+
+/* 3. Connessione visiva Hover bottone ESTRAI -> Card Vuota */
+body:has(#btn-estrai:hover) .chiamata-card:has(.chiamata-stato) {
+  background-image: 
+    radial-gradient(circle at center, rgba(255, 176, 74, 0.08) 0%, transparent 65%),
+    repeating-linear-gradient(45deg, transparent, transparent 15px, rgba(255,255,255,0.015) 15px, rgba(255,255,255,0.015) 30px) !important;
+  box-shadow: inset 0 0 20px rgba(255,176,74,0.1), 0 5px 15px rgba(0,0,0,0.3) !important;
+  border-color: rgba(255,176,74,0.2) !important;
+  transform: scale(1.005);
+  transition: all 0.2s ease-out;
+}
+.chiamata-card:has(.chiamata-stato) {
+  transition: all 0.2s ease-out;
 }
