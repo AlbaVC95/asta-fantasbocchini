@@ -3211,3 +3211,20 @@ body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-pu
     z-index: 10 !important;
     position: relative;
 }
+
+/* Fix per i bottoni RIAPRI: quando l'Anteprima laterale è aperta lo spazio si restringe, 
+   i bottoni si schiacciano, il testo va a capo e l'altezza aumenta (facendoli sbordare).
+   Li impiliamo in verticale e li rendiamo più snelli per non aumentare l'altezza totale. */
+.asta-live-layout:has(#tab-anteprima.drawer-open) .riapri-row {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 3px;
+}
+.asta-live-layout:has(#tab-anteprima.drawer-open) .riapri-row .btn {
+  min-width: 0;
+  width: 100%;
+  padding: 4px;
+  font-size: 0.68rem;
+  line-height: 1;
+  white-space: nowrap;
+}
