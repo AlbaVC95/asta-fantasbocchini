@@ -7,15 +7,15 @@
        - rosso  = solo stato (urgenza, superato), mai decorazione
        - verde  = solo superficie (il banco), mai testo
      ══════════════════════════════════════════════════════════════════ */
-  --bg-abyss:#080706;
-  --bg-deep:#0B0908;
-  --panel-glass-1:rgba(11,9,8,.58);
-  --panel-glass-2:rgba(11,9,8,.66);
-  --panel-glass-3:rgba(8,7,6,.5);
-  --bg-main:#14100E;
-  --bg-card:#191411;
-  --bg-elevated:#221B16;
-  --bg-glass:rgba(20,16,14,.72);
+  --bg-abyss:#0b0f19;
+  --bg-deep:#0f172a;
+  --panel-glass-1:rgba(30, 41, 59, 0.85);
+  --panel-glass-2:rgba(30, 41, 59, 0.95);
+  --panel-glass-3:rgba(15, 23, 42, 0.7);
+  --bg-main:#1e293b;
+  --bg-card:#334155;
+  --bg-elevated:#475569;
+  --bg-glass:rgba(30, 41, 59, 0.9);
   --primary:#FFB04A;
   --primary-bright:#FFC578;
   --primary-dark:#C4802B;
@@ -33,14 +33,14 @@
   --success-glow:rgba(79,191,143,.24);
   --danger:#E23A2E;
   --danger-glow:rgba(226,58,46,.28);
-  --text-primary:#F2EADE;
-  --text-secondary:#A79B8B;
+  --text-primary:#f8fafc;
+  --text-secondary:#cbd5e1;
   /* Alzato da #6E645A: erano 3.4:1 sul fondo scuro, sotto la soglia AA, e questo
      grigio veste testi da 12px come .gk-header-sub. #8A8076 misura 4.9-5.0:1.
      Stesso identico passo fatto su --sc-tenue in tema-serata.css. */
-  --text-muted:#8A8076;
-  --border:rgba(242,234,222,.15);
-  --border-light:rgba(242,234,222,.20);
+  --text-muted:#94a3b8;
+  --border:rgba(255, 255, 255, 0.12);
+  --border-light:rgba(255, 255, 255, 0.25);
   --font-main:Archivo,Inter,-apple-system,BlinkMacSystemFont,sans-serif;
   --font-display:Archivo,Outfit,Inter,sans-serif;
   --font-mono:Space Mono,JetBrains Mono,Fira Code,monospace;
@@ -3394,4 +3394,24 @@ body:has(#btn-estrai:hover) .chiamata-card:has(.chiamata-stato) {
 }
 .chiamata-card:has(.chiamata-stato) {
   transition: all 0.2s ease-out;
+}
+
+/* 4. Fix trasparenza chiamata-card (Renderla visibile come un vero pannello) */
+html:not([data-tema]) .puja-panel-slot .chiamata-card,
+html[data-tema="base"] .puja-panel-slot .chiamata-card,
+html:not([data-tema]) body.layout-admin .asta-row-puja .chiamata-card,
+html[data-tema="base"] body.layout-admin .asta-row-puja .chiamata-card {
+  background: var(--bg-main) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+  border-radius: 12px !important;
+}
+
+/* 5. Migliorare il box del commento per renderlo leggibile */
+.cc-commento-preview {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 176, 74, 0.3) !important;
+  color: var(--text-secondary) !important;
+  padding: 8px 10px !important;
+  border-radius: 6px !important;
 }
