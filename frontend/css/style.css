@@ -3248,33 +3248,33 @@ body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-pu
 
 /* 1. Anteprima Pitch: Da Verde Neon Tron a Verde Smeraldo Scuro Elegante */
 html:not([data-tema]) .ant-pitch.ant-pitch3d,
-html[data-tema="base"] .ant-pitch.ant-pitch3d {
+html[data-tema="serata"] .ant-pitch.ant-pitch3d {
   background: linear-gradient(135deg, #091C14 0%, #06120D 100%) !important;
   border-color: rgba(255, 176, 74, 0.15) !important;
   box-shadow: 0 0 30px rgba(0,0,0,0.5), inset 0 0 50px rgba(255,176,74,0.03) !important;
 }
 html:not([data-tema]) .ant-pitch.ant-pitch3d::before,
-html[data-tema="base"] .ant-pitch.ant-pitch3d::before {
+html[data-tema="serata"] .ant-pitch.ant-pitch3d::before {
   border-color: rgba(255,176,74,0.1) !important;
   background: rgba(255,176,74,0.02) !important;
 }
 html:not([data-tema]) .ant-field-markings rect,
 html:not([data-tema]) .ant-field-markings path,
 html:not([data-tema]) .ant-field-markings circle,
-html[data-tema="base"] .ant-field-markings rect,
-html[data-tema="base"] .ant-field-markings path,
-html[data-tema="base"] .ant-field-markings circle {
+html[data-tema="serata"] .ant-field-markings rect,
+html[data-tema="serata"] .ant-field-markings path,
+html[data-tema="serata"] .ant-field-markings circle {
   stroke: rgba(255, 176, 74, 0.35) !important;
   filter: drop-shadow(0 0 2px rgba(255,176,74,0.2)) !important;
 }
 html:not([data-tema]) .ant-slot3d-empty,
-html[data-tema="base"] .ant-slot3d-empty {
+html[data-tema="serata"] .ant-slot3d-empty {
   border-color: rgba(255, 176, 74, 0.25) !important;
   background: rgba(10, 20, 15, 0.6) !important;
   box-shadow: inset 0 0 10px rgba(255, 176, 74, 0.05) !important;
 }
 html:not([data-tema]) .ant-slot3d:hover .ant-slot3d-empty,
-html[data-tema="base"] .ant-slot3d:hover .ant-slot3d-empty {
+html[data-tema="serata"] .ant-slot3d:hover .ant-slot3d-empty {
   border-color: var(--gold) !important;
 }
 
@@ -3336,13 +3336,13 @@ html[data-tema="base"] .ant-slot3d:hover .ant-slot3d-empty {
 }
 
 html:not([data-tema]) .sidebar-squadra.offerente-attuale,
-html[data-tema="base"] .sidebar-squadra.offerente-attuale {
+html[data-tema="serata"] .sidebar-squadra.offerente-attuale {
   animation: offerente-pulse 1.8s ease-in-out infinite !important;
   background: linear-gradient(90deg, rgba(255,176,74,0.15), rgba(255,176,74,0.02)) !important;
 }
 
 html:not([data-tema]) .sidebar-squadra.offerente-attuale .sq-nome,
-html[data-tema="base"] .sidebar-squadra.offerente-attuale .sq-nome {
+html[data-tema="serata"] .sidebar-squadra.offerente-attuale .sq-nome {
   text-shadow: 0 0 8px rgba(255, 176, 74, 0.4) !important;
 }
 
@@ -3363,22 +3363,22 @@ html[data-tema="base"] .sidebar-squadra.offerente-attuale .sq-nome {
 
 /* 2. Scrollbars Premium per Tema Base (Ambra/Slate) */
 html:not([data-tema]) ::-webkit-scrollbar,
-html[data-tema="base"] ::-webkit-scrollbar {
+html[data-tema="serata"] ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 html:not([data-tema]) ::-webkit-scrollbar-track,
-html[data-tema="base"] ::-webkit-scrollbar-track {
+html[data-tema="serata"] ::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.15);
   border-radius: 4px;
 }
 html:not([data-tema]) ::-webkit-scrollbar-thumb,
-html[data-tema="base"] ::-webkit-scrollbar-thumb {
+html[data-tema="serata"] ::-webkit-scrollbar-thumb {
   background: rgba(255, 176, 74, 0.2);
   border-radius: 4px;
 }
 html:not([data-tema]) ::-webkit-scrollbar-thumb:hover,
-html[data-tema="base"] ::-webkit-scrollbar-thumb:hover {
+html[data-tema="serata"] ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 176, 74, 0.4);
 }
 
@@ -3398,9 +3398,9 @@ body:has(#btn-estrai:hover) .chiamata-card:has(.chiamata-stato) {
 
 /* 4. Fix trasparenza chiamata-card (Renderla visibile come un vero pannello) */
 html:not([data-tema]) .puja-panel-slot .chiamata-card,
-html[data-tema="base"] .puja-panel-slot .chiamata-card,
+html[data-tema="serata"] .puja-panel-slot .chiamata-card,
 html:not([data-tema]) body.layout-admin .asta-row-puja .chiamata-card,
-html[data-tema="base"] body.layout-admin .asta-row-puja .chiamata-card {
+html[data-tema="serata"] body.layout-admin .asta-row-puja .chiamata-card {
   background: var(--bg-main) !important;
   border: 1px solid var(--border) !important;
   box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
@@ -3418,7 +3418,7 @@ html[data-tema="base"] body.layout-admin .asta-row-puja .chiamata-card {
 
 /* Fix per forzare la visibilità della palette Base (sovrascrive l'immagine di background che impastava i colori) */
 html:not([data-tema]) .pitch-bg,
-html[data-tema="base"] .pitch-bg {
+html[data-tema="serata"] .pitch-bg {
   background-image: 
     radial-gradient(ellipse at 50% 0%, rgba(30,41,59,0.5) 0%, transparent 60%),
     linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-abyss) 100%) !important;
@@ -3426,7 +3426,7 @@ html[data-tema="base"] .pitch-bg {
 }
 
 html:not([data-tema]) body,
-html[data-tema="base"] body {
+html[data-tema="serata"] body {
   background: var(--bg-deep) !important;
 }
 

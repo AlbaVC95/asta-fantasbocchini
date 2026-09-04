@@ -2,14 +2,14 @@
 
 ## Stato attuale
 
-Corretto un problema critico di ereditarietà CSS che impediva ai nuovi colori "Slate" del tema Base ("Serata d'Asta") di applicarsi correttamente. 
+Risolto il vero problema di fondo che impediva al tema "Serata d'Asta" di aggiornarsi. Le modifiche precedenti puntavano a un selettore inesistente.
 
 ## Cosa è cambiato
 
-- **`frontend/css/tema-serata.css` e `style.css`**: 
-  - Rimossa del tutto l'immagine di sfondo hardcodata (`fantabar-bg.jpg`) e i suoi filtri scurenti che bloccavano la nuova palette. Ora il tema base utilizza un pulitissimo background a gradiente CSS che riflette i veri colori *slate*.
-  - Ri-spostate e forzate (`!important`) le regole per ripristinare il colore di sfondo della carta giocatore (`.chiamata-card`) e del box commenti direttamente in coda a `tema-serata.css`, l'ultimo foglio caricato, per garantire che abbiano la priorità assoluta su tutto il resto.
-- **`frontend/index.html`**: Cache-busting aggiornato per TUTTI i fogli di stile (non solo uno) a `20260904170600` per forzare il refresh completo.
+- **`frontend/css/style.css` e `tema-serata.css`**: 
+  - Sostituiti tutti i selettori CSS errati `html[data-tema="base"]` con il selettore corretto `html[data-tema="serata"]` (l'identificativo reale usato dall'applicazione JavaScript per il tema di default).
+  - Ora TUTTE le migliorie applicate in questa sessione (palette Slate Navy pulita, background a gradiente puro al posto della foto scura, hover effect sul bottone estrai, polso critico sui budget, zebra-striping e scrollbar ambra) si attiveranno istantaneamente.
+- **`frontend/index.html`**: Cache-busting aggiornato a `20260904171600`.
 
 ## Pendenze
 
