@@ -4513,3 +4513,66 @@ html[data-tema="sala-giochi"] body .puja-sticky .ps-offerente{
     max-height:100vh !important;overflow-y:auto !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   IL CAMPO: LA GAZZETTA SUL BANCONE (Tema "Il Bar")
+   L'anteprima formazioni e' la pagina di un quotidiano sportivo
+   (stile Gazzetta) appoggiata sul tavolo: carta rosa, inchiostro
+   scuro, niente prati spaziali o linee al neon.
+   ═══════════════════════════════════════════════════════════════════ */
+html[data-tema="bar"] .ant-pitch-stage{
+  background:none !important;
+  padding:32px 18px !important;
+}
+
+html[data-tema="bar"] .ant-pitch.ant-pitch3d{
+  /* Colore rosa Gazzetta dello Sport */
+  background:#F0D1D8 !important;
+  /* Finta grana da carta di giornale */
+  background-image: 
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.02) 2px, rgba(0,0,0,.02) 4px),
+    radial-gradient(rgba(0,0,0,.03) 15%, transparent 16%),
+    radial-gradient(rgba(0,0,0,.03) 15%, transparent 16%) !important;
+  background-size: 100% 100%, 6px 6px, 6px 6px !important;
+  background-position: 0 0, 0 0, 3px 3px !important;
+  
+  border:1px solid #825863 !important;
+  border-radius:1px !important;
+  box-shadow: 0 12px 24px rgba(0,0,0,.55), inset 0 0 40px rgba(130,80,90,.12) !important;
+  clip-path:none !important;
+  transform:rotate(-1deg) !important; /* Leggermente storto sul tavolo */
+}
+
+/* Spegniamo gli effetti neon/3D ereditati */
+html[data-tema="bar"] .ant-pitch.ant-pitch3d::before,
+html[data-tema="bar"] .ant-pitch.ant-pitch3d::after,
+html[data-tema="bar"] .ant-pitch3d-border{
+  display:none !important;
+}
+
+/* L'inchiostro delle linee del campo: stampato (leggermente tratteggiato) */
+html[data-tema="bar"] .ant-field-markings rect,
+html[data-tema="bar"] .ant-field-markings path,
+html[data-tema="bar"] .ant-field-markings circle{
+  stroke:#402A2E !important;
+  stroke-width:0.8 !important;
+  filter:none !important;
+  stroke-dasharray: 4 3 !important;
+}
+
+/* Gli slot vuoti non sono al neon, sono quadrati tratteggiati a matita */
+html[data-tema="bar"] .ant-slot3d-empty{
+  border:1px dashed #A6838C !important;
+  background:rgba(255,255,255,.25) !important;
+  border-radius:2px !important;
+  box-shadow:none !important;
+}
+
+/* Etichette dei ruoli: font graziato corsivo come i trafiletti tattici */
+html[data-tema="bar"] .ant-slot3d-label{
+  color:#402A2E !important;
+  text-shadow:none !important;
+  font-family: Georgia, serif !important;
+  font-style: italic !important;
+  letter-spacing: 0.5px !important;
+}
