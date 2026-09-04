@@ -4955,11 +4955,11 @@ html:not([data-tema]) body .icon-crediti {
   filter: drop-shadow(0 0 10px rgba(251,191,36,0.6)) !important;
 }
 
-/* ─── BOTTONE RILANCIA: IL LINGOTTO D'ORO DELLA SERATA (RILANCIA + 1) ─────── */
-html[data-tema="serata"] body #puja-panel-slot .btn-rilancia,
-html:not([data-tema]) body #puja-panel-slot .btn-rilancia,
-html[data-tema="serata"] body .asta-row-puja .btn-rilancia,
-html:not([data-tema]) body .asta-row-puja .btn-rilancia {
+/* ═══════════════════════════════════════════════════════════════════════════
+   TEMA IL BAR: BOTTONI PUJA (LINGOTTO PUB D'AMBRA E FORME CAPSULA)
+   ═══════════════════════════════════════════════════════════════════════════ */
+html[data-tema="bar"] body #puja-panel-slot .btn-rilancia,
+html[data-tema="bar"] body .asta-row-puja .btn-rilancia {
   background: linear-gradient(135deg, #FFF0C0 0%, #FFA322 28%, #E8820C 65%, #BD5E00 100%) !important;
   color: #1a0800 !important;
   border: none !important;
@@ -4985,8 +4985,8 @@ html:not([data-tema]) body .asta-row-puja .btn-rilancia {
   font-size: 1.25rem !important;
 }
 
-html body #puja-panel-slot .btn-rilancia::after,
-html body .asta-row-puja .btn-rilancia::after {
+html[data-tema="bar"] body #puja-panel-slot .btn-rilancia::after,
+html[data-tema="bar"] body .asta-row-puja .btn-rilancia::after {
   content: attr(data-tot) !important;
   display: block !important;
   font-family: 'Archivo', sans-serif !important;
@@ -5008,15 +5008,13 @@ html body .asta-row-puja .btn-rilancia::after {
   color: #1a0800 !important;
 }
 
-html body #puja-panel-slot .btn-rilancia::before,
-html body .asta-row-puja .btn-rilancia::before {
+html[data-tema="bar"] body #puja-panel-slot .btn-rilancia::before,
+html[data-tema="bar"] body .asta-row-puja .btn-rilancia::before {
   display: none !important;
 }
 
-html[data-tema="serata"] body #puja-panel-slot .btn-rilancia:hover,
-html:not([data-tema]) body #puja-panel-slot .btn-rilancia:hover,
-html[data-tema="serata"] body .asta-row-puja .btn-rilancia:hover,
-html:not([data-tema]) body .asta-row-puja .btn-rilancia:hover {
+html[data-tema="bar"] body #puja-panel-slot .btn-rilancia:hover,
+html[data-tema="bar"] body .asta-row-puja .btn-rilancia:hover {
   box-shadow:
     0 12px 38px rgba(217,119,6,0.75),
     0 1px 0 rgba(255,255,240,0.65) inset,
@@ -5024,19 +5022,14 @@ html:not([data-tema]) body .asta-row-puja .btn-rilancia:hover {
   transform: translateY(-2px) !important;
 }
 
-html[data-tema="serata"] body #puja-panel-slot .btn-rilancia:active,
-html:not([data-tema]) body #puja-panel-slot .btn-rilancia:active,
-html[data-tema="serata"] body .asta-row-puja .btn-rilancia:active,
-html:not([data-tema]) body .asta-row-puja .btn-rilancia:active {
+html[data-tema="bar"] body #puja-panel-slot .btn-rilancia:active,
+html[data-tema="bar"] body .asta-row-puja .btn-rilancia:active {
   transform: translateY(1px) !important;
   border-bottom-width: 2px !important;
 }
 
-/* ─── QUICK BIDS IN ORO E METALLO TITANIO (+5, +10) ─────────────────────────── */
-html[data-tema="serata"] body #puja-panel-slot .quick-bids-row,
-html:not([data-tema]) body #puja-panel-slot .quick-bids-row,
-html[data-tema="serata"] body .asta-row-puja .quick-bids-row,
-html:not([data-tema]) body .asta-row-puja .quick-bids-row {
+html[data-tema="bar"] body #puja-panel-slot .quick-bids-row,
+html[data-tema="bar"] body .asta-row-puja .quick-bids-row {
   background: rgba(10,16,28,0.90) !important;
   border: 1px solid rgba(251,191,36,0.30) !important;
   border-radius: 10px !important;
@@ -5048,10 +5041,8 @@ html:not([data-tema]) body .asta-row-puja .quick-bids-row {
   margin: 0 !important;
 }
 
-html[data-tema="serata"] body #puja-panel-slot .btn-quick,
-html:not([data-tema]) body #puja-panel-slot .btn-quick,
-html[data-tema="serata"] body .asta-row-puja .btn-quick,
-html:not([data-tema]) body .asta-row-puja .btn-quick {
+html[data-tema="bar"] body #puja-panel-slot .btn-quick,
+html[data-tema="bar"] body .asta-row-puja .btn-quick {
   flex: 1 1 0% !important;
   width: auto !important;
   height: 38px !important;
@@ -5071,10 +5062,8 @@ html:not([data-tema]) body .asta-row-puja .btn-quick {
   box-shadow: none !important;
 }
 
-html[data-tema="serata"] body #puja-panel-slot .btn-quick:hover,
-html:not([data-tema]) body #puja-panel-slot .btn-quick:hover,
-html[data-tema="serata"] body .asta-row-puja .btn-quick:hover,
-html:not([data-tema]) body .asta-row-puja .btn-quick:hover {
+html[data-tema="bar"] body #puja-panel-slot .btn-quick:hover,
+html[data-tema="bar"] body .asta-row-puja .btn-quick:hover {
   background: rgba(251,191,36,0.25) !important;
   color: #FFFFFF !important;
   border-color: #FFB04A !important;
@@ -5082,11 +5071,8 @@ html:not([data-tema]) body .asta-row-puja .btn-quick:hover {
   transform: scale(1.02) !important;
 }
 
-/* ─── OFFERTA MANUALE IN ORO E METALLO TITANIO (OFFRI + INPUT) ───────────── */
-html[data-tema="serata"] body #puja-panel-slot .manual-bid-row,
-html:not([data-tema]) body #puja-panel-slot .manual-bid-row,
-html[data-tema="serata"] body .asta-row-puja .manual-bid-row,
-html:not([data-tema]) body .asta-row-puja .manual-bid-row {
+html[data-tema="bar"] body #puja-panel-slot .manual-bid-row,
+html[data-tema="bar"] body .asta-row-puja .manual-bid-row {
   background: rgba(10,16,28,0.90) !important;
   border: 1px solid rgba(251,191,36,0.30) !important;
   border-radius: 10px !important;
@@ -5099,10 +5085,8 @@ html:not([data-tema]) body .asta-row-puja .manual-bid-row {
   box-shadow: inset 0 2px 8px rgba(0,0,0,0.5) !important;
 }
 
-html[data-tema="serata"] body #puja-panel-slot .inp-rilancio,
-html:not([data-tema]) body #puja-panel-slot .inp-rilancio,
-html[data-tema="serata"] body .asta-row-puja .inp-rilancio,
-html:not([data-tema]) body .asta-row-puja .inp-rilancio {
+html[data-tema="bar"] body #puja-panel-slot .inp-rilancio,
+html[data-tema="bar"] body .asta-row-puja .inp-rilancio {
   flex: 1 1 auto !important;
   width: 0 !important;
   min-width: 0 !important;
@@ -5119,18 +5103,14 @@ html:not([data-tema]) body .asta-row-puja .inp-rilancio {
   padding: 0 12px !important;
 }
 
-html[data-tema="serata"] body #puja-panel-slot .inp-rilancio::placeholder,
-html:not([data-tema]) body #puja-panel-slot .inp-rilancio::placeholder,
-html[data-tema="serata"] body .asta-row-puja .inp-rilancio::placeholder,
-html:not([data-tema]) body .asta-row-puja .inp-rilancio::placeholder {
+html[data-tema="bar"] body #puja-panel-slot .inp-rilancio::placeholder,
+html[data-tema="bar"] body .asta-row-puja .inp-rilancio::placeholder {
   color: rgba(242,234,222,0.35) !important;
   font-family: 'Space Mono', monospace !important;
 }
 
-html[data-tema="serata"] body #puja-panel-slot .btn-manuale,
-html:not([data-tema]) body #puja-panel-slot .btn-manuale,
-html[data-tema="serata"] body .asta-row-puja .btn-manuale,
-html:not([data-tema]) body .asta-row-puja .btn-manuale {
+html[data-tema="bar"] body #puja-panel-slot .btn-manuale,
+html[data-tema="bar"] body .asta-row-puja .btn-manuale {
   flex: 0 0 auto !important;
   height: 38px !important;
   padding: 0 18px !important;
@@ -5151,15 +5131,232 @@ html:not([data-tema]) body .asta-row-puja .btn-manuale {
   box-shadow: none !important;
 }
 
-html[data-tema="serata"] body #puja-panel-slot .btn-manuale:hover,
-html:not([data-tema]) body #puja-panel-slot .btn-manuale:hover,
-html[data-tema="serata"] body .asta-row-puja .btn-manuale:hover,
-html:not([data-tema]) body .asta-row-puja .btn-manuale:hover {
+html[data-tema="bar"] body #puja-panel-slot .btn-manuale:hover,
+html[data-tema="bar"] body .asta-row-puja .btn-manuale:hover {
   background: rgba(251,191,36,0.25) !important;
   color: #FFFFFF !important;
   border-color: #FFB04A !important;
   box-shadow: 0 0 14px rgba(251,191,36,0.45) !important;
   transform: scale(1.02) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TEMA SERATA D'ASTA: GALA CLASICA / SUBASTA ITALIANA (OPZIONE 1)
+   Placca architettonica a bordi netti (4px), orologeria di lusso,
+   cifra in Instrument Serif corsivo come nei cataloghi d'asta d'arte italiani.
+   ═══════════════════════════════════════════════════════════════════════════ */
+html[data-tema="serata"] body #puja-panel-slot .btn-rilancia,
+html:not([data-tema]) body #puja-panel-slot .btn-rilancia,
+html[data-tema="serata"] body .asta-row-puja .btn-rilancia,
+html:not([data-tema]) body .asta-row-puja .btn-rilancia {
+  background: linear-gradient(135deg, #FFF8EC 0%, #F5C672 22%, #D98818 68%, #B45E06 100%) !important;
+  color: #140A02 !important;
+  border: 1px solid rgba(255, 235, 180, 0.60) !important;
+  border-bottom: 3px solid #78350f !important;
+  border-radius: 4px !important;
+  box-shadow:
+    0 8px 24px rgba(0,0,0,0.50),
+    0 1px 0 rgba(255,255,255,0.75) inset,
+    0 0 20px rgba(251,191,36,0.25) !important;
+  font-family: 'Archivo', sans-serif !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  text-shadow: 0 1px 1px rgba(255,255,255,0.45) !important;
+  transition: all 0.2s cubic-bezier(0.32,0.72,0,1) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 18px !important;
+  height: 56px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  font-size: 1.08rem !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .btn-rilancia::after,
+html:not([data-tema]) body #puja-panel-slot .btn-rilancia::after,
+html[data-tema="serata"] body .asta-row-puja .btn-rilancia::after,
+html:not([data-tema]) body .asta-row-puja .btn-rilancia::after {
+  content: attr(data-tot) !important;
+  display: block !important;
+  font-family: 'Instrument Serif', Georgia, serif !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+  font-size: 2.3rem !important;
+  line-height: 1 !important;
+  letter-spacing: -0.01em !important;
+  padding-left: 16px !important;
+  margin-left: 16px !important;
+  border-left: 1.5px solid rgba(120,53,15,0.38) !important;
+  position: static !important;
+  background: none !important;
+  transform: none !important;
+  width: auto !important;
+  height: auto !important;
+  opacity: 1 !important;
+  animation: none !important;
+  color: #140A02 !important;
+  text-shadow: none !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .btn-rilancia::before,
+html:not([data-tema]) body #puja-panel-slot .btn-rilancia::before,
+html[data-tema="serata"] body .asta-row-puja .btn-rilancia::before,
+html:not([data-tema]) body .asta-row-puja .btn-rilancia::before {
+  display: none !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .btn-rilancia:hover,
+html:not([data-tema]) body #puja-panel-slot .btn-rilancia:hover,
+html[data-tema="serata"] body .asta-row-puja .btn-rilancia:hover,
+html:not([data-tema]) body .asta-row-puja .btn-rilancia:hover {
+  box-shadow:
+    0 12px 34px rgba(217,119,6,0.65),
+    0 1px 0 rgba(255,255,255,0.90) inset,
+    0 0 28px rgba(251,191,36,0.40) !important;
+  transform: translateY(-1.5px) !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .btn-rilancia:active,
+html:not([data-tema]) body #puja-panel-slot .btn-rilancia:active,
+html[data-tema="serata"] body .asta-row-puja .btn-rilancia:active,
+html:not([data-tema]) body .asta-row-puja .btn-rilancia:active {
+  transform: translateY(1px) !important;
+  border-bottom-width: 1.5px !important;
+}
+
+/* ─── QUICK BIDS SERATA (+5, +10): BARRA A BORDI SOTTILI IN ORO E ZAFFIRO ── */
+html[data-tema="serata"] body #puja-panel-slot .quick-bids-row,
+html:not([data-tema]) body #puja-panel-slot .quick-bids-row,
+html[data-tema="serata"] body .asta-row-puja .quick-bids-row,
+html:not([data-tema]) body .asta-row-puja .quick-bids-row {
+  background: rgba(14,22,36,0.90) !important;
+  border: 1px solid rgba(251,191,36,0.35) !important;
+  border-radius: 4px !important;
+  gap: 4px !important;
+  padding: 4px !important;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3) !important;
+  display: flex !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .btn-quick,
+html:not([data-tema]) body #puja-panel-slot .btn-quick,
+html[data-tema="serata"] body .asta-row-puja .btn-quick,
+html:not([data-tema]) body .asta-row-puja .btn-quick {
+  flex: 1 1 0% !important;
+  width: auto !important;
+  height: 38px !important;
+  border-radius: 3px !important;
+  background: rgba(255,255,255,0.04) !important;
+  color: #FCD34D !important;
+  border: 1px solid rgba(251,191,36,0.18) !important;
+  font-family: 'Instrument Serif', Georgia, serif !important;
+  font-style: italic !important;
+  font-size: 1.32rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.02em !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s !important;
+  box-shadow: none !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .btn-quick:hover,
+html:not([data-tema]) body #puja-panel-slot .btn-quick:hover,
+html[data-tema="serata"] body .asta-row-puja .btn-quick:hover,
+html:not([data-tema]) body .asta-row-puja .btn-quick:hover {
+  background: rgba(251,191,36,0.22) !important;
+  color: #FFFFFF !important;
+  border-color: #FCD34D !important;
+  box-shadow: 0 0 14px rgba(251,191,36,0.40) !important;
+  transform: translateY(-0.5px) !important;
+}
+
+/* ─── OFFERTA MANUALE SERATA (INPUT + TASTO OFFRI) ────────────────────────── */
+html[data-tema="serata"] body #puja-panel-slot .manual-bid-row,
+html:not([data-tema]) body #puja-panel-slot .manual-bid-row,
+html[data-tema="serata"] body .asta-row-puja .manual-bid-row,
+html:not([data-tema]) body .asta-row-puja .manual-bid-row {
+  background: rgba(14,22,36,0.90) !important;
+  border: 1px solid rgba(251,191,36,0.35) !important;
+  border-radius: 4px !important;
+  padding: 4px !important;
+  gap: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin: 0 !important;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .inp-rilancio,
+html:not([data-tema]) body #puja-panel-slot .inp-rilancio,
+html[data-tema="serata"] body .asta-row-puja .inp-rilancio,
+html:not([data-tema]) body .asta-row-puja .inp-rilancio {
+  flex: 1 1 auto !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  height: 38px !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: #FCD34D !important;
+  font-family: 'Instrument Serif', Georgia, serif !important;
+  font-style: italic !important;
+  font-size: 1.25rem !important;
+  font-weight: 400 !important;
+  text-align: left !important;
+  padding: 0 12px !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .inp-rilancio::placeholder,
+html:not([data-tema]) body #puja-panel-slot .inp-rilancio::placeholder,
+html[data-tema="serata"] body .asta-row-puja .inp-rilancio::placeholder,
+html:not([data-tema]) body .asta-row-puja .inp-rilancio::placeholder {
+  color: rgba(242,234,222,0.32) !important;
+  font-family: 'Instrument Serif', Georgia, serif !important;
+  font-style: italic !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .btn-manuale,
+html:not([data-tema]) body #puja-panel-slot .btn-manuale,
+html[data-tema="serata"] body .asta-row-puja .btn-manuale,
+html:not([data-tema]) body .asta-row-puja .btn-manuale {
+  flex: 0 0 auto !important;
+  height: 38px !important;
+  padding: 0 18px !important;
+  border-radius: 3px !important;
+  background: rgba(255,255,255,0.04) !important;
+  color: #FCD34D !important;
+  border: 1px solid rgba(251,191,36,0.20) !important;
+  font-family: 'Archivo', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 0.78rem !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s !important;
+  box-shadow: none !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .btn-manuale:hover,
+html:not([data-tema]) body #puja-panel-slot .btn-manuale:hover,
+html[data-tema="serata"] body .asta-row-puja .btn-manuale:hover,
+html:not([data-tema]) body .asta-row-puja .btn-manuale:hover {
+  background: rgba(251,191,36,0.22) !important;
+  color: #FFFFFF !important;
+  border-color: #FCD34D !important;
+  box-shadow: 0 0 14px rgba(251,191,36,0.40) !important;
+  transform: translateY(-0.5px) !important;
 }
 
 /* ─── TABS PANEL: COLORE BLU ANTEPRIMA ANCHE PER IL TABELLONE ───────────── */
