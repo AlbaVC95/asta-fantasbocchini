@@ -3290,13 +3290,15 @@ html[data-tema="serata"] .ant-slot3d:hover .ant-slot3d-empty {
   letter-spacing: 0.05em;
 }
 
-/* 3. Stile Zebra per la lista Svincolati e Storico per migliorare la leggibilità orizzontale */
-.liberi-list li:nth-child(even),
-.storico-list li:nth-child(even) {
-  background: rgba(255, 255, 255, 0.02) !important;
+/* 3. Rimozione effetto zebra: sfondo uniforme per tutte le righe */
+.liberi-list li,
+.storico-list li {
+  background: rgba(0, 0, 0, 0.25) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
-.liberi-list li:hover {
-  background: rgba(255, 255, 255, 0.04) !important;
+.liberi-list li:hover,
+.storico-list li:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
 }
 
 /* 4. Ammorbidire le etichette morse (Fasce FantaLab) per non farle "urlare" troppo */

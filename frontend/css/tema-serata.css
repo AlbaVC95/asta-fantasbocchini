@@ -5415,3 +5415,51 @@ html[data-tema="bar"] body.layout-admin .asta-row-puja .chiamata-card {
   border: none !important;
   box-shadow: none !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UNIFORMAZIONE LISTE (ZERO EFFETTO ZEBRA IN ENTRAMBI I TEMI)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── TEMA IL BAR: sfondo uniforme pulito sul panno verde ────────────────── */
+html[data-tema="bar"] body .liberi-list li,
+html[data-tema="bar"] body #liberi-list > div,
+html[data-tema="bar"] body .storico-list li,
+html[data-tema="bar"] body .liberi-list li:nth-child(even),
+html[data-tema="bar"] body .liberi-list li:nth-child(odd),
+html[data-tema="bar"] body .storico-list li:nth-child(even),
+html[data-tema="bar"] body .storico-list li:nth-child(odd) {
+  background: rgba(10, 26, 16, 0.70) !important;
+  border: 1px solid rgba(166, 146, 124, 0.20) !important;
+  border-radius: 6px !important;
+}
+
+html[data-tema="bar"] body .liberi-list li:hover,
+html[data-tema="bar"] body .storico-list li:hover {
+  background: rgba(20, 48, 28, 0.85) !important;
+  border-color: rgba(201, 162, 87, 0.50) !important;
+}
+
+/* ─── TEMA SERATA D'ASTA: sfondo uniforme ardesia su tutte le righe ─────── */
+html[data-tema="serata"] body .liberi-list li,
+html[data-tema="serata"] body #liberi-list > div,
+html[data-tema="serata"] body .storico-list li,
+html:not([data-tema]) body .liberi-list li,
+html:not([data-tema]) body #liberi-list > div,
+html:not([data-tema]) body .storico-list li,
+html[data-tema="serata"] body .liberi-list li:nth-child(even),
+html[data-tema="serata"] body .liberi-list li:nth-child(odd),
+html:not([data-tema]) body .liberi-list li:nth-child(even),
+html:not([data-tema]) body .liberi-list li:nth-child(odd) {
+  background: rgba(24, 34, 52, 0.70) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 6px !important;
+}
+
+html[data-tema="serata"] body .liberi-list li:hover,
+html[data-tema="serata"] body .storico-list li:hover,
+html:not([data-tema]) body .liberi-list li:hover,
+html:not([data-tema]) body .storico-list li:hover {
+  background: rgba(35, 50, 75, 0.88) !important;
+  border-color: rgba(251, 191, 36, 0.40) !important;
+}
+
