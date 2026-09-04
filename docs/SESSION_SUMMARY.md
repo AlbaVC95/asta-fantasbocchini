@@ -2,15 +2,15 @@
 
 ## Stato attuale
 
-Risolto un leak di variabili CSS che comprometteva la coerenza visiva degli altri temi (come "Il Bar"). La palette "Slate" era finita nel `:root` globale.
+L'utente confermava di trovarsi effettivamente nel tema "Serata d'Asta" (il titolo in alto era il nome generico della web app). Restava un enorme rettangolo marrone con un pattern a strisce verticali dietro la carta giocatore e il timer durante l'asta live.
 
 ## Cosa è cambiato
 
-- **`frontend/css/style.css`**: 
-  - Ripristinate le variabili `:root` originali (toni caldi e scuri). Questo salva gli altri temi (come "Il Bar") dalla "contaminazione" azzurra che si vedeva in alcuni pannelli.
-  - La nuova palette Slate/Navy ad alto contrasto è ora confinata rigorosamente e unicamente sotto il selettore `html[data-tema="serata"]`.
-  - Ora il tema "Serata d'Asta" godrà di tutta la pulizia Slate, e il tema "Il Bar" tornerà a essere perfettamente coerente con i suoi legni caldi e fondi marroni.
-- **`frontend/index.html`**: Cache-busting aggiornato a `20260904173500`.
+- **`frontend/css/tema-serata.css`**: 
+  - Trovati i selettori colpevoli: `html body.layout-admin .asta-row-puja` e `html body #puja-panel-slot` avevano un `background` enorme e `!important` con sfumature ambra/verde/marrone e texture a righe verticali.
+  - Aggiunti questi due selettori cruciali al blocco di purificazione Slate. Ora anche il contenitore centrale dell'asta live usa esclusivamente `linear-gradient(180deg, var(--panel-glass-1), var(--panel-glass-2)) !important` e nessun `background-image` (via le strisce!).
+  - Nascosti gli pseudoelementi `::before` e `::after` (che creavano ombre, linee luminose color ambra e bordi fastidiosi sul blocco dell'asta).
+- **`frontend/index.html`**: Cache-busting aggiornato a `20260904174000`.
 
 ## Pendenze
 

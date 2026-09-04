@@ -4690,7 +4690,11 @@ html[data-tema="serata"] body .admin-panel,
 html:not([data-tema]) body .tabs-panel,
 html[data-tema="serata"] body .tabs-panel,
 html:not([data-tema]) body .asta-header,
-html[data-tema="serata"] body .asta-header {
+html[data-tema="serata"] body .asta-header,
+html:not([data-tema]) body #puja-panel-slot,
+html[data-tema="serata"] body #puja-panel-slot,
+html:not([data-tema]) body.layout-admin .asta-row-puja,
+html[data-tema="serata"] body.layout-admin .asta-row-puja {
   background-color: transparent !important;
   background-image: none !important;
   background: linear-gradient(180deg, var(--panel-glass-1), var(--panel-glass-2)) !important;
@@ -4723,3 +4727,14 @@ html[data-tema="serata"] body .admin-badge {
   border-color: var(--gold) !important;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════
+   CLEANUP FINALE: RIMOZIONE ARTEFATTI E ORPELLI DEL TEMA BASE
+   (Rimuoviamo linee ambra, bordi e filtri che sporcavano l'Admin/Puja)
+   ═══════════════════════════════════════════════════════════════════ */
+html[data-tema="serata"] body #puja-panel-slot::before,
+html[data-tema="serata"] body #puja-panel-slot::after,
+html[data-tema="serata"] body.layout-admin .asta-row-puja::before,
+html[data-tema="serata"] body.layout-admin .asta-row-puja::after {
+  display: none !important;
+}
