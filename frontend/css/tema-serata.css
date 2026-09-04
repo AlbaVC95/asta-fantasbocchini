@@ -4665,63 +4665,65 @@ html[data-tema="bar"] .ant-slot3d-shadow {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ████████████████  SERATA D'ASTA — GALA EDITION (RICCA & AMBRA)  ████████████
+   ██████████████  SERATA D'ASTA — HIGH-END LUXURY GALA EDITION  ██████████████
    ═══════════════════════════════════════════════════════════════════════════
-   Filosofia:
-   - AMBRA / ORO VIVO (#FFB04A, #F59E0B, #FCD34D) come firma regale su tutta la scena
-   - Cornici impreziosite con fili d'oro e luce radente superiore
-   - L'Asta centrale è un vero palcoscenico: fascio di luce ambra, miccia accesa, glow sull'avatar
-   - Dettagli di prestigio: titoli in oro caldo, tab attive dorate, zero tinte spente
-   - ZERO VIOLA: fondo profondo Deep Navy Slate (#090D15, #0E1524) per far brillare l'oro
+   Filosofia Estetica (Awwwards / Linear / Sotheby's Digital):
+   - DOPPIO BISELLO D'ORO (Double-Bezel): bordi a filo di rasoio dorati con luce radente
+   - ILLUMINAZIONE TEATRALE: cono di luce ambra cenitale che accende il giocatore e l'asta
+   - SCOUTING CARD ELEGANTE: commento tecnico incassato con filetto ambra e backdrop blur
+   - BOTTONI LINGOTTO 3D: pulsanti tattili con gradiente oro fuso e micro-rilievo bianco
+   - TABELLONE & RICERCA LUXURY: pillole satinate, glow ambra sulle selezioni attive
+   - ZERO VIOLA: fondo Deep OLED Canvas (#070a12) ad altissimo contrasto e nitidezza
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ─── BODY & ATMOSFERA DELLA SALA ────────────────────────────────────────── */
+/* ─── BODY & CANVAS NOTTURNO ─────────────────────────────────────────────── */
 html[data-tema="serata"] body,
 html:not([data-tema]) body {
-  background-color: #080c14 !important;
+  background-color: #060910 !important;
   background-image:
-    /* Cono di luce calda della lampada d'asta che scende dall'alto */
-    radial-gradient(ellipse 80% 45% at 50% -5%, rgba(251,191,36,0.12) 0%, transparent 65%),
-    /* Bagliore d'atmosfera dorata sul palco inferiore */
-    radial-gradient(ellipse 60% 35% at 50% 105%, rgba(245,158,11,0.06) 0%, transparent 60%),
-    /* Fondo deep navy grafite */
-    linear-gradient(180deg, #090d16 0%, #060910 100%) !important;
+    /* Luce calda dall'alto: illumina il palco centrale dell'asta */
+    radial-gradient(ellipse 85% 50% at 50% -5%, rgba(251,191,36,0.15) 0%, transparent 68%),
+    /* Bagliore d'atmosfera ambrata sul fondo della sala */
+    radial-gradient(ellipse 65% 40% at 50% 105%, rgba(245,158,11,0.08) 0%, transparent 60%),
+    /* Micro-trama satinata ad anelli concentrici */
+    radial-gradient(circle at 50% 40%, rgba(255,255,255,0.015) 0%, transparent 70%),
+    linear-gradient(180deg, #080c16 0%, #05070d 100%) !important;
   background-attachment: fixed !important;
 }
 
 html[data-tema="serata"] .pitch-bg,
 html:not([data-tema]) .pitch-bg {
-  background-color: #080c14 !important;
+  background-color: #060910 !important;
   background-image:
-    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(251,191,36,0.10) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 30% at 85% 100%, rgba(245,158,11,0.05) 0%, transparent 50%),
-    linear-gradient(180deg, #090d16 0%, #060910 100%) !important;
+    radial-gradient(ellipse 75% 45% at 50% 0%, rgba(251,191,36,0.12) 0%, transparent 62%),
+    linear-gradient(180deg, #080c16 0%, #05070d 100%) !important;
   filter: none !important;
 }
 
-/* ─── HEADER DI GALA ─────────────────────────────────────────────────────── */
+/* ─── HEADER: CORNICE DI PRESTIGIO ───────────────────────────────────────── */
 html[data-tema="serata"] body .asta-header,
 html:not([data-tema]) body .asta-header {
-  background: rgba(8, 12, 20, 0.95) !important;
-  border-bottom: 2px solid rgba(251,191,36,0.35) !important;
-  backdrop-filter: blur(20px) !important;
+  background: rgba(7, 10, 18, 0.94) !important;
+  border-bottom: 2px solid rgba(251,191,36,0.40) !important;
+  backdrop-filter: blur(24px) !important;
   box-shadow:
-    0 4px 28px rgba(0,0,0,0.6),
-    0 1px 0 rgba(255,220,130,0.2) inset,
-    0 0 20px rgba(251,191,36,0.10) !important;
+    0 8px 32px rgba(0,0,0,0.65),
+    0 1px 0 rgba(255,230,150,0.25) inset,
+    0 0 25px rgba(251,191,36,0.12) !important;
 }
 
 html[data-tema="serata"] body .asta-header-title,
 html:not([data-tema]) body .asta-header-title {
-  background: linear-gradient(135deg, #FFF0D0 0%, #FFB04A 40%, #F59E0B 80%, #D97706 100%) !important;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFE082 25%, #FFB04A 60%, #D97706 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
-  filter: drop-shadow(0 0 12px rgba(251,191,36,0.50)) !important;
+  filter: drop-shadow(0 0 14px rgba(251,191,36,0.60)) !important;
   font-weight: 900 !important;
+  letter-spacing: -0.02em !important;
 }
 
-/* ─── PANNELLI SECONDARI CON CORNICE D'ORO SOTTILE ───────────────────────── */
+/* ─── PANNELLI SUPERIORI: DOPPIO BISELLO SOTTILE D'ORO ───────────────────── */
 html[data-tema="serata"] body .panel-budget,
 html:not([data-tema]) body .panel-budget,
 html[data-tema="serata"] body #mio-panel,
@@ -4732,18 +4734,18 @@ html[data-tema="serata"] body .card,
 html:not([data-tema]) body .card {
   position: relative !important;
   background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(251,191,36,0.05) 0%, transparent 60%),
-    linear-gradient(165deg, rgba(16,23,38,0.98) 0%, rgba(10,15,25,0.99) 100%) !important;
-  border: 1px solid rgba(251,191,36,0.22) !important;
-  border-top: 2px solid rgba(251,191,36,0.55) !important;
-  border-radius: 10px !important;
+    radial-gradient(ellipse 85% 55% at 50% 0%, rgba(251,191,36,0.07) 0%, transparent 65%),
+    linear-gradient(165deg, rgba(17,25,41,0.98) 0%, rgba(10,14,24,0.99) 100%) !important;
+  border: 1px solid rgba(251,191,36,0.28) !important;
+  border-top: 2.5px solid #F59E0B !important;
+  border-radius: 12px !important;
   box-shadow:
-    0 8px 24px rgba(0,0,0,0.45),
-    0 1px 0 rgba(255,235,170,0.15) inset,
-    0 0 15px rgba(251,191,36,0.04) !important;
+    0 10px 28px rgba(0,0,0,0.50),
+    0 1px 0 rgba(255,240,180,0.18) inset,
+    0 0 20px rgba(251,191,36,0.06) !important;
 }
 
-/* Titoli dei pannelli: oro caldo ben visibile */
+/* Titoli delle sezioni: tipografia dorata cesellata */
 html[data-tema="serata"] body .panel-budget-hdr,
 html:not([data-tema]) body .panel-budget-hdr,
 html[data-tema="serata"] body .mio-panel-header,
@@ -4751,34 +4753,35 @@ html:not([data-tema]) body .mio-panel-header,
 html[data-tema="serata"] body .card-title,
 html:not([data-tema]) body .card-title {
   color: #FCD34D !important;
-  letter-spacing: 0.12em !important;
-  font-weight: 700 !important;
-  text-shadow: 0 0 10px rgba(251,191,36,0.30) !important;
+  letter-spacing: 0.14em !important;
+  font-weight: 800 !important;
+  text-shadow: 0 0 12px rgba(251,191,36,0.40) !important;
+  font-size: 0.70rem !important;
 }
 
-/* ─── IL PALCOSCENICO D'ASTA: IL GRANDE PROTAGONISTA ─────────────────────── */
+/* ─── IL PALCO CENTRALE D'ASTA (THE LUXURY STAGE) ────────────────────────── */
 html[data-tema="serata"] body #puja-panel-slot,
 html:not([data-tema]) body #puja-panel-slot,
 html[data-tema="serata"] body.layout-admin .asta-row-puja,
 html:not([data-tema]) body.layout-admin .asta-row-puja {
   position: relative !important;
   background:
-    /* Spot di luce teatrale ambra al centro */
-    radial-gradient(ellipse 75% 60% at 50% -15%, rgba(251,191,36,0.16) 0%, transparent 65%),
-    /* Bagliore caldo attorno all'offerta a destra */
-    radial-gradient(ellipse 50% 50% at 88% 50%, rgba(245,158,11,0.12) 0%, transparent 60%),
-    /* Superficie nobile blu ardesia scura */
-    linear-gradient(155deg, rgba(18,27,44,0.99) 0%, rgba(11,18,30,0.99) 50%, rgba(15,23,38,0.99) 100%) !important;
-  border: 1.5px solid rgba(251,191,36,0.45) !important;
-  border-top: 2.5px solid #FFB04A !important;
-  border-radius: 14px !important;
+    /* Fascio luminoso ambra caldo al centro che bagna il giocatore */
+    radial-gradient(ellipse 80% 65% at 50% -20%, rgba(251,191,36,0.20) 0%, transparent 70%),
+    /* Aureola sul contatore e timer a destra */
+    radial-gradient(ellipse 55% 55% at 90% 50%, rgba(245,158,11,0.14) 0%, transparent 60%),
+    /* Superficie blu titanio scuro */
+    linear-gradient(155deg, rgba(20,29,48,0.99) 0%, rgba(12,18,31,0.99) 50%, rgba(16,24,39,0.99) 100%) !important;
+  border: 1.5px solid rgba(251,191,36,0.50) !important;
+  border-top: 3px solid #FFB04A !important;
+  border-radius: 16px !important;
   box-shadow:
-    0 24px 60px rgba(0,0,0,0.65),
-    0 1px 0 rgba(255,235,170,0.25) inset,
-    0 0 35px rgba(251,191,36,0.10) !important;
+    0 28px 70px rgba(0,0,0,0.70),
+    0 1px 0 rgba(255,245,190,0.30) inset,
+    0 0 45px rgba(251,191,36,0.14) !important;
 }
 
-/* La Miccia Dorata accesa in cima al tavolo */
+/* La Miccia Dorata animata di gala */
 html[data-tema="serata"] body #puja-panel-slot::before,
 html:not([data-tema]) body #puja-panel-slot::before,
 html[data-tema="serata"] body.layout-admin .asta-row-puja::before,
@@ -4791,20 +4794,20 @@ html:not([data-tema]) body.layout-admin .asta-row-puja::before {
   background: linear-gradient(90deg,
     transparent 0%,
     rgba(245,158,11,0.5) 10%,
-    #FFE082 35%,
+    #FFF4D0 35%,
     #FFB04A 50%,
-    #FFE082 65%,
+    #FFF4D0 65%,
     rgba(245,158,11,0.5) 90%,
     transparent 100%
   ) !important;
   z-index: 10 !important;
-  border-radius: 14px 14px 0 0 !important;
-  animation: miccia-gala 2.8s ease-in-out infinite !important;
+  border-radius: 16px 16px 0 0 !important;
+  animation: miccia-ultra 2.6s ease-in-out infinite !important;
 }
 
-@keyframes miccia-gala {
-  0%, 100% { opacity: 0.75; box-shadow: 0 0 8px rgba(255,176,74,0.4), 0 2px 10px rgba(255,176,74,0.2); }
-  50% { opacity: 1.0; box-shadow: 0 0 20px rgba(255,176,74,0.85), 0 3px 18px rgba(255,200,100,0.5); }
+@keyframes miccia-ultra {
+  0%, 100% { opacity: 0.75; box-shadow: 0 0 10px rgba(255,176,74,0.5), 0 2px 12px rgba(255,176,74,0.25); }
+  50% { opacity: 1.0; box-shadow: 0 0 24px rgba(255,176,74,0.95), 0 4px 22px rgba(255,215,100,0.6); }
 }
 
 html[data-tema="serata"] body #puja-panel-slot::after,
@@ -4814,82 +4817,102 @@ html:not([data-tema]) body.layout-admin .asta-row-puja::after {
   display: none !important;
 }
 
-/* Cornice luminosa sull'avatar del giocatore */
+/* Avatar del giocatore: cornice da trofeo dorato */
 html[data-tema="serata"] body #puja-panel-slot .cc-avatar,
 html:not([data-tema]) body #puja-panel-slot .cc-avatar,
 html[data-tema="serata"] body.layout-admin .asta-row-puja .cc-avatar,
 html:not([data-tema]) body.layout-admin .asta-row-puja .cc-avatar {
-  border: 2px solid rgba(251,191,36,0.45) !important;
-  border-radius: 8px !important;
-  box-shadow: 0 0 16px rgba(251,191,36,0.22), 0 8px 16px rgba(0,0,0,0.4) !important;
+  border: 2px solid #FFB04A !important;
+  border-radius: 10px !important;
+  box-shadow:
+    0 0 20px rgba(251,191,36,0.30),
+    0 10px 24px rgba(0,0,0,0.50),
+    0 1px 0 rgba(255,255,255,0.4) inset !important;
+  overflow: hidden !important;
 }
 
-/* Alone scenico dietro il timer / clessidra */
+/* Nome del giocatore: bianco scultoreo brillante */
+html[data-tema="serata"] body .cc-nome,
+html:not([data-tema]) body .cc-nome {
+  background: linear-gradient(180deg, #FFFFFF 20%, #F5F1E8 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8)) drop-shadow(0 0 16px rgba(251,191,36,0.25)) !important;
+  letter-spacing: 0.02em !important;
+  font-weight: 900 !important;
+}
+
+/* Scouting card (Commento FantaLab): box d'autore incassato con filetto ambra */
+html[data-tema="serata"] .cc-commento-preview,
+html:not([data-tema]) .cc-commento-preview {
+  background: rgba(8, 13, 22, 0.65) !important;
+  border: 1px solid rgba(251, 191, 36, 0.25) !important;
+  border-left: 3px solid #FFB04A !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  color: #e2e8f0 !important;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.3) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* Timer / Clessidra: alone circolare d'oro */
 html[data-tema="serata"] body #puja-panel-slot .timer-ring-container,
 html:not([data-tema]) body #puja-panel-slot .timer-ring-container,
 html[data-tema="serata"] body .asta-row-puja .timer-ring-container,
 html:not([data-tema]) body .asta-row-puja .timer-ring-container {
   position: relative !important;
-  filter: drop-shadow(0 0 16px rgba(251,191,36,0.35)) !important;
+  background: radial-gradient(circle at center, rgba(251,191,36,0.16) 0%, transparent 68%) !important;
+  filter: drop-shadow(0 0 18px rgba(251,191,36,0.45)) !important;
+  border-radius: 50% !important;
 }
 
-/* Cifra del Timer in oro brillante */
+/* Cifra del Timer in ambra neon */
 html[data-tema="serata"] body .timer-number,
 html:not([data-tema]) body .timer-number {
   color: #FFB04A !important;
-  text-shadow: 0 0 18px rgba(251,191,36,0.60) !important;
+  text-shadow: 0 0 22px rgba(251,191,36,0.70), 0 0 40px rgba(245,158,11,0.35) !important;
   font-weight: 900 !important;
 }
 
-/* Carta giocatore all'interno: trasparente e pulita */
-html[data-tema="serata"] .puja-panel-slot .chiamata-card,
-html:not([data-tema]) .puja-panel-slot .chiamata-card,
-html[data-tema="serata"] body.layout-admin .asta-row-puja .chiamata-card,
-html:not([data-tema]) body.layout-admin .asta-row-puja .chiamata-card {
-  background: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-}
-
-/* Nome del giocatore: bianco scultoreo con riflesso d'oro */
-html[data-tema="serata"] body .cc-nome,
-html:not([data-tema]) body .cc-nome {
-  color: #FFFFFF !important;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.7), 0 0 20px rgba(251,191,36,0.2) !important;
-  letter-spacing: -0.01em !important;
-}
-
-/* ─── PREZZI E CIFRE CHIAVE: AMBRA E ORO IMPERIALE ───────────────────────── */
+/* ─── CIFRE CHIAVE E PREZZI: AMBRA IMPERIALE ─────────────────────────────── */
 html[data-tema="serata"] body .cc-offerta,
 html:not([data-tema]) body .cc-offerta {
   color: #FFB04A !important;
   text-shadow:
-    0 0 28px rgba(251,191,36,0.55),
-    0 0 60px rgba(245,158,11,0.25),
-    0 2px 10px rgba(0,0,0,0.7) !important;
+    0 0 32px rgba(251,191,36,0.65),
+    0 0 70px rgba(245,158,11,0.30),
+    0 2px 10px rgba(0,0,0,0.8) !important;
   font-weight: 900 !important;
+  letter-spacing: -0.02em !important;
 }
 
 html[data-tema="serata"] body .cc-offerta-label,
 html:not([data-tema]) body .cc-offerta-label {
   color: #FCD34D !important;
-  letter-spacing: 0.18em !important;
+  letter-spacing: 0.20em !important;
   text-transform: uppercase !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
+  text-shadow: 0 0 10px rgba(251,191,36,0.4) !important;
 }
 
-/* Il grande "500" nel pannello del proprio team */
+/* Il grande "500" nel salvadanaio */
 html[data-tema="serata"] body #mio-panel .crediti-badge,
 html:not([data-tema]) body #mio-panel .crediti-badge {
   color: #FFB04A !important;
-  font-size: 2.4rem !important;
+  font-size: 2.5rem !important;
   font-weight: 900 !important;
   text-shadow:
-    0 0 22px rgba(251,191,36,0.45),
-    0 0 45px rgba(251,191,36,0.18) !important;
+    0 0 26px rgba(251,191,36,0.55),
+    0 0 50px rgba(251,191,36,0.25) !important;
   background: none !important;
   border: none !important;
+}
+
+/* Icona sacco di monete con riflesso d'oro */
+html[data-tema="serata"] body .icon-crediti,
+html:not([data-tema]) body .icon-crediti {
+  filter: drop-shadow(0 0 10px rgba(251,191,36,0.6)) !important;
 }
 
 /* ─── BOTTONE RILANCIA: IL LINGOTTO D'ORO DELLA SERATA ───────────────────── */
@@ -4897,154 +4920,172 @@ html[data-tema="serata"] body #puja-panel-slot .btn-rilancia,
 html:not([data-tema]) body #puja-panel-slot .btn-rilancia,
 html[data-tema="serata"] body .asta-row-puja .btn-rilancia,
 html:not([data-tema]) body .asta-row-puja .btn-rilancia {
-  background: linear-gradient(135deg, #FFE082 0%, #FFA322 30%, #E8820C 70%, #C46700 100%) !important;
+  background: linear-gradient(135deg, #FFF0C0 0%, #FFA322 28%, #E8820C 65%, #BD5E00 100%) !important;
   color: #1a0800 !important;
   border: none !important;
-  border-bottom: 3.5px solid #823a00 !important;
-  border-radius: 8px !important;
+  border-bottom: 4px solid #7c3400 !important;
+  border-radius: 10px !important;
   box-shadow:
-    0 6px 24px rgba(217,119,6,0.55),
-    0 1px 0 rgba(255,255,220,0.45) inset,
-    0 0 20px rgba(251,191,36,0.25) !important;
+    0 8px 28px rgba(217,119,6,0.60),
+    0 1px 0 rgba(255,255,240,0.55) inset,
+    0 0 25px rgba(251,191,36,0.30) !important;
   font-weight: 900 !important;
-  letter-spacing: 0.06em !important;
+  letter-spacing: 0.08em !important;
   text-transform: uppercase !important;
-  text-shadow: 0 1px 2px rgba(255,255,255,0.30) !important;
-  transition: all 0.2s ease !important;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.40) !important;
+  transition: all 0.2s cubic-bezier(0.32,0.72,0,1) !important;
 }
 
 html[data-tema="serata"] body #puja-panel-slot .btn-rilancia:hover,
 html:not([data-tema]) body #puja-panel-slot .btn-rilancia:hover {
   box-shadow:
-    0 8px 32px rgba(217,119,6,0.70),
-    0 1px 0 rgba(255,255,220,0.55) inset,
-    0 0 30px rgba(251,191,36,0.40) !important;
+    0 12px 38px rgba(217,119,6,0.75),
+    0 1px 0 rgba(255,255,240,0.65) inset,
+    0 0 35px rgba(251,191,36,0.50) !important;
   transform: translateY(-2px) !important;
 }
 
-/* ─── QUICK BIDS IN ORO E ARDESIA ────────────────────────────────────────── */
+html[data-tema="serata"] body #puja-panel-slot .btn-rilancia:active,
+html:not([data-tema]) body #puja-panel-slot .btn-rilancia:active {
+  transform: translateY(1px) !important;
+  border-bottom-width: 2px !important;
+}
+
+/* ─── QUICK BIDS IN ORO E METALLO TITANIO ─────────────────────────────────── */
 html[data-tema="serata"] body #puja-panel-slot .quick-bids-row,
 html:not([data-tema]) body #puja-panel-slot .quick-bids-row {
-  background: rgba(11,18,30,0.85) !important;
-  border: 1px solid rgba(251,191,36,0.25) !important;
-  border-radius: 8px !important;
-  gap: 4px !important;
-  padding: 4px !important;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.4) !important;
+  background: rgba(10,16,28,0.90) !important;
+  border: 1px solid rgba(251,191,36,0.30) !important;
+  border-radius: 10px !important;
+  gap: 5px !important;
+  padding: 5px !important;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.5) !important;
 }
 
 html[data-tema="serata"] body #puja-panel-slot .btn-quick,
 html:not([data-tema]) body #puja-panel-slot .btn-quick {
-  border-radius: 6px !important;
-  background: rgba(255,255,255,0.04) !important;
+  border-radius: 7px !important;
+  background: rgba(255,255,255,0.05) !important;
   color: #FCD34D !important;
-  border: 1px solid rgba(251,191,36,0.18) !important;
+  border: 1px solid rgba(251,191,36,0.22) !important;
   font-weight: 800 !important;
   transition: all 0.15s !important;
 }
 
 html[data-tema="serata"] body #puja-panel-slot .btn-quick:hover,
 html:not([data-tema]) body #puja-panel-slot .btn-quick:hover {
-  background: rgba(251,191,36,0.22) !important;
+  background: rgba(251,191,36,0.25) !important;
   color: #FFFFFF !important;
   border-color: #FFB04A !important;
-  box-shadow: 0 0 12px rgba(251,191,36,0.4) !important;
+  box-shadow: 0 0 14px rgba(251,191,36,0.45) !important;
+  transform: scale(1.03) !important;
 }
 
-/* ─── TABS PANEL: ORO CALDO PER LE SEZIONI ATTIVE ────────────────────────── */
+/* ─── BARRA DI RICERCA E FILTRI DELLA GRIGLIA ────────────────────────────── */
+html[data-tema="serata"] body .liberi-toolbar,
+html[data-tema="serata"] body .search-box,
+html:not([data-tema]) body .liberi-toolbar,
+html:not([data-tema]) body .search-box {
+  background: rgba(12,18,30,0.85) !important;
+  border: 1px solid rgba(251,191,36,0.25) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35) !important;
+}
+
+/* ─── TABS PANEL: ORO SATINATO SULLE SEZIONI ATTIVE ──────────────────────── */
 html[data-tema="serata"] body .tabs-panel,
 html:not([data-tema]) body .tabs-panel {
-  background: linear-gradient(180deg, rgba(14,21,34,0.99) 0%, rgba(9,13,22,1.0) 100%) !important;
-  border: 1px solid rgba(251,191,36,0.22) !important;
-  border-top: 2.5px solid #FFB04A !important;
-  border-radius: 10px !important;
+  background: linear-gradient(180deg, rgba(15,23,37,0.99) 0%, rgba(9,14,23,1.0) 100%) !important;
+  border: 1px solid rgba(251,191,36,0.25) !important;
+  border-top: 3px solid #FFB04A !important;
+  border-radius: 12px !important;
   box-shadow:
-    0 8px 24px rgba(0,0,0,0.45),
-    0 0 25px rgba(251,191,36,0.06) !important;
+    0 10px 30px rgba(0,0,0,0.50),
+    0 0 30px rgba(251,191,36,0.08) !important;
 }
 
 html[data-tema="serata"] body .tabs-nav,
 html:not([data-tema]) body .tabs-nav {
   background: transparent !important;
-  border-bottom: 1px solid rgba(251,191,36,0.15) !important;
-  padding: 0 8px !important;
-  gap: 4px !important;
+  border-bottom: 1px solid rgba(251,191,36,0.18) !important;
+  padding: 0 10px !important;
+  gap: 6px !important;
 }
 
 html[data-tema="serata"] body .tab-btn,
 html:not([data-tema]) body .tab-btn {
   background: none !important;
   border: none !important;
-  border-bottom: 2px solid transparent !important;
+  border-bottom: 2.5px solid transparent !important;
   border-radius: 0 !important;
   color: #94a3b8 !important;
-  font-size: 0.70rem !important;
+  font-size: 0.72rem !important;
   letter-spacing: 0.12em !important;
   text-transform: uppercase !important;
-  padding: 12px 18px !important;
-  transition: all 0.2s !important;
-  font-weight: 600 !important;
+  padding: 13px 20px !important;
+  transition: all 0.2s cubic-bezier(0.32,0.72,0,1) !important;
+  font-weight: 700 !important;
 }
 
 html[data-tema="serata"] body .tab-btn:hover,
 html:not([data-tema]) body .tab-btn:hover {
   color: #FFB04A !important;
-  background: rgba(251,191,36,0.06) !important;
+  background: rgba(251,191,36,0.07) !important;
 }
 
 /* Tab Attiva: Oro puro con glow caldo */
 html[data-tema="serata"] body .tab-btn.active,
 html:not([data-tema]) body .tab-btn.active {
-  background: rgba(251,191,36,0.10) !important;
+  background: rgba(251,191,36,0.12) !important;
   color: #FFB04A !important;
-  border-bottom: 2.5px solid #FFB04A !important;
+  border-bottom: 3px solid #FFB04A !important;
   border-radius: 0 !important;
-  text-shadow: 0 0 14px rgba(251,191,36,0.55) !important;
+  text-shadow: 0 0 16px rgba(251,191,36,0.60) !important;
   font-weight: 800 !important;
 }
 
 /* ─── BADGE ADMIN & CONFERMA ─────────────────────────────────────────────── */
 html[data-tema="serata"] body .admin-badge,
 html:not([data-tema]) body .admin-badge {
-  background: rgba(251,191,36,0.12) !important;
-  border: 1px solid rgba(251,191,36,0.50) !important;
+  background: rgba(251,191,36,0.15) !important;
+  border: 1.5px solid #FFB04A !important;
   color: #FFB04A !important;
-  border-radius: 5px !important;
-  font-size: 0.65rem !important;
+  border-radius: 6px !important;
+  font-size: 0.68rem !important;
   letter-spacing: 0.16em !important;
   text-transform: uppercase !important;
   font-weight: 800 !important;
-  box-shadow: 0 0 10px rgba(251,191,36,0.2) !important;
+  box-shadow: 0 0 12px rgba(251,191,36,0.25) !important;
 }
 
 html[data-tema="serata"] body .admin-conferma-box,
 html:not([data-tema]) body .admin-conferma-box {
-  background: rgba(14,21,34,0.92) !important;
-  border: 1.5px solid rgba(251,191,36,0.40) !important;
-  border-radius: 10px !important;
-  box-shadow: 0 0 35px rgba(251,191,36,0.12) !important;
+  background: rgba(13,20,33,0.95) !important;
+  border: 1.5px solid rgba(251,191,36,0.45) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 0 40px rgba(251,191,36,0.15) !important;
 }
 
 html[data-tema="serata"] body .conferma-titolo,
 html:not([data-tema]) body .conferma-titolo {
   color: #FFB04A !important;
-  font-size: 0.72rem !important;
+  font-size: 0.74rem !important;
   letter-spacing: 0.16em !important;
   text-transform: uppercase !important;
   font-weight: 800 !important;
 }
 
-/* Bottone Conferma: Verde smeraldo con bordino d'oro */
+/* Bottone Conferma: Verde smeraldo nobile */
 html[data-tema="serata"] body #btn-conferma-assegnazione,
 html:not([data-tema]) body #btn-conferma-assegnazione {
-  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%) !important;
   color: #f0fdf4 !important;
-  border: 1px solid rgba(255,235,170,0.3) !important;
-  border-bottom: 3.5px solid #14532d !important;
-  border-radius: 8px !important;
+  border: 1px solid rgba(255,245,190,0.35) !important;
+  border-bottom: 4px solid #14532d !important;
+  border-radius: 10px !important;
   box-shadow:
-    0 4px 20px rgba(22,163,74,0.45),
-    0 1px 0 rgba(134,239,172,0.25) inset !important;
+    0 6px 24px rgba(22,163,74,0.50),
+    0 1px 0 rgba(134,239,172,0.30) inset !important;
   font-weight: 800 !important;
   letter-spacing: 0.08em !important;
   text-transform: uppercase !important;
@@ -5055,87 +5096,92 @@ html[data-tema="serata"] body .sidebar-squadra,
 html:not([data-tema]) body .sidebar-squadra {
   background: transparent !important;
   border-bottom: 1px solid rgba(255,255,255,0.06) !important;
-  border-left: 2.5px solid transparent !important;
+  border-left: 3px solid transparent !important;
   border-radius: 0 !important;
-  padding: 6px 8px !important;
-  transition: all 0.2s !important;
+  padding: 7px 10px !important;
+  transition: all 0.2s cubic-bezier(0.32,0.72,0,1) !important;
 }
 
 html[data-tema="serata"] body .sidebar-squadra:hover,
 html:not([data-tema]) body .sidebar-squadra:hover {
-  background: rgba(251,191,36,0.04) !important;
+  background: rgba(251,191,36,0.05) !important;
+  border-left-color: rgba(251,191,36,0.4) !important;
 }
 
 html[data-tema="serata"] body .sidebar-squadra.mia-squadra,
 html:not([data-tema]) body .sidebar-squadra.mia-squadra {
-  border-left: 3px solid #FFB04A !important;
-  background: rgba(251,191,36,0.07) !important;
+  border-left: 3.5px solid #FFB04A !important;
+  background: rgba(251,191,36,0.08) !important;
 }
 
 html[data-tema="serata"] body .sidebar-squadra.mia-squadra .sq-nome,
 html:not([data-tema]) body .sidebar-squadra.mia-squadra .sq-nome {
   color: #FFB04A !important;
   font-weight: 800 !important;
-  text-shadow: 0 0 10px rgba(251,191,36,0.3) !important;
+  text-shadow: 0 0 12px rgba(251,191,36,0.35) !important;
 }
 
 html[data-tema="serata"] body .sidebar-squadra.offerente-attuale,
 html:not([data-tema]) body .sidebar-squadra.offerente-attuale {
-  border-left: 3px solid #22C55E !important;
-  background: rgba(34,197,94,0.08) !important;
+  border-left: 3.5px solid #22C55E !important;
+  background: rgba(34,197,94,0.09) !important;
 }
 
 html[data-tema="serata"] body .sidebar-squadra.offerente-attuale .sq-crediti,
 html:not([data-tema]) body .sidebar-squadra.offerente-attuale .sq-crediti {
   color: #22C55E !important;
-  text-shadow: 0 0 14px rgba(34,197,94,0.40) !important;
+  text-shadow: 0 0 16px rgba(34,197,94,0.45) !important;
+  font-weight: 800 !important;
 }
 
 html[data-tema="serata"] body .sidebar-squadra.offerente-attuale .sq-nome,
 html:not([data-tema]) body .sidebar-squadra.offerente-attuale .sq-nome {
-  color: #bbf7d0 !important;
+  color: #dcfce7 !important;
   font-weight: 700 !important;
 }
 
 html[data-tema="serata"] body .sq-nome,
 html:not([data-tema]) body .sq-nome {
   color: #cbd5e1 !important;
+  font-weight: 600 !important;
 }
 
 html[data-tema="serata"] body .sq-crediti,
 html:not([data-tema]) body .sq-crediti {
   color: #f8fafc !important;
   font-variant-numeric: tabular-nums !important;
+  font-weight: 700 !important;
 }
 
-/* ─── FILTRI ─────────────────────────────────────────────────────────────── */
+/* ─── FILTRI: PILLOLE D'ORO E ARDESIA ────────────────────────────────────── */
 html[data-tema="serata"] body .storico-filtro-btn,
 html[data-tema="serata"] body .filtro-btn,
 html:not([data-tema]) body .storico-filtro-btn,
 html:not([data-tema]) body .filtro-btn {
   background: rgba(255,255,255,0.04) !important;
-  border: 1px solid rgba(251,191,36,0.18) !important;
+  border: 1px solid rgba(251,191,36,0.22) !important;
   color: #cbd5e1 !important;
-  border-radius: 5px !important;
-  font-weight: 600 !important;
+  border-radius: 6px !important;
+  font-weight: 700 !important;
+  transition: all 0.15s !important;
 }
 
 html[data-tema="serata"] body .storico-filtro-btn.active,
 html[data-tema="serata"] body .filtro-btn.active,
 html:not([data-tema]) body .storico-filtro-btn.active,
 html:not([data-tema]) body .filtro-btn.active {
-  background: rgba(251,191,36,0.16) !important;
+  background: rgba(251,191,36,0.20) !important;
   border-color: #FFB04A !important;
   color: #FFB04A !important;
-  box-shadow: 0 0 10px rgba(251,191,36,0.25) !important;
+  box-shadow: 0 0 12px rgba(251,191,36,0.30) !important;
 }
 
 /* ─── URGENZA: ROSSO FUOCO CON ORO ───────────────────────────────────────── */
 html[data-tema="serata"] body.puja-urgente #puja-panel-slot,
 html:not([data-tema]) body.puja-urgente #puja-panel-slot {
-  border-color: rgba(239,68,68,0.50) !important;
+  border-color: rgba(239,68,68,0.60) !important;
   border-top-color: #ef4444 !important;
-  box-shadow: 0 0 0 1px rgba(239,68,68,0.1) inset, 0 24px 60px rgba(0,0,0,0.6), 0 0 60px rgba(239,68,68,0.2) !important;
+  box-shadow: 0 0 0 1px rgba(239,68,68,0.15) inset, 0 28px 70px rgba(0,0,0,0.7), 0 0 70px rgba(239,68,68,0.25) !important;
 }
 
 html[data-tema="serata"] body.puja-urgente #puja-panel-slot::before,
@@ -5148,7 +5194,7 @@ html:not([data-tema]) body.puja-urgente #puja-panel-slot .btn-rilancia {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #991b1b 100%) !important;
   color: #ffffff !important;
   border-bottom-color: #7f1d1d !important;
-  box-shadow: 0 6px 28px rgba(220,38,38,0.60) !important;
+  box-shadow: 0 8px 32px rgba(220,38,38,0.70) !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
