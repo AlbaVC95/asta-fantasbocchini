@@ -8,7 +8,13 @@ const TEMI = [
   { id: 'serata',  nome: "Serata d'Asta",  tipo: 'scuro',  swatch: '#FFB04A' },
   { id: 'cuoio',   nome: 'Cuoio',          tipo: 'chiaro', swatch: '#7A4A22' },
   { id: 'lavagna', nome: 'Lavagna al Neon', tipo: 'scuro',  swatch: '#22D3EE' },
-  { id: 'sala-giochi', nome: 'Sala Giochi', tipo: 'chiaro', swatch: '#2440D8' }
+  { id: 'sala-giochi', nome: 'Sala Giochi', tipo: 'chiaro', swatch: '#2440D8' },
+  // Quinto tema, nato da una lamentela precisa sui primi: "Serata d'Asta e' troppo
+  // scura, troppo uniforme in nero, costa capire le cose perche' cambia poco il
+  // colore". Non e' una svista di quel tema, e' la sua regola — un accento solo su
+  // fondo quasi nero — quindi non si tocca: si aggiunge accanto un tema che parte
+  // dalla stessa foto di bar ma la lascia VIVERE invece di spegnerla.
+  { id: 'bar', nome: 'Il Bar', tipo: 'scuro', swatch: '#E8944A' }
 ];
 const TEMA_DEFAULT = 'serata';
 function _temaValido(id) { return TEMI.some(function(t) { return t.id === id; }); }

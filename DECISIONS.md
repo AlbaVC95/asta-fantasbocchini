@@ -2588,3 +2588,40 @@ esterni, attacco), cosi' la codifica e' la stessa delle righe di Rose e dell'acc
 Le tinte sono di mezzo tono **apposta**: devono reggere sia sul nero della Serata sia sulla panna del
 Cuoio, quindi un set solo invece di quattro palette da mantenere allineate. "sala-giochi" ha gia' le
 sue, piu' specifiche, e continua a vincere.
+
+
+## "Il Bar": il quinto tema nasce da una lamentela precisa, e non tocca Serata
+
+I partecipanti hanno bocciato "Serata d'Asta": *troppo scura, troppo uniforme in nero, costa capire
+le cose perche' cambia poco il colore*. Non e' una svista di quel tema — e' la sua regola, scritta
+qui sopra: "un solo accento diffuso + un colore riservato al denaro", su un fondo `#0B0908`. Tutto
+cio' che non e' ambra e' grigio, e con dodici squadre, cronometro, puja e quattro tab quella
+disciplina si paga in leggibilita'.
+
+**Serata non e' stata modificata**: su indicazione dell'utente il tema nuovo si aggiunge accanto
+(cinque in tutto), cosi' chi si trovava bene non perde niente e il confronto lo fanno loro.
+
+**Un tema costa una paletta, non trecento regole.** La composizione del foglio e' scritta contro le
+variabili `--sc-*` (piu' quelle di `style.css`), quindi ridefinirle e' sufficiente perche' il tema
+nuovo erediti cornici, filetti, materie e clessidra. E' esattamente il guadagno previsto quando si
+scelse "palette nelle variabili, struttura in un foglio a parte", e qui si e' visto in pratica: 92
+righe aggiunte contro le 327 regole di "sala-giochi", che invece riscrive molta composizione.
+
+Due mosse, non cento, ed entrambe rispondono a cio' che e' stato detto:
+
+1. **Il fondo sale.** Serata prende la foto del bar e la spegne (`brightness(.72)`,
+   `saturate(.42)`) — il commento li' dice "smette di essere una foto, diventa luce". Qui si fa il
+   contrario: `brightness(1.02)`, `saturate(.85)`, e il locale si vede. Stessa immagine, gia' nel
+   repository: nessun asset nuovo.
+2. **Tre piani invece di uno.** Fondo, pannello e carta hanno tre toni diversi. E' lo stesso rimedio
+   applicato a "sala-giochi" quando abbagliava, per il motivo opposto ma con la stessa causa: se i
+   piani non si distinguono per TONO, l'occhio non sa dove finisce una cosa e comincia l'altra, e
+   restano solo i filetti a dirlo. Era questo il vero "e' tutto uguale", piu' del nero in se'.
+
+E un secondo accento: il verde bottiglia del banco. In Serata il verde e' riservato al denaro;
+qui e' anche struttura, perche' con un accento solo tutto il resto ricade nel grigio — che e'
+letteralmente la lamentela.
+
+**Non verificato**: la schermata d'asta vera, dove il problema vive. In locale non ci sono le
+credenziali Supabase e non si va oltre l'accesso, quindi il tema e' stato guardato solo li' e in
+banchi di prova. Va guardato in un'asta vera prima di considerarlo finito.

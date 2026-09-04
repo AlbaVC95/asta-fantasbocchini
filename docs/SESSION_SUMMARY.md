@@ -180,6 +180,15 @@ Nella carta di puja i badge dei ruoli tornano colorati in tutti i temi (Por gial
 centrocampo azzurro, esterni viola, attacco corallo), con le stesse cinque famiglie già usate nelle
 righe di Rose. Dettagli in [DECISIONS.md](../DECISIONS.md).
 
+## Quinto tema: "Il Bar"
+
+I partecipanti hanno bocciato "Serata d'Asta" (*troppo scura e uniforme*). Serata **non è stata
+toccata**: il tema nuovo si aggiunge accanto. È soprattutto una paletta — la composizione è scritta
+contro le variabili `--sc-*`, quindi si eredita tutta (92 righe aggiunte in totale). Due mosse: il
+fondo sale (la stessa foto di bar, accesa invece che spenta) e tre piani distinti per tono invece
+di uno. Secondo accento il verde bottiglia. **Prima passata: va guardata in un'asta vera.**
+Dettagli in [DECISIONS.md](../DECISIONS.md).
+
 ## Verifiche fatte
 
 - **Copertura sul listino VERO** (531 righe di `listino_giocatori` su Supabase, passate una per
@@ -203,6 +212,10 @@ righe di Rose. Dettagli in [DECISIONS.md](../DECISIONS.md).
   Contrasti misurati sulla carta nuova: principale 16.75:1, secondario 8.12:1, muted 5.25:1,
   cobalto 6.76:1, rosso 4.65:1, oro-testo 5.34:1 — tutti sopra AA. Gli altri tre temi hanno il
   fondo invariato (serata, lavagna, cuoio).
+- Tema "Il Bar": registrato nei cinque temi, paletta applicata, gli altri quattro invariati (tutte
+  le righe nuove stanno dentro selettori `[data-tema="bar"]`). Confrontato con Serata affiancando
+  due copie della pagina vera. **Non verificata la schermata d'asta**: in locale non si va oltre
+  l'accesso.
 - Parità Excel/JSON: estratti dal codice i tre insiemi di campi e confrontati — Excel non manca di
   niente. Provato con `.xlsx` veri: 16 campi sul giocatore, `valore` letto da `QUOT.`, e
   `renderGiocatoriLiberi` ordina 45 → 20 → 5.

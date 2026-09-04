@@ -1306,6 +1306,57 @@ body::before{display:none}
    Le materie (fondi a gradiente, vetro della clessidra, insegna) hanno la
    loro versione chiara in tema-serata.css, sezione "MATTINA AL BANCO".
    ══════════════════════════════════════════════════════════ */
+/* ══ IL BAR — quinto tema (scuro, ma non nero) ══
+   Nasce da una lamentela sui primi: "Serata d'Asta e' troppo scura e troppo
+   uniforme, cambia poco il colore e costa capire le cose". Non e' un difetto di
+   quel tema: la sua regola e' un accento solo su fondo quasi nero, ed e' scritta
+   in DECISIONS.md. Quindi Serata resta com'e' e questo le si mette accanto.
+
+   La differenza sta in due cose, non in cento:
+   1. IL FONDO SALE. Serata sta su #0B0908 e spegne la foto del bar a
+      brightness(.72): qui il legno resta legno. Un fondo piu' alto permette ai
+      pannelli di staccarsi con il TONO e non solo con un filetto, che era il
+      motivo vero per cui tutto sembrava lo stesso blocco.
+   2. TRE PIANI INVECE DI UNO. fondo / pannello / carta hanno tre valori diversi
+      — lo stesso rimedio applicato a "sala-giochi" quando abbagliava, per il
+      motivo opposto ma con la stessa causa: se i piani non si distinguono per
+      tono, l'occhio non sa dove finisce una cosa e comincia l'altra. */
+html[data-tema="bar"]{
+  --bg-abyss:#181209;
+  --bg-deep:#241B12;      /* il pavimento del locale */
+  --panel-glass-1:rgba(52,40,29,.94);
+  --panel-glass-2:rgba(46,35,25,.94);
+  --panel-glass-3:rgba(38,29,20,.92);
+  --bg-main:#2E2318;      /* il banco */
+  --bg-card:#372A1D;      /* il vassoio: il piano piu' alto */
+  --bg-elevated:#40311F;
+  --bg-glass:rgba(46,35,25,.90);
+  --primary:#E8944A;      /* la lampada sopra il banco */
+  --primary-bright:#FFB877;
+  --primary-dark:#B96A22;
+  --primary-glow:rgba(232,148,74,.34);
+  --primary-subtle:rgba(232,148,74,.12);
+  --gold:#E8B44A;
+  --gold-bright:#FFD27A;
+  --gold-deep:#B98A1E;
+  --gold-glow:rgba(232,180,74,.30);
+  --gold-subtle:rgba(232,180,74,.12);
+  --fire:#E2503A;
+  --fire-bright:#FF6E55;
+  --fire-glow:rgba(226,80,58,.32);
+  /* Il verde della bottiglia: qui non e' solo il denaro come in Serata, e' il
+     SECONDO accento. E' esattamente cio' che mancava — con un accento solo,
+     tutto quello che non e' ambra resta grigio. */
+  --success:#5FBF83;
+  --success-glow:rgba(95,191,131,.26);
+  --danger:#E2503A;
+  --danger-glow:rgba(226,80,58,.28);
+  --text-primary:#F7EEE0;
+  --text-secondary:#CBB79E;
+  --text-muted:#A08C74;   /* misurato sopra 4.5:1 sui tre fondi del tema */
+  --border:rgba(247,238,224,.14);
+  --border-light:rgba(247,238,224,.26);
+}
 html[data-tema="cuoio"]{
   --bg-abyss:#E9DCC0;
   --bg-deep:#F3E7D0;
