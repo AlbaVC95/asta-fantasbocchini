@@ -5746,17 +5746,21 @@ html[data-tema="bar"] body .admin-panel {
     inset 0 1px 0 rgba(255,255,255,0.08) !important;
 }
 
-/* Targhetta del conto in ottone lucidato da pub */
+/* Header del conto pulito senza placca: il saldo poggia direttamente sul fondo */
 html[data-tema="bar"] body .mio-panel-header {
-  background: linear-gradient(180deg, #D4AF37 0%, #997828 100%) !important;
-  border: 1px solid #FFE4A0 !important;
-  border-radius: 5px !important;
-  padding: 5px 12px !important;
-  margin-bottom: 8px !important;
-  color: #1A1006 !important;
-  font-weight: 900 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 2px 6px rgba(0,0,0,0.45) !important;
+  background: none !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  padding: 0 0 12px 0 !important;
+  margin-bottom: 0 !important;
+  box-shadow: none !important;
+}
+html[data-tema="bar"] body #mio-panel .mio-nome {
+  color: var(--sc-tenue) !important;
+}
+html[data-tema="bar"] body #mio-panel .crediti-badge {
+  color: var(--sc-testo) !important;
+  background: none !important;
 }
 
 /* Bottoni dentro a Mio Panel in stile ardesia con filetto d'ottone */
