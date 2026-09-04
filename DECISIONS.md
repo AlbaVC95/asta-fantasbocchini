@@ -2784,3 +2784,32 @@ puja sono piu' lunghe, perche' e' il pezzo grosso del tavolo.
 **Da riusare**: quando un'interfaccia deve sembrare fatta di qualcosa, la domanda non e' "che
 colore ha" ma "come si comporta la luce su di esso" (il metallo la riflette in modo direzionale) e
 "quanto e' regolare" (il legno non lo e'). Sono le due proprieta' che il colore da solo non porta.
+
+
+## "Il Bar": la luce, e perche' senza di lei restava una texture
+
+Il mobile era costruito bene — legno irregolare, cornici col gradiente, squadrette — e sembrava
+ancora piatto. Il motivo, una volta visto, e' ovvio: **era illuminato uguale dappertutto**. Nessuna
+superficie vera ha la stessa luce al centro e agli angoli, e finche' ce l'ha si legge come una
+texture applicata, non come una stanza.
+
+Aggiunti quindi due strati di LUCE sopra al legno, non dentro — cosi' restano indipendenti dalla
+venatura e si regolano da soli: una pozza calda in alto a sinistra (la lampada sopra il banco) e
+una vignettatura che chiude i bordi. Stanno su un `::after` con `pointer-events:none`, perche' sono
+luce e non materia: non devono intercettare niente.
+
+Tre rifiniture nella stessa direzione:
+
+- **Le viti nelle squadrette.** Un cerchio con la luce in alto e l'ombra sotto, tre stop in un
+  `radial-gradient`. E' quello che fa leggere la squadretta come ferramenta invece che come due
+  barrette: **un rinforzo si avvita**, e l'occhio lo sa senza pensarci.
+- **La grana sulle superfici dei pannelli.** Erano una tinta piatta; ora hanno un rumore fine in
+  `soft-light`. Una tinta piatta non e' un piano, e' un riempimento.
+- **I pannelli sono INCASSATI, non appoggiati**: un filo di luce sul bordo alto interno e un'ombra
+  che scende da sotto la cornice. E' quello che da' spessore al telaio.
+
+**Un difetto trovato guardando, non ragionando**: la piastrella del rumore a 300px si vedeva —
+compariva un riquadro piu' chiaro sul legno, e l'occhio lo leggeva subito come ripetizione.
+Portata a 620px (e i nodi a 980px). **Il rumore e' l'unica cosa che non deve mostrare un periodo**:
+appena lo mostra, torna a essere una texture applicata, che e' esattamente cio' da cui si stava
+scappando.
