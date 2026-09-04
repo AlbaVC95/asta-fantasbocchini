@@ -603,8 +603,12 @@ html body.layout-partecipante .asta-row-panels>#puja-panel-slot,
 html body .asta-row-panels>#puja-panel-slot{
   max-width:none !important;align-self:stretch !important;height:auto !important;
 }
-html body.layout-partecipante #puja-panel-slot,
-html body #puja-panel-slot{
+/* ATTENZIONE: scoped SOLO a serata e default — bar/cuoio/lavagna/sala-giochi
+   hanno il proprio background del #puja-panel-slot scoped con [data-tema="..."] */
+html:not([data-tema]) body.layout-partecipante #puja-panel-slot,
+html[data-tema="serata"] body.layout-partecipante #puja-panel-slot,
+html:not([data-tema]) body #puja-panel-slot,
+html[data-tema="serata"] body #puja-panel-slot{
   position:relative !important;overflow:hidden !important;
   min-height:220px !important;padding:22px 28px 20px 28px !important;
   align-items:center !important;gap:34px !important;
@@ -615,22 +619,26 @@ html body #puja-panel-slot{
     linear-gradient(180deg, rgba(26,21,18,.96), rgba(12,10,9,.97)) !important;
   box-shadow:0 28px 64px rgba(0,0,0,.5), inset 0 1px 0 rgba(var(--sc-carta),.05) !important;
 }
-/* la miccia: il timer attraversa tutta la sala */
-html body #puja-panel-slot::before{
+/* la miccia: il timer attraversa tutta la sala (scoped a serata/default) */
+html:not([data-tema]) body #puja-panel-slot::before,
+html[data-tema="serata"] body #puja-panel-slot::before{
   content:'' !important;position:absolute !important;left:0;right:0;top:0;height:2px;
   background:rgba(var(--sc-carta),.08);z-index:5;
 }
-html body #puja-panel-slot::after{
+html:not([data-tema]) body #puja-panel-slot::after,
+html[data-tema="serata"] body #puja-panel-slot::after{
   content:'' !important;position:absolute !important;left:0;top:0;height:2px;width:64%;
   background:var(--sc-ambra-piena);box-shadow:0 0 18px var(--sc-ambra-piena), 0 0 4px var(--sc-ambra-piena);z-index:6;
 }
-html body.puja-urgente #puja-panel-slot{
+html:not([data-tema]) body.puja-urgente #puja-panel-slot,
+html[data-tema="serata"] body.puja-urgente #puja-panel-slot{
   background:
     radial-gradient(46% 130% at 17% -16%, rgba(var(--sc-brace),.26), transparent 62%),
     radial-gradient(52% 120% at 101% 118%, rgba(28,91,69,.20), transparent 60%),
     linear-gradient(180deg, rgba(30,19,17,.96), rgba(13,10,10,.97)) !important;
 }
-html body.puja-urgente #puja-panel-slot::after{width:12% !important;background:var(--sc-brace-piena);box-shadow:0 0 20px var(--sc-brace-piena)}
+html:not([data-tema]) body.puja-urgente #puja-panel-slot::after,
+html[data-tema="serata"] body.puja-urgente #puja-panel-slot::after{width:12% !important;background:var(--sc-brace-piena);box-shadow:0 0 20px var(--sc-brace-piena)}
 
 /* la scena */
 html body #puja-panel-slot .card-timer-group{
@@ -1175,8 +1183,13 @@ html body .budget-progress{height:2px !important;background:rgba(var(--sc-carta)
 html body .budget-progress-fill{opacity:.5 !important}
 html body .sidebar-squadra.offerente-attuale .budget-progress-fill{opacity:1 !important}
 
-/* La sala si intravede appena: la foto è luce, non soggetto */
-html body .pitch-bg{filter:saturate(.38) contrast(1.02) brightness(.82) !important}
+/* La sala si intravede appena: la foto è luce, non soggetto.
+   ATTENZIONE: solo tema serata/default. Bar, Cuoio, Lavagna, Sala-giochi
+   hanno i propri filter scoped nel loro blocco. */
+html:not([data-tema]) body .pitch-bg,
+html[data-tema="serata"] body .pitch-bg {
+  filter:saturate(.38) contrast(1.02) brightness(.82) !important;
+}
 
 /* Storico: cifre in tabellone */
 html body .storico-list li{padding:11px 10px !important;font-size:.8rem !important}
@@ -1308,7 +1321,10 @@ html body .timbro-preso em{
    `#puja-panel-slot`. Qui gli si applica la stessa identita',
    altrimenti l'admin resterebbe col tema vecchio.
    ═══════════════════════════════════════════════════════════ */
-html body.layout-admin .asta-row-puja{
+/* ATTENZIONE: scoped SOLO a serata e default — bar/cuoio/lavagna/sala-giochi
+   hanno il proprio background dell'asta-row-puja scoped con [data-tema="..."] */
+html:not([data-tema]) body.layout-admin .asta-row-puja,
+html[data-tema="serata"] body.layout-admin .asta-row-puja{
   position:relative !important;overflow:hidden !important;
   padding:22px 26px 20px !important;gap:26px !important;align-items:center !important;
   border:1px solid rgba(var(--sc-carta),.10) !important;border-radius:2px !important;
@@ -1318,7 +1334,8 @@ html body.layout-admin .asta-row-puja{
     linear-gradient(180deg, rgba(26,21,18,.96), rgba(12,10,9,.97)) !important;
   box-shadow:0 24px 56px rgba(0,0,0,.5) !important;
 }
-html body.layout-admin .asta-row-puja::before{
+html:not([data-tema]) body.layout-admin .asta-row-puja::before,
+html[data-tema="serata"] body.layout-admin .asta-row-puja::before{
   content:'' !important;position:absolute !important;left:0;right:0;top:0;height:2px;
   background:rgba(var(--sc-carta),.08);z-index:3;
 }
@@ -1691,11 +1708,15 @@ html body #puja-panel-slot::after{animation:miccia-viva 2.6s ease-in-out infinit
    devono sentire, non vedere.
    ═══════════════════════════════════════════════════════════════════ */
 
-/* il legno: venatura verticale irregolare, quasi invisibile */
-html body .panel-budget,
-html body #mio-panel,
-html body .admin-panel,
-html body .tabs-panel{
+/* il legno: venatura verticale irregolare, quasi invisibile (scoped serata/default) */
+html:not([data-tema]) body .panel-budget,
+html[data-tema="serata"] body .panel-budget,
+html:not([data-tema]) body #mio-panel,
+html[data-tema="serata"] body #mio-panel,
+html:not([data-tema]) body .admin-panel,
+html[data-tema="serata"] body .admin-panel,
+html:not([data-tema]) body .tabs-panel,
+html[data-tema="serata"] body .tabs-panel{
   background-image:
     repeating-linear-gradient(93deg,
       rgba(255,232,200,.016) 0 2px, transparent 2px 6px,
@@ -1704,9 +1725,11 @@ html body .tabs-panel{
     linear-gradient(180deg, rgba(11,9,8,.62), rgba(8,7,6,.72)) !important;
 }
 
-/* il piano del tavolo: legno + un riflesso di vetro che lo attraversa */
-html body #puja-panel-slot,
-html body.layout-admin .asta-row-puja{
+/* il piano del tavolo: legno + un riflesso di vetro che lo attraversa (scoped serata/default) */
+html:not([data-tema]) body #puja-panel-slot,
+html[data-tema="serata"] body #puja-panel-slot,
+html:not([data-tema]) body.layout-admin .asta-row-puja,
+html[data-tema="serata"] body.layout-admin .asta-row-puja{
   background-image:
     linear-gradient(104deg,
       transparent 34%, rgba(255,246,232,.030) 45%, rgba(255,246,232,.055) 50%,
@@ -1718,7 +1741,8 @@ html body.layout-admin .asta-row-puja{
     radial-gradient(52% 120% at 102% 118%, rgba(28,91,69,.34), transparent 60%),
     linear-gradient(180deg, rgba(26,21,18,.96), rgba(12,10,9,.97)) !important;
 }
-html body[data-fase="finale"] #puja-panel-slot{
+html:not([data-tema]) body[data-fase="finale"] #puja-panel-slot,
+html[data-tema="serata"] body[data-fase="finale"] #puja-panel-slot{
   background-image:
     linear-gradient(104deg,
       transparent 34%, rgba(255,236,232,.028) 45%, rgba(255,236,232,.05) 50%,
@@ -1731,9 +1755,12 @@ html body[data-fase="finale"] #puja-panel-slot{
     linear-gradient(180deg, rgba(30,19,17,.96), rgba(13,10,10,.97)) !important;
 }
 
-/* l'ottone: il corrimano sotto l'insegna, come il poggiapiedi del bancone */
-html body .asta-header{position:relative}
-html body .asta-header::after{
+/* l'ottone: il corrimano sotto l'insegna, come il poggiapiedi del bancone
+   (scoped a serata/default — bar ha il suo in html[data-tema="bar"] body .asta-header) */
+html:not([data-tema]) body .asta-header,
+html[data-tema="serata"] body .asta-header{position:relative}
+html:not([data-tema]) body .asta-header::after,
+html[data-tema="serata"] body .asta-header::after{
   content:'';position:absolute;left:0;right:0;bottom:-2px;height:2px;pointer-events:none;
   background:linear-gradient(90deg,
     rgba(140,106,52,0) 0%, rgba(201,151,75,.55) 12%, rgba(232,190,118,.85) 30%,
