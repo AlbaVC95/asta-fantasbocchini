@@ -5237,33 +5237,32 @@ html:not([data-tema]) body.puja-urgente #puja-panel-slot .btn-rilancia {
   box-shadow: 0 8px 32px rgba(220,38,38,0.70) !important;
 }
 /* ═══════════════════════════════════════════════════════════════════════════
-   ████████████████  IL BAR — DETTAGLI SELEZIONATI IN LEGNO NOBILE  ██████████
+   ████████████████  IL BAR — AUTENTICO LEGNO VISIBILE E CALDO  ███████████████
    ═══════════════════════════════════════════════════════════════════════════
-   Filosofia:
-   - LEGNO PRESENTE MA NON INVASIVO:
-     * Travatura di testa della sala in rovere massello tornito
-     * Listello superiore del bancone d'asta in legno mogano lucidato a cera
-     * Targhette dei titoli in legno caldo con incisione dorata
-     * Basetta della polaroid e cornici d'ottone con viti da ferramenta
-     * Sfondo della taverna a doghe calde d'ambiente, con luce tenue
-   - I pannelli restano leggibili e puliti (cuoio/ardesia da bancone e panno verde)
+   Obiettivo: LA MADERA DEVE VEDERSI SENZA ESSERE ECCESSIVA!
+   - Bancone d'asta centrale in caldo legno rovere/noce cerato (#4d2b15 -> #351c0c)
+     con riflesso satinato e cornice d'ottone
+   - Trave superiore del bar in legno massello (#563119 -> #3c200e)
+   - Pannelli in legno nobile bruno caldo (#3a1f0f -> #261308) bordati d'oro
+   - Panno verde inglese per il tabellone
+   - Boiserie di fondo con doghe verticali vive e calde
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ─── BODY & PITCH-BG: DOGHE D'AMBIENTE ACCOGLIENTI ─────────────────────── */
+/* ─── BODY & PITCH-BG: BOISERIE CALDA CON DOGHE DI LEGNO ─────────────────── */
 html[data-tema="bar"] body,
 html[data-tema="bar"] .pitch-bg {
-  background-color: #2b170c !important;
+  background-color: #381e0e !important;
   background-image:
-    /* Luce ambrata morbida della lampada a sospensione */
-    radial-gradient(ellipse 90% 60% at 50% 12%, rgba(255,200,120,0.18) 0%, transparent 65%),
-    /* Fuga scura tra i listoni di legno ogni 170px con bisello d'ombra e luce */
+    /* Luce ambrata morbida della lampada da taverna */
+    radial-gradient(ellipse 90% 65% at 50% 12%, rgba(255,200,120,0.22) 0%, transparent 68%),
+    /* Fuga scura tra i listoni di legno ogni 160px con bisello illuminato */
     repeating-linear-gradient(90deg,
       rgba(15,7,3,0.85) 0px 3px,
-      rgba(190,135,80,0.20) 3px 5px,
-      rgba(50,25,12,0) 5px 167px,
-      rgba(15,7,3,0.60) 167px 170px),
-    /* Boiserie di noce scura calda */
-    linear-gradient(180deg, #381f10 0%, #29150a 50%, #1a0d06 100%) !important;
+      rgba(215,155,95,0.28) 3px 5px,
+      rgba(60,30,15,0) 5px 157px,
+      rgba(15,7,3,0.65) 157px 160px),
+    /* Gradiente ricco del legno */
+    linear-gradient(180deg, #4a2813 0%, #361c0c 50%, #241106 100%) !important;
   background-attachment: fixed !important;
   filter: none !important;
 }
@@ -5274,20 +5273,19 @@ html[data-tema="bar"] .pitch-bg::after {
   inset: 0 !important;
   pointer-events: none !important;
   background:
-    radial-gradient(ellipse 65% 50% at 50% 5%, rgba(255,215,140,0.14) 0%, transparent 60%),
-    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 45%, rgba(15,7,3,0.50) 100%) !important;
+    radial-gradient(ellipse 70% 50% at 50% 5%, rgba(255,215,140,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 40%, rgba(15,7,3,0.45) 100%) !important;
 }
 
-/* ─── TRAVE SUPERIORE DEL BAR (HEADER IN ROVERE MASSELLO) ────────────────── */
+/* ─── TRAVE SUPERIORE DEL BAR (HEADER IN LEGNO VERO) ─────────────────────── */
 html[data-tema="bar"] body .asta-header {
   background:
-    /* Riflesso di cera sul legno della trave */
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,215,140,0.15) 0%, transparent 65%),
-    linear-gradient(180deg, #3d2313 0%, #2b170b 100%) !important;
-  border-bottom: 3px solid #C9A257 !important;
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,215,140,0.20) 0%, transparent 65%),
+    linear-gradient(180deg, #563119 0%, #3e210f 100%) !important;
+  border-bottom: 3.5px solid #C9A257 !important;
   box-shadow:
-    0 4px 18px rgba(0,0,0,0.65),
-    0 1px 0 rgba(255,230,160,0.25) inset !important;
+    0 6px 20px rgba(0,0,0,0.65),
+    0 1px 0 rgba(255,230,160,0.30) inset !important;
   position: relative !important;
 }
 
@@ -5299,70 +5297,63 @@ html[data-tema="bar"] body .asta-header::after {
   background: linear-gradient(90deg,
     rgba(122,96,58,0) 0%, #C9A257 10%, #F3DEB0 26%, #A88547 44%,
     #F3DEB0 62%, #C9A257 80%, rgba(122,96,58,0) 100%) !important;
-  box-shadow: 0 0 10px rgba(228,180,90,0.40) !important;
+  box-shadow: 0 0 10px rgba(228,180,90,0.45) !important;
 }
 
-/* ─── TAVOLO D'ASTA: MOSTRINA IN LEGNO MOGANO SUL BORDO SUPERIORE ────────── */
+/* ─── TAVOLO D'ASTA CENTRALE: PIANO DEL BANCONE IN LEGNO ROVERE NOBILE ──── */
 html[data-tema="bar"] body #puja-panel-slot,
 html[data-tema="bar"] body.layout-admin .asta-row-puja {
   position: relative !important;
   border: 4px solid transparent !important;
   border-radius: 12px !important;
   background:
-    /* Riflesso morbido sulla lastra */
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,210,130,0.12) 0%, transparent 60%) padding-box,
-    /* Piano in cuoio brunito del bancone da bar */
-    linear-gradient(180deg, #1e150f 0%, #140e09 100%) padding-box,
+    /* Riflesso morbido satinato sul piano cerato del bancone */
+    radial-gradient(ellipse 80% 55% at 50% -10%, rgba(255,215,140,0.18) 0%, transparent 65%) padding-box,
+    /* Vena calda del legno del bancone */
+    repeating-linear-gradient(90deg,
+      transparent 0 40px,
+      rgba(255,210,150,0.025) 40px 42px,
+      transparent 42px 90px) padding-box,
+    /* Legno rovere/noce caldo visibile (non nero!) */
+    linear-gradient(180deg, #442613 0%, #341b0b 50%, #261206 100%) padding-box,
     /* Cornice in massello d'ottone dorato */
     linear-gradient(152deg,
       #FFE9C4 0%, #D6BA8E 12%, #97815F 28%,
       #60503C 48%, #97815F 65%, #F0D9AC 84%, #77644C 100%) border-box !important;
   box-shadow:
-    0 16px 36px rgba(0,0,0,0.65),
-    inset 0 2px 6px rgba(0,0,0,0.5),
-    inset 0 1px 0 rgba(255,230,170,0.15) !important;
+    0 16px 40px rgba(0,0,0,0.70),
+    inset 0 2px 6px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,230,170,0.22) !important;
 }
 
-/* Listello di legno mogano cerato che incorona il tavolo dell'asta */
+/* Listello di noce massello intagliato sul bordo superiore */
 html[data-tema="bar"] body #puja-panel-slot::before,
 html[data-tema="bar"] body.layout-admin .asta-row-puja::before {
   display: block !important;
   content: '' !important;
   position: absolute !important;
   left: 0 !important; right: 0 !important; top: 0 !important;
-  height: 5px !important;
-  background: linear-gradient(180deg, #6c4122 0%, #4a2a14 100%) !important;
-  border-bottom: 1px solid rgba(255,220,150,0.25) !important;
+  height: 6px !important;
+  background: linear-gradient(180deg, #7c4723 0%, #522d14 100%) !important;
+  border-bottom: 1px solid rgba(255,225,160,0.35) !important;
   box-shadow: 0 2px 6px rgba(0,0,0,0.45) !important;
   z-index: 5 !important;
   border-radius: 8px 8px 0 0 !important;
 }
 
-/* Polaroid del giocatore: basetta calda di legno sotto la foto */
+/* Polaroid del giocatore con basetta in legno */
 html[data-tema="bar"] body #puja-panel-slot .cc-avatar,
 html[data-tema="bar"] body.layout-admin .asta-row-puja .cc-avatar {
   border: 3px solid #FDFBF7 !important;
-  border-bottom: 10px solid #FDFBF7 !important;
+  border-bottom: 12px solid #FDFBF7 !important;
   border-radius: 4px !important;
   box-shadow:
-    0 8px 20px rgba(0,0,0,0.6),
-    0 0 0 1px #3a2213 !important;
+    0 10px 24px rgba(0,0,0,0.65),
+    0 0 0 1.5px #4a2813 !important;
   background: #111 !important;
 }
 
-/* ─── TARGHETTE IN LEGNO CALDO SUI TITOLI DEI PANNELLI ───────────────────── */
-html[data-tema="bar"] body .panel-budget-hdr,
-html[data-tema="bar"] body .mio-panel-header {
-  background: linear-gradient(180deg, rgba(74,42,22,0.55) 0%, rgba(42,22,10,0.60) 100%) !important;
-  border: 1px solid rgba(201,162,87,0.35) !important;
-  border-radius: 5px !important;
-  padding: 5px 10px !important;
-  margin-bottom: 8px !important;
-  color: #F8E7C6 !important;
-  box-shadow: inset 0 1px 0 rgba(255,230,160,0.2), 0 2px 6px rgba(0,0,0,0.3) !important;
-}
-
-/* ─── PANNELLI DI DATI: CUOIO BRUNITO CON CORNICE E VITI D'OTTONE ────────── */
+/* ─── PANNELLI DI DATI: LEGNO BRUNITO CON CORNICE E VITI D'OTTONE ────────── */
 html[data-tema="bar"] body .card,
 html[data-tema="bar"] body .admin-panel,
 html[data-tema="bar"] body #mio-panel,
@@ -5372,25 +5363,40 @@ html[data-tema="bar"] body #budget-bar {
   border: 3px solid transparent !important;
   border-radius: 10px !important;
   background:
-    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255,210,130,0.08) 0%, transparent 60%) padding-box,
-    linear-gradient(180deg, #1b130d 0%, #120c08 100%) padding-box,
+    radial-gradient(ellipse 75% 50% at 50% 0%, rgba(255,210,130,0.12) 0%, transparent 60%) padding-box,
+    /* Legno caldo ben visibile */
+    linear-gradient(180deg, #371e0e 0%, #281408 50%, #1c0d05 100%) padding-box,
     linear-gradient(152deg,
       #F0DCB4 0%, #C9AE84 12%, #8A755A 30%,
       #5A4A38 48%, #8A755A 66%, #E4CFA6 84%, #6E5C46 100%) border-box !important;
   box-shadow:
-    0 10px 24px rgba(0,0,0,0.55),
+    0 10px 24px rgba(0,0,0,0.60),
     inset 0 2px 5px rgba(0,0,0,0.4),
-    inset 0 1px 0 rgba(255,236,200,0.12) !important;
+    inset 0 1px 0 rgba(255,236,200,0.18) !important;
 }
 
-/* ─── TABS PANEL: IL PANNO VERDE INGLESE CON CORNICE D'OTTONE ───────────── */
+/* Targhette dei titoli in legno caldo di pub */
+html[data-tema="bar"] body .panel-budget-hdr,
+html[data-tema="bar"] body .mio-panel-header {
+  background: linear-gradient(180deg, #532d16 0%, #391c0c 100%) !important;
+  border: 1px solid #C9A257 !important;
+  border-radius: 5px !important;
+  padding: 5px 12px !important;
+  margin-bottom: 8px !important;
+  color: #FFF0D0 !important;
+  font-weight: 800 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
+  box-shadow: inset 0 1px 0 rgba(255,230,160,0.25), 0 2px 6px rgba(0,0,0,0.35) !important;
+}
+
+/* ─── TABS PANEL: PANNO VERDE INGLESE CON CORNICE D'OTTONE ──────────────── */
 html[data-tema="bar"] body .tabs-panel {
   position: relative !important;
   border: 3px solid transparent !important;
   border-radius: 10px !important;
   background:
     url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27200%27%20height%3D%27200%27%3E%3Cfilter%20id%3D%27p%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%271.2%27%20numOctaves%3D%272%27%20seed%3D%279%27%2F%3E%3CfeColorMatrix%20type%3D%27saturate%27%20values%3D%270%27%2F%3E%3CfeComponentTransfer%3E%3CfeFuncA%20type%3D%27linear%27%20slope%3D%270.6%27%2F%3E%3C%2FfeComponentTransfer%3E%3C%2Ffilter%3E%3Crect%20width%3D%27200%27%20height%3D%27200%27%20filter%3D%27url%28%23p%29%27%2F%3E%3C%2Fsvg%3E") padding-box,
-    linear-gradient(180deg, #173d24 0%, #102d1a 100%) padding-box,
+    linear-gradient(180deg, #184227 0%, #11311d 100%) padding-box,
     linear-gradient(152deg,
       #F0DCB4 0%, #C9AE84 12%, #8A755A 30%,
       #5A4A38 48%, #8A755A 66%, #E4CFA6 84%, #6E5C46 100%) border-box !important;
