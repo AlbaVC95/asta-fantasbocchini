@@ -39,7 +39,7 @@
      grigio veste testi da 12px come .gk-header-sub. #8A8076 misura 4.9-5.0:1.
      Stesso identico passo fatto su --sc-tenue in tema-serata.css. */
   --text-muted:#8A8076;
-  --border:rgba(242,234,222,.10);
+  --border:rgba(242,234,222,.15);
   --border-light:rgba(242,234,222,.20);
   --font-main:Archivo,Inter,-apple-system,BlinkMacSystemFont,sans-serif;
   --font-display:Archivo,Outfit,Inter,sans-serif;
