@@ -2539,3 +2539,52 @@ di puja usa accanto al suo "+1". Non c'entra con la leva e serve sempre.
 **Verificato** con il modulo vero e un tasto finto: pressioni da 80ms, 300ms, 1s e 3s mandano tutte
 e quattro **una sola offerta a +1**, e `data-tot` resta corretto. Le altre due funzioni del modulo
 (la scena che si stringe negli ultimi secondi, il contatore "ancora in gioco") sono intatte.
+
+
+## Excel e JSON devono produrre lo stesso giocatore: verificato campo per campo
+
+L'utente, dopo due difetti diversi che venivano dallo stesso punto (l'eta'/U21 e poi l'ordine degli
+Svincolati), ha detto la cosa giusta: *"l'Excel deve funzionare come il JSON, ha tutta
+l'informazione, non capisco perche' non fa le stesse cose"*. Aveva ragione, ed e' un modo migliore
+di guardare il problema che rincorrere un campo alla volta.
+
+La forma canonica di un giocatore e' quella dell'**export**, cioe' il JSON: `campiExtraGiocatorePerExport()`
+in `server.js` piu' i cinque campi base, quindici in tutto — `nome ruolo tipo costo valore squadra
+pgv mv fm fvmp600 qam idFantaleghe under u21 quotazione`. Il JSON e' un export dell'app, quindi li
+ha per definizione; l'Excel passa da un parser scritto a parte, e quel parser ne costruiva dodici.
+
+I tre che mancavano sono esattamente i tre che hanno prodotto i difetti segnalati: `under` e `u21`
+(niente badge U21, niente eta') e `valore` (gli Svincolati si ordinano per `valore` decrescente,
+quindi valendo tutti 0 la lista usciva in ordine alfabetico). **Non erano dati assenti dal file**:
+la colonna `QUOT.` c'era gia' ed era gia' letta per `quotazione`, semplicemente non veniva copiata
+anche su `valore` come fa il percorso del Listino Ufficiale (`costo: r.quotazione, valore:
+r.quotazione`).
+
+**Il controllo, non solo la correzione.** Invece di fidarsi, i tre insiemi di campi sono stati
+estratti dal codice e confrontati: canonico contro Excel contro Listino. Risultato dopo la
+correzione: **Excel non manca di niente** (ha in piu' `squadraOriginale`, che serve alla riparazione
+e nell'export non ha senso); il **Listino** non ha `qam` — e non puo' averlo, quella colonna nella
+tabella `listino_giocatori` non esiste — e non scrive `tipo`, che pero' il server mette a `'NN'` da
+solo per i giocatori del pool. **Da rifare quando si tocca un import**: il confronto costa dieci
+righe di script e trova in un colpo quello che altrimenti si scopre un difetto per volta.
+
+Resta una differenza vera, e non e' un difetto: a livello di SQUADRA il JSON porta crediti, slot
+riconferme/plusvalenze, recompra e svincoli usati, l'Excel no. Non e' dimenticanza — un export di
+rose di Fantaleghe quei dati non li contiene proprio. Si impostano nel form e nelle impostazioni
+per squadra, che e' il percorso previsto.
+
+## Il colore del ruolo nella carta di puja, in tutti i temi
+
+Nella carta di puja i badge dei ruoli erano tutti uguali: contorno chiaro, nessun colore. Era una
+scelta — si voleva tenere il rosso come stato d'allarme e non spenderlo su un'etichetta — ma
+l'utente ha chiesto il contrario, e con un argomento migliore: **il colore del ruolo non e'
+decorazione, e' l'unica cosa che distingue un portiere da un attaccante prima di leggere le
+lettere**. Tanto piu' che in vista Admin i colori c'erano gia' (quella riga non passa da quella
+regola), quindi la stessa informazione si vedeva in un modo in una vista e in un altro nell'altra.
+
+Si tiene la FORMA che i temi hanno stabilito — gettone piatto, mono, spaziato — e si rimette il
+COLORE, nei cinque gruppi gia' usati da `_roseRowRoleClass` in `app.js` (Por, difesa, centrocampo,
+esterni, attacco), cosi' la codifica e' la stessa delle righe di Rose e dell'accento delle carte 3D.
+Le tinte sono di mezzo tono **apposta**: devono reggere sia sul nero della Serata sia sulla panna del
+Cuoio, quindi un set solo invece di quattro palette da mantenere allineate. "sala-giochi" ha gia' le
+sue, piu' specifiche, e continua a vincere.

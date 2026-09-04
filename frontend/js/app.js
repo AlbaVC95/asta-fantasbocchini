@@ -1636,7 +1636,14 @@ function handleExcelFile(file) {
           squadraOriginale: fantaSquadra || null,
           idFantaleghe: colId && row[colId] !== '' ? row[colId] : null,
           under: eta,
-          u21: eta != null && eta <= 21
+          u21: eta != null && eta <= 21,
+          // Gli Svincolati si ordinano per `valore` decrescente (vedi
+          // renderGiocatoriLiberi, comparatore byValore). Qui non veniva mai
+          // riempito — il percorso del Listino Ufficiale lo fa da sempre
+          // (`valore: r.quotazione`) — quindi partendo da Excel valevano tutti 0,
+          // il confronto cadeva sul ripiego e la lista usciva in ordine alfabetico.
+          // Stesso difetto dell'eta': due percorsi d'import cresciuti separati.
+          valore: colQuot && row[colQuot] !== '' ? Number(row[colQuot]) : null
         };
         if (!fantaSquadra) {
           svincolati.push(g);
@@ -1656,9 +1663,9 @@ function handleExcelFile(file) {
       // Se il Listino non e' caricato o la rete va male non succede niente: si prosegue
       // senza eta', cioe' come prima.
       const tutti = svincolati.concat(...squadre.map(sq => sq.giocatori));
-      if (tutti.some(g => g.under == null)) {
+      if (tutti.some(g => g.under == null || g.valore == null)) {
         try {
-          const { data: listino } = await supa.from('listino_giocatori').select('id,nome,eta,u21');
+          const { data: listino } = await supa.from('listino_giocatori').select('id,nome,eta,u21,quotazione');
           if (listino && listino.length) {
             const perId = new Map(), perNome = new Map();
             listino.forEach(r => {
@@ -1667,12 +1674,15 @@ function handleExcelFile(file) {
             });
             let ripescati = 0;
             tutti.forEach(g => {
-              if (g.under != null) return;
+              if (g.under != null && g.valore != null) return;
               const r = (g.idFantaleghe != null && perId.get(String(g.idFantaleghe)))
                      || perNome.get(_normalizePhotoName(g.nome));
-              if (!r || r.eta == null) return;
-              g.under = r.eta;
-              g.u21 = r.u21 === true || r.eta <= 21;
+              if (!r) return;
+              if (g.under == null && r.eta != null) {
+                g.under = r.eta;
+                g.u21 = r.u21 === true || r.eta <= 21;
+              }
+              if (g.valore == null && r.quotazione != null) g.valore = r.quotazione;
               ripescati++;
             });
             if (ripescati) console.log('[excel] eta ripescata dal Listino per ' + ripescati + ' giocatori');

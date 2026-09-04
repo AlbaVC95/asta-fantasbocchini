@@ -169,6 +169,17 @@ più nessun evento**: il rilancio lo manda solo il click handler dell'app. Resta
 due funzioni (scena che si stringe negli ultimi secondi, contatore "ancora in gioco") e
 l'etichetta col totale sul tasto. Motivazioni in [DECISIONS.md](../DECISIONS.md).
 
+## Excel al pari del JSON, e colori dei ruoli in tutti i temi
+
+Confrontati **campo per campo** i tre percorsi d'import contro la forma canonica dell'export (15
+campi): al parser Excel ne mancavano tre — `under`, `u21` e `valore` — ed erano esattamente quelli
+che causavano i due difetti segnalati (niente badge U21/età, e Svincolati in ordine alfabetico
+invece che per valore). Ora non manca niente.
+
+Nella carta di puja i badge dei ruoli tornano colorati in tutti i temi (Por giallo, difesa verde,
+centrocampo azzurro, esterni viola, attacco corallo), con le stesse cinque famiglie già usate nelle
+righe di Rose. Dettagli in [DECISIONS.md](../DECISIONS.md).
+
 ## Verifiche fatte
 
 - **Copertura sul listino VERO** (531 righe di `listino_giocatori` su Supabase, passate una per
@@ -192,6 +203,10 @@ l'etichetta col totale sul tasto. Motivazioni in [DECISIONS.md](../DECISIONS.md)
   Contrasti misurati sulla carta nuova: principale 16.75:1, secondario 8.12:1, muted 5.25:1,
   cobalto 6.76:1, rosso 4.65:1, oro-testo 5.34:1 — tutti sopra AA. Gli altri tre temi hanno il
   fondo invariato (serata, lavagna, cuoio).
+- Parità Excel/JSON: estratti dal codice i tre insiemi di campi e confrontati — Excel non manca di
+  niente. Provato con `.xlsx` veri: 16 campi sul giocatore, `valore` letto da `QUOT.`, e
+  `renderGiocatoriLiberi` ordina 45 → 20 → 5.
+- Colori dei ruoli: verificati sui quattro temi, con "sala-giochi" che mantiene la sua palette.
 - Leva rimossa: col modulo vero, pressioni da 80ms/300ms/1s/3s mandano tutte **una sola offerta a
   +1**; `data-tot` resta corretto e nel modulo non c'è più nessun `socket.emit`. Zero errori nuovi.
 - Età da Excel: generati veri `.xlsx` nel browser e passati alla funzione vera. Con colonna

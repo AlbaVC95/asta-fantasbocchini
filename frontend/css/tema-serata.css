@@ -600,14 +600,42 @@ html body.puja-urgente #timer-grad-end{stop-color:#8E2019 !important}
 html body #puja-panel-slot .timer-ring circle:nth-of-type(2){stroke:rgba(var(--sc-carta),.07) !important;stroke-width:4 !important}
 html body #puja-panel-slot .timer-ring circle:first-of-type{stroke:rgba(var(--sc-carta),.14) !important}
 
-/* Badge ruolo: contorno, non pastiglia piena (il rosso resta uno stato) */
+/* Badge ruolo nella carta di puja.
+   Prima erano tutti uguali — contorno chiaro, nessun colore — perche' si era voluto
+   tenere il rosso come stato d'allarme e non sprecarlo su un'etichetta. Ma il colore
+   del ruolo non e' decorazione: e' l'unica cosa che distingue un portiere da un
+   attaccante prima ancora di leggere le lettere, e in vista Admin i colori c'erano
+   gia' (quella riga non e' mai passata di qui). Segnalato dall'utente: "il ruolo
+   deve uscire coi colori in tutti i temi, POR giallo e cosi' via".
+   Si tiene la FORMA che i temi hanno stabilito — gettone piatto, mono, spaziato — e
+   si rimette il COLORE, in cinque gruppi: gli stessi di _roseRowRoleClass in app.js
+   (Por, difesa, centrocampo, esterni, attacco), cosi' la codifica e' la stessa che
+   si vede nelle righe di Rose e sull'accento delle carte 3D.
+   Le tinte sono di mezzo tono apposta: devono reggere sia sul nero della Serata sia
+   sulla panna del Cuoio, quindi un set solo invece di quattro. "sala-giochi" ha le
+   sue piu' avanti (piu' specifiche) e continua a vincere. */
 html body #puja-panel-slot .badge-ruolo,
 html body #puja-panel-slot .badge-ruolo[class*="r-"]{
-  background:none !important;border:1px solid rgba(var(--sc-carta),.28) !important;
-  color:var(--sc-testo) !important;border-radius:0 !important;
+  background:var(--r-fondo, none) !important;
+  border:1px solid var(--r-fondo, rgba(var(--sc-carta),.28)) !important;
+  color:var(--r-testo, var(--sc-testo)) !important;border-radius:0 !important;
   font-family:'Space Mono',monospace !important;font-size:.62rem !important;
-  letter-spacing:.1em !important;padding:5px 10px !important;font-weight:400 !important;
+  letter-spacing:.1em !important;padding:5px 10px !important;font-weight:700 !important;
 }
+html body #puja-panel-slot .badge-ruolo.r-Por,
+html body #puja-panel-slot .badge-ruolo.r-P{--r-fondo:#F0B429;--r-testo:#14100E}
+html body #puja-panel-slot .badge-ruolo.r-Dc,
+html body #puja-panel-slot .badge-ruolo.r-Ds,
+html body #puja-panel-slot .badge-ruolo.r-Dd,
+html body #puja-panel-slot .badge-ruolo.r-D,
+html body #puja-panel-slot .badge-ruolo.r-B{--r-fondo:#3FBF6F;--r-testo:#14100E}
+html body #puja-panel-slot .badge-ruolo.r-M,
+html body #puja-panel-slot .badge-ruolo.r-C,
+html body #puja-panel-slot .badge-ruolo.r-E{--r-fondo:#55A8E0;--r-testo:#14100E}
+html body #puja-panel-slot .badge-ruolo.r-T,
+html body #puja-panel-slot .badge-ruolo.r-W{--r-fondo:#9B84E8;--r-testo:#14100E}
+html body #puja-panel-slot .badge-ruolo.r-A,
+html body #puja-panel-slot .badge-ruolo.r-Pc{--r-fondo:#E8695A;--r-testo:#14100E}
 
 /* ── IL TAVOLO: gli amici, uno accanto all'altro ────────────
    La lista verticale lasciava mezza riga vuota accanto al
