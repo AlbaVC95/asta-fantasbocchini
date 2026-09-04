@@ -1322,20 +1322,25 @@ body::before{display:none}
       motivo opposto ma con la stessa causa: se i piani non si distinguono per
       tono, l'occhio non sa dove finisce una cosa e comincia l'altra. */
 html[data-tema="bar"]{
-  --bg-abyss:#181209;
-  --bg-deep:#241B12;      /* il pavimento del locale */
-  --panel-glass-1:rgba(52,40,29,.94);
-  --panel-glass-2:rgba(46,35,25,.94);
-  --panel-glass-3:rgba(38,29,20,.92);
-  --bg-main:#2E2318;      /* il banco */
-  --bg-card:#372A1D;      /* il vassoio: il piano piu' alto */
-  --bg-elevated:#40311F;
-  --bg-glass:rgba(46,35,25,.90);
-  --primary:#E8944A;      /* la lampada sopra il banco */
-  --primary-bright:#FFB877;
-  --primary-dark:#B96A22;
-  --primary-glow:rgba(232,148,74,.34);
-  --primary-subtle:rgba(232,148,74,.12);
+  /* IL SUOLO e' il legno del locale, ed e' CHIARO. I pannelli sono scuri e ci stanno
+     sopra con una cornice d'ottone. E' l'opposto della prima passata di questo tema,
+     che alzava tutto in blocco: alzare tutto toglie contrasto, e il contrasto era il
+     problema. Qui il salto e' fra il pannello e il piano su cui appoggia, non dentro
+     al pannello — cosi' i bordi si vedono da soli e non serve fidarsi di un filetto. */
+  --bg-abyss:#3A2717;
+  --bg-deep:#6B4A2E;        /* il legno */
+  --panel-glass-1:rgba(28,21,15,.96);
+  --panel-glass-2:rgba(24,18,13,.96);
+  --panel-glass-3:rgba(20,15,11,.94);
+  --bg-main:#1C150F;        /* i pannelli: scuri, appoggiati sul legno */
+  --bg-card:#241B13;
+  --bg-elevated:#2E2318;
+  --bg-glass:rgba(28,21,15,.94);
+  --primary:#E8A33D;        /* l'ottone delle cornici e la lampada */
+  --primary-bright:#FFC470;
+  --primary-dark:#B87A1E;
+  --primary-glow:rgba(232,163,61,.34);
+  --primary-subtle:rgba(232,163,61,.12);
   --gold:#E8B44A;
   --gold-bright:#FFD27A;
   --gold-deep:#B98A1E;
@@ -1344,18 +1349,20 @@ html[data-tema="bar"]{
   --fire:#E2503A;
   --fire-bright:#FF6E55;
   --fire-glow:rgba(226,80,58,.32);
-  /* Il verde della bottiglia: qui non e' solo il denaro come in Serata, e' il
-     SECONDO accento. E' esattamente cio' che mancava — con un accento solo,
-     tutto quello che non e' ambra resta grigio. */
-  --success:#5FBF83;
-  --success-glow:rgba(95,191,131,.26);
+  /* Il verde del panno: qui e' un accento VERO, non solo il denaro. Conferma, tab
+     attiva, stati positivi. Con un accento solo tutto il resto ricade nel grigio,
+     che era letteralmente la lamentela su Serata. */
+  --success:#3FA860;
+  --success-glow:rgba(63,168,96,.30);
   --danger:#E2503A;
   --danger-glow:rgba(226,80,58,.28);
-  --text-primary:#F7EEE0;
-  --text-secondary:#CBB79E;
-  --text-muted:#A08C74;   /* misurato sopra 4.5:1 sui tre fondi del tema */
-  --border:rgba(247,238,224,.14);
-  --border-light:rgba(247,238,224,.26);
+  --text-primary:#F7EFE2;
+  --text-secondary:#CDB99F;
+  --text-muted:#A79070;
+  /* I filetti sono d'ottone e si VEDONO: nei temi scuri sono un bianco al 10%, qui
+     la cornice e' parte del mobile. */
+  --border:rgba(232,163,61,.34);
+  --border-light:rgba(232,163,61,.55);
 }
 html[data-tema="cuoio"]{
   --bg-abyss:#E9DCC0;

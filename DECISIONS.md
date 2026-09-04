@@ -2625,3 +2625,34 @@ letteralmente la lamentela.
 **Non verificato**: la schermata d'asta vera, dove il problema vive. In locale non ci sono le
 credenziali Supabase e non si va oltre l'accesso, quindi il tema e' stato guardato solo li' e in
 banchi di prova. Va guardato in un'asta vera prima di considerarlo finito.
+
+
+## "Il Bar", seconda passata: il contrasto sta FRA i piani, non dentro
+
+La prima passata di questo tema aveva la diagnosi giusta e l'esecuzione sbagliata, e vale la pena
+scriverlo perche' e' un errore facile da rifare. Preso "troppo scuro e troppo uniforme", avevo
+**alzato tutto in blocco**: fondo, pannelli e carte piu' chiari, foto del bar accesa. Il risultato
+e' meno buio e *ugualmente indistinto*, perche' alzare ogni piano della stessa quantita' lascia le
+differenze fra i piani dov'erano. Il buio non era il problema: era la mancanza di salto.
+
+Il disegno fornito dall'utente lo risolve al contrario, ed e' la regola del tema in una riga:
+**pannelli scuri su legno chiaro, con cornici d'ottone visibili**. Il contrasto sta fra il pannello
+e il piano su cui appoggia, non fra gli elementi dentro il pannello. Cosi' ogni blocco e' un
+oggetto, non una zona, e i bordi si vedono da soli senza doversi affidare a un filetto al 10%.
+
+Tre conseguenze concrete:
+
+- **`--border` diventa ottone al 34%, non bianco al 10%.** Negli altri temi scuri il filetto e'
+  quasi invisibile perche' il pannello sta su un fondo altrettanto scuro e la cornice non serve.
+  Qui il pannello sta sul legno: la cornice puo' e deve vedersi.
+- **Il legno e' fatto con gradienti, non con una foto.** Tre strati (venatura fine, doghe larghe,
+  luce della lampada da sinistra), stessa scelta gia' fatta per il retino di "sala-giochi": nessuna
+  immagine nuova da versionare e nessun `?v=` da alzare. La foto `fantabar-bg.jpg` che usa Serata
+  qui NON si usa: sotto a pannelli scuri tornerebbe a fare il rumore che il tema deve togliere.
+- **Il verde del panno e' un accento vero**, non solo il denaro: conferma, tab attiva, stati
+  positivi. Con un accento solo tutto il resto ricade nel grigio, che era letteralmente la
+  lamentela su Serata.
+
+**Non verificato**: la schermata d'asta vera. In locale non ci sono le credenziali Supabase, quindi
+il tema e' stato giudicato su una maquette costruita con le classi vere (pannelli, carta di puja,
+tab, righe Svincolati) e non sull'app in funzione. Va guardato in un'asta vera.

@@ -183,11 +183,15 @@ righe di Rose. Dettagli in [DECISIONS.md](../DECISIONS.md).
 ## Quinto tema: "Il Bar"
 
 I partecipanti hanno bocciato "Serata d'Asta" (*troppo scura e uniforme*). Serata **non è stata
-toccata**: il tema nuovo si aggiunge accanto. È soprattutto una paletta — la composizione è scritta
-contro le variabili `--sc-*`, quindi si eredita tutta (92 righe aggiunte in totale). Due mosse: il
-fondo sale (la stessa foto di bar, accesa invece che spenta) e tre piani distinti per tono invece
-di uno. Secondo accento il verde bottiglia. **Prima passata: va guardata in un'asta vera.**
-Dettagli in [DECISIONS.md](../DECISIONS.md).
+toccata**: il tema nuovo si aggiunge accanto, ed è soprattutto una paletta (la composizione è
+scritta contro le variabili `--sc-*` e si eredita).
+
+Regola del tema in una riga: **pannelli scuri su legno chiaro, con cornici d'ottone visibili**. Il
+contrasto sta fra il pannello e il piano su cui appoggia. La prima passata alzava tutto in blocco
+ed era sbagliata: alzare ogni piano della stessa quantità lascia le differenze dov'erano. Il legno
+è fatto con gradienti (nessuna immagine nuova) e il verde del panno è un accento vero: conferma,
+tab attiva, stati positivi. **Va guardato in un'asta vera.** Dettagli in
+[DECISIONS.md](../DECISIONS.md).
 
 ## Verifiche fatte
 

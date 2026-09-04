@@ -51,35 +51,76 @@
    Le --sc-* sono le variabili con cui e' scritta TUTTA la composizione del foglio
    (cornici, filetti, materie, la clessidra): ridefinendole qui il tema eredita la
    composizione intera senza riscriverne una riga. E' il motivo per cui aggiungere
-   un tema costa una paletta e non trecento regole — vedi DECISIONS.md, "palette
-   nelle variabili, struttura in un foglio a parte". */
+   un tema costa una paletta e non trecento regole — vedi DECISIONS.md.
+
+   La regola di questo tema in una riga: PANNELLI SCURI SU LEGNO CHIARO, cornici
+   d'ottone visibili, e il verde del panno come secondo accento. La prima passata
+   faceva il contrario (alzava tutto in blocco) e perdeva proprio il contrasto che
+   doveva guadagnare. */
 html[data-tema="bar"]{
-  --sc-carta:247,238,224;    /* il chiaro: testo e filetti sul legno */
-  --sc-ambra:232,148,74;     /* la lampada sopra il banco */
+  --sc-carta:247,239,226;    /* il chiaro: testo e filetti */
+  --sc-ambra:232,163,61;     /* l'ottone: cornici e lampada */
   --sc-brace:226,80,58;      /* lo stato d'allarme */
-  --sc-testo:#F7EEE0;
-  --sc-medio:#CBB79E;
-  --sc-tenue:#A08C74;
-  --sc-ambra-piena:#E8944A;
-  --sc-ambra-alta:#FFB877;
+  --sc-testo:#F7EFE2;
+  --sc-medio:#CDB99F;
+  --sc-tenue:#A79070;
+  --sc-ambra-piena:#E8A33D;
+  --sc-ambra-alta:#FFC470;
   --sc-brace-piena:#E2503A;
-  --sc-fondo:#241B12;
+  --sc-fondo:#1C150F;        /* il fondo DEI PANNELLI, non della pagina */
 }
-/* L'ambiente: la STESSA foto di Serata, ma accesa invece che spenta.
-   Serata la porta a brightness(.72) e saturate(.42) — "smette di essere una foto,
-   diventa luce", dice il commento li'. Qui si fa il contrario, ed e' tutta la
-   differenza fra i due temi: il bar si vede. Restano la lampada in alto a sinistra
-   e il verde del banco nell'angolo opposto, ma sopra un fondo che non e' nero. */
-html[data-tema="bar"] .pitch-bg{
-  background-color:#241B12 !important;
+
+/* Il legno del locale: doghe verticali fatte con gradienti, nessuna immagine nuova
+   da versionare (stessa scelta di "sala-giochi" per il suo retino). Tre strati: la
+   venatura fine, le doghe larghe, e la luce della lampada che cade da sinistra. */
+html[data-tema="bar"] .pitch-bg,
+html[data-tema="bar"] body{
+  background-color:#6B4A2E !important;
   background-image:
-    radial-gradient(54% 46% at 20% -8%, rgba(232,148,74,.34), transparent 66%),
-    radial-gradient(64% 58% at 106% 108%, rgba(38,110,80,.40), transparent 60%),
-    linear-gradient(180deg, rgba(36,27,18,.62) 0%, rgba(36,27,18,.52) 42%, rgba(36,27,18,.78) 100%),
-    url('/img/backgrounds/fantabar-bg.jpg') !important;
-  filter:saturate(.85) contrast(1.06) brightness(1.02) !important;
+    radial-gradient(58% 46% at 18% -6%, rgba(255,196,112,.30), transparent 62%),
+    repeating-linear-gradient(90deg,
+      rgba(0,0,0,.16) 0 2px, rgba(0,0,0,0) 2px 7px,
+      rgba(255,220,170,.05) 7px 8px, rgba(0,0,0,0) 8px 15px),
+    repeating-linear-gradient(90deg,
+      rgba(0,0,0,.24) 0 3px, rgba(0,0,0,0) 3px 96px,
+      rgba(255,220,170,.06) 96px 99px, rgba(0,0,0,0) 99px 190px),
+    linear-gradient(180deg, #7A5636 0%, #6B4A2E 45%, #55391F 100%) !important;
+  filter:none !important;
 }
-html[data-tema="bar"] body{background:#241B12 !important}
+/* La pagina non porta la foto: il legno basta, e una foto sotto ai pannelli scuri
+   tornerebbe a fare il rumore che questo tema deve togliere. */
+html[data-tema="bar"] .pitch-bg{opacity:1 !important}
+
+/* Le cornici d'ottone: nei temi scuri i pannelli si separano con un filetto quasi
+   invisibile perche' stanno su un fondo altrettanto scuro. Qui stanno sul legno,
+   quindi la cornice puo' e deve vedersi — e' cio' che rende ogni blocco un oggetto
+   invece di una zona. */
+html[data-tema="bar"] body .card,
+html[data-tema="bar"] body .tabs-panel,
+html[data-tema="bar"] body .admin-panel,
+html[data-tema="bar"] body #mio-panel,
+html[data-tema="bar"] body .panel-budget,
+html[data-tema="bar"] body #puja-panel-slot,
+html[data-tema="bar"] body.layout-admin .asta-row-puja{
+  border:1px solid rgba(232,163,61,.42) !important;
+  box-shadow:0 10px 26px rgba(20,12,6,.55) !important;
+}
+/* La carta di puja e' il pezzo grosso: cornice piena, non un filetto. */
+html[data-tema="bar"] body #puja-panel-slot,
+html[data-tema="bar"] body.layout-admin .asta-row-puja{
+  border:2px solid rgba(232,163,61,.62) !important;
+}
+
+/* Il verde del panno dove conta: conferma, tab attiva, stati positivi. */
+html[data-tema="bar"] body .btn-success,
+html[data-tema="bar"] body #btn-conferma-assegnazione{
+  background:linear-gradient(180deg,#4CBB6E,#2E8B4E) !important;
+  color:#0E1A11 !important;border:1px solid #6FD98C !important;
+}
+html[data-tema="bar"] .tab-btn.active{
+  background:linear-gradient(180deg,#2E8B4E,#1F6437) !important;
+  color:#F3FBF4 !important;border-color:#4CBB6E !important;
+}
 
 html[data-tema="cuoio"]{
   --sc-carta:58,36,20;       /* sulla pergamena il "chiaro" diventa inchiostro di cuoio */
