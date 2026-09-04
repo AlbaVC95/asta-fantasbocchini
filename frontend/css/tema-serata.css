@@ -4676,3 +4676,50 @@ html[data-tema="serata"] .cc-commento-preview {
   padding: 8px 10px !important;
   border-radius: 6px !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   FIX COERENZA PANNELLI SERATA D'ASTA (SLATE)
+   Rimuove l'opacità marrone/nera cablata di default per i pannelli.
+   ═══════════════════════════════════════════════════════════════════ */
+html:not([data-tema]) body .panel-budget,
+html[data-tema="serata"] body .panel-budget,
+html:not([data-tema]) body #mio-panel,
+html[data-tema="serata"] body #mio-panel,
+html:not([data-tema]) body .admin-panel,
+html[data-tema="serata"] body .admin-panel,
+html:not([data-tema]) body .tabs-panel,
+html[data-tema="serata"] body .tabs-panel,
+html:not([data-tema]) body .asta-header,
+html[data-tema="serata"] body .asta-header {
+  background-color: transparent !important;
+  background-image: none !important;
+  background: linear-gradient(180deg, var(--panel-glass-1), var(--panel-glass-2)) !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+}
+
+/* Tabellone Svincolati / Storico / Rose */
+html:not([data-tema]) body .tab-content,
+html[data-tema="serata"] body .tab-content {
+  background: var(--bg-main) !important;
+}
+html:not([data-tema]) body .storico-list li,
+html[data-tema="serata"] body .storico-list li {
+  border-color: var(--border) !important;
+}
+
+/* Tab attivi */
+html:not([data-tema]) body .tabs-nav button.active,
+html[data-tema="serata"] body .tabs-nav button.active {
+  background: var(--bg-card) !important;
+  color: var(--gold) !important;
+  border-color: var(--gold) !important;
+}
+
+/* Colore testo e intestazione Admin */
+html:not([data-tema]) body .admin-badge,
+html[data-tema="serata"] body .admin-badge {
+  color: var(--gold-bright) !important;
+  border-color: var(--gold) !important;
+}
+
