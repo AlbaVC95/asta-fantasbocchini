@@ -66,7 +66,7 @@
     stopsSabbia.forEach((s, i) => { if (m.sabbia[i]) s.setAttribute('stop-color', m.sabbia[i]); });
   }
 
-  function disegna() {
+  function disegnaClessidra() {
     return `
 <svg class="clessidra" viewBox="0 0 100 152" aria-hidden="true" focusable="false">
   <defs>
@@ -148,29 +148,157 @@
 </svg>`;
   }
 
-  function avvia() {
-    const arco = document.getElementById('timer-progress');
-    const box  = document.getElementById('timer-wrap');
-    if (!arco || !box || box.querySelector('.clessidra')) return;
+  // ═══════════════════════════════════════════════════════════════
+  // IL BOCCALE (tema "Il Bar")
+  //
+  // Stessa meccanica della clessidra - si legge la frazione dall'anello e si
+  // muove un livello - ma l'oggetto cambia: qui il tempo e' una birra che
+  // finisce. Tre cose la fanno leggere come birra e non come "barra verticale
+  // ambrata": la SCHIUMA che si affloscia mentre cala (un cappello che regge
+  // fino in fondo e' finto), i MERLETTI che restano attaccati al vetro dove il
+  // livello e' gia' passato - e' il dettaglio che dice "qualcuno la sta
+  // bevendo" - e le BOLLE che salgono solo dentro al liquido.
+  //
+  // Il liquido usa il gradiente #cls-sabbia: cosi' applicaMateriale() continua
+  // a funzionare senza saperne niente, e la birra prende l'ambra del tema.
+  // ═══════════════════════════════════════════════════════════════
+  const BOC_CIMA = 32, BOC_FONDO = 130;      // livello pieno / vuoto
+  const MERLETTI = [48, 68, 88, 107];        // altezze fisse dei merletti sul vetro
 
-    box.insertAdjacentHTML('afterbegin', disegna());
-    applicaMateriale(box);
-    // Il tema puo' cambiare a caldo dal selettore (setTema()), senza reload: si osserva
-    // l'attributo su <html> e si riapplica il materiale, stessa idea del MutationObserver
-    // che gia' legge il tempo dall'anello — passivo, non tocca lo stato di gioco.
-    new MutationObserver(() => applicaMateriale(box)).observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-tema']
-    });
-    const alta   = box.querySelector('.cls-sabbia-alta');
-    const bassa  = box.querySelector('.cls-sabbia-bassa');
-    const getto  = box.querySelector('.cls-getto');
+  function disegnaBoccale() {
+    const bolle = [[34, 0], [44, 1.7], [56, .8], [63, 2.6], [39, 3.4], [52, 4.3]]
+      .map(function (b, i) {
+        return `<circle class="boc-bolla" cx="${b[0]}" cy="0" r="${1 + (i % 3) * .35}"
+                 fill="#fff" opacity=".5" style="animation-delay:${b[1]}s"/>`;
+      }).join('');
 
-    function aggiorna() {
-      // stroke-dashoffset: 0 = tempo pieno, CIRCONFERENZA = scaduto
-      const off = parseFloat(arco.style.strokeDashoffset || arco.getAttribute('stroke-dashoffset') || 0);
-      const s = Math.max(0, Math.min(1, 1 - (off / CIRCONFERENZA)));
+    const merletti = MERLETTI.map(function (y, i) {
+      return `<path class="boc-merletto" data-y="${y}" d="M25,${y} Q37,${y - 2.4} 50,${y}
+               Q63,${y + 2.2} 67,${y - 1}" fill="none" stroke="#FFF6E4"
+               stroke-opacity="0" stroke-width="${1.7 - i * .22}" stroke-linecap="round"/>`;
+    }).join('');
 
+    return `
+<svg class="clessidra clessidra--boccale" viewBox="0 0 100 142" xmlns="${NS}" aria-hidden="true">
+  <defs>
+    <linearGradient id="cls-ottone" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"   stop-color="#7A5A28"/>
+      <stop offset=".18" stop-color="#E8C489"/>
+      <stop offset=".42" stop-color="#C9974B"/>
+      <stop offset=".62" stop-color="#F0D6A4"/>
+      <stop offset=".84" stop-color="#A87C38"/>
+      <stop offset="1"   stop-color="#6B4E22"/>
+    </linearGradient>
+    <linearGradient id="cls-sabbia" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="#FFD79A"/>
+      <stop offset=".45" stop-color="#FFB04A"/>
+      <stop offset="1"   stop-color="#C4802B"/>
+    </linearGradient>
+    <linearGradient id="boc-schiuma" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="#FFFDF6"/>
+      <stop offset=".55" stop-color="#F6EAD2"/>
+      <stop offset="1"   stop-color="#DCC9A6"/>
+    </linearGradient>
+    <linearGradient id="boc-vetro" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#ffffff" stop-opacity=".20"/>
+      <stop offset=".18"  stop-color="#ffffff" stop-opacity=".05"/>
+      <stop offset=".58"  stop-color="#ffffff" stop-opacity=".02"/>
+      <stop offset=".84"  stop-color="#ffffff" stop-opacity=".09"/>
+      <stop offset="1"    stop-color="#ffffff" stop-opacity=".17"/>
+    </linearGradient>
+    <linearGradient id="boc-bordo" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"   stop-color="#ffffff" stop-opacity=".58"/>
+      <stop offset=".38" stop-color="#ffffff" stop-opacity=".12"/>
+      <stop offset=".78" stop-color="#ffffff" stop-opacity=".16"/>
+      <stop offset="1"   stop-color="#ffffff" stop-opacity=".46"/>
+    </linearGradient>
+    <filter id="boc-ombra" x="-40%" y="-20%" width="180%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity=".55"/>
+    </filter>
+
+    <!-- l'interno del vetro: tutto il liquido vive qui dentro -->
+    <path id="boc-dentro" d="M20,19 H68 L64.5,125 Q64.2,129.5 59.8,129.5 H28.2
+                             Q23.8,129.5 23.5,125 Z"/>
+    <clipPath id="boc-clip"><use href="#boc-dentro"/></clipPath>
+    <!-- le bolle salgono solo fin dove arriva la birra -->
+    <clipPath id="boc-clip-birra"><rect class="boc-area" x="0" y="0" width="100" height="142"/></clipPath>
+  </defs>
+
+  <g filter="url(#boc-ombra)">
+    <!-- il manico, dietro al corpo -->
+    <path d="M68,46 C88,46 90,56 90,68 C90,82 88,94 68,94" fill="none"
+          stroke="url(#boc-vetro)" stroke-width="9" stroke-linecap="round"/>
+    <path d="M68,46 C88,46 90,56 90,68 C90,82 88,94 68,94" fill="none"
+          stroke="url(#boc-bordo)" stroke-width="1.4" stroke-linecap="round"/>
+
+    <!-- il vetro vuoto -->
+    <path d="M16,15 H72 L68.5,127 Q68,133.5 62.5,133.5 H25.5 Q20,133.5 19.5,127 Z"
+          fill="url(#boc-vetro)"/>
+
+    <g clip-path="url(#boc-clip)">
+      <!-- la birra -->
+      <path class="boc-birra" fill="url(#cls-sabbia)" d=""/>
+      <!-- le bolle, dentro la birra -->
+      <g clip-path="url(#boc-clip-birra)">${bolle}</g>
+      <!-- la schiuma, sopra la birra -->
+      <path class="boc-schiuma" fill="url(#boc-schiuma)" d=""/>
+      <!-- i merletti restano dove il livello e' gia' passato -->
+      ${merletti}
+    </g>
+
+    <!-- profilo e riflessi, sopra al liquido -->
+    <path class="boc-profilo" d="M16,15 H72 L68.5,127 Q68,133.5 62.5,133.5 H25.5 Q20,133.5 19.5,127 Z"
+          fill="none" stroke="url(#boc-bordo)" stroke-width="1.6"/>
+    <ellipse class="boc-profilo" cx="44" cy="16" rx="28" ry="3.4" fill="none" stroke="url(#boc-bordo)" stroke-width="1.4"/>
+    <path d="M27,26 L25.5,120" fill="none" stroke="#fff" stroke-opacity=".26" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M62,30 L61,86"   fill="none" stroke="#fff" stroke-opacity=".12" stroke-width="1.6" stroke-linecap="round"/>
+  </g>
+</svg>`;
+  }
+
+  function legaBoccale(box) {
+    const birra    = box.querySelector('.boc-birra');
+    const schiuma  = box.querySelector('.boc-schiuma');
+    const area     = box.querySelector('.boc-area');
+    const merletti = box.querySelectorAll('.boc-merletto');
+
+    return function (s) {
+      // il livello scende: pieno a BOC_CIMA, asciutto a BOC_FONDO
+      const y = BOC_CIMA + (1 - s) * (BOC_FONDO - BOC_CIMA);
+      birra.setAttribute('d', `M10,${y.toFixed(1)} Q44,${(y - 1.4).toFixed(1)} 78,${y.toFixed(1)} L78,140 L10,140 Z`);
+
+      // il cappello si affloscia mentre cala: 13px da piena, un velo alla fine
+      const h = 2.5 + 11 * s;
+      const t = y - h;
+      schiuma.setAttribute('d',
+        `M10,${y.toFixed(1)} L10,${(t + 2).toFixed(1)} Q20,${(t - 1.2).toFixed(1)} 30,${(t + 1.4).toFixed(1)}` +
+        ` Q40,${(t - 2).toFixed(1)} 50,${(t + 1).toFixed(1)}` +
+        ` Q60,${(t - 1.6).toFixed(1)} 70,${(t + 1.8).toFixed(1)}` +
+        ` L78,${(t + 2.4).toFixed(1)} L78,${y.toFixed(1)} Z`);
+
+      // le bolle esistono solo sotto il pelo della birra
+      area.setAttribute('y', y.toFixed(1));
+      area.setAttribute('height', Math.max(0, 142 - y).toFixed(1));
+
+      // un merletto compare quando il livello gli e' passato sotto, e sbiadisce
+      // piano: appena scoperto e' bagnato, poi scivola giu'
+      merletti.forEach(function (m) {
+        const my = parseFloat(m.getAttribute('data-y'));
+        const scoperto = y - my;                       // px di vetro liberati sotto al merletto
+        const o = scoperto <= 0 ? 0 : Math.min(.34, scoperto / 26) * (1 - Math.min(.55, scoperto / 90));
+        m.setAttribute('stroke-opacity', o.toFixed(3));
+      });
+
+      box.style.setProperty('--sabbia', s.toFixed(4));
+    };
+  }
+
+  function legaClessidra(box) {
+    const alta  = box.querySelector('.cls-sabbia-alta');
+    const bassa = box.querySelector('.cls-sabbia-bassa');
+    const getto = box.querySelector('.cls-getto');
+
+    return function (s) {
       // sopra: il livello scende e la superficie si incava a imbuto
       const y = CIMA + (1 - s) * (GOLA_ALTA - CIMA);
       const conca = 9 * s;
@@ -181,16 +309,59 @@
       const cono = 11 * (1 - s);
       bassa.setAttribute('d', `M15,${FONDO + 2} L85,${FONDO + 2} L85,${h.toFixed(1)} Q50,${(h - cono).toFixed(1)} 15,${h.toFixed(1)} Z`);
 
-      // il getto si spegne quando non c'è più sabbia sopra
+      // il getto si spegne quando non c'e' piu' sabbia sopra
       getto.style.opacity = s > 0.005 ? '' : '0';
       box.style.setProperty('--sabbia', s.toFixed(4));
+    };
+  }
+
+  // Quale oggetto misura il tempo, tema per tema. "lavagna" e "sala-giochi" non
+  // compaiono: li' questo SVG resta nascosto da tema-serata.css e il tempo lo
+  // dice l'anello al neon / il display arcade.
+  function modelloDi(tema) {
+    return tema === 'bar' ? 'boccale' : 'clessidra';
+  }
+
+  function avvia() {
+    const arco = document.getElementById('timer-progress');
+    const box  = document.getElementById('timer-wrap');
+    if (!arco || !box || box.querySelector('.clessidra')) return;
+
+    // Il tema puo' cambiare a caldo dal selettore (setTema()), senza reload. Prima
+    // bastava ridipingere i materiali; ora due temi usano oggetti DIVERSI (clessidra
+    // e boccale), quindi al cambio si rimonta l'SVG e si riagganciano i nodi. Il
+    // modello montato si tiene qui: se non cambia, si ridipinge e basta.
+    let modello = null;
+    let disegnaLivello = function () {};
+
+    // stroke-dashoffset: 0 = tempo pieno, CIRCONFERENZA = scaduto
+    function frazione() {
+      const off = parseFloat(arco.style.strokeDashoffset || arco.getAttribute('stroke-dashoffset') || 0);
+      return Math.max(0, Math.min(1, 1 - (off / CIRCONFERENZA)));
+    }
+    function aggiorna() { disegnaLivello(frazione()); }
+
+    function monta() {
+      const m = modelloDi(document.documentElement.getAttribute('data-tema'));
+      if (m === modello) { applicaMateriale(box); return; }
+      modello = m;
+      const vecchio = box.querySelector('.clessidra');
+      if (vecchio) vecchio.remove();
+      box.insertAdjacentHTML('afterbegin', m === 'boccale' ? disegnaBoccale() : disegnaClessidra());
+      applicaMateriale(box);
+      disegnaLivello = m === 'boccale' ? legaBoccale(box) : legaClessidra(box);
+      aggiorna();
     }
 
+    monta();
+    new MutationObserver(monta).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-tema']
+    });
     new MutationObserver(aggiorna).observe(arco, {
       attributes: true,
       attributeFilter: ['style', 'stroke-dashoffset']
     });
-    aggiorna();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', avvia);

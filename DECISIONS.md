@@ -2886,3 +2886,10 @@ dell'arpeggio che sostituisce), secondo attacco a 80ms, coda esaurita a 690ms.
 
 Il criterio generale: **ogni tema porta i propri materiali**, e ora anche il proprio suono. E' la
 stessa idea di `MATERIALI` estesa di un passo — non un caso speciale del tema "bar".
+
+## Temporizzatore "Il Bar": boccale di birra (SVG animato)
+
+Per rinforzare la coesione tematica, il cronometro nel tema "bar" non è più una clessidra, ma un boccale di birra. 
+Decisioni chiave dell'animazione:
+1. **Nessun ricalcolo di stato**: Come la clessidra originale, l'SVG non gestisce nessun timer ma osserva il progresso dal cerchio del DOM esistente (che contiene il tempo vero dettato dal server). 
+2. **Urgenza visiva coerente**: Una birra rossa è una birra rovinata. Negli ultimi 3 secondi di urgenza si è scelto di mantenere il colore ambrato del liquido, alterando invece il riflesso del vetro (alone rosso/neon) e accelerando le bolle, indicando l'urgenza senza rompere il realismo materiale.

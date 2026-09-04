@@ -402,6 +402,41 @@ html[data-tema="bar"] body #puja-panel-slot .clessidra{
   filter:drop-shadow(0 7px 16px rgba(0,0,0,.55)) !important;
 }
 
+/* -- IL BOCCALE: LE BOLLE E GLI ULTIMI SECONDI ------------------
+   In questo tema il tempo non e' una clessidra ma una birra che finisce
+   (clessidra.js, disegnaBoccale). Livello, schiuma e merletti li muove il JS
+   dall'anello; qui restano le due cose che sono animazione pura, non stato.
+
+   Le bolle salgono in continuo: partono sotto e vengono ritagliate al pelo
+   della birra (clip aggiornato dal JS), quindi spariscono da sole in
+   superficie senza che nessuno le debba spegnere. */
+html[data-tema="bar"] .clessidra--boccale .boc-bolla{
+  animation:boc-bolle 5.4s linear infinite;
+}
+@keyframes boc-bolle{
+  0%   {transform:translateY(138px);opacity:0}
+  12%  {opacity:.55}
+  88%  {opacity:.45}
+  100% {transform:translateY(26px);opacity:0}
+}
+
+/* Ultimi secondi: la birra NON diventa rossa (una birra rossa e' solo una birra
+   sbagliata, non un allarme). Si arrossano il vetro e l'alone - il bicchiere
+   sotto la luce che vira, non il liquido - e le bolle si agitano.
+   Serve l'id nel selettore perche' la drop-shadow del tema, poco sopra, ne ha
+   uno: senza, l'ombra normale vincerebbe su quella d'allarme. */
+html[data-tema="bar"] body #puja-panel-slot .timer-ring-container.urgent .clessidra,
+html[data-tema="bar"] body.layout-admin .asta-row-puja .timer-ring-container.urgent .clessidra{
+  filter:drop-shadow(0 7px 16px rgba(0,0,0,.55))
+         drop-shadow(0 0 10px rgba(var(--sc-brace),.62)) !important;
+}
+html[data-tema="bar"] .timer-ring-container.urgent .clessidra--boccale .boc-profilo{
+  stroke:rgba(var(--sc-brace),.95) !important;
+}
+html[data-tema="bar"] .timer-ring-container.urgent .clessidra--boccale .boc-bolla{
+  animation-duration:2.1s !important;
+}
+
 /* -- IL RITRATTO: UNA POLAROID APPUNTATA ------------------------
    La foto sul muro di un bar non e' incorniciata: e' appuntata, storta, con la
    striscia di carta sotto rimasta vuota. Tre dettagli la reggono - la carta
