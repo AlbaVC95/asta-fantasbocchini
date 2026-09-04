@@ -3396,15 +3396,15 @@ body:has(#btn-estrai:hover) .chiamata-card:has(.chiamata-stato) {
   transition: all 0.2s ease-out;
 }
 
-/* 4. Fix trasparenza chiamata-card (Renderla visibile come un vero pannello) */
+/* 4. Chiamata-card dentro la puja: COMPLETAMENTE TRASPARENTE per evitare i due toni di blu */
 html:not([data-tema]) .puja-panel-slot .chiamata-card,
 html[data-tema="serata"] .puja-panel-slot .chiamata-card,
 html:not([data-tema]) body.layout-admin .asta-row-puja .chiamata-card,
 html[data-tema="serata"] body.layout-admin .asta-row-puja .chiamata-card {
-  background: var(--bg-main) !important;
-  border: 1px solid var(--border) !important;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
-  border-radius: 12px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 /* 5. Migliorare il box del commento per renderlo leggibile */
@@ -3414,19 +3414,5 @@ html[data-tema="serata"] body.layout-admin .asta-row-puja .chiamata-card {
   color: var(--text-secondary) !important;
   padding: 8px 10px !important;
   border-radius: 6px !important;
-}
-
-/* Fix per forzare la visibilità della palette Base (sovrascrive l'immagine di background che impastava i colori) */
-html:not([data-tema]) .pitch-bg,
-html[data-tema="serata"] .pitch-bg {
-  background-image: 
-    radial-gradient(ellipse at 50% 0%, rgba(30,41,59,0.5) 0%, transparent 60%),
-    linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-abyss) 100%) !important;
-  filter: none !important;
-}
-
-html:not([data-tema]) body,
-html[data-tema="serata"] body {
-  background: var(--bg-deep) !important;
 }
 

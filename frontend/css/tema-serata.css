@@ -4665,28 +4665,29 @@ html[data-tema="bar"] .ant-slot3d-shadow {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ██████████████  SERATA D'ASTA — HIGH-END LUXURY GALA EDITION  ██████████████
+   ██████████████  SERATA D'ASTA — ULTRA GALA EDITION (UNIFICATA & RICCA)  ██████
    ═══════════════════════════════════════════════════════════════════════════
-   Filosofia Estetica (Awwwards / Linear / Sotheby's Digital):
-   - DOPPIO BISELLO D'ORO (Double-Bezel): bordi a filo di rasoio dorati con luce radente
-   - ILLUMINAZIONE TEATRALE: cono di luce ambra cenitale che accende il giocatore e l'asta
-   - SCOUTING CARD ELEGANTE: commento tecnico incassato con filetto ambra e backdrop blur
-   - BOTTONI LINGOTTO 3D: pulsanti tattili con gradiente oro fuso e micro-rilievo bianco
-   - TABELLONE & RICERCA LUXURY: pillole satinate, glow ambra sulle selezioni attive
-   - ZERO VIOLA: fondo Deep OLED Canvas (#070a12) ad altissimo contrasto e nitidezza
+   Obiettivi:
+   1. UNICO TONO DI BLU SULLA CARTA: Chiamata-card trasparente al 100%,
+      nessun doppio rettangolo dentro. Una sola superficie fluida e maestosa.
+   2. PIÙ DECORAZIONI D'AUTORE:
+      - Beacon di trasmissione Live con luce pulsante (CHIAMATA LIVE)
+      - Badge FantaLab Scouting in stile micro-chip dorato (Jolly, Fascia, Quota)
+      - Stelle di titolarità in oro brillante puro
+      - Filetto divisorio di luce ambra tra giocatore e timer
+      - Avatar trofeo con doppio anello d'oro e luce radente
+      - Bottoni lingotto d'oro con riflesso ad onda
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ─── BODY & CANVAS NOTTURNO ─────────────────────────────────────────────── */
+/* ─── BODY & ATMOSFERA NOTTURNA ──────────────────────────────────────────── */
 html[data-tema="serata"] body,
 html:not([data-tema]) body {
   background-color: #060910 !important;
   background-image:
-    /* Luce calda dall'alto: illumina il palco centrale dell'asta */
+    /* Riflettore centrale ambra dall'alto */
     radial-gradient(ellipse 85% 50% at 50% -5%, rgba(251,191,36,0.15) 0%, transparent 68%),
-    /* Bagliore d'atmosfera ambrata sul fondo della sala */
+    /* Bagliore d'atmosfera sul tabellone */
     radial-gradient(ellipse 65% 40% at 50% 105%, rgba(245,158,11,0.08) 0%, transparent 60%),
-    /* Micro-trama satinata ad anelli concentrici */
-    radial-gradient(circle at 50% 40%, rgba(255,255,255,0.015) 0%, transparent 70%),
     linear-gradient(180deg, #080c16 0%, #05070d 100%) !important;
   background-attachment: fixed !important;
 }
@@ -4700,7 +4701,7 @@ html:not([data-tema]) .pitch-bg {
   filter: none !important;
 }
 
-/* ─── HEADER: CORNICE DI PRESTIGIO ───────────────────────────────────────── */
+/* ─── HEADER DI PRESTIGIO ────────────────────────────────────────────────── */
 html[data-tema="serata"] body .asta-header,
 html:not([data-tema]) body .asta-header {
   background: rgba(7, 10, 18, 0.94) !important;
@@ -4723,7 +4724,7 @@ html:not([data-tema]) body .asta-header-title {
   letter-spacing: -0.02em !important;
 }
 
-/* ─── PANNELLI SUPERIORI: DOPPIO BISELLO SOTTILE D'ORO ───────────────────── */
+/* ─── PANNELLI SUPERIORI CON DOPPIO BISELLO D'ORO ────────────────────────── */
 html[data-tema="serata"] body .panel-budget,
 html:not([data-tema]) body .panel-budget,
 html[data-tema="serata"] body #mio-panel,
@@ -4735,7 +4736,7 @@ html:not([data-tema]) body .card {
   position: relative !important;
   background:
     radial-gradient(ellipse 85% 55% at 50% 0%, rgba(251,191,36,0.07) 0%, transparent 65%),
-    linear-gradient(165deg, rgba(17,25,41,0.98) 0%, rgba(10,14,24,0.99) 100%) !important;
+    linear-gradient(165deg, rgba(16,24,40,0.98) 0%, rgba(10,14,24,0.99) 100%) !important;
   border: 1px solid rgba(251,191,36,0.28) !important;
   border-top: 2.5px solid #F59E0B !important;
   border-radius: 12px !important;
@@ -4745,7 +4746,7 @@ html:not([data-tema]) body .card {
     0 0 20px rgba(251,191,36,0.06) !important;
 }
 
-/* Titoli delle sezioni: tipografia dorata cesellata */
+/* Titoli delle sezioni: oro cesellato */
 html[data-tema="serata"] body .panel-budget-hdr,
 html:not([data-tema]) body .panel-budget-hdr,
 html[data-tema="serata"] body .mio-panel-header,
@@ -4759,19 +4760,17 @@ html:not([data-tema]) body .card-title {
   font-size: 0.70rem !important;
 }
 
-/* ─── IL PALCO CENTRALE D'ASTA (THE LUXURY STAGE) ────────────────────────── */
+/* ─── IL PALCO CENTRALE D'ASTA: UNICO TONO CONTINUO DI BLU ───────────────── */
 html[data-tema="serata"] body #puja-panel-slot,
 html:not([data-tema]) body #puja-panel-slot,
 html[data-tema="serata"] body.layout-admin .asta-row-puja,
 html:not([data-tema]) body.layout-admin .asta-row-puja {
   position: relative !important;
+  /* UNICO TONO continuo e regale su tutta la superficie */
   background:
-    /* Fascio luminoso ambra caldo al centro che bagna il giocatore */
-    radial-gradient(ellipse 80% 65% at 50% -20%, rgba(251,191,36,0.20) 0%, transparent 70%),
-    /* Aureola sul contatore e timer a destra */
-    radial-gradient(ellipse 55% 55% at 90% 50%, rgba(245,158,11,0.14) 0%, transparent 60%),
-    /* Superficie blu titanio scuro */
-    linear-gradient(155deg, rgba(20,29,48,0.99) 0%, rgba(12,18,31,0.99) 50%, rgba(16,24,39,0.99) 100%) !important;
+    radial-gradient(ellipse 80% 65% at 50% -20%, rgba(251,191,36,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 55% 55% at 90% 50%, rgba(245,158,11,0.12) 0%, transparent 60%),
+    linear-gradient(155deg, #121c2e 0%, #0d1524 50%, #10192b 100%) !important;
   border: 1.5px solid rgba(251,191,36,0.50) !important;
   border-top: 3px solid #FFB04A !important;
   border-radius: 16px !important;
@@ -4779,6 +4778,20 @@ html:not([data-tema]) body.layout-admin .asta-row-puja {
     0 28px 70px rgba(0,0,0,0.70),
     0 1px 0 rgba(255,245,190,0.30) inset,
     0 0 45px rgba(251,191,36,0.14) !important;
+}
+
+/* LA CARTA INTERNA DEVE ESSERE 100% TRASPARENTE: ZERO DOPPI TONI DI BLU */
+html[data-tema="serata"] .puja-panel-slot .chiamata-card,
+html:not([data-tema]) .puja-panel-slot .chiamata-card,
+html[data-tema="serata"] body.layout-admin .asta-row-puja .chiamata-card,
+html:not([data-tema]) body.layout-admin .asta-row-puja .chiamata-card,
+html body.layout-admin .asta-row-puja .chiamata-card {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 /* La Miccia Dorata animata di gala */
@@ -4831,6 +4844,16 @@ html:not([data-tema]) body.layout-admin .asta-row-puja .cc-avatar {
   overflow: hidden !important;
 }
 
+/* Badge Ruolo (POR, DC, CC, ATT...): pillola gioiello */
+html[data-tema="serata"] body .badge-ruolo,
+html:not([data-tema]) body .badge-ruolo {
+  border-radius: 6px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35), 0 0 10px rgba(255,255,255,0.15) inset !important;
+  padding: 3px 8px !important;
+}
+
 /* Nome del giocatore: bianco scultoreo brillante */
 html[data-tema="serata"] body .cc-nome,
 html:not([data-tema]) body .cc-nome {
@@ -4843,17 +4866,45 @@ html:not([data-tema]) body .cc-nome {
   font-weight: 900 !important;
 }
 
+/* Fascia & Squadra: pillole dark-glass con bordo ambra sottile */
+html[data-tema="serata"] body .cc-meta,
+html:not([data-tema]) body .cc-meta {
+  gap: 8px !important;
+  align-items: center !important;
+}
+
+html[data-tema="serata"] body .cc-squadra,
+html:not([data-tema]) body .cc-squadra {
+  background: rgba(251,191,36,0.12) !important;
+  border: 1px solid rgba(251,191,36,0.35) !important;
+  color: #FCD34D !important;
+  border-radius: 5px !important;
+  padding: 2px 8px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+}
+
 /* Scouting card (Commento FantaLab): box d'autore incassato con filetto ambra */
 html[data-tema="serata"] .cc-commento-preview,
 html:not([data-tema]) .cc-commento-preview {
   background: rgba(8, 13, 22, 0.65) !important;
   border: 1px solid rgba(251, 191, 36, 0.25) !important;
-  border-left: 3px solid #FFB04A !important;
+  border-left: 3.5px solid #FFB04A !important;
   border-radius: 8px !important;
   padding: 10px 14px !important;
   color: #e2e8f0 !important;
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.3) !important;
   backdrop-filter: blur(8px) !important;
+}
+
+/* Stelle di titolarità in oro vivo con glow */
+html[data-tema="serata"] body .cc-titolarita,
+html:not([data-tema]) body .cc-titolarita,
+html[data-tema="serata"] body .titolarita-stelle,
+html:not([data-tema]) body .titolarita-stelle {
+  color: #FFB04A !important;
+  text-shadow: 0 0 10px rgba(251,191,36,0.6) !important;
+  font-weight: 800 !important;
 }
 
 /* Timer / Clessidra: alone circolare d'oro */
@@ -4979,17 +5030,6 @@ html:not([data-tema]) body #puja-panel-slot .btn-quick:hover {
   border-color: #FFB04A !important;
   box-shadow: 0 0 14px rgba(251,191,36,0.45) !important;
   transform: scale(1.03) !important;
-}
-
-/* ─── BARRA DI RICERCA E FILTRI DELLA GRIGLIA ────────────────────────────── */
-html[data-tema="serata"] body .liberi-toolbar,
-html[data-tema="serata"] body .search-box,
-html:not([data-tema]) body .liberi-toolbar,
-html:not([data-tema]) body .search-box {
-  background: rgba(12,18,30,0.85) !important;
-  border: 1px solid rgba(251,191,36,0.25) !important;
-  border-radius: 8px !important;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.35) !important;
 }
 
 /* ─── TABS PANEL: ORO SATINATO SULLE SEZIONI ATTIVE ──────────────────────── */
@@ -5196,7 +5236,6 @@ html:not([data-tema]) body.puja-urgente #puja-panel-slot .btn-rilancia {
   border-bottom-color: #7f1d1d !important;
   box-shadow: 0 8px 32px rgba(220,38,38,0.70) !important;
 }
-
 /* ═══════════════════════════════════════════════════════════════════════════
    ████████████████  IL BAR — DETTAGLI SELEZIONATI IN LEGNO NOBILE  ██████████
    ═══════════════════════════════════════════════════════════════════════════
