@@ -3241,3 +3241,74 @@ body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-pu
   width: 100%; /* Forza l'andata a capo sotto al badge */
   justify-content: space-between;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MIGLIORAMENTI PREMIUM "SERATA D'ASTA" (Richiesta Utente)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* 1. Anteprima Pitch: Da Verde Neon Tron a Verde Smeraldo Scuro Elegante */
+html:not([data-tema]) .ant-pitch.ant-pitch3d,
+html[data-tema="base"] .ant-pitch.ant-pitch3d {
+  background: linear-gradient(135deg, #091C14 0%, #06120D 100%) !important;
+  border-color: rgba(255, 176, 74, 0.15) !important;
+  box-shadow: 0 0 30px rgba(0,0,0,0.5), inset 0 0 50px rgba(255,176,74,0.03) !important;
+}
+html:not([data-tema]) .ant-pitch.ant-pitch3d::before,
+html[data-tema="base"] .ant-pitch.ant-pitch3d::before {
+  border-color: rgba(255,176,74,0.1) !important;
+  background: rgba(255,176,74,0.02) !important;
+}
+html:not([data-tema]) .ant-field-markings rect,
+html:not([data-tema]) .ant-field-markings path,
+html:not([data-tema]) .ant-field-markings circle,
+html[data-tema="base"] .ant-field-markings rect,
+html[data-tema="base"] .ant-field-markings path,
+html[data-tema="base"] .ant-field-markings circle {
+  stroke: rgba(255, 176, 74, 0.35) !important;
+  filter: drop-shadow(0 0 2px rgba(255,176,74,0.2)) !important;
+}
+html:not([data-tema]) .ant-slot3d-empty,
+html[data-tema="base"] .ant-slot3d-empty {
+  border-color: rgba(255, 176, 74, 0.25) !important;
+  background: rgba(10, 20, 15, 0.6) !important;
+  box-shadow: inset 0 0 10px rgba(255, 176, 74, 0.05) !important;
+}
+html:not([data-tema]) .ant-slot3d:hover .ant-slot3d-empty,
+html[data-tema="base"] .ant-slot3d:hover .ant-slot3d-empty {
+  border-color: var(--gold) !important;
+}
+
+/* 2. Watermark sul pannello vuoto "In attesa..." */
+.chiamata-card:has(.chiamata-stato) {
+  background-image: 
+    radial-gradient(circle at center, rgba(255, 176, 74, 0.03) 0%, transparent 65%),
+    repeating-linear-gradient(45deg, transparent, transparent 15px, rgba(255,255,255,0.015) 15px, rgba(255,255,255,0.015) 30px) !important;
+}
+.chiamata-stato {
+  color: var(--text-muted) !important;
+  font-size: 1.15rem !important;
+  letter-spacing: 0.05em;
+}
+
+/* 3. Stile Zebra per la lista Svincolati e Storico per migliorare la leggibilità orizzontale */
+.liberi-list li:nth-child(even),
+.storico-list li:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+.liberi-list li:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* 4. Ammorbidire le etichette morse (Fasce FantaLab) per non farle "urlare" troppo */
+.l-strategia-badge {
+  filter: saturate(0.6) brightness(0.85);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* 5. Pulsanti principali più invitanti (Lieve glow dorato/verde) */
+.btn-success {
+  box-shadow: 0 4px 15px rgba(0, 200, 83, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+#btn-estrai {
+  box-shadow: 0 4px 15px rgba(255, 176, 74, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}

@@ -2,16 +2,17 @@
 
 ## Stato attuale
 
-La modalità base (Tema "Serata d'Asta") è stata bilanciata cromaticamente in risposta ai feedback sull'eccessiva scurezza e "piattezza" visiva che rendeva difficile distinguere le aree.
+Applicati ulteriori miglioramenti estetici e funzionali al tema base ("Serata d'Asta") per risolverne le criticità di leggibilità e l'incoerenza visiva dell'Anteprima.
 
 ## Cosa è cambiato
 
 - **`frontend/css/style.css`**: 
-  - Sostituiti i neri/marroni caldi quasi assoluti del tema base con una palette più profonda in tonalità slate/blu scuro (`--bg-abyss:#080A0D`, `--bg-deep:#0E1218`).
-  - Aumentata significativamente la luminosità dei pannelli di sfondo (`--panel-glass-1`, `--panel-glass-2`, `--bg-card`, ecc.), distaccandoli nettamente dal colore di sfondo principale per delineare meglio le interfacce e i raggruppamenti logici.
-  - Incrementata leggermente l'opacità dei bordi (`--border`) per aiutare a definire visivamente i container.
-  - Le modifiche rendono il tema "Serata d'Asta" più accessibile, leggibile e meno "uniforme".
-- **`frontend/index.html`**: Cache-busting aggiornato a `20260904162600`.
+  - **Anteprima**: Sostituito il verde neon "cyperpunk" del campo 3D con un elegante verde smeraldo molto scuro con linee tattiche e box dorati, ora perfettamente integrato con il tema base.
+  - **Watermark**: Aggiunto un leggero pattern a linee diagonali e un bagliore radiale al box centrale ("In attesa di estrazione...") per riempire il vuoto in modo elegante quando non c'è nessun giocatore.
+  - **Liste "Zebra"**: Applicato `nth-child(even)` alle liste Svincolati e Storico per alternare finemente il colore di fondo delle righe, migliorando enormemente la leggibilità orizzontale.
+  - **Badge FantaLab**: Ammorbidita la saturazione (`filter: saturate(0.6) brightness(0.85)`) delle etichette "SUPER TOP", "TOP", ecc., per evitare che spicchino eccessivamente e rubino l'attenzione.
+  - **Bottoni**: Aggiunto un leggerissimo "glow" (box-shadow) ai bottoni principali (Estrai, Conferma) per renderli più tridimensionali e invitanti.
+- **`frontend/index.html`**: Cache-busting aggiornato a `20260904163300`.
 
 ## Pendenze
 
