@@ -325,7 +325,8 @@ html[data-tema="lavagna"] .chiamata-card{
 .slot-chip span{font-weight:700;color:var(--primary)}.slot-chip.esaurito span{color:var(--danger)}
 .slot-sub{font-size:.68rem;color:var(--text-muted)}#mio-slot-counter .slot-sub{font-size:.56rem;line-height:1.1}.mio-panel-actions{display:flex;flex-direction:row;gap:6px;margin-top:0}.mio-panel-actions .btn{flex:1;min-width:0;padding:5px 8px;font-size:.72rem}
 .admin-panel{background:var(--bg-glass);backdrop-filter:blur(12px);border:1px solid rgba(255,184,0,.25);border-radius:14px;padding:10px 12px;box-shadow:0 12px 28px rgba(0,0,0,.35),0 0 40px rgba(255,184,0,.05),inset 0 1px 0 rgba(255,255,255,.05)}
-.admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.admin-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px}
+.admin-header-actions{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
 .admin-badge{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,rgba(255,184,0,.15),rgba(255,184,0,.05));border:1px solid rgba(255,184,0,.3);border-radius:7px;padding:3px 8px;font-size:.7rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.05em}
 .admin-actions{display:flex;flex-direction:column;gap:6px}
 .admin-conferma-box{background:rgba(255,184,0,.05);border:1px solid rgba(255,184,0,.2);border-radius:10px;padding:10px;margin-top:6px}
@@ -3227,4 +3228,16 @@ body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-pu
   font-size: 0.68rem;
   line-height: 1;
   white-space: nowrap;
+}
+
+/* Ottimizza i bottoni header Admin quando Anteprima stringe il pannello */
+.asta-live-layout:has(#tab-anteprima.drawer-open) .admin-header-actions .btn {
+  padding: 4px 6px;
+  font-size: 0.65rem;
+  flex: 1; /* Si allargano per riempire la riga se vanno a capo */
+  text-align: center;
+}
+.asta-live-layout:has(#tab-anteprima.drawer-open) .admin-header-actions {
+  width: 100%; /* Forza l'andata a capo sotto al badge */
+  justify-content: space-between;
 }

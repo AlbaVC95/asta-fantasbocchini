@@ -2,16 +2,15 @@
 
 ## Stato attuale
 
-La modalità "Anteprima" del tema "Il Bar" (La Gazzetta) è stata raffinata pesantemente per sembrare un vero ritaglio di giornale e non un "ibrido" con elementi al neon/3D.
+Risolto il problema di layout dei bottoni superiori del pannello Admin ("Bottoni", "Backup", "Termina") che, impilandosi su 3 righe quando l'Anteprima era aperta, consumavano tutto lo spazio verticale e spingevano fuori i bottoni in basso.
 
 ## Cosa è cambiato
 
-- **`frontend/css/tema-serata.css`**: 
-  - La carta rosa ora ha una macchia di caffè iper-realistica (con doppio gradiente radiale scuro sui bordi) nell'angolo in alto a sinistra.
-  - Aggiunto un margine bianco interno falso per emulare un ritaglio di stampa.
-  - Le "bolle" dei ruoli (P, D, C, A) non sono più cerchi colorati da videogioco: sono testo stampato (font serif, italic, colore scuro), per integrarsi perfettamente con lo stile inchiostro del campo.
-  - Le carte dei giocatori (assegnati) e gli slot vuoti ora sono "piatti" (`transform: none !important`), annullando l'effetto "ologramma 3D in piedi" usato negli altri temi. Ora sembrano inchiostro o figurine incollate direttamente sulla carta del quotidiano.
-- **`frontend/index.html`**: Cache-busting aggiornato a `20260904143800`.
+- **`frontend/css/style.css`**: 
+  - Il contenitore `.admin-header` ora usa `flex-wrap: wrap`.
+  - Il gruppo `.admin-header-actions` usa ora `display: flex`.
+  - Quando l'Anteprima è aperta, il gruppo `.admin-header-actions` viene forzato a `width: 100%` per andare a capo sotto il badge Admin, e i 3 pulsanti al suo interno prendono `flex: 1` con un padding ridotto. In questo modo si affiancano tutti e 3 su una singola riga compatta, risparmiando 2 righe di altezza preziosa.
+- **`frontend/index.html`**: Cache-busting aggiornato a `20260904144200`.
 
 ## Pendenze
 
