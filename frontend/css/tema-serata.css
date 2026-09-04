@@ -5149,20 +5149,21 @@ html[data-tema="serata"] body #puja-panel-slot .btn-rilancia,
 html:not([data-tema]) body #puja-panel-slot .btn-rilancia,
 html[data-tema="serata"] body .asta-row-puja .btn-rilancia,
 html:not([data-tema]) body .asta-row-puja .btn-rilancia {
-  background: linear-gradient(135deg, #FFF8EC 0%, #F5C672 22%, #D98818 68%, #B45E06 100%) !important;
+  background: linear-gradient(135deg, #FFF9EB 0%, #F5CF6B 25%, #E2A726 62%, #B87B05 100%) !important;
   color: #140A02 !important;
-  border: 1px solid rgba(255, 235, 180, 0.60) !important;
-  border-bottom: 3px solid #78350f !important;
-  border-radius: 4px !important;
+  border: 1px solid rgba(255, 235, 180, 0.70) !important;
+  border-bottom: 2.5px solid #78350f !important;
+  border-radius: 2px !important;
   box-shadow:
     0 8px 24px rgba(0,0,0,0.50),
-    0 1px 0 rgba(255,255,255,0.75) inset,
+    0 1px 0 rgba(255,255,255,0.85) inset,
     0 0 20px rgba(251,191,36,0.25) !important;
-  font-family: 'Archivo', sans-serif !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.14em !important;
-  text-transform: uppercase !important;
-  text-shadow: 0 1px 1px rgba(255,255,255,0.45) !important;
+  font-family: 'Instrument Serif', Georgia, serif !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: capitalize !important;
+  text-shadow: 0 1px 1px rgba(255,255,255,0.50) !important;
   transition: all 0.2s cubic-bezier(0.32,0.72,0,1) !important;
   display: flex !important;
   align-items: center !important;
@@ -5171,7 +5172,7 @@ html:not([data-tema]) body .asta-row-puja .btn-rilancia {
   height: 56px !important;
   width: 100% !important;
   margin: 0 !important;
-  font-size: 1.08rem !important;
+  font-size: 1.85rem !important;
 }
 
 html[data-tema="serata"] body #puja-panel-slot .btn-rilancia::after,
@@ -5331,15 +5332,16 @@ html:not([data-tema]) body .asta-row-puja .btn-manuale {
   flex: 0 0 auto !important;
   height: 38px !important;
   padding: 0 18px !important;
-  border-radius: 3px !important;
+  border-radius: 2px !important;
   background: rgba(255,255,255,0.04) !important;
   color: #FCD34D !important;
   border: 1px solid rgba(251,191,36,0.20) !important;
-  font-family: 'Archivo', sans-serif !important;
-  font-weight: 700 !important;
-  font-size: 0.78rem !important;
-  letter-spacing: 0.14em !important;
-  text-transform: uppercase !important;
+  font-family: 'Instrument Serif', Georgia, serif !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+  font-size: 1.15rem !important;
+  letter-spacing: 0.04em !important;
+  text-transform: capitalize !important;
   cursor: pointer !important;
   display: flex !important;
   align-items: center !important;

@@ -124,6 +124,8 @@ app.use(express.static(path.join(__dirname, '..', 'frontend'), {
     // HTML/JS/CSS usano cache-busting (?v=timestamp) o vanno revalidati ad ogni deploy.
     if (/\.(png|jpe?g|gif|svg|webp|ico|woff2?|ttf|eot)$/i.test(filePath)) {
       res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+    } else if (/\.(html)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
   }
 }));
