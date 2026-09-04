@@ -2712,3 +2712,37 @@ elenco.
 Tre passate di lavoro sono state spese a dedurre a occhio una struttura che dieci righe di
 campionamento hanno chiarito in un colpo — e che avevo dedotto sbagliata due volte su due, in
 direzioni opposte. Un colore stimato guardando uno schermo non e' un dato, e' un'ipotesi.
+
+
+## "Il Bar": cosa e' identico al disegno e cosa non lo sara' mai
+
+L'utente ha detto "non e' ancora identico". Invece di indovinare ancora, si e' messo il disegno e
+il render fianco a fianco e si sono confrontati i colori **uno per uno**, campionando l'immagine e
+leggendo il `getComputedStyle` del render. Risultato:
+
+```
+                disegno    render
+pannello        #422C1E    #422C1E   ✓
+riquadro        #222222    #222222   ✓
+carta di puja   #2C2C2C    #2C2C2C   ✓
+legno           #180E08    #180E08   ✓
+bordo ottone    #A6927C    #A6927C   ✓
+verde pieno     #124E2A    #124E2A   ✓
+badge difesa    #239B5A    #3FBF6F   ✗  → corretto
+badge centroc.  #4164BE    #3FBF6F   ✗  → corretto
+```
+
+L'unico scarto vero erano **i badge dei ruoli**, che prendevano il set di tinte generale aggiunto
+per tutti i temi (mezzo tono, scelto per reggere sia sul nero sia sulla panna). Nel Bar ora usano
+le tinte campionate. Si sono tenuti i **cinque gruppi** dell'app (`_roseRowRoleClass`) e non i due
+che il disegno sembra usare: l'immagine e' generata e su quel punto non e' coerente — mostra `D`
+azzurro e `DC` verde, che nello schema dell'app sono lo stesso gruppo. Ricalcare un'incoerenza
+dell'immagine avrebbe rotto la codifica che l'app usa anche nelle righe di Rose e sulle carte 3D.
+
+**Cosa resta diverso, e perche' non e' il tema.** Il disegno e' un'immagine generata: contiene
+etichette che non esistono ("REPLIGBO EQUARES", "GRIGLLA P/A", "Apria parle" sono testo inventato),
+proporzioni che non corrispondono a nessun componente vero, e una disposizione che assomiglia
+all'app senza esserlo. Gli scarti che restano sono di impaginazione — spaziature, dimensioni del
+carattere, l'altezza della carta di puja — e appartengono al markup dell'app, non alla paletta.
+Applicato all'app VERA quel markup c'e' gia' ed e' giusto: il confronto va rifatto li', non su una
+maquette.

@@ -172,6 +172,42 @@ html[data-tema="bar"] body .storico-filtro-btn.active{
   color:var(--sc-ambra-alta) !important;
 }
 
+/* ── I BADGE DI RUOLO, nelle tinte del disegno ─────────────────
+   La regola generale dei ruoli (piu' su nel foglio) usa un set di tinte di mezzo
+   tono, scelto per reggere sia sul nero sia sulla panna degli altri temi. Qui il
+   disegno ha le sue, campionate: verde #239B5A e azzurro #4164BE. Si tengono i
+   CINQUE GRUPPI dell'app (_roseRowRoleClass) — non li si riduce a due come sembra
+   fare il disegno, che e' generato e non e' coerente su questo — ma si ritinge
+   ciascuno nella famiglia giusta. */
+html[data-tema="bar"] body #puja-panel-slot .badge-ruolo.r-Por,
+html[data-tema="bar"] body #puja-panel-slot .badge-ruolo.r-P,
+html[data-tema="bar"] body .badge-ruolo.r-Por,
+html[data-tema="bar"] body .badge-ruolo.r-P{--r-fondo:#E4961E;--r-testo:#1A1008;background:#E4961E !important;color:#1A1008 !important}
+html[data-tema="bar"] body #puja-panel-slot .badge-ruolo.r-Dc,
+html[data-tema="bar"] body #puja-panel-slot .badge-ruolo.r-Ds,
+html[data-tema="bar"] body #puja-panel-slot .badge-ruolo.r-Dd,
+html[data-tema="bar"] body #puja-panel-slot .badge-ruolo.r-D,
+html[data-tema="bar"] body #puja-panel-slot .badge-ruolo.r-B,
+html[data-tema="bar"] body .badge-ruolo.r-Dc,
+html[data-tema="bar"] body .badge-ruolo.r-Ds,
+html[data-tema="bar"] body .badge-ruolo.r-Dd,
+html[data-tema="bar"] body .badge-ruolo.r-D,
+html[data-tema="bar"] body .badge-ruolo.r-B{--r-fondo:#239B5A;--r-testo:#F2FBF4;background:#239B5A !important;color:#F2FBF4 !important}
+html[data-tema="bar"] body #puja-panel-slot .badge-ruolo.r-M,
+html[data-tema="bar"] body #puja-panel-slot .badge-ruolo.r-C,
+html[data-tema="bar"] body #puja-panel-slot .badge-ruolo.r-E,
+html[data-tema="bar"] body .badge-ruolo.r-M,
+html[data-tema="bar"] body .badge-ruolo.r-C,
+html[data-tema="bar"] body .badge-ruolo.r-E{--r-fondo:#4164BE;--r-testo:#F0F4FF;background:#4164BE !important;color:#F0F4FF !important}
+html[data-tema="bar"] body #puja-panel-slot .badge-ruolo.r-T,
+html[data-tema="bar"] body #puja-panel-slot .badge-ruolo.r-W,
+html[data-tema="bar"] body .badge-ruolo.r-T,
+html[data-tema="bar"] body .badge-ruolo.r-W{--r-fondo:#7A5BC4;--r-testo:#F5F0FF;background:#7A5BC4 !important;color:#F5F0FF !important}
+html[data-tema="bar"] body #puja-panel-slot .badge-ruolo.r-A,
+html[data-tema="bar"] body #puja-panel-slot .badge-ruolo.r-Pc,
+html[data-tema="bar"] body .badge-ruolo.r-A,
+html[data-tema="bar"] body .badge-ruolo.r-Pc{--r-fondo:#C4523E;--r-testo:#FFF0EC;background:#C4523E !important;color:#FFF0EC !important}
+
 html[data-tema="cuoio"]{
   --sc-carta:58,36,20;       /* sulla pergamena il "chiaro" diventa inchiostro di cuoio */
   --sc-ambra:107,68,35;      /* il cuoio del banco, non piu' l'ottone */
