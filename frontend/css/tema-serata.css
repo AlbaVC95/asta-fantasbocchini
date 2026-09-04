@@ -479,6 +479,12 @@ html[data-tema="bar"] body.layout-admin .asta-row-puja .cc-avatar{
   box-shadow:0 14px 26px rgba(0,0,0,.55), 0 3px 7px rgba(0,0,0,.45),
              inset 0 0 0 1px rgba(120,100,72,.22) !important;
 }
+
+/* Fix positioning for Admin view */
+html[data-tema="bar"] body.layout-admin .asta-row-puja .cc-avatar{
+  transform:rotate(-1.6deg) !important;
+}
+
 /* la stampa: sbiadita e calda, non il bianco e nero degli altri temi */
 html[data-tema="bar"] body #puja-panel-slot .cc-avatar-img,
 html[data-tema="bar"] body.layout-admin .asta-row-puja .cc-avatar-img{
