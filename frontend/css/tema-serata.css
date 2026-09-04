@@ -1375,23 +1375,11 @@ html body.layout-admin .asta-row-puja .timer-number{
 html body.layout-admin .asta-row-puja .rilancio-box{
   background:none !important;border:none !important;box-shadow:none !important;
   transform: none !important;
+  display: flex !important; flex-direction: column !important; gap: 8px !important;
+  justify-content: center !important; align-items: stretch !important;
+  flex: 0 0 270px !important; width: 270px !important; max-width: 270px !important;
+  padding: 0 !important;
 }
-html body.layout-admin .asta-row-puja .quick-bids-row{
-  display:flex !important;gap:0 !important;
-  border:1px solid rgba(var(--sc-carta),.20) !important;border-radius:2px !important;overflow:hidden !important;
-}
-html body.layout-admin .asta-row-puja .btn-quick{
-  flex:1 1 0 !important;border:none !important;border-radius:0 !important;background:none !important;
-  color:var(--sc-medio) !important;height:42px !important;
-}
-html body.layout-admin .asta-row-puja .btn-quick + .btn-quick{border-left:1px solid rgba(var(--sc-carta),.16) !important}
-html body.layout-admin .asta-row-puja .btn-rilancia{
-  background:var(--sc-testo) !important;color:var(--sc-fondo) !important;border-radius:2px !important;
-  font-family:Archivo,sans-serif !important;font-weight:900 !important;
-  font-variation-settings:'wdth' 76 !important;text-transform:uppercase !important;
-  box-shadow:0 12px 28px rgba(0,0,0,.5) !important;
-}
-html body.layout-admin[data-fase="finale"] .asta-row-puja .btn-rilancia{background:var(--sc-brace-piena) !important;color:#F7EFE6 !important}
 
 /* pannello Admin: comandi sobri, niente pastiglie colorate */
 html body .admin-panel{
@@ -4967,7 +4955,7 @@ html:not([data-tema]) body .icon-crediti {
   filter: drop-shadow(0 0 10px rgba(251,191,36,0.6)) !important;
 }
 
-/* ─── BOTTONE RILANCIA: IL LINGOTTO D'ORO DELLA SERATA ───────────────────── */
+/* ─── BOTTONE RILANCIA: IL LINGOTTO D'ORO DELLA SERATA (RILANCIA + 1) ─────── */
 html[data-tema="serata"] body #puja-panel-slot .btn-rilancia,
 html:not([data-tema]) body #puja-panel-slot .btn-rilancia,
 html[data-tema="serata"] body .asta-row-puja .btn-rilancia,
@@ -4981,15 +4969,54 @@ html:not([data-tema]) body .asta-row-puja .btn-rilancia {
     0 8px 28px rgba(217,119,6,0.60),
     0 1px 0 rgba(255,255,240,0.55) inset,
     0 0 25px rgba(251,191,36,0.30) !important;
+  font-family: 'Archivo', sans-serif !important;
   font-weight: 900 !important;
   letter-spacing: 0.08em !important;
   text-transform: uppercase !important;
   text-shadow: 0 1px 2px rgba(255,255,255,0.40) !important;
   transition: all 0.2s cubic-bezier(0.32,0.72,0,1) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 18px !important;
+  height: 56px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  font-size: 1.25rem !important;
+}
+
+html body #puja-panel-slot .btn-rilancia::after,
+html body .asta-row-puja .btn-rilancia::after {
+  content: attr(data-tot) !important;
+  display: block !important;
+  font-family: 'Archivo', sans-serif !important;
+  font-weight: 900 !important;
+  font-variation-settings: 'wdth' 108 !important;
+  font-variant-numeric: tabular-nums !important;
+  font-size: 1.6rem !important;
+  letter-spacing: -0.02em !important;
+  padding-left: 16px !important;
+  margin-left: 16px !important;
+  border-left: 1.5px solid rgba(124,52,0,0.35) !important;
+  position: static !important;
+  background: none !important;
+  transform: none !important;
+  width: auto !important;
+  height: auto !important;
+  opacity: 1 !important;
+  animation: none !important;
+  color: #1a0800 !important;
+}
+
+html body #puja-panel-slot .btn-rilancia::before,
+html body .asta-row-puja .btn-rilancia::before {
+  display: none !important;
 }
 
 html[data-tema="serata"] body #puja-panel-slot .btn-rilancia:hover,
-html:not([data-tema]) body #puja-panel-slot .btn-rilancia:hover {
+html:not([data-tema]) body #puja-panel-slot .btn-rilancia:hover,
+html[data-tema="serata"] body .asta-row-puja .btn-rilancia:hover,
+html:not([data-tema]) body .asta-row-puja .btn-rilancia:hover {
   box-shadow:
     0 12px 38px rgba(217,119,6,0.75),
     0 1px 0 rgba(255,255,240,0.65) inset,
@@ -4998,39 +5025,141 @@ html:not([data-tema]) body #puja-panel-slot .btn-rilancia:hover {
 }
 
 html[data-tema="serata"] body #puja-panel-slot .btn-rilancia:active,
-html:not([data-tema]) body #puja-panel-slot .btn-rilancia:active {
+html:not([data-tema]) body #puja-panel-slot .btn-rilancia:active,
+html[data-tema="serata"] body .asta-row-puja .btn-rilancia:active,
+html:not([data-tema]) body .asta-row-puja .btn-rilancia:active {
   transform: translateY(1px) !important;
   border-bottom-width: 2px !important;
 }
 
-/* ─── QUICK BIDS IN ORO E METALLO TITANIO ─────────────────────────────────── */
+/* ─── QUICK BIDS IN ORO E METALLO TITANIO (+5, +10) ─────────────────────────── */
 html[data-tema="serata"] body #puja-panel-slot .quick-bids-row,
-html:not([data-tema]) body #puja-panel-slot .quick-bids-row {
+html:not([data-tema]) body #puja-panel-slot .quick-bids-row,
+html[data-tema="serata"] body .asta-row-puja .quick-bids-row,
+html:not([data-tema]) body .asta-row-puja .quick-bids-row {
   background: rgba(10,16,28,0.90) !important;
   border: 1px solid rgba(251,191,36,0.30) !important;
   border-radius: 10px !important;
   gap: 5px !important;
   padding: 5px !important;
   box-shadow: inset 0 2px 8px rgba(0,0,0,0.5) !important;
+  display: flex !important;
+  width: 100% !important;
+  margin: 0 !important;
 }
 
 html[data-tema="serata"] body #puja-panel-slot .btn-quick,
-html:not([data-tema]) body #puja-panel-slot .btn-quick {
+html:not([data-tema]) body #puja-panel-slot .btn-quick,
+html[data-tema="serata"] body .asta-row-puja .btn-quick,
+html:not([data-tema]) body .asta-row-puja .btn-quick {
+  flex: 1 1 0% !important;
+  width: auto !important;
+  height: 38px !important;
   border-radius: 7px !important;
   background: rgba(255,255,255,0.05) !important;
   color: #FCD34D !important;
   border: 1px solid rgba(251,191,36,0.22) !important;
+  font-family: 'Archivo', sans-serif !important;
   font-weight: 800 !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 0.02em !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   transition: all 0.15s !important;
+  box-shadow: none !important;
 }
 
 html[data-tema="serata"] body #puja-panel-slot .btn-quick:hover,
-html:not([data-tema]) body #puja-panel-slot .btn-quick:hover {
+html:not([data-tema]) body #puja-panel-slot .btn-quick:hover,
+html[data-tema="serata"] body .asta-row-puja .btn-quick:hover,
+html:not([data-tema]) body .asta-row-puja .btn-quick:hover {
   background: rgba(251,191,36,0.25) !important;
   color: #FFFFFF !important;
   border-color: #FFB04A !important;
   box-shadow: 0 0 14px rgba(251,191,36,0.45) !important;
-  transform: scale(1.03) !important;
+  transform: scale(1.02) !important;
+}
+
+/* ─── OFFERTA MANUALE IN ORO E METALLO TITANIO (OFFRI + INPUT) ───────────── */
+html[data-tema="serata"] body #puja-panel-slot .manual-bid-row,
+html:not([data-tema]) body #puja-panel-slot .manual-bid-row,
+html[data-tema="serata"] body .asta-row-puja .manual-bid-row,
+html:not([data-tema]) body .asta-row-puja .manual-bid-row {
+  background: rgba(10,16,28,0.90) !important;
+  border: 1px solid rgba(251,191,36,0.30) !important;
+  border-radius: 10px !important;
+  padding: 5px !important;
+  gap: 5px !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin: 0 !important;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.5) !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .inp-rilancio,
+html:not([data-tema]) body #puja-panel-slot .inp-rilancio,
+html[data-tema="serata"] body .asta-row-puja .inp-rilancio,
+html:not([data-tema]) body .asta-row-puja .inp-rilancio {
+  flex: 1 1 auto !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  height: 38px !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: #FCD34D !important;
+  font-family: 'Space Mono', monospace !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  text-align: left !important;
+  padding: 0 12px !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .inp-rilancio::placeholder,
+html:not([data-tema]) body #puja-panel-slot .inp-rilancio::placeholder,
+html[data-tema="serata"] body .asta-row-puja .inp-rilancio::placeholder,
+html:not([data-tema]) body .asta-row-puja .inp-rilancio::placeholder {
+  color: rgba(242,234,222,0.35) !important;
+  font-family: 'Space Mono', monospace !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .btn-manuale,
+html:not([data-tema]) body #puja-panel-slot .btn-manuale,
+html[data-tema="serata"] body .asta-row-puja .btn-manuale,
+html:not([data-tema]) body .asta-row-puja .btn-manuale {
+  flex: 0 0 auto !important;
+  height: 38px !important;
+  padding: 0 18px !important;
+  border-radius: 7px !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: #FCD34D !important;
+  border: 1px solid rgba(251,191,36,0.22) !important;
+  font-family: 'Archivo', sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 0.8rem !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s !important;
+  box-shadow: none !important;
+}
+
+html[data-tema="serata"] body #puja-panel-slot .btn-manuale:hover,
+html:not([data-tema]) body #puja-panel-slot .btn-manuale:hover,
+html[data-tema="serata"] body .asta-row-puja .btn-manuale:hover,
+html:not([data-tema]) body .asta-row-puja .btn-manuale:hover {
+  background: rgba(251,191,36,0.25) !important;
+  color: #FFFFFF !important;
+  border-color: #FFB04A !important;
+  box-shadow: 0 0 14px rgba(251,191,36,0.45) !important;
+  transform: scale(1.02) !important;
 }
 
 /* ─── TABS PANEL: COLORE BLU ANTEPRIMA ANCHE PER IL TABELLONE ───────────── */
