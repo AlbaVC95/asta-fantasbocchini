@@ -89,14 +89,14 @@ html[data-tema="bar"]{
    Nessuna immagine da versionare, nessun `?v=` da alzare: e' tutto nel foglio. */
 html[data-tema="bar"] body,
 html[data-tema="bar"] .pitch-bg{
-  background-color:#241609 !important;
+  background-color:#140B05 !important;
   background-image:
     url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27300%27%20height%3D%27300%27%3E%3Cfilter%20id%3D%27v%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.75%200.010%27%20numOctaves%3D%275%27%20seed%3D%2711%27%2F%3E%3CfeColorMatrix%20type%3D%27saturate%27%20values%3D%270%27%2F%3E%3CfeComponentTransfer%3E%3CfeFuncA%20type%3D%27linear%27%20slope%3D%270.95%27%2F%3E%3C%2FfeComponentTransfer%3E%3C%2Ffilter%3E%3Crect%20width%3D%27300%27%20height%3D%27300%27%20filter%3D%27url%28%23v%29%27%2F%3E%3C%2Fsvg%3E"),
     url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27460%27%20height%3D%27460%27%3E%3Cfilter%20id%3D%27n%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.016%200.045%27%20numOctaves%3D%273%27%20seed%3D%275%27%2F%3E%3CfeColorMatrix%20type%3D%27saturate%27%20values%3D%270%27%2F%3E%3CfeComponentTransfer%3E%3CfeFuncA%20type%3D%27linear%27%20slope%3D%270.6%27%2F%3E%3C%2FfeComponentTransfer%3E%3C%2Ffilter%3E%3Crect%20width%3D%27460%27%20height%3D%27460%27%20filter%3D%27url%28%23n%29%27%2F%3E%3C%2Fsvg%3E"),
     repeating-linear-gradient(90deg,
-      rgba(0,0,0,.62) 0 2px, rgba(150,110,66,.20) 2px 6px,
-      rgba(0,0,0,0) 6px 184px, rgba(214,170,112,.14) 184px 187px, rgba(0,0,0,.66) 187px 191px),
-    linear-gradient(180deg,#3A2412 0%, #2A1A0C 40%, #1A1006 100%) !important;
+      rgba(0,0,0,.72) 0 2px, rgba(110,75,40,.12) 2px 6px,
+      rgba(0,0,0,0) 6px 184px, rgba(150,105,55,.09) 184px 187px, rgba(0,0,0,.75) 187px 191px),
+    linear-gradient(180deg,#1C1007 0%, #120904 40%, #090402 100%) !important;
   /* Piastrelle GRANDI apposta: a 300px la ripetizione del rumore si vedeva come
      un riquadro piu' chiaro sul legno. Il rumore e' l'unica cosa che non deve
      mostrare un periodo, altrimenti torna a sembrare una texture applicata. */
@@ -5652,15 +5652,15 @@ html[data-tema="bar"] .pitch-bg::after {
     radial-gradient(ellipse 100% 100% at 50% 50%, transparent 40%, rgba(15,7,3,0.45) 100%) !important;
 }
 
-/* ─── TRAVE SUPERIORE DEL BAR (HEADER IN LEGNO VERO) ─────────────────────── */
+/* ─── TRAVE SUPERIORE DEL BAR (VIGA DE MADERA OSCURA NOBLE CON LATÓN) ─────── */
 html[data-tema="bar"] body .asta-header {
   background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,215,140,0.20) 0%, transparent 65%),
-    linear-gradient(180deg, #563119 0%, #3e210f 100%) !important;
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,215,140,0.12) 0%, transparent 65%),
+    linear-gradient(180deg, #1C1008 0%, #120A05 100%) !important;
   border-bottom: 3.5px solid #C9A257 !important;
   box-shadow:
-    0 6px 20px rgba(0,0,0,0.65),
-    0 1px 0 rgba(255,230,160,0.30) inset !important;
+    0 6px 20px rgba(0,0,0,0.75),
+    0 1px 0 rgba(255,230,160,0.22) inset !important;
   position: relative !important;
 }
 
@@ -5675,28 +5675,28 @@ html[data-tema="bar"] body .asta-header::after {
   box-shadow: 0 0 10px rgba(228,180,90,0.45) !important;
 }
 
-/* ─── TAVOLO D'ASTA CENTRALE: MASSELLO DI LEGNO CON VENATURA NATURALE ──── */
+/* ─── TAVOLO D'ASTA CENTRALE: MOSTRADOR DE CAOBA / COÑAC PULIDO CON LUSTRE ── */
 html[data-tema="bar"] body #puja-panel-slot,
 html[data-tema="bar"] body.layout-admin .asta-row-puja {
   position: relative !important;
   border: 4px solid transparent !important;
   border-radius: 12px !important;
   background:
-    /* Riflesso dorato caldo sul piano lucido del bancone */
-    radial-gradient(ellipse 80% 55% at 50% -10%, rgba(255,215,140,0.22) 0%, transparent 65%) padding-box,
+    /* Riflesso dorato ambrato caldo sul piano lucido del bancone */
+    radial-gradient(ellipse 85% 55% at 50% -10%, rgba(255,210,130,0.26) 0%, transparent 65%) padding-box,
     /* VENA NATURALE DEL LEGNO (Frattale organico, zero righe artificiali!) */
     url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27260%27%20height%3D%27260%27%3E%3Cfilter%20id%3D%27w%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.012%200.25%27%20numOctaves%3D%274%27%20seed%3D%275%27%2F%3E%3CfeColorMatrix%20type%3D%27matrix%27%20values%3D%270.35%200%200%200%200.25%200%200.22%200%200%200.15%200%200%200.1%200%200.08%200%200%200%200.35%200%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27260%27%20height%3D%27260%27%20filter%3D%27url%28%23w%29%27%2F%3E%3C%2Fsvg%3E") padding-box,
-    /* Caldo legno mogano/noce lucido */
-    linear-gradient(180deg, #422411 0%, #301809 50%, #200f04 100%) padding-box,
+    /* Caldo legno noce/ciliegio da pub con toni cognac caldi */
+    linear-gradient(180deg, #4E2713 0%, #351A0A 50%, #200E04 100%) padding-box,
     /* Cornice in massello d'ottone dorato con riflessi */
     linear-gradient(152deg,
       #FFE9C4 0%, #D6BA8E 12%, #97815F 28%,
       #60503C 48%, #97815F 65%, #F0D9AC 84%, #77644C 100%) border-box !important;
   background-size: auto, 260px 260px, auto, auto !important;
   box-shadow:
-    0 16px 40px rgba(0,0,0,0.70),
+    0 16px 40px rgba(0,0,0,0.75),
     inset 0 2px 8px rgba(0,0,0,0.45),
-    inset 0 1px 0 rgba(255,230,170,0.24) !important;
+    inset 0 1px 0 rgba(255,230,170,0.26) !important;
 }
 
 /* Listello di noce massello intagliato sul bordo superiore */
@@ -5707,9 +5707,9 @@ html[data-tema="bar"] body.layout-admin .asta-row-puja::before {
   position: absolute !important;
   left: 0 !important; right: 0 !important; top: 0 !important;
   height: 6px !important;
-  background: linear-gradient(180deg, #7c4723 0%, #522d14 100%) !important;
-  border-bottom: 1px solid rgba(255,225,160,0.35) !important;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.45) !important;
+  background: linear-gradient(180deg, #8A4E26 0%, #5C3217 100%) !important;
+  border-bottom: 1px solid rgba(255,225,160,0.40) !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.50) !important;
   z-index: 5 !important;
   border-radius: 8px 8px 0 0 !important;
 }
@@ -5726,40 +5726,83 @@ html[data-tema="bar"] body.layout-admin .asta-row-puja .cc-avatar {
   background: #111 !important;
 }
 
-/* ─── PANNELLI DI DATI: LEGNO BRUNITO CON CORNICE E VITI D'OTTONE ────────── */
-html[data-tema="bar"] body .card,
-html[data-tema="bar"] body .admin-panel,
+/* ─── IL CONTO / PORTAFOGLIO (#mio-panel): LAVAGNA IN ARDESIA DA PUB ─────────
+   In un vero pub il conto non è un'altra tavola identica: è la lavagna di
+   ardesia scura incorniciata in legno e ottone. Spezza il marrone monocromo! */
 html[data-tema="bar"] body #mio-panel,
-html[data-tema="bar"] body .panel-budget,
-html[data-tema="bar"] body #budget-bar {
+html[data-tema="bar"] body .admin-panel {
   position: relative !important;
   border: 3px solid transparent !important;
   border-radius: 10px !important;
   background:
-    radial-gradient(ellipse 75% 50% at 50% 0%, rgba(255,210,130,0.12) 0%, transparent 60%) padding-box,
-    /* Legno caldo ben visibile */
-    linear-gradient(180deg, #371e0e 0%, #281408 50%, #1c0d05 100%) padding-box,
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255,255,255,0.06) 0%, transparent 60%) padding-box,
+    linear-gradient(180deg, #1A1C20 0%, #121315 100%) padding-box,
+    linear-gradient(152deg,
+      #FFE9C4 0%, #D6BA8E 12%, #97815F 28%,
+      #60503C 48%, #97815F 65%, #F0D9AC 84%, #77644C 100%) border-box !important;
+  box-shadow:
+    0 12px 28px rgba(0,0,0,0.70),
+    inset 0 2px 5px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(255,255,255,0.08) !important;
+}
+
+/* Targhetta del conto in ottone lucidato da pub */
+html[data-tema="bar"] body .mio-panel-header {
+  background: linear-gradient(180deg, #D4AF37 0%, #997828 100%) !important;
+  border: 1px solid #FFE4A0 !important;
+  border-radius: 5px !important;
+  padding: 5px 12px !important;
+  margin-bottom: 8px !important;
+  color: #1A1006 !important;
+  font-weight: 900 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 2px 6px rgba(0,0,0,0.45) !important;
+}
+
+/* Bottoni dentro a Mio Panel in stile ardesia con filetto d'ottone */
+html[data-tema="bar"] body #mio-panel .btn-secondary {
+  background: linear-gradient(180deg, #26292E 0%, #18191C 100%) !important;
+  border: 1px solid rgba(212,175,55,0.45) !important;
+  color: #FFE6BA !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5) !important;
+}
+html[data-tema="bar"] body #mio-panel .btn-secondary:hover {
+  background: linear-gradient(180deg, #32363D 0%, #202226 100%) !important;
+  border-color: #D4AF37 !important;
+  color: #FFF !important;
+}
+
+/* ─── CORRIMANO E RIEPILOGO SQUADRE: LEGNO WENGÉ / NOCE SCURO CON BORDATURA ── */
+html[data-tema="bar"] body .panel-budget,
+html[data-tema="bar"] body #budget-bar,
+html[data-tema="bar"] body .card {
+  position: relative !important;
+  border: 3px solid transparent !important;
+  border-radius: 10px !important;
+  background:
+    radial-gradient(ellipse 75% 50% at 50% 0%, rgba(255,210,130,0.08) 0%, transparent 60%) padding-box,
+    linear-gradient(180deg, #20130B 0%, #130A05 100%) padding-box,
     linear-gradient(152deg,
       #F0DCB4 0%, #C9AE84 12%, #8A755A 30%,
       #5A4A38 48%, #8A755A 66%, #E4CFA6 84%, #6E5C46 100%) border-box !important;
   box-shadow:
-    0 10px 24px rgba(0,0,0,0.60),
-    inset 0 2px 5px rgba(0,0,0,0.4),
-    inset 0 1px 0 rgba(255,236,200,0.18) !important;
+    0 10px 24px rgba(0,0,0,0.65),
+    inset 0 2px 5px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,236,200,0.14) !important;
 }
 
-/* Targhette dei titoli in legno caldo di pub */
-html[data-tema="bar"] body .panel-budget-hdr,
-html[data-tema="bar"] body .mio-panel-header {
-  background: linear-gradient(180deg, #532d16 0%, #391c0c 100%) !important;
+/* Targhette dei titoli in noce scuro massello con filetto d'ottone */
+html[data-tema="bar"] body .panel-budget-hdr {
+  background: linear-gradient(180deg, #3A1E0D 0%, #241106 100%) !important;
   border: 1px solid #C9A257 !important;
   border-radius: 5px !important;
   padding: 5px 12px !important;
   margin-bottom: 8px !important;
-  color: #FFF0D0 !important;
+  color: #FFE6BA !important;
   font-weight: 800 !important;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
-  box-shadow: inset 0 1px 0 rgba(255,230,160,0.25), 0 2px 6px rgba(0,0,0,0.35) !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.7) !important;
+  box-shadow: inset 0 1px 0 rgba(255,230,160,0.20), 0 2px 6px rgba(0,0,0,0.4) !important;
 }
 
 /* ─── TABS PANEL: PANNO VERDE INGLESE CON CORNICE D'OTTONE ──────────────── */
