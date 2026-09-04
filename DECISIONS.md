@@ -2475,3 +2475,35 @@ le prime prove stavano guardando il modale della prova precedente rimasto aperto
 Aggiunto anche il caso del **link scaduto o gia' usato**: torna con `error_description` nel
 frammento e prima finiva nel nulla — stessa schermata di accesso, nessuna spiegazione,
 indistinguibile da "non funziona". Ora il messaggio si vede sulla schermata di accesso.
+
+
+## Eta' e badge U21 partendo da Excel: il parser delle rose non li leggeva affatto
+
+Segnalato dall'utente: iniziando un'asta di riparazione **da Excel** non si vedono il badge U21 ne'
+l'eta', mentre **da JSON** si vedono.
+
+Il confronto fra i due percorsi spiega tutto. Il JSON e' un export dell'app stessa, quindi si porta
+gia' dietro `under` e `u21`. L'Excel invece passa da `handleExcelFile`, che costruiva il giocatore
+con tredici campi e **nessuno dei due**. Non era una perdita per strada ne' un problema di
+visualizzazione: quei campi non venivano proprio letti. Da notare che il parser dell'altro Excel,
+quello del Listino Ufficiale (`handleListinoExcelFile`), l'eta' la legge da sempre — i due parser
+sono cresciuti separati e uno dei due e' rimasto indietro.
+
+Due rimedi, perche' uno solo non bastava:
+
+1. **Si cerca la colonna** (`Under`, `Eta`, `Età`, `Age`), come fa gia' il parser del Listino.
+2. **Se non c'e', l'eta' si ripesca dal Listino Ufficiale**, che ce l'ha per tutti. E' questa la
+   strada che copre il caso vero: l'export delle rose di Fantaleghe quella colonna spesso non la
+   contiene, quindi il solo punto 1 avrebbe lasciato il difetto identico per chi l'ha segnalato.
+   L'abbinamento e' per `id` quando c'e', altrimenti per nome normalizzato — serve perche' nelle
+   righe l'`#` a volte e' vuoto.
+
+**Il ripescaggio non deve poter rompere l'import**: sta in un `try` e se il Listino non e' caricato,
+l'utente non e' loggato o la rete va male, si prosegue senza eta', cioe' esattamente come prima. Un
+dato di contorno non puo' impedire di far partire un'asta.
+
+**Verificato** generando veri file `.xlsx` nel browser e passandoli alla funzione VERA: con la
+colonna `Under`, Camarda 18 → U21 si', Modric 40 → U21 no, Bartesaghi 20 → U21 si'. Senza colonna,
+col Listino simulato: Camarda abbinato per id, Modric per nome (il suo `#` era vuoto), uno assente
+dal Listino resta senza eta' e non rompe niente. Col Listino che lancia un errore, l'import va a
+buon fine lo stesso e i giocatori restano senza eta'. Zero errori in console.

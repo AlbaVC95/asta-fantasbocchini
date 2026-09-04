@@ -152,6 +152,15 @@ già passato. Ora l'ascoltatore si registra subito **e** si guarda direttamente 
 (`type=recovery`), che non dipende da nessun evento. Gestito anche il link scaduto, che prima
 finiva nel nulla. Dettagli in [DECISIONS.md](../DECISIONS.md).
 
+## Età e badge U21 partendo da Excel
+
+Da JSON si vedevano, da Excel no: `handleExcelFile` (il parser delle rose) non leggeva affatto
+`under` e `u21`, mentre il parser del Listino Ufficiale li legge da sempre. Ora cerca la colonna
+(`Under`/`Eta`/`Età`/`Age`) e, se il file non ce l'ha, **ripesca l'età dal Listino Ufficiale**
+abbinando per id o per nome — che è il caso vero, perché l'export delle rose spesso quella colonna
+non la contiene. Il ripescaggio non può rompere l'import: se fallisce si prosegue senza età, come
+prima. Dettagli in [DECISIONS.md](../DECISIONS.md).
+
 ## Verifiche fatte
 
 - **Copertura sul listino VERO** (531 righe di `listino_giocatori` su Supabase, passate una per
@@ -175,6 +184,10 @@ finiva nel nulla. Dettagli in [DECISIONS.md](../DECISIONS.md).
   Contrasti misurati sulla carta nuova: principale 16.75:1, secondario 8.12:1, muted 5.25:1,
   cobalto 6.76:1, rosso 4.65:1, oro-testo 5.34:1 — tutti sopra AA. Gli altri tre temi hanno il
   fondo invariato (serata, lavagna, cuoio).
+- Età da Excel: generati veri `.xlsx` nel browser e passati alla funzione vera. Con colonna
+  `Under`: 18 → U21 sì, 40 → U21 no, 20 → U21 sì. Senza colonna, col Listino simulato: abbinamento
+  per id e per nome, chi non c'è resta senza età senza rompere. Col Listino in errore, l'import
+  riesce comunque. Zero errori in console.
 - Recupero password: provati con caricamenti VERI (non basta cambiare il frammento, che non
   ricarica) i tre casi — link valido con e senza query nell'URL → il modale si apre; link scaduto
   → il messaggio compare sulla schermata di accesso e il modale resta chiuso.

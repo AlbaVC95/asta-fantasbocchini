@@ -1574,7 +1574,7 @@ function handleJsonFile(file) {
 function handleExcelFile(file) {
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = async (e) => {
     try {
       const wb = XLSX.read(e.target.result, { type: 'array' });
       const sheet = wb.Sheets[wb.SheetNames[0]];
@@ -1598,6 +1598,11 @@ function handleExcelFile(file) {
       const colCosto = findCol('Costo', 'Prezzo', 'Acquisto');
       const colRP = findCol('R/P', 'RP');
       const colId = findCol('#', 'Id', 'ID');
+      // L'eta' non veniva letta affatto qui, mentre il parser del Listino Ufficiale la
+      // legge da sempre: da li' il difetto segnalato: partendo da Excel il badge U21 e
+      // l'eta' non comparivano, partendo dal JSON si', perche' il JSON e' un export
+      // dell'app e quei campi se li porta gia' dietro.
+      const colUnder = findCol('Under', 'Eta', "Et\u00e0", 'Age');
 
       const obbligatorie = [
         ['Giocatore', colGiocatore], ['Ruolo', colRuolo],
@@ -1614,6 +1619,8 @@ function handleExcelFile(file) {
         const nome = row[colGiocatore];
         if (!nome) return;
         const fantaSquadra = (row[colFantaSquadra] || '').toString().trim();
+        const etaGrezza = colUnder && row[colUnder] !== '' ? Number(row[colUnder]) : null;
+        const eta = etaGrezza != null && !isNaN(etaGrezza) ? etaGrezza : null;
         const g = {
           nome,
           squadra: colSquadra && row[colSquadra] !== '' ? row[colSquadra] : null,
@@ -1627,7 +1634,9 @@ function handleExcelFile(file) {
           tipo: (row[colRP] || 'NN').toString().toUpperCase(),
           costo: row[colCosto] || 1,
           squadraOriginale: fantaSquadra || null,
-          idFantaleghe: colId && row[colId] !== '' ? row[colId] : null
+          idFantaleghe: colId && row[colId] !== '' ? row[colId] : null,
+          under: eta,
+          u21: eta != null && eta <= 21
         };
         if (!fantaSquadra) {
           svincolati.push(g);
@@ -1639,6 +1648,37 @@ function handleExcelFile(file) {
 
       const squadre = Object.keys(giocatoriPerSquadra).map(nome => ({ nome, giocatori: giocatoriPerSquadra[nome] }));
       if (!squadre.length && !svincolati.length) return toast('Nessun giocatore valido trovato nel file', 'error');
+
+      // Se il file non aveva la colonna dell'eta', la si ripesca dal Listino Ufficiale,
+      // che ce l'ha per tutti. E' la strada che copre il caso vero: l'export delle rose
+      // di Fantaleghe quella colonna spesso non la contiene, quindi leggerla e basta non
+      // sarebbe bastato. Si abbina per id quando c'e', altrimenti per nome normalizzato.
+      // Se il Listino non e' caricato o la rete va male non succede niente: si prosegue
+      // senza eta', cioe' come prima.
+      const tutti = svincolati.concat(...squadre.map(sq => sq.giocatori));
+      if (tutti.some(g => g.under == null)) {
+        try {
+          const { data: listino } = await supa.from('listino_giocatori').select('id,nome,eta,u21');
+          if (listino && listino.length) {
+            const perId = new Map(), perNome = new Map();
+            listino.forEach(r => {
+              perId.set(String(r.id), r);
+              perNome.set(_normalizePhotoName(r.nome), r);
+            });
+            let ripescati = 0;
+            tutti.forEach(g => {
+              if (g.under != null) return;
+              const r = (g.idFantaleghe != null && perId.get(String(g.idFantaleghe)))
+                     || perNome.get(_normalizePhotoName(g.nome));
+              if (!r || r.eta == null) return;
+              g.under = r.eta;
+              g.u21 = r.u21 === true || r.eta <= 21;
+              ripescati++;
+            });
+            if (ripescati) console.log('[excel] eta ripescata dal Listino per ' + ripescati + ' giocatori');
+          }
+        } catch (e) { /* non-fatale: si prosegue senza eta', come prima */ }
+      }
 
       const data = { squadre, svincolati };
       window._jsonData = data;
