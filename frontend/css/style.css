@@ -3312,3 +3312,36 @@ html[data-tema="base"] .ant-slot3d:hover .ant-slot3d-empty {
 #btn-estrai {
   box-shadow: 0 4px 15px rgba(255, 176, 74, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MIGLIORAMENTI UX "SERATA D'ASTA" (Richiesta Utente)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Tipografia numeri: usare tabular-nums per evitare che i budget ballino, 
+   e forzarla su display font forte */
+.sq-crediti,
+.crediti-badge,
+.libero-costo,
+.storico-prezzo,
+.cc-offerta,
+.timer-number {
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* Indicatore chiaro e pulsante per l'offerente attuale nella lista a sinistra */
+@keyframes offerente-pulse {
+  0% { box-shadow: inset 20px 0 30px -20px rgba(255,176,74,0), 0 0 0 0 rgba(255,176,74,0.3); border-left-color: rgba(255,176,74,1); }
+  50% { box-shadow: inset 40px 0 50px -20px rgba(255,176,74,0.15), 0 0 0 5px rgba(255,176,74,0); border-left-color: rgba(255,200,120,1); }
+  100% { box-shadow: inset 20px 0 30px -20px rgba(255,176,74,0), 0 0 0 0 rgba(255,176,74,0); border-left-color: rgba(255,176,74,1); }
+}
+
+html:not([data-tema]) .sidebar-squadra.offerente-attuale,
+html[data-tema="base"] .sidebar-squadra.offerente-attuale {
+  animation: offerente-pulse 1.8s ease-in-out infinite !important;
+  background: linear-gradient(90deg, rgba(255,176,74,0.15), rgba(255,176,74,0.02)) !important;
+}
+
+html:not([data-tema]) .sidebar-squadra.offerente-attuale .sq-nome,
+html[data-tema="base"] .sidebar-squadra.offerente-attuale .sq-nome {
+  text-shadow: 0 0 8px rgba(255, 176, 74, 0.4) !important;
+}
