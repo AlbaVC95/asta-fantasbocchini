@@ -743,10 +743,11 @@ html body #puja-panel-slot .cc-nome{
 }
 
 /* ── la leva: il riempimento mentre tieni premuto ── */
+/* Qui c'era il riempimento progressivo del tasto, che si caricava mentre si teneva
+   premuto: guidato da --carica, che lo alzava comportamenti-asta.js. Tolta la leva
+   (vedi l'intestazione di quel file) la variabile resta a zero per sempre, quindi il
+   gradiente non disegnerebbe mai niente: si cancella invece di lasciarlo morto. */
 html body #puja-panel-slot .btn-rilancia{
-  background-image:linear-gradient(90deg,
-    rgba(var(--sc-ambra),.55) 0 calc(var(--carica,0) * 1%),
-    transparent calc(var(--carica,0) * 1%)) !important;
   background-color:var(--sc-testo) !important;
   transition:background-color .3s ease, box-shadow .3s ease !important;
   cursor:pointer;

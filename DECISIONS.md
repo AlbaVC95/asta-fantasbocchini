@@ -2507,3 +2507,35 @@ colonna `Under`, Camarda 18 → U21 si', Modric 40 → U21 no, Bartesaghi 20 →
 col Listino simulato: Camarda abbinato per id, Modric per nome (il suo `#` era vuoto), uno assente
 dal Listino resta senza eta' e non rompe niente. Col Listino che lancia un errore, l'import va a
 buon fine lo stesso e i giocatori restano senza eta'. Zero errori in console.
+
+
+## La leva e' stata tolta: il rischio scritto quando fu fatta si e' avverato
+
+Segnalato dall'utente come difetto: "se tieni premuto RILANCIA non conta +1, ne somma molti finche'
+non lo lasci; ogni clic, quanto lungo sia, deve valere 1". Non era un difetto — era la **leva**,
+voluta e documentata. Ma la segnalazione e' comunque quella giusta, e la cosa da ricordare e' che
+**il problema era gia' previsto per iscritto**: nella sezione che introduceva la leva si legge che
+"il rischio e' d'uso, non di correttezza: si puo' superare l'importo voluto tenendo premuto mezzo
+secondo di troppo". Il rischio si e' avverato al primo uso vero.
+
+Tolta su decisione dell'utente, davanti a tre opzioni (toglierla, alzare la soglia, lasciarla).
+Alzare la soglia sarebbe stato il compromesso ovvio, ed e' stato scartato per un motivo che vale
+oltre questo caso: **avrebbe reso l'incidente piu' raro, non impossibile**. In un'asta a tempo il
+gesto che costa crediti dev'essere esattamente quello che l'utente crede di fare; un gesto che a
+volte vale 1 e a volte 40, a seconda di quanti millisecondi hai tenuto il dito giu', non e'
+tarabile — e' proprio la forma sbagliata.
+
+Cosa e' sparito: `giu()`/`su()`, i listener `pointerdown`/`pointerup`/`pointercancel`, la
+soppressione in cattura del click dell'app, `SOGLIA_MS`, `tetto()` e il gradiente `--carica` nel
+CSS (che senza chi lo alza sarebbe rimasto fermo a zero per sempre). **Il modulo ora non emette
+piu' nessun evento**: verificato, zero `socket.emit`. Il rilancio lo manda solo il click handler
+dell'app, come prima che la leva esistesse.
+
+Cosa resta, ed e' importante non confonderlo con un residuo: `etichettaLeva()` — rinominata
+`etichettaRilancia()` perche' il vecchio nome ora mentirebbe — scrive l'etichetta del tasto e
+`data-tot`, cioe' il totale che pagheresti, che i temi mostrano dentro il bottone e che la striscia
+di puja usa accanto al suo "+1". Non c'entra con la leva e serve sempre.
+
+**Verificato** con il modulo vero e un tasto finto: pressioni da 80ms, 300ms, 1s e 3s mandano tutte
+e quattro **una sola offerta a +1**, e `data-tot` resta corretto. Le altre due funzioni del modulo
+(la scena che si stringe negli ultimi secondi, il contatore "ancora in gioco") sono intatte.

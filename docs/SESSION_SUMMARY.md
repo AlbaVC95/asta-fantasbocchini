@@ -161,6 +161,14 @@ abbinando per id o per nome — che è il caso vero, perché l'export delle rose
 non la contiene. Il ripescaggio non può rompere l'import: se fallisce si prosegue senza età, come
 prima. Dettagli in [DECISIONS.md](../DECISIONS.md).
 
+## Tolta la "leva" di RILANCIA
+
+Tenendo premuto RILANCIA l'importo saliva: era una funzione voluta, ma l'utente ha chiesto che ogni
+clic valga +1 qualunque sia la sua durata. Rimossa. Il modulo `comportamenti-asta.js` **non emette
+più nessun evento**: il rilancio lo manda solo il click handler dell'app. Restano intatte le altre
+due funzioni (scena che si stringe negli ultimi secondi, contatore "ancora in gioco") e
+l'etichetta col totale sul tasto. Motivazioni in [DECISIONS.md](../DECISIONS.md).
+
 ## Verifiche fatte
 
 - **Copertura sul listino VERO** (531 righe di `listino_giocatori` su Supabase, passate una per
@@ -184,6 +192,8 @@ prima. Dettagli in [DECISIONS.md](../DECISIONS.md).
   Contrasti misurati sulla carta nuova: principale 16.75:1, secondario 8.12:1, muted 5.25:1,
   cobalto 6.76:1, rosso 4.65:1, oro-testo 5.34:1 — tutti sopra AA. Gli altri tre temi hanno il
   fondo invariato (serata, lavagna, cuoio).
+- Leva rimossa: col modulo vero, pressioni da 80ms/300ms/1s/3s mandano tutte **una sola offerta a
+  +1**; `data-tot` resta corretto e nel modulo non c'è più nessun `socket.emit`. Zero errori nuovi.
 - Età da Excel: generati veri `.xlsx` nel browser e passati alla funzione vera. Con colonna
   `Under`: 18 → U21 sì, 40 → U21 no, 20 → U21 sì. Senza colonna, col Listino simulato: abbinamento
   per id e per nome, chi non c'è resta senza età senza rompere. Col Listino in errore, l'import
