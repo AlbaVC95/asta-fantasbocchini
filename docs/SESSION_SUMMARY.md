@@ -291,3 +291,33 @@ vera.** Dettagli in
 ## Prossimo passo
 
 Commit e push su `main` (deploy automatico su Hostinger).
+
+## "Il Bar": polaroid, ottone spazzolato e brindisi
+
+Tre oggetti del bancone, tutti sul mobile e nessuno sotto ai dati (vedi
+[DECISIONS.md](../DECISIONS.md)).
+
+- **`tema-serata.css`** — il ritratto nella carta di puja diventa una **polaroid appuntata**:
+  carta `#EFE6D2` piu' alta in basso (9px ai lati, 24px sotto), rotazione di 1,6 gradi, puntina
+  rossa con la sua ombra, stampa sbiadita e calda invece del bianco e nero. Serve
+  `overflow:visible` per la puntina; la luce sulla stampa passa in `box-shadow` inset perche'
+  `::before` e' occupato dalla puntina, che sta fuori dal rettangolo della foto.
+- **`clessidra.js`** — nuovo materiale `bar` in `MATERIALI`: ottone **spazzolato** (scala di
+  valori piu' corta di "serata", ed e' quello a farlo leggere opaco) e sabbia color ambra della
+  lampada. Prima "bar" cadeva sul fallback di "serata" con un `hue-rotate` di correzione in CSS,
+  ora rimosso: resta solo la `drop-shadow`.
+- **`app.js`** — `playSound('chaching')` nel tema "bar" suona un **brindisi** (`_brindisi()`/
+  `_bicchiere()`): parziali inarmoniche `1 / 2.76 / 5.40`, attacco 4ms, due bicchieri a 85ms di
+  distanza. Verificato in `OfflineAudioContext`: picco 0.508 senza clipping, coda a 690ms.
+  Gli altri temi non cambiano suono.
+- `index.html`: alzato il `?v=` di `app.js`, `clessidra.js` e `tema-serata.css`.
+
+Nessuna regola CSS aggiunta fuori da `[data-tema="bar"]`; fine riga di `app.js` (243 LF) e
+`index.html` (19 LF) invariate.
+
+## Da verificare lato utente
+
+- Il tema "Il Bar" in un'asta vera: se con dodici pannelli a schermo le cornici e le squadrette
+  d'angolo continuano ad aiutare o iniziano a caricare.
+- La polaroid ai due tagli piu' stretti (avatar 84x110): la carta resta fissa a 9/24px.
+- Il brindisi al volume reale delle casse, e in mezzo ai confetti.

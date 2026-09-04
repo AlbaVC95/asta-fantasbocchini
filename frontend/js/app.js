@@ -216,12 +216,40 @@ function _beep(freq, dur, type, vol) {
     o.start(); o.stop(_audioCtx.currentTime + dur);
   } catch(e) {}
 }
+// Un bicchiere non e' un "ding": le sue parziali non sono armoniche. I rapporti
+// 1 / 2.76 / 5.40 sono i modi di flessione del vetro - con 1/2/3 verrebbe fuori
+// una campana. L'attacco e' quasi istantaneo (4ms) e la coda lunga e sottile:
+// e' quella asimmetria, non la frequenza, a far riconoscere il vetro.
+function _bicchiere(base, quando, vol) {
+  try {
+    _initAudio();
+    const t0 = _audioCtx.currentTime + (quando || 0);
+    [[1, 1.00, 1.10], [2.76, 0.46, 0.72], [5.40, 0.20, 0.42]].forEach(function(pz) {
+      const o = _audioCtx.createOscillator(), g = _audioCtx.createGain();
+      o.connect(g); g.connect(_audioCtx.destination);
+      o.type = 'sine'; o.frequency.value = base * pz[0];
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(vol * pz[1], t0 + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + pz[2]);
+      o.start(t0); o.stop(t0 + pz[2] + 0.02);
+    });
+  } catch (e) {}
+}
+// Due bicchieri, non uno: un contatto solo e' un rintocco, il secondo colpo
+// appena scordato a 85ms e' cio' che si sente come un brindisi.
+function _brindisi() {
+  _bicchiere(1180, 0,     0.30);
+  _bicchiere(1276, 0.085, 0.24);
+}
 function playSound(t) {
   if (localStorage.getItem('suoni') === '0') return;
   if (t === 'tick')     _beep(800,  0.1,  'square',   0.15);
   else if (t === 'rilancio') _beep(1200, 0.15, 'sine',  0.3);
   else if (t === 'buzzer')   _beep(200,  0.5,  'sawtooth', 0.4);
   else if (t === 'chaching') {
+    // Ogni tema ha i suoi materiali (vedi clessidra.js/MATERIALI): "bar" ha
+    // anche il suo suono. L'arpeggio da cassa non appartiene a un bancone.
+    if (document.documentElement.getAttribute('data-tema') === 'bar') { _brindisi(); return; }
     _beep(880,  0.1,  'sine', 0.4);
     setTimeout(() => _beep(1320, 0.15, 'sine', 0.3),  100);
     setTimeout(() => _beep(1760, 0.2,  'sine', 0.25), 200);

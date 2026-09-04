@@ -43,6 +43,17 @@
     'sala-giochi': {
       ottone: ['#141024', '#5A72F0', '#2440D8', '#8CA0FF', '#1B2FA8', '#141024'],
       sabbia: ['#FFD37A', '#F5B01A', '#C4820A']
+    },
+    // Il Bar: ottone SPAZZOLATO, non lucidato. La differenza sta tutta
+    // nell'ampiezza della scala: "serata" va da #6B4E22 a #F0D6A4 (specchio),
+    // qui il salto e' piu' corto, ed e' cosi' che un metallo legge opaco. Il
+    // tono e' quello delle cornici del tema (tema-serata.css, sezione IL BAR),
+    // perche' la clessidra sta su quel mobile e non deve sembrare in prestito.
+    // La sabbia e' l'ambra della lampada (--primary #E4961E), l'unico giallo
+    // che questo tema si concede oltre alla luce.
+    bar: {
+      ottone: ['#5C4423', '#D8B87A', '#B08A45', '#E3CB9A', '#9A7738', '#4E3A1E'],
+      sabbia: ['#FFE0AC', '#E4961E', '#9C5F12']
     }
   };
 

@@ -2846,3 +2846,43 @@ texture dietro al testo, nessun velo caldo sopra l'intera schermata (e' cio' che
 illeggibile), niente scrittura a mano (la possiede Lavagna, e su liste fitte costa), e non piu' di
 due accenti nell'area dati. L'atmosfera si aggiunge ai bordi finche' non tocca i numeri: quando li
 tocca, si e' fatto un tema bello e inservibile.
+
+## "Il Bar": i tre oggetti del bancone — polaroid, ottone spazzolato, brindisi
+
+Ultima passata sul tema, e tutte e tre le aggiunte rispettano la regola sopra: stanno **sul mobile**,
+non sotto ai dati.
+
+**La polaroid appuntata.** Il ritratto del giocatore non e' incorniciato: e' una stampa appuntata al
+muro. Tre dettagli la reggono, e sono pochi apposta — la carta piu' alta in basso che ai lati (9px
+contro 24px: e' quella asimmetria, non il colore, a dire "polaroid"), la rotazione di **1,6 gradi**
+(oltre i 3 non sembra piu' una mano, sembra un errore di layout) e la puntina che getta la propria
+ombra sulla carta. La stampa e' sbiadita e calda (`sepia(.26)`, `grayscale(.18)`) invece del bianco e
+nero degli altri temi: una foto stampata e invecchiata su un muro, non un ritratto da museo.
+
+Due vincoli tecnici degni di nota. Serve `overflow:visible` perche' la puntina sporge sopra il bordo
+della carta; la foto non sborda comunque, e' al 100% della sua area con `object-fit:cover`. E
+`::before` doveva reggere due cose che non stanno nello stesso rettangolo — la luce **sulla stampa**
+(dentro) e la puntina **sulla carta** (fuori): lo pseudo-elemento si allarga fino al bordo esterno
+per la puntina, e la luce passa in `box-shadow` inset, che resta agganciato a quel bordo con le
+stesse due misure. La rotazione allarga di ~7px il rettangolo che l'animazione di assegnazione legge
+con `getBoundingClientRect()` (app.js): scarto voluto e impercettibile.
+
+**L'ottone SPAZZOLATO della clessidra.** Prima "bar" non aveva un materiale suo: cadeva sul fallback
+`MATERIALI.serata` (oro lucidato) e un `hue-rotate` in CSS provava a correggerlo. Una tinta stesa
+sopra un metallo sbagliato non fa un metallo giusto. Ora ha i suoi sei stop in
+`clessidra.js/MATERIALI`, e la differenza con "serata" non e' la tonalita' ma **l'ampiezza della
+scala**: serata va da `#6B4E22` a `#F0D6A4` (specchio), qui il salto e' piu' corto — ed e' cosi' che
+un metallo legge opaco. La sabbia e' l'ambra della lampada (`--primary #E4961E`). In CSS resta solo
+la `drop-shadow`, che non e' un trucco di colore ma una conseguenza: sopra la carta c'e' una lampada.
+
+**Il brindisi all'assegnazione.** Nel tema "bar" `playSound('chaching')` non fa l'arpeggio da cassa —
+non appartiene a un bancone — ma due bicchieri. Un bicchiere non e' un "ding": le sue parziali **non
+sono armoniche**, e i rapporti `1 / 2.76 / 5.40` sono i modi di flessione del vetro; con 1/2/3
+verrebbe fuori una campana. L'attacco e' di 4ms e la coda lunga e sottile: e' quell'asimmetria, non
+la frequenza, a far riconoscere il vetro. E i bicchieri sono **due**, non uno: un contatto solo e' un
+rintocco, il secondo colpo appena scordato a 85ms e' cio' che si sente come un brindisi. Verificato
+rendendo le funzioni vere in un `OfflineAudioContext`: picco 0.508 (nessun clipping, stessa scala
+dell'arpeggio che sostituisce), secondo attacco a 80ms, coda esaurita a 690ms.
+
+Il criterio generale: **ogni tema porta i propri materiali**, e ora anche il proprio suono. E' la
+stessa idea di `MATERIALI` estesa di un passo — non un caso speciale del tema "bar".

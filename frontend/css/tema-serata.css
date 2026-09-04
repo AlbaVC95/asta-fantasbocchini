@@ -392,14 +392,61 @@ html[data-tema="bar"] body .btn-primary:active{
   box-shadow:0 1px 0 rgba(0,0,0,.45), inset 0 2px 4px rgba(0,0,0,.4) !important;
 }
 
-/* ── LA CLESSIDRA IN OTTONE DEL TEMA ───────────────────────────
-   clessidra.js dipinge i materiali da JS (i gradienti SVG hanno stop-color fissi e
-   nessuna variabile CSS puo' capovolgerli — vedi DECISIONS.md). Da qui si puo'
-   pero' dare il tono d'insieme, cosi' il vetro non resta l'unico pezzo che non
-   appartiene a questo mobile. */
+/* -- LA CLESSIDRA IN OTTONE SPAZZOLATO --------------------------
+   L'ottone ora arriva da clessidra.js/MATERIALI come per gli altri temi (prima
+   qui c'era un hue-rotate: una tinta stesa sopra un metallo sbagliato non fa un
+   metallo giusto). Resta solo l'ombra, che non e' un trucco di colore ma una
+   conseguenza: sopra la carta di puja c'e' una lampada, e cio' che sta sotto
+   una lampada proietta. */
 html[data-tema="bar"] body #puja-panel-slot .clessidra{
-  filter:saturate(1.12) hue-rotate(-6deg) brightness(1.04)
-         drop-shadow(0 6px 14px rgba(0,0,0,.5)) !important;
+  filter:drop-shadow(0 7px 16px rgba(0,0,0,.55)) !important;
+}
+
+/* -- IL RITRATTO: UNA POLAROID APPUNTATA ------------------------
+   La foto sul muro di un bar non e' incorniciata: e' appuntata, storta, con la
+   striscia di carta sotto rimasta vuota. Tre dettagli la reggono - la carta
+   piu' alta in basso che in alto, la rotazione minima (1.6 gradi: oltre i 3
+   sembra un errore di layout, non una mano) e la puntina che getta la propria
+   ombra. Serve overflow visible perche' la puntina sporge sopra la carta; la
+   foto non sborda comunque, e' 100% della sua area con object-fit:cover.
+   La rotazione allarga di ~7px il rettangolo letto da getBoundingClientRect()
+   nell'animazione di assegnazione (app.js): scarto voluto e impercettibile. */
+html[data-tema="bar"] body #puja-panel-slot .cc-avatar{
+  --pol:9px; --pol-giu:24px;
+  overflow:visible !important;
+  padding:0 !important;
+  border-style:solid !important;
+  border-width:var(--pol) var(--pol) var(--pol-giu) var(--pol) !important;
+  border-color:#EFE6D2 !important;
+  border-radius:3px !important;
+  background:#EFE6D2 !important;
+  transform:translateY(-50%) rotate(-1.6deg) !important;
+  box-shadow:0 14px 26px rgba(0,0,0,.55), 0 3px 7px rgba(0,0,0,.45),
+             inset 0 0 0 1px rgba(120,100,72,.22) !important;
+}
+/* la stampa: sbiadita e calda, non il bianco e nero degli altri temi */
+html[data-tema="bar"] body #puja-panel-slot .cc-avatar-img{
+  filter:grayscale(.18) sepia(.26) saturate(.92) contrast(1.02) brightness(1.03) !important;
+  border-radius:0 !important;
+}
+html[data-tema="bar"] body #puja-panel-slot .cc-avatar::after{
+  background:linear-gradient(200deg, rgba(232,163,61,.20) 0%, rgba(168,58,42,.06) 50%, rgba(28,19,12,.26) 100%) !important;
+}
+/* ::before regge due cose che non stanno nello stesso rettangolo: la luce sulla
+   stampa (dentro la foto) e la puntina (sulla carta, fuori). Lo pseudo-elemento
+   si allarga fino al bordo esterno per la puntina, e la luce passa in box-shadow
+   inset, che resta agganciato a quel bordo con le stesse due misure. */
+html[data-tema="bar"] body #puja-panel-slot .cc-avatar::before{
+  inset:calc(var(--pol) * -1) calc(var(--pol) * -1) calc(var(--pol-giu) * -1) !important;
+  z-index:6 !important;
+  background:
+    radial-gradient(circle at 50% 9.5px, rgba(0,0,0,.30) 0 5.6px, rgba(0,0,0,0) 8.5px),
+    radial-gradient(circle at 50% 7px, #7E241A 0 5.2px, rgba(0,0,0,0) 6px),
+    radial-gradient(circle at 50% 7px, #C4483A 0 3.9px, rgba(0,0,0,0) 4.7px),
+    radial-gradient(circle at 46% 5.4px, rgba(255,255,255,.80) 0 1.4px, rgba(0,0,0,0) 2px) !important;
+  background-repeat:no-repeat !important;
+  box-shadow:inset 0 var(--pol) 22px -14px rgba(255,255,255,.34),
+             inset 0 calc(var(--pol-giu) * -1) 30px -16px rgba(14,9,6,.60) !important;
 }
 
 html[data-tema="cuoio"]{
