@@ -836,6 +836,7 @@ html body #puja-panel-slot .btn-manuale{
   font-family:'Space Mono',monospace !important;font-size:.64rem !important;
   letter-spacing:.16em !important;text-transform:uppercase !important;font-weight:400 !important;
   width:auto !important;transform:none !important;box-shadow:none !important;
+  transform: none !important;
 }
 
 /* ── GLI AMICI AL TAVOLO ────────────────────────────────────
@@ -1356,6 +1357,7 @@ html body.layout-admin .asta-row-puja .timer-number{
 }
 html body.layout-admin .asta-row-puja .rilancio-box{
   background:none !important;border:none !important;box-shadow:none !important;
+  transform: none !important;
 }
 html body.layout-admin .asta-row-puja .quick-bids-row{
   display:flex !important;gap:0 !important;
@@ -1820,6 +1822,7 @@ html body.layout-admin .asta-row-puja .timer-ring-container{
   justify-content:flex-start !important;gap:16px !important;
   position:relative !important;padding:0 !important;
   background:none !important;border:none !important;box-shadow:none !important;
+  transform: none !important;
 }
 
 /* la clessidra vera e' un SVG (clessidra.js): qui solo misura e getto */
@@ -2359,6 +2362,7 @@ html[data-tema="cuoio"] body.puja-urgente #puja-panel-slot{
 html[data-tema="cuoio"] body #puja-panel-slot::before{background:rgba(58,36,20,.12) !important}
 html[data-tema="cuoio"] body #puja-panel-slot::after{
   background:#6B4423 !important;box-shadow:none !important;
+  transform: none !important;
 }
 html[data-tema="cuoio"] body.puja-urgente #puja-panel-slot::after{background:#A83A2A !important;box-shadow:none !important}
 
@@ -3125,6 +3129,7 @@ html[data-tema="sala-giochi"] body .asta-header::after{
   background:repeating-linear-gradient(90deg,
     #2440D8 0 18px, #EE2B22 18px 36px, #F5B01A 36px 54px) !important;
   box-shadow:none !important;
+  transform: none !important;
 }
 html[data-tema="sala-giochi"] body .asta-header-title,
 html[data-tema="sala-giochi"] body .home-title{
@@ -3142,6 +3147,7 @@ html[data-tema="sala-giochi"] .btn-sound,
 html[data-tema="sala-giochi"] .asta-header-right .btn-secondary{
   background:var(--sg-carta2) !important;color:#141024 !important;
   border:3px solid #141024 !important;border-radius:0 !important;box-shadow:none !important;
+  transform: none !important;
 }
 html[data-tema="sala-giochi"] .btn-sound:hover,
 html[data-tema="sala-giochi"] .asta-header-right .btn-secondary:hover{
@@ -3150,6 +3156,7 @@ html[data-tema="sala-giochi"] .asta-header-right .btn-secondary:hover{
 html[data-tema="sala-giochi"] .home-header{
   background:var(--sg-carta) !important;border-radius:0 !important;
   border-bottom:4px solid #141024 !important;box-shadow:none !important;
+  transform: none !important;
 }
 html[data-tema="sala-giochi"] .home-header .btn-logout-link{color:#4A465E !important}
 html[data-tema="sala-giochi"] .home-header .btn-logout-link:hover{color:#2440D8 !important}
@@ -3210,12 +3217,14 @@ html[data-tema="sala-giochi"] body #puja-panel-slot::before{
 html[data-tema="sala-giochi"] body #puja-panel-slot::after{
   top:10px !important;height:5px !important;
   background:#2440D8 !important;box-shadow:none !important;
+  transform: none !important;
 }
 html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot::before{
   background:repeating-linear-gradient(115deg,#D4241C 0 12px,var(--sg-carta) 12px 19px) !important;
 }
 html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot::after{
   background:#D4241C !important;box-shadow:none !important;
+  transform: none !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .card-timer-group{
   border-right:3px solid rgba(20,16,36,.14) !important;
@@ -3411,6 +3420,7 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia::after{
 /* la pressione del bottone: si affonda nel suo stesso rilievo */
 html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia:active{
   transform:translate(6px,6px) !important;box-shadow:none !important;
+  transform: none !important;
 }
 html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .btn-rilancia{
   background:#B01710 !important;box-shadow:6px 6px 0 #141024 !important;
@@ -3812,6 +3822,7 @@ html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .cc-avatar::befor
     radial-gradient(130% 90% at 46% -6%, rgba(255,255,255,.22) 0%, transparent 46%)
   !important;
   box-shadow:none !important;
+  transform: none !important;
 }
 
 /* Telefono: sotto i ~70px di lato il ritratto e' un francobollo e il cabinato
@@ -4089,6 +4100,7 @@ html[data-tema="sala-giochi"] body .gk-rank-card{
   border-radius:0 !important;
   border:2px solid rgba(20,16,36,.16) !important;
   background:var(--sg-carta2) !important;box-shadow:none !important;
+  transform: none !important;
 }
 html[data-tema="sala-giochi"] body .gk-rank-card:hover{
   border-color:#2440D8 !important;background:var(--sg-carta) !important;
@@ -4111,6 +4123,7 @@ html body .gk-mode-btn.active{
   color:var(--sc-fondo) !important;
   border-color:var(--sc-ambra-piena) !important;
   box-shadow:none !important;
+  transform: none !important;
 }
 
 /* sala-giochi: angoli vivi e inchiostro, come la riga di tab dell'asta */
@@ -4121,6 +4134,7 @@ html[data-tema="sala-giochi"] body .gk-subtab{
   background:var(--sg-carta2) !important;color:#4A465E !important;
   border:2px solid rgba(20,16,36,.22) !important;
   box-shadow:none !important;
+  transform: none !important;
 }
 html[data-tema="sala-giochi"] body .gk-tab:hover,
 html[data-tema="sala-giochi"] body .gk-mode-btn:hover,
@@ -4517,62 +4531,126 @@ html[data-tema="sala-giochi"] body .puja-sticky .ps-offerente{
 /* ═══════════════════════════════════════════════════════════════════
    IL CAMPO: LA GAZZETTA SUL BANCONE (Tema "Il Bar")
    L'anteprima formazioni e' la pagina di un quotidiano sportivo
-   (stile Gazzetta) appoggiata sul tavolo: carta rosa, inchiostro
-   scuro, niente prati spaziali o linee al neon.
+   (stile Gazzetta) appoggiata sul tavolo: carta rosa, macchia di 
+   caffè, inchiostro scuro, niente prati spaziali o linee al neon.
    ═══════════════════════════════════════════════════════════════════ */
 html[data-tema="bar"] .ant-pitch-stage{
   background:none !important;
-  padding:32px 18px !important;
+  padding:36px 20px !important;
 }
 
 html[data-tema="bar"] .ant-pitch.ant-pitch3d{
   /* Colore rosa Gazzetta dello Sport */
-  background:#F0D1D8 !important;
-  /* Finta grana da carta di giornale */
+  background-color:#F5D8DE !important;
+  /* Finta grana da carta di giornale + Macchia di caffè in alto a sinistra */
   background-image: 
-    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.02) 2px, rgba(0,0,0,.02) 4px),
-    radial-gradient(rgba(0,0,0,.03) 15%, transparent 16%),
-    radial-gradient(rgba(0,0,0,.03) 15%, transparent 16%) !important;
-  background-size: 100% 100%, 6px 6px, 6px 6px !important;
-  background-position: 0 0, 0 0, 3px 3px !important;
+    /* Macchia di caffè (bordo esterno più scuro) */
+    radial-gradient(circle at 15% 15%, transparent 0%, transparent 12%, rgba(61,42,46,.08) 14%, rgba(61,42,46,.15) 16%, rgba(61,42,46,0) 17%),
+    radial-gradient(circle at 17% 12%, transparent 0%, transparent 10%, rgba(61,42,46,.06) 12%, rgba(61,42,46,.12) 14%, rgba(61,42,46,0) 15%),
+    /* Grana della carta */
+    repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,.03) 1px, rgba(0,0,0,.03) 2px),
+    radial-gradient(rgba(0,0,0,.04) 15%, transparent 16%),
+    radial-gradient(rgba(0,0,0,.04) 15%, transparent 16%) !important;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 6px 6px, 6px 6px !important;
+  background-position: 0 0, 0 0, 0 0, 0 0, 3px 3px !important;
   
-  border:1px solid #825863 !important;
-  border-radius:1px !important;
-  box-shadow: 0 12px 24px rgba(0,0,0,.55), inset 0 0 40px rgba(130,80,90,.12) !important;
+  /* Bordo stile ritaglio di giornale */
+  border:1px solid #D6B7BF !important;
+  border-radius:0 !important;
+  box-shadow: 0 14px 28px rgba(0,0,0,.6), 
+              0 4px 8px rgba(0,0,0,.4),
+              inset 0 0 50px rgba(163,115,126,.1) !important;
   clip-path:none !important;
-  transform:rotate(-1deg) !important; /* Leggermente storto sul tavolo */
+  transform:rotate(-1.5deg) scale(0.98) !important;
 }
 
-/* Spegniamo gli effetti neon/3D ereditati */
-html[data-tema="bar"] .ant-pitch.ant-pitch3d::before,
+/* Margine bianco/rosa finto attorno al disegno tattico (padding interno non funziona bene 
+   perché il campo SVG è position:absolute, quindi usiamo pseudo-elemento o bordo largo) */
+html[data-tema="bar"] .ant-pitch.ant-pitch3d::before {
+  content: '';
+  position: absolute;
+  inset: 5%;
+  border: 1px solid rgba(80,55,60,.15);
+  display: block !important;
+  z-index: 0;
+  pointer-events: none;
+}
+
 html[data-tema="bar"] .ant-pitch.ant-pitch3d::after,
 html[data-tema="bar"] .ant-pitch3d-border{
   display:none !important;
 }
 
-/* L'inchiostro delle linee del campo: stampato (leggermente tratteggiato) */
+/* L'inchiostro delle linee del campo: stampato (tratteggiato stile diagramma editoriale) */
 html[data-tema="bar"] .ant-field-markings rect,
 html[data-tema="bar"] .ant-field-markings path,
 html[data-tema="bar"] .ant-field-markings circle{
-  stroke:#402A2E !important;
-  stroke-width:0.8 !important;
+  stroke:#3D2A2E !important;
+  stroke-width:1 !important;
   filter:none !important;
-  stroke-dasharray: 4 3 !important;
+  stroke-dasharray: 6 4 !important;
 }
 
-/* Gli slot vuoti non sono al neon, sono quadrati tratteggiati a matita */
+/* Gli slot vuoti non sono al neon, sono quadrati tratteggiati a inchiostro fino */
 html[data-tema="bar"] .ant-slot3d-empty{
-  border:1px dashed #A6838C !important;
-  background:rgba(255,255,255,.25) !important;
-  border-radius:2px !important;
+  border:1px dashed rgba(61,42,46,.4) !important;
+  background:rgba(255,255,255,.3) !important;
+  border-radius:0 !important;
   box-shadow:none !important;
+  transform: none !important;
 }
 
-/* Etichette dei ruoli: font graziato corsivo come i trafiletti tattici */
-html[data-tema="bar"] .ant-slot3d-label{
-  color:#402A2E !important;
-  text-shadow:none !important;
-  font-family: Georgia, serif !important;
+/* Le etichette dei ruoli: NON devono essere sfere colorate stile videogioco,
+   ma semplice testo stampato inchiostrato sul giornale */
+html[data-tema="bar"] .ant-slot3d-label {
+  background: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+html[data-tema="bar"] .ant-slot3d-label .badge-ruolo {
+  background: transparent !important;
+  color: #3D2A2E !important;
+  font-family: 'Times New Roman', Georgia, serif !important;
+  font-weight: 700 !important;
+  font-size: 0.75rem !important;
   font-style: italic !important;
-  letter-spacing: 0.5px !important;
+  letter-spacing: 0.05em !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  padding: 0 3px !important;
+}
+
+/* Disabilita i colori di ruolo specifici (P, D, C, A, ecc.) ereditati dal CSS base */
+html[data-tema="bar"] .badge-ruolo[class*="r-"] {
+  background: transparent !important;
+  color: #3D2A2E !important;
+}
+
+/* Nome del giocatore nello slot occupato */
+html[data-tema="bar"] .ant-slot3d-name-txt {
+  color: #3D2A2E !important;
+  font-family: 'Times New Roman', Georgia, serif !important;
+  font-weight: 700 !important;
+  text-shadow: none !important;
+  letter-spacing: 0.03em !important;
+  background: rgba(245,216,222,.8) !important; /* Leggero sfondo rosa per leggibilità sulla riga */
+  padding: 0 4px !important;
+}
+
+/* Le carte (giocatori assegnati) sono piatte, come figurine incollate sul foglio, 
+   non ologrammi 3D. Rimuoviamo le ombre e le rotazioni spaziali spaziali. */
+html[data-tema="bar"] .ant-slot3d .ant-card {
+  transform: none !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,.3) !important;
+  border-radius: 2px !important;
+  border: 1px solid #755b61 !important;
+}
+html[data-tema="bar"] .ant-slot3d:hover .ant-card {
+  transform: scale(1.05) !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,.4) !important;
+}
+html[data-tema="bar"] .ant-slot3d-shadow {
+  display: none !important;
 }
