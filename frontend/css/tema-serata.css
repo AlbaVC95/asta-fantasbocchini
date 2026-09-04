@@ -1373,142 +1373,25 @@ html body.layout-admin .asta-row-puja .timer-number{
   color:var(--sc-ambra-piena) !important;text-shadow:none !important;
 }
 html body.layout-admin .asta-row-puja .rilancio-box{
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 7px !important;
-  justify-content: center !important;
-  align-items: stretch !important;
-  flex: 0 0 250px !important;
-  width: 250px !important;
-  max-width: 260px !important;
-  background: none !important;
-  border: none !important;
-  box-shadow: none !important;
+  background:none !important;border:none !important;box-shadow:none !important;
   transform: none !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
 }
 html body.layout-admin .asta-row-puja .quick-bids-row{
-  display: flex !important;
-  gap: 0 !important;
-  margin: 0 !important;
-  width: 100% !important;
-  border: 1px solid rgba(var(--sc-carta),.20) !important;
-  border-radius: 2px !important;
-  overflow: hidden !important;
-  background: rgba(20,16,14,.6) !important;
+  display:flex !important;gap:0 !important;
+  border:1px solid rgba(var(--sc-carta),.20) !important;border-radius:2px !important;overflow:hidden !important;
 }
 html body.layout-admin .asta-row-puja .btn-quick{
-  flex: 1 1 0 !important;
-  border: none !important;
-  border-radius: 0 !important;
-  background: none !important;
-  color: var(--sc-medio) !important;
-  height: 38px !important;
-  padding: 0 !important;
-  font-family: 'Archivo', sans-serif !important;
-  font-weight: 700 !important;
-  font-variation-settings: 'wdth' 90 !important;
-  font-size: .88rem !important;
-  letter-spacing: .02em !important;
-  box-shadow: none !important;
-  transform: none !important;
+  flex:1 1 0 !important;border:none !important;border-radius:0 !important;background:none !important;
+  color:var(--sc-medio) !important;height:42px !important;
 }
-html body.layout-admin .asta-row-puja .btn-quick + .btn-quick{
-  border-left: 1px solid rgba(var(--sc-carta),.16) !important;
-}
+html body.layout-admin .asta-row-puja .btn-quick + .btn-quick{border-left:1px solid rgba(var(--sc-carta),.16) !important}
 html body.layout-admin .asta-row-puja .btn-rilancia{
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  background: var(--sc-testo) !important;
-  color: var(--sc-fondo) !important;
-  border-radius: 2px !important;
-  width: 100% !important;
-  height: 50px !important;
-  padding: 0 14px !important;
-  font-family: Archivo, sans-serif !important;
-  font-weight: 900 !important;
-  font-variation-settings: 'wdth' 76 !important;
-  font-size: 1.15rem !important;
-  letter-spacing: .03em !important;
-  text-transform: uppercase !important;
-  border: none !important;
-  box-shadow: 0 12px 28px rgba(0,0,0,.5) !important;
-  text-shadow: none !important;
-  margin: 0 !important;
+  background:var(--sc-testo) !important;color:var(--sc-fondo) !important;border-radius:2px !important;
+  font-family:Archivo,sans-serif !important;font-weight:900 !important;
+  font-variation-settings:'wdth' 76 !important;text-transform:uppercase !important;
+  box-shadow:0 12px 28px rgba(0,0,0,.5) !important;
 }
-html body.layout-admin .asta-row-puja .btn-rilancia::after{
-  content: attr(data-tot) !important;
-  display: block !important;
-  font-family: 'Archivo', sans-serif !important;
-  font-weight: 900 !important;
-  font-variation-settings: 'wdth' 108 !important;
-  font-variant-numeric: tabular-nums !important;
-  font-size: 1.35rem !important;
-  letter-spacing: -.02em !important;
-  padding-left: 12px !important;
-  margin-left: 12px !important;
-  border-left: 1px solid rgba(20,16,14,.22) !important;
-  position: static !important;
-  background: none !important;
-  transform: none !important;
-  width: auto !important;
-  height: auto !important;
-  opacity: 1 !important;
-  animation: none !important;
-}
-html body.layout-admin .asta-row-puja .btn-rilancia::before{
-  display: none !important;
-}
-html body.layout-admin[data-fase="finale"] .asta-row-puja .btn-rilancia,
-html body.puja-urgente.layout-admin .asta-row-puja .btn-rilancia{
-  background: var(--sc-brace-piena) !important;
-  color: #F7EFE6 !important;
-  box-shadow: 0 12px 30px rgba(var(--sc-brace),.36) !important;
-}
-html body.layout-admin .asta-row-puja .manual-bid-row{
-  display: flex !important;
-  gap: 0 !important;
-  margin: 0 !important;
-  width: 100% !important;
-  border: 1px solid rgba(var(--sc-carta),.14) !important;
-  border-radius: 2px !important;
-  overflow: hidden !important;
-}
-html body.layout-admin .asta-row-puja .inp-rilancio{
-  flex: 1 1 0 !important;
-  width: auto !important;
-  min-width: 0 !important;
-  background: rgba(20,16,14,.6) !important;
-  border: none !important;
-  border-radius: 0 !important;
-  color: var(--sc-testo) !important;
-  height: 36px !important;
-  padding: 0 12px !important;
-  font-family: 'Space Mono', monospace !important;
-  font-weight: 700 !important;
-  font-size: .82rem !important;
-  text-align: left !important;
-}
-html body.layout-admin .asta-row-puja .btn-manuale{
-  flex: 0 0 auto !important;
-  border-radius: 0 !important;
-  background: none !important;
-  border: none !important;
-  border-left: 1px solid rgba(var(--sc-carta),.14) !important;
-  color: var(--sc-medio) !important;
-  height: 36px !important;
-  padding: 0 14px !important;
-  font-family: 'Space Mono', monospace !important;
-  font-size: .64rem !important;
-  letter-spacing: .16em !important;
-  text-transform: uppercase !important;
-  font-weight: 400 !important;
-  width: auto !important;
-  transform: none !important;
-  box-shadow: none !important;
-}
+html body.layout-admin[data-fase="finale"] .asta-row-puja .btn-rilancia{background:var(--sc-brace-piena) !important;color:#F7EFE6 !important}
 
 /* pannello Admin: comandi sobri, niente pastiglie colorate */
 html body .admin-panel{
@@ -2563,24 +2446,18 @@ html[data-tema="cuoio"] body.layout-admin .asta-row-puja .cc-offerta-box{
 html[data-tema="cuoio"] .sq-crediti{color:#2F6B3F !important;text-shadow:none !important}
 
 /* ── La lastra dell'azione: inchiostro su pergamena ── */
-html[data-tema="cuoio"] body #puja-panel-slot .btn-rilancia,
-html[data-tema="cuoio"] body.layout-admin .asta-row-puja .btn-rilancia{
+html[data-tema="cuoio"] body #puja-panel-slot .btn-rilancia{
   box-shadow:0 10px 22px rgba(58,36,20,.22) !important;
 }
-html[data-tema="cuoio"] body.puja-urgente #puja-panel-slot .btn-rilancia,
-html[data-tema="cuoio"] body.puja-urgente.layout-admin .asta-row-puja .btn-rilancia{
+html[data-tema="cuoio"] body.puja-urgente #puja-panel-slot .btn-rilancia{
   box-shadow:0 10px 24px rgba(168,58,42,.30) !important;
 }
 html[data-tema="cuoio"] body #puja-panel-slot .quick-bids-row,
-html[data-tema="cuoio"] body.layout-admin .asta-row-puja .quick-bids-row,
-html[data-tema="cuoio"] body #puja-panel-slot .inp-rilancio,
-html[data-tema="cuoio"] body.layout-admin .asta-row-puja .inp-rilancio{
+html[data-tema="cuoio"] body #puja-panel-slot .inp-rilancio{
   background:#FAF2E3 !important;
 }
 html[data-tema="cuoio"] body #puja-panel-slot .btn-quick,
-html[data-tema="cuoio"] body.layout-admin .asta-row-puja .btn-quick,
-html[data-tema="cuoio"] body #puja-panel-slot .btn-manuale,
-html[data-tema="cuoio"] body.layout-admin .asta-row-puja .btn-manuale{color:#5C4A3A !important}
+html[data-tema="cuoio"] body #puja-panel-slot .btn-manuale{color:#5C4A3A !important}
 
 /* ── La clessidra: il vetro va disegnato al contrario ──
    L'SVG di clessidra.js costruisce riflessi e profilo con bianco a bassa
@@ -2867,24 +2744,18 @@ html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-offerta-box{
 html[data-tema="lavagna"] .sq-crediti{color:#FF6FC4 !important;text-shadow:0 0 8px rgba(255,60,172,.35) !important}
 
 /* ── La lastra dell'azione ── */
-html[data-tema="lavagna"] body #puja-panel-slot .btn-rilancia,
-html[data-tema="lavagna"] body.layout-admin .asta-row-puja .btn-rilancia{
+html[data-tema="lavagna"] body #puja-panel-slot .btn-rilancia{
   box-shadow:0 0 22px rgba(34,211,238,.30), 0 10px 22px rgba(0,0,0,.4) !important;
 }
-html[data-tema="lavagna"] body.puja-urgente #puja-panel-slot .btn-rilancia,
-html[data-tema="lavagna"] body.puja-urgente.layout-admin .asta-row-puja .btn-rilancia{
+html[data-tema="lavagna"] body.puja-urgente #puja-panel-slot .btn-rilancia{
   box-shadow:0 0 24px rgba(255,45,45,.35), 0 10px 24px rgba(0,0,0,.4) !important;
 }
 html[data-tema="lavagna"] body #puja-panel-slot .quick-bids-row,
-html[data-tema="lavagna"] body.layout-admin .asta-row-puja .quick-bids-row,
-html[data-tema="lavagna"] body #puja-panel-slot .inp-rilancio,
-html[data-tema="lavagna"] body.layout-admin .asta-row-puja .inp-rilancio{
+html[data-tema="lavagna"] body #puja-panel-slot .inp-rilancio{
   background:#111318 !important;
 }
 html[data-tema="lavagna"] body #puja-panel-slot .btn-quick,
-html[data-tema="lavagna"] body.layout-admin .asta-row-puja .btn-quick,
-html[data-tema="lavagna"] body #puja-panel-slot .btn-manuale,
-html[data-tema="lavagna"] body.layout-admin .asta-row-puja .btn-manuale{color:#B8C4D0 !important}
+html[data-tema="lavagna"] body #puja-panel-slot .btn-manuale{color:#B8C4D0 !important}
 
 /* ── L'orologio qui non e' una clessidra: e' un anello al neon ──────────
    Gli altri due temi condividono la clessidra (solo i materiali cambiano,
@@ -3536,28 +3407,20 @@ html[data-tema="sala-giochi"] .budget-progress-fill.crit{
 
 /* ── La pulsantiera ── */
 html[data-tema="sala-giochi"] body #puja-panel-slot .quick-bids-row,
-html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .quick-bids-row,
-html[data-tema="sala-giochi"] body #puja-panel-slot .manual-bid-row,
-html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .manual-bid-row{
+html[data-tema="sala-giochi"] body #puja-panel-slot .manual-bid-row{
   background:var(--sg-carta) !important;border:3px solid #141024 !important;border-radius:0 !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .btn-quick,
-html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .btn-quick,
-html[data-tema="sala-giochi"] body #puja-panel-slot .btn-manuale,
-html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .btn-manuale{
+html[data-tema="sala-giochi"] body #puja-panel-slot .btn-manuale{
   font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
   font-variation-settings:normal !important;color:#141024 !important;
 }
-html[data-tema="sala-giochi"] body #puja-panel-slot .btn-quick:hover,
-html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .btn-quick:hover{background:#F5B01A !important}
+html[data-tema="sala-giochi"] body #puja-panel-slot .btn-quick:hover{background:#F5B01A !important}
 html[data-tema="sala-giochi"] body #puja-panel-slot .btn-quick + .btn-quick,
-html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .btn-quick + .btn-quick,
-html[data-tema="sala-giochi"] body #puja-panel-slot .btn-manuale,
-html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .btn-manuale{
+html[data-tema="sala-giochi"] body #puja-panel-slot .btn-manuale{
   border-left:3px solid #141024 !important;
 }
-html[data-tema="sala-giochi"] body #puja-panel-slot .inp-rilancio,
-html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .inp-rilancio{
+html[data-tema="sala-giochi"] body #puja-panel-slot .inp-rilancio{
   background:var(--sg-carta2) !important;color:#141024 !important;
   font-family:'Silkscreen',var(--font-mono) !important;
 }
@@ -3565,8 +3428,7 @@ html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .inp-rilancio{
    l'azione — e' l'unico bottone che toglie crediti; il resto del rosso resta
    riservato agli ultimi secondi, che si distinguono perche' cambia TUTTA la
    piastra (cornice, ombra, nastri, cronometro) e il tasto pulsa. */
-html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia,
-html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .btn-rilancia{
+html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia{
   background:#D4241C !important;color:#FFFFFF !important;
   font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
   font-variation-settings:normal !important;
@@ -3576,21 +3438,18 @@ html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .btn-rilancia{
   box-shadow:6px 6px 0 #141024 !important;
   text-shadow:3px 3px 0 rgba(20,16,36,.45) !important;
 }
-html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia::after,
-html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .btn-rilancia::after{
+html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia::after{
   font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
   font-variation-settings:normal !important;font-size:.6rem !important;
   padding-left:10px !important;margin-left:10px !important;
   border-left:3px solid rgba(255,255,255,.55) !important;
 }
 /* la pressione del bottone: si affonda nel suo stesso rilievo */
-html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia:active,
-html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .btn-rilancia:active{
+html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia:active{
   transform:translate(6px,6px) !important;box-shadow:none !important;
   transform: none !important;
 }
-html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .btn-rilancia,
-html[data-tema="sala-giochi"] body.puja-urgente.layout-admin .asta-row-puja .btn-rilancia{
+html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .btn-rilancia{
   background:#B01710 !important;box-shadow:6px 6px 0 #141024 !important;
   animation:sg-pigia .45s steps(2) infinite !important;
 }
@@ -5130,9 +4989,7 @@ html:not([data-tema]) body .asta-row-puja .btn-rilancia {
 }
 
 html[data-tema="serata"] body #puja-panel-slot .btn-rilancia:hover,
-html:not([data-tema]) body #puja-panel-slot .btn-rilancia:hover,
-html[data-tema="serata"] body .asta-row-puja .btn-rilancia:hover,
-html:not([data-tema]) body .asta-row-puja .btn-rilancia:hover {
+html:not([data-tema]) body #puja-panel-slot .btn-rilancia:hover {
   box-shadow:
     0 12px 38px rgba(217,119,6,0.75),
     0 1px 0 rgba(255,255,240,0.65) inset,
@@ -5141,18 +4998,14 @@ html:not([data-tema]) body .asta-row-puja .btn-rilancia:hover {
 }
 
 html[data-tema="serata"] body #puja-panel-slot .btn-rilancia:active,
-html:not([data-tema]) body #puja-panel-slot .btn-rilancia:active,
-html[data-tema="serata"] body .asta-row-puja .btn-rilancia:active,
-html:not([data-tema]) body .asta-row-puja .btn-rilancia:active {
+html:not([data-tema]) body #puja-panel-slot .btn-rilancia:active {
   transform: translateY(1px) !important;
   border-bottom-width: 2px !important;
 }
 
-/* ─── QUICK BIDS IN ORO E METALLO TITANIO (+5, +10) ─────────────────────────── */
+/* ─── QUICK BIDS IN ORO E METALLO TITANIO ─────────────────────────────────── */
 html[data-tema="serata"] body #puja-panel-slot .quick-bids-row,
-html:not([data-tema]) body #puja-panel-slot .quick-bids-row,
-html[data-tema="serata"] body .asta-row-puja .quick-bids-row,
-html:not([data-tema]) body .asta-row-puja .quick-bids-row {
+html:not([data-tema]) body #puja-panel-slot .quick-bids-row {
   background: rgba(10,16,28,0.90) !important;
   border: 1px solid rgba(251,191,36,0.30) !important;
   border-radius: 10px !important;
@@ -5162,9 +5015,7 @@ html:not([data-tema]) body .asta-row-puja .quick-bids-row {
 }
 
 html[data-tema="serata"] body #puja-panel-slot .btn-quick,
-html:not([data-tema]) body #puja-panel-slot .btn-quick,
-html[data-tema="serata"] body .asta-row-puja .btn-quick,
-html:not([data-tema]) body .asta-row-puja .btn-quick {
+html:not([data-tema]) body #puja-panel-slot .btn-quick {
   border-radius: 7px !important;
   background: rgba(255,255,255,0.05) !important;
   color: #FCD34D !important;
@@ -5174,83 +5025,7 @@ html:not([data-tema]) body .asta-row-puja .btn-quick {
 }
 
 html[data-tema="serata"] body #puja-panel-slot .btn-quick:hover,
-html:not([data-tema]) body #puja-panel-slot .btn-quick:hover,
-html[data-tema="serata"] body .asta-row-puja .btn-quick:hover,
-html:not([data-tema]) body .asta-row-puja .btn-quick:hover {
-  background: rgba(251,191,36,0.25) !important;
-  color: #FFFFFF !important;
-  border-color: #FFB04A !important;
-  box-shadow: 0 0 14px rgba(251,191,36,0.45) !important;
-  transform: scale(1.03) !important;
-}
-
-/* ─── OFFERTA MANUALE IN ORO E METALLO TITANIO (OFFRI + INPUT) ───────────── */
-html[data-tema="serata"] body #puja-panel-slot .manual-bid-row,
-html:not([data-tema]) body #puja-panel-slot .manual-bid-row,
-html[data-tema="serata"] body .asta-row-puja .manual-bid-row,
-html:not([data-tema]) body .asta-row-puja .manual-bid-row {
-  display: flex !important;
-  gap: 6px !important;
-  width: 100% !important;
-  margin: 0 !important;
-  align-items: center !important;
-}
-
-html[data-tema="serata"] body #puja-panel-slot .inp-rilancio,
-html:not([data-tema]) body #puja-panel-slot .inp-rilancio,
-html[data-tema="serata"] body .asta-row-puja .inp-rilancio,
-html:not([data-tema]) body .asta-row-puja .inp-rilancio {
-  flex: 1 1 auto !important;
-  width: 0 !important;
-  min-width: 0 !important;
-  height: 38px !important;
-  background: rgba(10,16,28,0.90) !important;
-  border: 1px solid rgba(251,191,36,0.30) !important;
-  border-radius: 8px !important;
-  color: #FCD34D !important;
-  font-family: 'Space Mono', monospace !important;
-  font-size: 0.95rem !important;
-  font-weight: 700 !important;
-  text-align: center !important;
-  padding: 4px 8px !important;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.5) !important;
-  transition: border-color 0.15s !important;
-}
-html[data-tema="serata"] body #puja-panel-slot .inp-rilancio:focus,
-html:not([data-tema]) body #puja-panel-slot .inp-rilancio:focus,
-html[data-tema="serata"] body .asta-row-puja .inp-rilancio:focus,
-html:not([data-tema]) body .asta-row-puja .inp-rilancio:focus {
-  border-color: #FFB04A !important;
-  box-shadow: 0 0 10px rgba(251,191,36,0.35), inset 0 2px 6px rgba(0,0,0,0.5) !important;
-  outline: none !important;
-}
-
-html[data-tema="serata"] body #puja-panel-slot .btn-manuale,
-html:not([data-tema]) body #puja-panel-slot .btn-manuale,
-html[data-tema="serata"] body .asta-row-puja .btn-manuale,
-html:not([data-tema]) body .asta-row-puja .btn-manuale {
-  flex: 0 0 auto !important;
-  height: 38px !important;
-  padding: 0 16px !important;
-  border-radius: 8px !important;
-  background: rgba(255,255,255,0.06) !important;
-  color: #FCD34D !important;
-  border: 1px solid rgba(251,191,36,0.30) !important;
-  font-family: 'Archivo', sans-serif !important;
-  font-weight: 800 !important;
-  font-size: 0.82rem !important;
-  letter-spacing: 0.05em !important;
-  text-transform: uppercase !important;
-  cursor: pointer !important;
-  transition: all 0.15s !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-html[data-tema="serata"] body #puja-panel-slot .btn-manuale:hover,
-html:not([data-tema]) body #puja-panel-slot .btn-manuale:hover,
-html[data-tema="serata"] body .asta-row-puja .btn-manuale:hover,
-html:not([data-tema]) body .asta-row-puja .btn-manuale:hover {
+html:not([data-tema]) body #puja-panel-slot .btn-quick:hover {
   background: rgba(251,191,36,0.25) !important;
   color: #FFFFFF !important;
   border-color: #FFB04A !important;
