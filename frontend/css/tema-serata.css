@@ -4724,7 +4724,7 @@ html:not([data-tema]) body .asta-header-title {
   letter-spacing: -0.02em !important;
 }
 
-/* ─── PANNELLI SUPERIORI CON DOPPIO BISELLO D'ORO ────────────────────────── */
+/* ─── PANNELLI SECONDARI: COLORE BLU ANTEPRIMA (#334155 -> #1e293b) ─────── */
 html[data-tema="serata"] body .panel-budget,
 html:not([data-tema]) body .panel-budget,
 html[data-tema="serata"] body #mio-panel,
@@ -4732,17 +4732,18 @@ html:not([data-tema]) body #mio-panel,
 html[data-tema="serata"] body .admin-panel,
 html:not([data-tema]) body .admin-panel,
 html[data-tema="serata"] body .card,
-html:not([data-tema]) body .card {
+html:not([data-tema]) body .card,
+html[data-tema="serata"] body #budget-bar,
+html:not([data-tema]) body #budget-bar {
   position: relative !important;
-  background:
-    radial-gradient(ellipse 85% 55% at 50% 0%, rgba(251,191,36,0.07) 0%, transparent 65%),
-    linear-gradient(165deg, rgba(16,24,40,0.98) 0%, rgba(10,14,24,0.99) 100%) !important;
+  /* Stesso identico colore blu elegante di Anteprima */
+  background: linear-gradient(180deg, #334155 0%, #1e293b 100%) !important;
   border: 1px solid rgba(251,191,36,0.28) !important;
   border-top: 2.5px solid #F59E0B !important;
   border-radius: 12px !important;
   box-shadow:
-    0 10px 28px rgba(0,0,0,0.50),
-    0 1px 0 rgba(255,240,180,0.18) inset,
+    0 10px 28px rgba(0,0,0,0.45),
+    0 1px 0 rgba(255,255,255,0.10) inset,
     0 0 20px rgba(251,191,36,0.06) !important;
 }
 
@@ -5032,16 +5033,18 @@ html:not([data-tema]) body #puja-panel-slot .btn-quick:hover {
   transform: scale(1.03) !important;
 }
 
-/* ─── TABS PANEL: ORO SATINATO SULLE SEZIONI ATTIVE ──────────────────────── */
+/* ─── TABS PANEL: COLORE BLU ANTEPRIMA ANCHE PER IL TABELLONE ───────────── */
 html[data-tema="serata"] body .tabs-panel,
 html:not([data-tema]) body .tabs-panel {
-  background: linear-gradient(180deg, rgba(15,23,37,0.99) 0%, rgba(9,14,23,1.0) 100%) !important;
-  border: 1px solid rgba(251,191,36,0.25) !important;
+  /* Stesso identico colore blu elegante di Anteprima */
+  background: linear-gradient(180deg, #334155 0%, #1e293b 100%) !important;
+  border: 1px solid rgba(251,191,36,0.28) !important;
   border-top: 3px solid #FFB04A !important;
   border-radius: 12px !important;
   box-shadow:
-    0 10px 30px rgba(0,0,0,0.50),
-    0 0 30px rgba(251,191,36,0.08) !important;
+    0 10px 30px rgba(0,0,0,0.45),
+    0 1px 0 rgba(255,255,255,0.10) inset,
+    0 0 25px rgba(251,191,36,0.06) !important;
 }
 
 html[data-tema="serata"] body .tabs-nav,
