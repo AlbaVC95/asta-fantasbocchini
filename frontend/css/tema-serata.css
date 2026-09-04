@@ -295,6 +295,113 @@ html[data-tema="bar"] body #puja-panel-slot .badge-ruolo.r-Pc,
 html[data-tema="bar"] body .badge-ruolo.r-A,
 html[data-tema="bar"] body .badge-ruolo.r-Pc{--r-fondo:#C4523E;--r-testo:#FFF0EC;background:#C4523E !important;color:#FFF0EC !important}
 
+/* ══ IL BAR — l'atmosfera sta nel MOBILE, non sopra ai dati ══
+   Regola che tiene insieme tutto quello che segue, ed e' la risposta alla lamentela
+   di partenza ("costa capire le cose"): la materia va nel telaio — legno, ottone,
+   lampada, panno — e i DATI restano su superfici quiete, ad alto contrasto. Appena
+   una texture finisce sotto a un numero da 10px, si torna al problema di Serata.
+   Ogni cosa qui sotto sta o sul fondo, o su una cornice, o su un bordo: mai dietro
+   a un testo che si deve leggere in fretta sotto timer. */
+
+/* ── I SOTTOBICCHIERI ──────────────────────────────────────────
+   Aloni di bicchiere sul legno: due cerchi appena accennati, in un punto dove i
+   pannelli non arrivano quasi mai. Costano niente in leggibilita' — stanno sul
+   fondo, dietro a tutto — e sono il dettaglio che fa dire "e' un bar" prima di
+   qualunque altra cosa. */
+html[data-tema="bar"] .pitch-bg::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(circle at 88% 84%, transparent 0 46px,
+      rgba(255,222,170,.045) 46px 49px, transparent 49px 52px,
+      rgba(255,222,170,.03) 52px 54px, transparent 54px),
+    radial-gradient(circle at 79% 91%, transparent 0 30px,
+      rgba(255,222,170,.038) 30px 32.5px, transparent 32.5px);
+}
+
+/* ── LA TRAVE D'OTTONE SOTTO LA TESTATA ────────────────────────
+   Il bordo del bancone. Un solo filo orizzontale, con la luce che scorre da
+   sinistra a destra come su un tubo tornito: e' quello che chiude la testata e la
+   fa sembrare un mobile invece che una barra di navigazione. Stesso mestiere che
+   Cuoio applica al suo filo di cuoio e Lavagna alla sua cornice d'ottone. */
+html[data-tema="bar"] body .asta-header{
+  border-bottom:none !important;
+  box-shadow:0 3px 0 0 #6B5334, 0 4px 0 0 #2A1D0E, 0 10px 24px rgba(0,0,0,.5) !important;
+}
+html[data-tema="bar"] body .asta-header::after{
+  background:linear-gradient(90deg,
+    rgba(122,96,58,0) 0%, #C9A257 10%, #F3DEB0 26%, #A88547 44%,
+    #F3DEB0 62%, #C9A257 80%, rgba(122,96,58,0) 100%) !important;
+  box-shadow:0 0 10px rgba(228,180,90,.34) !important;
+}
+
+/* ── IL PANNO DEL TAVOLO ───────────────────────────────────────
+   Il pannello delle tab e' il piano su cui si gioca: verde panno, con la grana
+   fitta e corta del feltro (non la venatura lunga del legno — sono due materiali
+   diversi e vanno due rumori diversi). Il verde resta SCURO apposta: e' un fondo,
+   e sopra ci vanno righe di elenco che devono leggersi. */
+html[data-tema="bar"] body .tabs-panel{
+  background:
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27300%27%20height%3D%27300%27%3E%3Cfilter%20id%3D%27p%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%271.4%27%20numOctaves%3D%272%27%20seed%3D%279%27%2F%3E%3CfeColorMatrix%20type%3D%27saturate%27%20values%3D%270%27%2F%3E%3CfeComponentTransfer%3E%3CfeFuncA%20type%3D%27linear%27%20slope%3D%270.75%27%2F%3E%3C%2FfeComponentTransfer%3E%3C%2Ffilter%3E%3Crect%20width%3D%27300%27%20height%3D%27300%27%20filter%3D%27url%28%23p%29%27%2F%3E%3C%2Fsvg%3E") padding-box,
+    linear-gradient(180deg,#1E4A31,#163825) padding-box,
+    linear-gradient(152deg,
+      #F0DCB4 0%, #C9AE84 12%, #8A755A 30%,
+      #5A4A38 48%, #8A755A 66%, #E4CFA6 84%, #6E5C46 100%) border-box !important;
+  background-size:300px 300px, auto, auto !important;
+  background-blend-mode:soft-light, normal, normal !important;
+}
+/* Le righe restano sul loro riquadro scuro: il panno si vede INTORNO, non sotto. */
+html[data-tema="bar"] body .tabs-panel .tab-content{
+  background:rgba(10,20,14,.55) !important;
+  border-color:rgba(166,146,124,.30) !important;
+}
+
+/* ── LA LAMPADA SUL GIOCATORE IN ASTA ──────────────────────────
+   La carta di puja e' l'oggetto sotto la luce, ed e' l'unico punto in cui un
+   effetto atmosferico AIUTA a leggere invece di disturbare: dice dove guardare.
+   Un alone caldo attorno alla cornice, non sopra al contenuto. */
+html[data-tema="bar"] body #puja-panel-slot{
+  box-shadow:0 12px 30px rgba(6,3,1,.7),
+             0 0 46px rgba(232,163,61,.18),
+             inset 0 3px 7px rgba(0,0,0,.5),
+             inset 0 1px 0 rgba(255,236,200,.16) !important;
+}
+/* Negli ultimi secondi la lampada vira al rosso, come il resto della scena. */
+html[data-tema="bar"] body.puja-urgente #puja-panel-slot{
+  box-shadow:0 12px 30px rgba(6,3,1,.7),
+             0 0 52px rgba(214,74,58,.26),
+             inset 0 3px 7px rgba(0,0,0,.5),
+             inset 0 1px 0 rgba(255,236,200,.16) !important;
+}
+
+/* ── I BOTTONI HANNO SPESSORE ──────────────────────────────────
+   Un bottone di un mobile si preme: ha un bordo inferiore piu' scuro (lo spessore
+   del pezzo) e quando lo premi scende. Costa due righe e cambia la sensazione di
+   tutta l'interfaccia — e non tocca la leggibilita' di niente. */
+html[data-tema="bar"] body .btn-success,
+html[data-tema="bar"] body .btn-secondary,
+html[data-tema="bar"] body .btn-primary,
+html[data-tema="bar"] body .tab-btn{
+  box-shadow:0 3px 0 rgba(0,0,0,.45), 0 4px 8px rgba(0,0,0,.35),
+             inset 0 1px 0 rgba(255,240,210,.14) !important;
+  transition:transform .06s ease, box-shadow .06s ease !important;
+}
+html[data-tema="bar"] body .btn-success:active,
+html[data-tema="bar"] body .btn-secondary:active,
+html[data-tema="bar"] body .btn-primary:active{
+  transform:translateY(2px) !important;
+  box-shadow:0 1px 0 rgba(0,0,0,.45), inset 0 2px 4px rgba(0,0,0,.4) !important;
+}
+
+/* ── LA CLESSIDRA IN OTTONE DEL TEMA ───────────────────────────
+   clessidra.js dipinge i materiali da JS (i gradienti SVG hanno stop-color fissi e
+   nessuna variabile CSS puo' capovolgerli — vedi DECISIONS.md). Da qui si puo'
+   pero' dare il tono d'insieme, cosi' il vetro non resta l'unico pezzo che non
+   appartiene a questo mobile. */
+html[data-tema="bar"] body #puja-panel-slot .clessidra{
+  filter:saturate(1.12) hue-rotate(-6deg) brightness(1.04)
+         drop-shadow(0 6px 14px rgba(0,0,0,.5)) !important;
+}
+
 html[data-tema="cuoio"]{
   --sc-carta:58,36,20;       /* sulla pergamena il "chiaro" diventa inchiostro di cuoio */
   --sc-ambra:107,68,35;      /* il cuoio del banco, non piu' l'ottone */

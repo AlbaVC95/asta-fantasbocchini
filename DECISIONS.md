@@ -2813,3 +2813,36 @@ compariva un riquadro piu' chiaro sul legno, e l'occhio lo leggeva subito come r
 Portata a 620px (e i nodi a 980px). **Il rumore e' l'unica cosa che non deve mostrare un periodo**:
 appena lo mostra, torna a essere una texture applicata, che e' esattamente cio' da cui si stava
 scappando.
+
+
+## "Il Bar": l'atmosfera sta nel MOBILE, i dati restano quieti
+
+La regola che tiene insieme tutto il tema, ed e' la risposta diretta alla lamentela di partenza
+("costa capire le cose"): **la materia va nel telaio — legno, ottone, lampada, panno — e i dati
+restano su superfici quiete ad alto contrasto.** Appena una texture finisce sotto a un numero da
+10px si torna esattamente al problema di Serata, solo con un'altra tinta.
+
+Ogni cosa aggiunta qui sta o sul fondo, o su una cornice, o su un bordo. Mai dietro a un testo che
+si deve leggere in fretta sotto timer:
+
+- **I sottobicchieri** — due aloni di bicchiere sul legno, in un angolo che i pannelli non coprono
+  quasi mai. Costano zero in leggibilita' e sono il dettaglio che fa dire "e' un bar" prima di
+  qualunque altro.
+- **La trave d'ottone sotto la testata** — un filo con la luce che scorre da sinistra a destra come
+  su un tubo tornito. Chiude la testata e la fa sembrare un mobile invece che una barra di
+  navigazione. Stesso mestiere che Cuoio applica al filo di cuoio e Lavagna alla cornice d'ottone.
+- **Il panno del tavolo** sul pannello delle tab, con la grana FITTA E CORTA del feltro — non la
+  venatura lunga del legno: sono due materiali e vogliono due rumori diversi. Ma le righe della
+  lista restano sul loro riquadro scuro: **il panno si vede intorno, non sotto**. Verificato: nome
+  giocatore 14.9:1, prezzo 16.5:1, il piu' debole (l'eta') 5.8:1.
+- **La lampada sulla carta di puja** — un alone caldo attorno alla cornice. E' l'unico effetto
+  atmosferico che AIUTA a leggere invece di disturbare, perche' dice dove guardare; e negli ultimi
+  secondi vira al rosso insieme al resto della scena.
+- **I bottoni hanno spessore**: bordo inferiore piu' scuro e `translateY(2px)` alla pressione. Due
+  righe, e cambia la sensazione di tutta l'interfaccia senza toccare la leggibilita' di niente.
+
+**Cosa ho deliberatamente NON fatto**, perche' e' il modo in cui questo tema fallirebbe: nessuna
+texture dietro al testo, nessun velo caldo sopra l'intera schermata (e' cio' che ha reso Serata
+illeggibile), niente scrittura a mano (la possiede Lavagna, e su liste fitte costa), e non piu' di
+due accenti nell'area dati. L'atmosfera si aggiunge ai bordi finche' non tocca i numeri: quando li
+tocca, si e' fatto un tema bello e inservibile.
