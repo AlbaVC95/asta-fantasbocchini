@@ -2,15 +2,14 @@
 
 ## Stato attuale
 
-Risolto il problema di layout dei pulsanti "Riapri" nella vista Admin quando il pannello laterale Anteprima è aperto.
+Risolto il problema del taglio dei crediti residui (budget) nel pannello "Mio Team" (vista Admin) quando l'Anteprima è aperta e il nome squadra è lungo.
 
 ## Cosa è cambiato
 
 - **`frontend/css/style.css`**: 
-  - Aggiunte regole specifiche usando `.asta-live-layout:has(#tab-anteprima.drawer-open) .riapri-row`.
-  - Quando lo spazio orizzontale si restringe (Anteprima aperta), i pulsanti non tentano più di affiancarsi (il che causava un line-break del testo che aumentava l'altezza sfondando il box).
-  - Ora si impilano in verticale (`flex-direction: column`), senza wrap del testo (`white-space: nowrap`), e con padding/font ridotti per non occupare più altezza di quanta ne occupassero prima.
-- **`frontend/index.html`**: Cache-busting aggiornato a `20260904141700`.
+  - Aggiunto il troncamento automatico con puntini di sospensione (`text-overflow: ellipsis`, `overflow: hidden`, `white-space: nowrap`) per l'elemento `.mio-nome`.
+  - Assicurato che il budget mantenga la sua larghezza intatta (`flex-shrink: 0` su `.crediti-badge`). In questo modo, quando il pannello laterale Anteprima comprime la pagina, è il nome della squadra (lungo) a tagliarsi con "..." invece di spingere fuori il numero dei crediti che è l'informazione fondamentale.
+- **`frontend/index.html`**: Cache-busting aggiornato a `20260904142100`.
 
 ## Pendenze
 
