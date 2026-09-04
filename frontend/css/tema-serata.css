@@ -1406,10 +1406,8 @@ html body .conferma-titolo{font-family:'Space Mono',monospace !important;letter-
    style.css. Si sostituisce solo il gradiente viola->oro del
    titolo, che ora sarebbe piatto (i due colori coincidono).
    ═══════════════════════════════════════════════════════════ */
+/* Titolo home base (sovrascritto specificamente per ogni tema) */
 html body .home-title{
-  font-family:'Instrument Serif',Georgia,serif !important;
-  font-style:italic !important;font-weight:400 !important;
-  background:none !important;-webkit-text-fill-color:var(--sc-testo) !important;color:var(--sc-testo) !important;
   letter-spacing:-.015em !important;
 }
 html body .home-logo{filter:grayscale(1) opacity(.5)}
@@ -1504,8 +1502,9 @@ html body.layout-admin #mio-panel .crediti-badge{
    all'apertura, come un neon che prende. Poi resta acceso, con un
    respiro appena percepibile.
    ═══════════════════════════════════════════════════════════════════ */
-html body .asta-header-title,
-html body .home-title{
+/* INSEGNA AL NEON: ESCLUSIVA DEL BAR */
+html[data-tema="bar"] body .asta-header-title,
+html[data-tema="bar"] body .home-title{
   font-family:'Instrument Serif',Georgia,serif !important;
   font-style:italic !important;font-weight:400 !important;
   background:none !important;-webkit-text-fill-color:#FFE9C9 !important;
@@ -1518,8 +1517,8 @@ html body .home-title{
      0 0 62px rgba(255,140,30,.22) !important;
   animation:neon-accende 2.4s ease-out both !important;
 }
-html body .asta-header-title{font-size:1.5rem !important;padding-right:4px}
-html body .home-title{font-size:clamp(2.6rem,7vw,4.6rem) !important}
+html[data-tema="bar"] body .asta-header-title{font-size:1.5rem !important;padding-right:4px}
+html[data-tema="bar"] body .home-title{font-size:clamp(2.6rem,7vw,4.6rem) !important}
 
 /* l'accensione: due tentativi falliti, poi tiene */
 @keyframes neon-accende{
@@ -4701,15 +4700,57 @@ html:not([data-tema]) body .asta-header {
     0 0 25px rgba(251,191,36,0.12) !important;
 }
 
-html[data-tema="serata"] body .asta-header-title,
-html:not([data-tema]) body .asta-header-title {
-  background: linear-gradient(135deg, #FFFFFF 0%, #FFE082 25%, #FFB04A 60%, #D97706 100%) !important;
+/* ─── TEMA SERATA D'ASTA: TITOLO GALA DI SUBASTA (OPZIONE 1) ───────────────
+   Nessun tubo al neon da bar: titolo maestoso in lettere dorate cesellate
+   con serifa classica imperiale romana (non corsiva), foglia d'oro e ombra elegante. */
+html[data-tema="serata"] body .home-title,
+html:not([data-tema]) body .home-title {
+  font-family: 'Instrument Serif', Georgia, serif !important;
+  font-style: normal !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: none !important;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFE89C 25%, #E5A93C 60%, #B87304 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
-  filter: drop-shadow(0 0 14px rgba(251,191,36,0.60)) !important;
-  font-weight: 900 !important;
-  letter-spacing: -0.02em !important;
+  text-shadow: none !important;
+  animation: none !important;
+  filter: drop-shadow(0 2px 10px rgba(229,169,60,0.40)) drop-shadow(0 8px 24px rgba(0,0,0,0.75)) !important;
+  font-size: clamp(2.6rem, 7vw, 4.6rem) !important;
+  margin-bottom: 8px !important;
+}
+
+html[data-tema="serata"] body .home-title::after,
+html:not([data-tema]) body .home-title::after {
+  display: none !important;
+}
+
+html[data-tema="serata"] body .home-subtitle,
+html:not([data-tema]) body .home-subtitle {
+  font-family: 'Space Mono', monospace !important;
+  font-size: 0.8rem !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+  color: #A79B8B !important;
+}
+
+html[data-tema="serata"] body .asta-header-title,
+html:not([data-tema]) body .asta-header-title {
+  font-family: 'Instrument Serif', Georgia, serif !important;
+  font-style: normal !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: none !important;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFE89C 25%, #E5A93C 60%, #B87304 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  text-shadow: none !important;
+  animation: none !important;
+  filter: drop-shadow(0 0 10px rgba(251,191,36,0.50)) !important;
+  font-size: 1.55rem !important;
+  padding-right: 4px !important;
 }
 
 /* ─── PANNELLI SECONDARI: COLORE BLU ANTEPRIMA (#334155 -> #1e293b) ─────── */
