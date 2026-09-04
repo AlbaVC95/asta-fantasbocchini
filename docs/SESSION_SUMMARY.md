@@ -2,15 +2,20 @@
 
 ## Stato attuale
 
-Risolto il problema di layout dei bottoni superiori del pannello Admin ("Bottoni", "Backup", "Termina") che, impilandosi su 3 righe quando l'Anteprima era aperta, consumavano tutto lo spazio verticale e spingevano fuori i bottoni in basso.
+La modalità "Anteprima" del tema "Il Bar" (La Gazzetta) è stata radicalmente potenziata per renderla estremamente più "cool" e fotorealistica.
 
 ## Cosa è cambiato
 
-- **`frontend/css/style.css`**: 
-  - Il contenitore `.admin-header` ora usa `flex-wrap: wrap`.
-  - Il gruppo `.admin-header-actions` usa ora `display: flex`.
-  - Quando l'Anteprima è aperta, il gruppo `.admin-header-actions` viene forzato a `width: 100%` per andare a capo sotto il badge Admin, e i 3 pulsanti al suo interno prendono `flex: 1` con un padding ridotto. In questo modo si affiancano tutti e 3 su una singola riga compatta, risparmiando 2 righe di altezza preziosa.
-- **`frontend/index.html`**: Cache-busting aggiornato a `20260904144200`.
+- **`frontend/css/tema-serata.css`**: 
+  - Aggiunte pieghe della carta (ombre lineari verticali e orizzontali al centro del giornale).
+  - Aggiunti finti blocchi di testo di articoli sfocati sullo sfondo rosa.
+  - Aggiunti pezzetti di "scotch" (nastro adesivo semitrasparente) agli angoli che fissano il giornale al tavolo di legno.
+  - Le linee del campo ora sembrano disegnate a penna biro blu (Bic).
+  - I ruoli e gli slot vuoti sembrano scarabocchi tattici fatti a penna rossa dal mister, con leggere inclinazioni casuali.
+  - I nomi dei giocatori schierati hanno uno sfondo che simula una passata di evidenziatore giallo.
+  - Le carte dei giocatori schierati sembrano figurine Panini incollate leggermente storte sul foglio (grazie a nth-child rotations).
+  - Un finto titolo stampato "LA GAZZETTA DELLO SPORT" in trasparenza sul retro del foglio.
+- **`frontend/index.html`**: Cache-busting aggiornato a `20260904144700`.
 
 ## Pendenze
 
