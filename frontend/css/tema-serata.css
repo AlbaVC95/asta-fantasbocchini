@@ -1502,27 +1502,34 @@ html body.layout-admin #mio-panel .crediti-badge{
    all'apertura, come un neon che prende. Poi resta acceso, con un
    respiro appena percepibile.
    ═══════════════════════════════════════════════════════════════════ */
-/* ─── TEMA IL BAR: TITOLO PUB IN OTTONE CALDO (SENZA NEON) ───────────────── */
+/* ─── TEMA IL BAR: L'INSEGNA AL NEON CALDO DA PUB ───────────────────────── */
 html[data-tema="bar"] body .asta-header-title,
 html[data-tema="bar"] body .home-title{
-  font-family:'Outfit', 'Archivo', sans-serif !important;
-  font-weight:900 !important;
-  font-style:normal !important;
-  text-transform:uppercase !important;
-  letter-spacing:0.04em !important;
-  background:linear-gradient(180deg, #FFF0D0 0%, #E8944A 55%, #A75314 100%) !important;
-  -webkit-background-clip:text !important;
-  -webkit-text-fill-color:transparent !important;
-  background-clip:text !important;
-  text-shadow:none !important;
-  filter:drop-shadow(0 2px 4px rgba(0,0,0,0.8)) !important;
-  animation:none !important;
+  font-family:'Instrument Serif',Georgia,serif !important;
+  font-style:italic !important;font-weight:400 !important;
+  background:none !important;-webkit-text-fill-color:#FFE9C9 !important;
+  color:#FFE9C9 !important;letter-spacing:.005em !important;
+  text-shadow:
+     0 0 2px  #FFF6E8,
+     0 0 6px  rgba(255,201,122,.95),
+     0 0 14px rgba(255,176,74,.75),
+     0 0 30px rgba(255,150,40,.45),
+     0 0 62px rgba(255,140,30,.22) !important;
+  animation:neon-accende 2.4s ease-out both !important;
+  filter:none !important;
 }
-html[data-tema="bar"] body .asta-header-title{font-size:1.45rem !important;padding-right:4px}
-html[data-tema="bar"] body .home-title{font-size:clamp(2.4rem,6.5vw,4.2rem) !important;margin-bottom:8px !important}
+html[data-tema="bar"] body .asta-header-title{font-size:1.5rem !important;padding-right:4px}
+html[data-tema="bar"] body .home-title{font-size:clamp(2.6rem,7vw,4.6rem) !important;margin-bottom:8px !important}
 
+/* l'accensione a scatti del neon, esclusiva del Bar */
 @keyframes neon-accende{
-  0%, 100% { opacity:1; text-shadow:none; }
+  0%   {opacity:.15; text-shadow:none}
+  6%   {opacity:1}
+  9%   {opacity:.2;  text-shadow:none}
+  14%  {opacity:1}
+  17%  {opacity:.25; text-shadow:none}
+  22%  {opacity:1}
+  100% {opacity:1}
 }
 /* il respiro del tubo, quasi impercettibile */
 html body .asta-header-title::after,
@@ -4716,7 +4723,9 @@ html:not([data-tema]) body .home-title {
 }
 
 html[data-tema="serata"] body .home-title::after,
-html:not([data-tema]) body .home-title::after {
+html:not([data-tema]) body .home-title::after,
+html[data-tema="serata"] body .asta-header-title::after,
+html:not([data-tema]) body .asta-header-title::after {
   display: none !important;
 }
 
@@ -4742,7 +4751,7 @@ html:not([data-tema]) body .asta-header-title {
   background-clip: text !important;
   text-shadow: none !important;
   animation: none !important;
-  filter: drop-shadow(0 0 10px rgba(251,191,36,0.50)) !important;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.85)) !important;
   font-size: 1.55rem !important;
   padding-right: 4px !important;
 }
