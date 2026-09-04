@@ -48,78 +48,140 @@
   --sc-fondo:#14100E;
 }
 /* ══ IL BAR ══
-   Le --sc-* sono le variabili con cui e' scritta TUTTA la composizione del foglio
-   (cornici, filetti, materie, la clessidra): ridefinendole qui il tema eredita la
-   composizione intera senza riscriverne una riga. E' il motivo per cui aggiungere
-   un tema costa una paletta e non trecento regole — vedi DECISIONS.md.
+   Ricalcato sul disegno fornito dall'utente, elemento per elemento.
 
-   La regola di questo tema in una riga: PANNELLI SCURI SU LEGNO CHIARO, cornici
-   d'ottone visibili, e il verde del panno come secondo accento. La prima passata
-   faceva il contrario (alzava tutto in blocco) e perdeva proprio il contrasto che
-   doveva guadagnare. */
+   La regola in una riga: PANNELLI QUASI NERI SU LEGNO MEDIO, ognuno con la sua
+   cornice d'ottone. Il contrasto sta fra il pannello e il piano su cui appoggia, e
+   ogni riquadro — anche quelli dentro ai pannelli — ha un bordo suo: e' cosi' che
+   il disegno risolve "costa capire le cose". Non e' decorazione, e' segnaletica:
+   dodici squadre in tre colonne si leggono perche' ognuna e' una scatola.
+
+   Le --sc-* reggono tutta la composizione del foglio, quindi il grosso si eredita;
+   qui sotto ci sono solo le cose che il disegno fa diversamente dagli altri temi. */
 html[data-tema="bar"]{
-  --sc-carta:247,239,226;    /* il chiaro: testo e filetti */
-  --sc-ambra:232,163,61;     /* l'ottone: cornici e lampada */
-  --sc-brace:226,80,58;      /* lo stato d'allarme */
-  --sc-testo:#F7EFE2;
-  --sc-medio:#CDB99F;
-  --sc-tenue:#A79070;
+  --sc-carta:243,232,216;
+  --sc-ambra:232,163,61;
+  --sc-brace:214,74,58;
+  --sc-testo:#F3E8D8;
+  --sc-medio:#C7B096;
+  --sc-tenue:#9E8A70;
   --sc-ambra-piena:#E8A33D;
   --sc-ambra-alta:#FFC470;
-  --sc-brace-piena:#E2503A;
-  --sc-fondo:#1C150F;        /* il fondo DEI PANNELLI, non della pagina */
+  --sc-brace-piena:#D64A3A;
+  --sc-fondo:#17100A;        /* il fondo DEI PANNELLI */
+  /* l'ottone delle cornici, in tre pesi */
+  --bar-ottone:rgba(196,140,52,.55);
+  --bar-ottone-forte:#C48C34;
+  --bar-panno:#2E8B4E;       /* il verde del panno */
 }
 
-/* Il legno del locale: doghe verticali fatte con gradienti, nessuna immagine nuova
-   da versionare (stessa scelta di "sala-giochi" per il suo retino). Tre strati: la
-   venatura fine, le doghe larghe, e la luce della lampada che cade da sinistra. */
-html[data-tema="bar"] .pitch-bg,
-html[data-tema="bar"] body{
-  background-color:#6B4A2E !important;
+/* ── IL LEGNO ──────────────────────────────────────────────────
+   Doghe verticali fatte con gradienti: venatura fine, giunti delle doghe ogni
+   ~190px, e la luce della lampada che cade da sinistra. Nessuna immagine nuova da
+   versionare (stessa scelta gia' fatta per il retino di "sala-giochi"), e nessun
+   `?v=` da alzare. La foto che usa Serata qui NON si usa: sotto pannelli scuri
+   tornerebbe a fare il rumore che questo tema deve togliere. */
+html[data-tema="bar"] body,
+html[data-tema="bar"] .pitch-bg{
+  background-color:#6E4C2E !important;
   background-image:
-    radial-gradient(58% 46% at 18% -6%, rgba(255,196,112,.30), transparent 62%),
+    radial-gradient(62% 50% at 14% -8%, rgba(255,206,140,.26), transparent 60%),
     repeating-linear-gradient(90deg,
-      rgba(0,0,0,.16) 0 2px, rgba(0,0,0,0) 2px 7px,
-      rgba(255,220,170,.05) 7px 8px, rgba(0,0,0,0) 8px 15px),
+      rgba(0,0,0,.15) 0 2px, rgba(0,0,0,0) 2px 6px,
+      rgba(255,224,180,.045) 6px 7px, rgba(0,0,0,0) 7px 14px),
     repeating-linear-gradient(90deg,
-      rgba(0,0,0,.24) 0 3px, rgba(0,0,0,0) 3px 96px,
-      rgba(255,220,170,.06) 96px 99px, rgba(0,0,0,0) 99px 190px),
-    linear-gradient(180deg, #7A5636 0%, #6B4A2E 45%, #55391F 100%) !important;
+      rgba(0,0,0,.26) 0 3px, rgba(60,38,18,.14) 3px 10px,
+      rgba(0,0,0,0) 10px 186px, rgba(255,224,180,.05) 186px 190px),
+    linear-gradient(180deg,#7C5837 0%, #6E4C2E 42%, #573A20 100%) !important;
   filter:none !important;
 }
-/* La pagina non porta la foto: il legno basta, e una foto sotto ai pannelli scuri
-   tornerebbe a fare il rumore che questo tema deve togliere. */
-html[data-tema="bar"] .pitch-bg{opacity:1 !important}
 
-/* Le cornici d'ottone: nei temi scuri i pannelli si separano con un filetto quasi
-   invisibile perche' stanno su un fondo altrettanto scuro. Qui stanno sul legno,
-   quindi la cornice puo' e deve vedersi — e' cio' che rende ogni blocco un oggetto
-   invece di una zona. */
+/* ── I PANNELLI: scatole scure con la cornice d'ottone ─────────
+   `--border` e' gia' ottone (vedi style.css), quindi tutto cio' che nel foglio usa
+   var(--border) prende la cornice da solo. Qui si aggiungono raggio, ombra e i
+   pochi punti che hanno un bordo scritto a mano. */
 html[data-tema="bar"] body .card,
 html[data-tema="bar"] body .tabs-panel,
 html[data-tema="bar"] body .admin-panel,
 html[data-tema="bar"] body #mio-panel,
 html[data-tema="bar"] body .panel-budget,
-html[data-tema="bar"] body #puja-panel-slot,
-html[data-tema="bar"] body.layout-admin .asta-row-puja{
-  border:1px solid rgba(232,163,61,.42) !important;
-  box-shadow:0 10px 26px rgba(20,12,6,.55) !important;
+html[data-tema="bar"] body #budget-bar{
+  background:#17100A !important;
+  border:1px solid var(--bar-ottone) !important;
+  border-radius:10px !important;
+  box-shadow:0 8px 22px rgba(14,8,3,.55) !important;
 }
-/* La carta di puja e' il pezzo grosso: cornice piena, non un filetto. */
+/* La carta di puja e' il pezzo grosso del tavolo: cornice piena, non un filetto. */
 html[data-tema="bar"] body #puja-panel-slot,
 html[data-tema="bar"] body.layout-admin .asta-row-puja{
-  border:2px solid rgba(232,163,61,.62) !important;
+  background:#17100A !important;
+  border:2px solid var(--bar-ottone-forte) !important;
+  border-radius:12px !important;
+  box-shadow:0 10px 28px rgba(14,8,3,.6) !important;
 }
 
-/* Il verde del panno dove conta: conferma, tab attiva, stati positivi. */
+/* ── LE SCATOLE DENTRO LE SCATOLE ──────────────────────────────
+   Ogni squadra del riepilogo, ogni riga di Svincolati, ogni colonna di Rose e' un
+   riquadro suo. E' il punto in cui il disegno si stacca davvero dagli altri temi:
+   li' una lista e' una lista, qui e' una fila di scatole, e dodici squadre in tre
+   colonne si leggono senza contarle. */
+html[data-tema="bar"] body .sq-item,
+html[data-tema="bar"] body .liberi-list .l-row,
+html[data-tema="bar"] body #liberi-list > div,
+html[data-tema="bar"] body .rose-col,
+html[data-tema="bar"] body .storico-list li{
+  background:#1E150C !important;
+  border:1px solid rgba(196,140,52,.30) !important;
+  border-radius:7px !important;
+}
+html[data-tema="bar"] body .sq-item.attiva,
+html[data-tema="bar"] body .rose-col.attiva{
+  border-color:var(--bar-ottone-forte) !important;
+  box-shadow:0 0 0 1px rgba(196,140,52,.35) inset !important;
+}
+
+/* ── IL VERDE DEL PANNO ────────────────────────────────────────
+   Conferma, tab attiva, stati positivi. E' il secondo accento che negli altri temi
+   scuri non c'e': con l'ambra da sola tutto il resto ricade nel grigio, che era
+   letteralmente la lamentela su Serata. */
 html[data-tema="bar"] body .btn-success,
-html[data-tema="bar"] body #btn-conferma-assegnazione{
-  background:linear-gradient(180deg,#4CBB6E,#2E8B4E) !important;
-  color:#0E1A11 !important;border:1px solid #6FD98C !important;
+html[data-tema="bar"] body #btn-conferma-assegnazione,
+html[data-tema="bar"] body .btn-conferma{
+  background:linear-gradient(180deg,#3FA860,#236B3C) !important;
+  color:#F2FBF4 !important;
+  border:1px solid #55C97A !important;
+  border-radius:8px !important;
+  box-shadow:0 6px 16px rgba(20,80,44,.42) !important;
 }
 html[data-tema="bar"] .tab-btn.active{
-  background:linear-gradient(180deg,#2E8B4E,#1F6437) !important;
-  color:#F3FBF4 !important;border-color:#4CBB6E !important;
+  background:linear-gradient(180deg,#2E8B4E,#1D5E34) !important;
+  color:#F2FBF4 !important;
+  border:1px solid #4CBB6E !important;
+  border-radius:8px 8px 0 0 !important;
+}
+html[data-tema="bar"] .tab-btn{
+  border-radius:8px 8px 0 0 !important;
+  color:var(--sc-medio) !important;
+}
+
+/* ── I GETTONI: filtri di ruolo, chip, bottoni piccoli ─────────
+   Nel disegno sono tutti scuri col bordo d'ottone, non pieni. */
+html[data-tema="bar"] body .filtro-btn,
+html[data-tema="bar"] body .storico-filtro-btn,
+html[data-tema="bar"] body .btn-secondary,
+html[data-tema="bar"] body .rose-inp,
+html[data-tema="bar"] body input[type=text],
+html[data-tema="bar"] body select{
+  background:#1E150C !important;
+  border:1px solid rgba(196,140,52,.34) !important;
+  color:var(--sc-testo) !important;
+  border-radius:7px !important;
+}
+html[data-tema="bar"] body .filtro-btn.active,
+html[data-tema="bar"] body .storico-filtro-btn.active{
+  background:rgba(196,140,52,.20) !important;
+  border-color:var(--bar-ottone-forte) !important;
+  color:var(--sc-ambra-alta) !important;
 }
 
 html[data-tema="cuoio"]{

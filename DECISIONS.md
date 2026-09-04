@@ -2656,3 +2656,27 @@ Tre conseguenze concrete:
 **Non verificato**: la schermata d'asta vera. In locale non ci sono le credenziali Supabase, quindi
 il tema e' stato giudicato su una maquette costruita con le classi vere (pannelli, carta di puja,
 tab, righe Svincolati) e non sull'app in funzione. Va guardato in un'asta vera.
+
+
+## "Il Bar", terza passata: ricalcato sul disegno, e cosa vuol dire "ogni cosa e' una scatola"
+
+L'utente ha chiesto di replicare il disegno **tal quale**, non di interpretarlo. Rifatto elemento
+per elemento. La cosa che lo distingue davvero dagli altri quattro temi, e che nelle prime due
+passate avevo mancato, e' questa: **ogni riquadro ha un bordo suo, anche quelli dentro ai
+pannelli**. Non e' decorazione — e' segnaletica. Dodici squadre disposte in tre colonne si leggono
+perche' ognuna e' una scatola con un contorno; negli altri temi sono righe in un elenco, e con
+dodici voci l'occhio deve contarle invece di vederle.
+
+Da qui la struttura del tema: `.sq-item`, le righe di Svincolati, le colonne di Rose e le voci di
+Storico prendono tutte fondo `#1E150C` e un filetto d'ottone al 30%, e quella attiva alza il bordo
+a piena tinta. I pannelli che le contengono sono piu' scuri (`#17100A`), cosi' i due livelli si
+distinguono senza ombre.
+
+Perche' funziona, in una riga: **il contrasto sta fra il pannello e il piano su cui appoggia**, e il
+piano e' legno medio, non nero. E' l'opposto di Serata, dove pannello e fondo sono entrambi quasi
+neri e l'unico separatore e' un bianco al 10% che a distanza non esiste.
+
+**Limite onesto di questa replica**: i colori sono stimati a occhio dall'immagine, non campionati —
+l'immagine arriva come allegato, non come file, quindi non c'e' modo di leggerne i pixel. Le
+proporzioni e la struttura sono fedeli, le tinte sono vicine ma non garantite identiche. Se
+servisse la precisione esatta, la strada e' avere i valori esadecimali del disegno.
