@@ -191,7 +191,9 @@ pannello `#422C1E` bruno — lo "scaffale" — e riquadri dentro `#222222`, più
 pannello è più chiaro del suolo e i riquadri sono più scuri del pannello: il salto è doppio e nelle
 due direzioni, ed è questo che fa leggere dodici squadre in tre colonne. Bordi in ottone `#A6927C`,
 verde `#124E2A` per bottoni e tab attiva, `#2A9C5A` per i badge. Il legno è fatto con gradienti
-(nessuna immagine nuova). **Va guardato in un'asta vera.** Dettagli in
+(nessuna immagine nuova: la venatura è `feTurbulence` in un SVG data-URI, il metallo è un
+gradiente su `border-box` più squadrette d'angolo su un `::after`). **Va guardato in un'asta
+vera.** Dettagli in
 [DECISIONS.md](../DECISIONS.md).
 
 ## Verifiche fatte

@@ -78,26 +78,41 @@ html[data-tema="bar"]{
   --bar-panno-vivo:#2A9C5A;    /* il verde dei badge */
 }
 
-/* ── IL LEGNO: la cornice, scura ───────────────────────────────
-   Doghe verticali fatte con gradienti: nessuna immagine nuova da versionare e
-   nessun `?v=` da alzare (stessa scelta gia' fatta per il retino di sala-giochi).
-   La foto che usa Serata qui NON si usa: sotto pannelli bruni tornerebbe a fare il
-   rumore che questo tema deve togliere. */
+/* ── IL LEGNO, fatto come legno ────────────────────────────────
+   Due gradienti ripetuti da soli davano righe: leggibili ma sintetiche, e l'utente
+   l'ha detto ("che la madera parezca madera"). Il legno vero ha una venatura
+   IRREGOLARE, e l'irregolarita' non si ottiene ripetendo un motivo.
+   Si usa `feTurbulence` dentro un SVG in data-URI: rumore frattale STIRATO — alta
+   frequenza in orizzontale, bassissima in verticale — che e' esattamente la forma
+   di una venatura lungo la doga. Un secondo strato piu' rado e piu' grosso fa i
+   nodi. Restano gradienti CSS per le fughe fra le doghe, che invece sono regolari.
+   Nessuna immagine da versionare, nessun `?v=` da alzare: e' tutto nel foglio. */
 html[data-tema="bar"] body,
 html[data-tema="bar"] .pitch-bg{
-  background-color:#180E08 !important;
+  background-color:#241609 !important;
   background-image:
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27300%27%20height%3D%27300%27%3E%3Cfilter%20id%3D%27v%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.75%200.010%27%20numOctaves%3D%275%27%20seed%3D%2711%27%2F%3E%3CfeColorMatrix%20type%3D%27saturate%27%20values%3D%270%27%2F%3E%3CfeComponentTransfer%3E%3CfeFuncA%20type%3D%27linear%27%20slope%3D%270.95%27%2F%3E%3C%2FfeComponentTransfer%3E%3C%2Ffilter%3E%3Crect%20width%3D%27300%27%20height%3D%27300%27%20filter%3D%27url%28%23v%29%27%2F%3E%3C%2Fsvg%3E"),
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27460%27%20height%3D%27460%27%3E%3Cfilter%20id%3D%27n%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.016%200.045%27%20numOctaves%3D%273%27%20seed%3D%275%27%2F%3E%3CfeColorMatrix%20type%3D%27saturate%27%20values%3D%270%27%2F%3E%3CfeComponentTransfer%3E%3CfeFuncA%20type%3D%27linear%27%20slope%3D%270.6%27%2F%3E%3C%2FfeComponentTransfer%3E%3C%2Ffilter%3E%3Crect%20width%3D%27460%27%20height%3D%27460%27%20filter%3D%27url%28%23n%29%27%2F%3E%3C%2Fsvg%3E"),
     repeating-linear-gradient(90deg,
-      rgba(0,0,0,.34) 0 2px, rgba(0,0,0,0) 2px 7px,
-      rgba(214,176,132,.05) 7px 8px, rgba(0,0,0,0) 8px 16px),
-    repeating-linear-gradient(90deg,
-      rgba(0,0,0,.42) 0 3px, rgba(0,0,0,0) 3px 188px,
-      rgba(214,176,132,.06) 188px 191px),
-    linear-gradient(180deg,#22150C 0%, #180E08 46%, #100904 100%) !important;
+      rgba(0,0,0,.62) 0 2px, rgba(150,110,66,.20) 2px 6px,
+      rgba(0,0,0,0) 6px 184px, rgba(214,170,112,.14) 184px 187px, rgba(0,0,0,.66) 187px 191px),
+    linear-gradient(180deg,#3A2412 0%, #2A1A0C 40%, #1A1006 100%) !important;
+  background-size:300px 300px, 460px 460px, auto, auto !important;
+  background-blend-mode:overlay, soft-light, normal, normal !important;
   filter:none !important;
 }
 
-/* ── I PANNELLI: lo scaffale bruno con la cornice d'ottone ───── */
+/* ── LE CORNICI: ottone vero, non un filetto piatto ────────────
+   Un `border:1px solid` e' una linea, e a schermo si legge come un disegno. Un
+   metallo si riconosce da UNA cosa: la luce non lo colpisce uguale su tutti i lati.
+   Quindi la cornice non e' un colore ma un gradiente — chiaro dove la luce batte
+   (alto-sinistra), scuro dove no — messo su `border-box` mentre il fondo del
+   pannello sta su `padding-box`. E' il modo di avere un bordo sfumato senza
+   immagini: due strati di background, non un `border-color`.
+
+   Le SQUADRETTE agli angoli sono il resto del mestiere: un mobile e' rinforzato
+   dove si rompe, cioe' negli spigoli. Otto barrette (due per angolo) disegnate come
+   background dell'::after, che non intercetta i click. */
 html[data-tema="bar"] body .card,
 html[data-tema="bar"] body .tabs-panel,
 html[data-tema="bar"] body .admin-panel,
@@ -105,18 +120,52 @@ html[data-tema="bar"] body #mio-panel,
 html[data-tema="bar"] body .panel-budget,
 html[data-tema="bar"] body #budget-bar,
 html[data-tema="bar"] body .tab-content{
-  background:#422C1E !important;
-  border:1px solid rgba(166,146,124,.45) !important;
-  border-radius:9px !important;
-  box-shadow:0 8px 20px rgba(8,4,2,.62) !important;
+  position:relative;
+  border:3px solid transparent !important;
+  border-radius:10px !important;
+  background:
+    linear-gradient(#422C1E,#422C1E) padding-box,
+    linear-gradient(152deg,
+      #F0DCB4 0%, #C9AE84 12%, #8A755A 30%,
+      #5A4A38 48%, #8A755A 66%, #E4CFA6 84%, #6E5C46 100%) border-box !important;
+  box-shadow:0 8px 20px rgba(6,3,1,.66), inset 0 1px 0 rgba(255,236,200,.10) !important;
 }
 html[data-tema="bar"] body #puja-panel-slot,
 html[data-tema="bar"] body.layout-admin .asta-row-puja{
-  background:#2C2C2C !important;
-  border:2px solid rgba(166,146,124,.70) !important;
-  border-radius:11px !important;
-  box-shadow:0 10px 26px rgba(8,4,2,.66) !important;
+  position:relative;
+  border:4px solid transparent !important;
+  border-radius:12px !important;
+  background:
+    linear-gradient(#2C2C2C,#2C2C2C) padding-box,
+    linear-gradient(152deg,
+      #FFE9C4 0%, #D6BA8E 11%, #97815F 28%,
+      #60503C 47%, #97815F 65%, #F0D9AC 83%, #77644C 100%) border-box !important;
+  box-shadow:0 12px 30px rgba(6,3,1,.7), inset 0 1px 0 rgba(255,236,200,.12) !important;
 }
+
+/* Le squadrette d'angolo. `--sq` e' la lunghezza del braccio, `--sp` lo spessore:
+   cambiarle qui le cambia su tutti i pannelli. */
+html[data-tema="bar"] body .card::after,
+html[data-tema="bar"] body .tabs-panel::after,
+html[data-tema="bar"] body .admin-panel::after,
+html[data-tema="bar"] body #mio-panel::after,
+html[data-tema="bar"] body .panel-budget::after,
+html[data-tema="bar"] body #puja-panel-slot::after{
+  content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  --sq:22px; --sp:3px; --met:linear-gradient(#F0DCB4,#A88F68);
+  background:
+    var(--met) top left    / var(--sq) var(--sp) no-repeat,
+    var(--met) top left    / var(--sp) var(--sq) no-repeat,
+    var(--met) top right   / var(--sq) var(--sp) no-repeat,
+    var(--met) top right   / var(--sp) var(--sq) no-repeat,
+    var(--met) bottom left / var(--sq) var(--sp) no-repeat,
+    var(--met) bottom left / var(--sp) var(--sq) no-repeat,
+    var(--met) bottom right/ var(--sq) var(--sp) no-repeat,
+    var(--met) bottom right/ var(--sp) var(--sq) no-repeat;
+  opacity:.85;
+}
+/* Sulla carta di puja le squadrette sono piu' lunghe: e' il pezzo grosso. */
+html[data-tema="bar"] body #puja-panel-slot::after{--sq:34px;--sp:4px;opacity:.95}
 
 /* ── I RIQUADRI DENTRO: gli oggetti sul ripiano ────────────────
    Piu' SCURI del pannello che li contiene, ognuno col suo filetto. */

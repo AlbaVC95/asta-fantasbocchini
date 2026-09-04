@@ -2746,3 +2746,41 @@ all'app senza esserlo. Gli scarti che restano sono di impaginazione — spaziatu
 carattere, l'altezza della carta di puja — e appartengono al markup dell'app, non alla paletta.
 Applicato all'app VERA quel markup c'e' gia' ed e' giusto: il confronto va rifatto li', non su una
 maquette.
+
+
+## "Il Bar": le MATERIE, che sono un'altra cosa dai colori
+
+Dopo aver fatto combaciare tutte le tinte, l'utente ha detto che ancora non ci siamo — e aveva
+ragione, ma il difetto non era piu' nei colori: *"i bordi come d'acciaio, con gli angoli piu'
+grossi, e la madera che sembri madera"*. Un colore giusto non fa un materiale. Due tecniche, e
+vale la pena registrarle perche' sono riusabili.
+
+**Il legno: il rumore, non la ripetizione.** Due `repeating-linear-gradient` danno righe — leggibili
+ma sintetiche, e si vede subito che sono disegnate. Il legno vero ha una venatura **irregolare**, e
+l'irregolarita' non si ottiene ripetendo un motivo, per definizione. Si usa `feTurbulence` dentro
+un SVG in `data:` URI: rumore frattale **stirato** (alta frequenza in orizzontale, bassissima in
+verticale, `baseFrequency='0.75 0.010'`), che e' esattamente la forma di una venatura lungo la
+doga. Un secondo strato piu' rado e piu' grosso fa i nodi. Restano gradienti CSS per le fughe fra
+le doghe, che invece sono regolari davvero. Il tutto composto con `background-blend-mode:
+overlay, soft-light`. Nessuna immagine da versionare e nessun `?v=` da alzare: e' tutto nel foglio.
+
+**Il metallo: la luce non lo colpisce uguale su tutti i lati.** E' l'unica cosa che distingue un
+bordo metallico da una linea colorata, e un `border:1px solid` non puo' farla perche' un colore e'
+uno solo. La cornice diventa quindi un GRADIENTE — chiaro dove la luce batte, scuro dove no —
+messo su `border-box` mentre il fondo del pannello sta su `padding-box`:
+
+```
+border:3px solid transparent;
+background: linear-gradient(fondo,fondo) padding-box,
+            linear-gradient(152deg, chiaro…scuro…chiaro) border-box;
+```
+
+E' il modo di avere un bordo sfumato senza immagini. **Le squadrette d'angolo** sono il resto del
+mestiere: un mobile e' rinforzato dove si rompe, cioe' negli spigoli. Otto barrette (due per
+angolo) disegnate come `background` di un `::after` con `pointer-events:none`, con la lunghezza e
+lo spessore in due variabili (`--sq`, `--sp`) cosi' si regolano in un punto solo — sulla carta di
+puja sono piu' lunghe, perche' e' il pezzo grosso del tavolo.
+
+**Da riusare**: quando un'interfaccia deve sembrare fatta di qualcosa, la domanda non e' "che
+colore ha" ma "come si comporta la luce su di esso" (il metallo la riflette in modo direzionale) e
+"quanto e' regolare" (il legno non lo e'). Sono le due proprieta' che il colore da solo non porta.
