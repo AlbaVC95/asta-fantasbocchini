@@ -248,7 +248,7 @@ html[data-tema="lavagna"] .chiamata-card{
 .card-enter{animation:card-enter .4s cubic-bezier(.34,1.56,.64,1)}
 @keyframes price-up{0%{transform:scale(1.4);color:var(--gold-bright);filter:brightness(1.8);text-shadow:0 0 20px rgba(255,176,74,0.9),0 0 40px rgba(255,176,74,0.5)}100%{transform:scale(1);color:var(--gold);filter:brightness(1);text-shadow:0 0 0px rgba(255,176,74,0)}}
 .price-bump{animation:price-up .35s ease-out}
-.badge-ruolo{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;padding:0 6px;border-radius:6px;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;flex-shrink:0}
+.badge-ruolo{color:#fff !important; text-shadow:0 1px 2px rgba(0,0,0,.4) !important; display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;padding:0 6px;border-radius:6px;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;flex-shrink:0}
 .badge-ruolo.r-Por{background:linear-gradient(135deg,#f5a623,#e09000);color:#000}
 .badge-ruolo.r-P{background:linear-gradient(135deg,#f5a623,#e09000);color:#000}
 .badge-ruolo.r-Dc{background:linear-gradient(135deg,#2ecc71,#229954);color:#fff}
@@ -524,7 +524,7 @@ html,body{height:auto!important;min-height:100vh;overflow:auto!important}
 .rose-player.rose-riga-azzurro{background:rgba(75,123,236,.12);border-left:3px solid #3867d6}
 .rose-player.rose-riga-viola{background:rgba(165,94,234,.12);border-left:3px solid #8854d0}
 .rose-player.rose-riga-rosso{background:rgba(231,76,60,.12);border-left:3px solid #c0392b}
-.rose-badge{font-size:.54rem;font-weight:800;padding:1px 3px;border-radius:4px;background:var(--bg-elevated);color:var(--text-secondary);min-width:15px;text-align:center}
+.rose-badge{color:#fff !important; text-shadow:0 1px 2px rgba(0,0,0,.4) !important; font-size:.54rem;font-weight:800;padding:1px 3px;border-radius:4px;background:var(--bg-elevated);color:var(--text-secondary);min-width:15px;text-align:center}
 .rose-badge.ruolo-rose-por,.rose-badge.ruolo-rose-p{background:linear-gradient(135deg,#f5a623,#e09000);color:#000}
 .rose-badge.ruolo-rose-dc{background:linear-gradient(135deg,#2ecc71,#229954);color:#fff}
 .rose-badge.ruolo-rose-ds{background:linear-gradient(135deg,#27ae60,#1e8449);color:#fff}
@@ -559,7 +559,7 @@ html,body{height:auto!important;min-height:100vh;overflow:auto!important}
 .rose-container.rose-compatta .rose-badge{font-size:.52rem;padding:1px 2px;min-width:13px;line-height:1.2;border-radius:3px}
 .rose-container.rose-compatta .rose-prezzo{font-size:.64rem;padding:0 4px;line-height:1.2;border-radius:4px}
 .rose-container.rose-compatta .slot-chip{font-size:.62rem;padding:0 3px;line-height:1.2;border-radius:4px}
-.rose-prezzo{font-family:var(--font-display);font-weight:800;color:#1a1200;font-size:.68rem;background:linear-gradient(135deg,var(--gold-bright),var(--gold));padding:1px 7px;border-radius:8px;flex-shrink:0}
+.rose-prezzo{font-family:var(--font-display);font-weight:800;color:var(--text-on-gold, #1a1200);font-size:.68rem;background:linear-gradient(135deg,var(--gold-bright),var(--gold));padding:1px 7px;border-radius:8px;flex-shrink:0}
 .rose-empty{color:var(--text-muted);font-size:.68rem;padding:3px 6px;font-style:italic}
 /* ══════ RIGA 1 middle slot (puja per NON-admin) ══════ */
 /* ══ Layout partecipante NON-admin: riga puja tutta orizzontale (card+timer+rilancio in fila),
