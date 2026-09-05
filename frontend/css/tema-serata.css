@@ -3108,14 +3108,14 @@ html[data-tema="sala-giochi"] body{background:var(--sg-fondo) !important}
 html[data-tema="sala-giochi"] .pitch-bg{
   background-color:var(--sg-fondo) !important;
   background-image:
-    repeating-conic-gradient(from 0deg at 50% 26%, var(--primary-glow).05) 0deg 6deg, transparent 6deg 12deg),
+    repeating-conic-gradient(from 0deg at 50% 26%, rgba(66,95,196,.05) 0deg 6deg, transparent 6deg 12deg),
     radial-gradient(circle at 1px 1px, rgba(20,16,36,.13) 1px, transparent 1.7px) !important;
   background-size:auto, 12px 12px !important;
   background-repeat:no-repeat, repeat !important;
   background-position:center, 0 0 !important;
   filter:none !important;
 }
-html[data-tema="sala-giochi"] ::selection{background:var(--primary-glow).24);color:var(--text-primary)}
+html[data-tema="sala-giochi"] ::selection{background:rgba(66,95,196,.24);color:var(--text-primary)}
 
 /* ── La testata: l'insegna del cabinato ── */
 html[data-tema="sala-giochi"] .asta-header{
@@ -3194,7 +3194,7 @@ html[data-tema="sala-giochi"] body #puja-panel-slot,
 html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja{
   background-color:var(--sg-carta) !important;
   background-image:
-    repeating-conic-gradient(var(--primary-glow).05) 0% 25%, transparent 0% 50%),
+    repeating-conic-gradient(rgba(66,95,196,.05) 0% 25%, transparent 0% 50%),
     radial-gradient(circle at 1px 1px, rgba(20,16,36,.10) 1px, transparent 1.7px) !important;
   background-size:8px 8px, 12px 12px !important;
   background-repeat:repeat, repeat !important;
@@ -3243,7 +3243,7 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .card-timer-group{
 html[data-tema="sala-giochi"] body.layout-partecipante .asta-row-panels>#mio-panel,
 html[data-tema="sala-giochi"] body #mio-panel{
   background-color:var(--sg-carta) !important;
-  background-image:repeating-conic-gradient(var(--primary-glow).05) 0% 25%, transparent 0% 50%) !important;
+  background-image:repeating-conic-gradient(rgba(66,95,196,.05) 0% 25%, transparent 0% 50%) !important;
   background-size:8px 8px !important;
   border:3px solid var(--text-primary) !important;border-radius:0 !important;
   box-shadow:6px 6px 0 var(--text-primary) !important;
@@ -3273,7 +3273,7 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar-img{
   filter:contrast(1.14) saturate(1.06) !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar::after{
-  background:linear-gradient(202deg, var(--primary-glow).50) 0%, rgba(245,176,26,.10) 55%, rgba(238,43,34,.28) 100%) !important;
+  background:linear-gradient(202deg, rgba(66,95,196,.50) 0%, rgba(245,176,26,.10) 55%, rgba(238,43,34,.28) 100%) !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar::before{
   background:linear-gradient(180deg, rgba(255,255,255,.22) 0%, transparent 40%, rgba(20,16,36,.32) 100%) !important;
@@ -3282,7 +3282,7 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar-svg{opacity:.7 !i
 
 /* ── Il nome: inchiostro con l'ombra dura cobalto ── */
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-nome{
-  color:var(--text-primary) !important;text-shadow:3px 3px 0 var(--primary-glow).26) !important;
+  color:var(--text-primary) !important;text-shadow:3px 3px 0 rgba(66,95,196,.26) !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-meta{
   font-family:'Silkscreen',var(--font-mono) !important;letter-spacing:.08em !important;
@@ -3344,7 +3344,7 @@ html[data-tema="sala-giochi"] .sidebar-squadra{
   border-bottom:2px solid rgba(20,16,36,.10) !important;
 }
 html[data-tema="sala-giochi"] .sidebar-squadra.mia-squadra{
-  background:var(--primary-glow).09) !important;border-left-color:var(--primary) !important;
+  background:rgba(66,95,196,.09) !important;border-left-color:var(--primary) !important;
 }
 html[data-tema="sala-giochi"] .sidebar-squadra.offerente-attuale{
   background:rgba(245,176,26,.20) !important;border-left-color:#E8B038 !important;
@@ -3527,7 +3527,7 @@ html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .timer-number{
   font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
   font-variation-settings:normal !important;
   font-size:1.8rem !important;letter-spacing:0 !important;
-  color:var(--primary) !important;text-shadow:4px 4px 0 var(--primary-glow).20) !important;
+  color:var(--primary) !important;text-shadow:4px 4px 0 rgba(66,95,196,.20) !important;
 }
 html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .timer-number,
 html[data-tema="sala-giochi"] body #puja-panel-slot .timer-ring-container.urgent .timer-number{
