@@ -2463,7 +2463,12 @@ socket.on('popup-svincolo-admin', function(popup) {
   S.svincoloSel.clear();
   S.popupAttivoCli = Object.assign({ tipo: 'svincolo' }, popup);
   renderPopupSvincolo(popup);
-  openModal('modal-svincolo');
+  if (S.miaSquadra === popup.squadraVincitrice) {
+    openModal('modal-svincolo');
+  } else {
+    const btn = document.getElementById('btn-svincolo-pendente');
+    if (btn) btn.classList.remove('hidden');
+  }
 });
 
 // Caso limite (non dovrebbe accadere se calcolaMaxOfferta/Massima Offerta funzionano bene):
