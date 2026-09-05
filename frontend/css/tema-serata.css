@@ -530,6 +530,10 @@ html[data-tema="sala-giochi"]{
   --sc-ambra:36,64,216;      /* il cobalto del cabinato: l'accento strutturale */
   --sc-brace:212,36,28;      /* rosso arcade, scurito quanto basta per leggersi su bianco */
   --sc-testo:var(--text-primary);
+  --sg-carta: #BDC3CD !important;
+  --sg-fondo: #AAB0BA !important;
+  --sg-carta2: #B3B9C3 !important;
+
   --sc-medio:#4A465E;
   --sc-tenue:#66627C;        /* misurato 5.4:1 sulla carta */
   --sc-ambra-piena:var(--primary);
@@ -3326,9 +3330,9 @@ html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .cc-offerta-lab
 /* i crediti nella lista squadre: un gettone, non un numero qualsiasi */
 html[data-tema="sala-giochi"] .sq-crediti{
   font-family:'Press Start 2P',var(--font-display) !important;font-weight:400 !important;
-  font-variation-settings:normal !important;font-size:.60rem !important;
+  font-variation-settings:normal !important;font-size:.45rem !important; padding:4px 4px 3px !important;
   color:var(--text-primary) !important;background:#E8B038 !important;
-  border:2px solid var(--text-primary) !important;padding:2px 4px 1px !important;
+  border:2px solid var(--text-primary) !important;
   display:inline-block !important;line-height:1 !important;
 }
 /* "chi sta vincendo ora" resta uno stato della riga, non un colore diverso del
@@ -3746,7 +3750,7 @@ html body.layout-admin #budget-bar .sq-bottom,
 html body.layout-admin #budget-bar .sq-portieri,
 html body.layout-admin #budget-bar .sq-svincoli{font-size:.58rem !important}
 html body.layout-admin #budget-bar .sq-crediti{font-size:.85rem !important; min-width:auto !important}
-html[data-tema="sala-giochi"] body.layout-admin #budget-bar .sq-crediti{font-size:.58rem !important; padding:2px 4px !important}
+html[data-tema="sala-giochi"] body.layout-admin #budget-bar .sq-crediti{font-size:.42rem !important; padding:2px 4px !important}
 
 /* ═══════════════════════════════════════════════════════════════════
    IL RITRATTO DENTRO UN CABINATO — solo tema "sala-giochi", solo la carta di puja
