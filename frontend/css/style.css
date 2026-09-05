@@ -1543,43 +1543,40 @@ html[data-tema="sala-giochi"]{
      solo. NON passano di qui i bianchi che devono restare puri: il testo sui
      bottoni pieni (cobalto, rosso) e le righe del campo in Anteprima, che sono
      segnaletica su verde. */
-  --sg-carta:#E2E6EC;
-  /* Il fondo scende per staccare la carta. Su grigio perla, il fondo e' un grigio leggermente piu' scuro e freddo. */
-  --sg-fondo:#D3D8E0;
-  /* La superficie secondaria: bottoni a riposo, tab non attive, righe di elenco. */
-  --sg-carta2:#D8DCE5;
+  --sg-carta:#EDF0F5;
+  --sg-fondo:#DFE4EC;
+  --sg-carta2:#E6EAF1;
   --bg-abyss:#C4C9D3;
   --bg-deep:var(--sg-fondo);
-  --panel-glass-1:rgba(226,230,236,.98);
-  --panel-glass-2:rgba(215,220,229,.98);
-  --panel-glass-3:rgba(205,211,222,.96);
+  --panel-glass-1:rgba(237,240,245,.98);
+  --panel-glass-2:rgba(223,228,236,.98);
+  --panel-glass-3:rgba(215,220,229,.96);
   --bg-main:var(--sg-carta);
   --bg-card:var(--sg-carta);
-  --bg-elevated:#DDE2E9;
-  --bg-glass:rgba(226,230,236,.95);
-  --primary:#2440D8;
-  --primary-bright:#2440D8;   /* su carta il "bright" deve restare leggibile, non schiarire */
-  --primary-dark:#1B2FA8;
-  --primary-glow:rgba(36,64,216,.22);
-  --primary-subtle:rgba(36,64,216,.10);
-  --gold:#8A5A05;             /* l'oro come TESTO: scurito fino a 5.9:1 su bianco (il
-                                 gettone pieno #F5B01A resta, ma solo come FONDO) */
-  --gold-bright:#7A4F04;
-  --gold-deep:#5E3D03;
-  --gold-glow:rgba(245,176,26,.30);
-  --gold-subtle:rgba(245,176,26,.14);
-  --fire:#D4241C;
-  --fire-bright:#B01710;
-  --fire-glow:rgba(212,36,28,.22);
-  --success:#147A52;
-  --success-glow:rgba(20,122,82,.20);
-  --danger:#D4241C;
-  --danger-glow:rgba(212,36,28,.20);
-  --text-primary:#141024;
-  --text-secondary:#4A465E;
-  --text-muted:#66627C;
-  --border:rgba(20,16,36,.18);
-  --border-light:rgba(20,16,36,.30);
+  --bg-elevated:#E8EBF1;
+  --bg-glass:rgba(237,240,245,.95);
+  --primary:#425FC4;          /* Softer, washed indigo instead of electric blue */
+  --primary-bright:#5875D9;
+  --primary-dark:#314B9E;
+  --primary-glow:rgba(66,95,196,.22);
+  --primary-subtle:rgba(66,95,196,.10);
+  --gold:#996D12;             /* Softer text gold */
+  --gold-bright:#855C08;
+  --gold-deep:#6E4B03;
+  --gold-glow:rgba(232,176,56,.30);
+  --gold-subtle:rgba(232,176,56,.14);
+  --fire:#D14C45;             /* Muted coral-red */
+  --fire-bright:#C23D36;
+  --fire-glow:rgba(209,76,69,.22);
+  --success:#228F66;          /* Muted teal-green */
+  --success-glow:rgba(34,143,102,.20);
+  --danger:#D14C45;
+  --danger-glow:rgba(209,76,69,.20);
+  --text-primary:#2C2F40;     /* Muted dark slate instead of harsh black */
+  --text-secondary:#52566E;
+  --text-muted:#727791;
+  --border:rgba(44,47,64,.15);
+  --border-light:rgba(44,47,64,.25);
 }
 /* L'ombra qui non e' luce diffusa ma un blocco d'inchiostro spostato: su fondo
    chiaro le ombre sfumate sporcano (gia' imparato con Cuoio), un rilievo stampato no. */
