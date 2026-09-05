@@ -3194,8 +3194,8 @@ body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-pu
     margin: 0 !important;
     max-width: 240px !important;
 }
-body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-puja .cc-nome,
-body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-puja .cc-offerente {
+body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-puja .cc-nome {
+
     white-space: nowrap !important;
     overflow: visible !important;
     text-overflow: clip !important;
