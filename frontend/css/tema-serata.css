@@ -3334,7 +3334,7 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .cc-offerta-label{
 }
 html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .cc-offerta-label{color:var(--fire) !important}
 /* i crediti nella lista squadre: un gettone, non un numero qualsiasi */
-html[data-tema="sala-giochi"] .sq-crediti{
+html[data-tema="sala-giochi"] body #budget-bar .sq-crediti, html[data-tema="sala-giochi"] .sq-crediti{
   font-family:'Press Start 2P',var(--font-display) !important;font-weight:400 !important;
   font-variation-settings:normal !important;font-size:.45rem !important; padding:4px 4px 3px !important;
   color:var(--text-primary) !important;background:#E8B038 !important;
