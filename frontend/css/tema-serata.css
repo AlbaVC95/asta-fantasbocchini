@@ -1163,7 +1163,7 @@ html body #mio-panel .mio-panel-header{
   border-bottom:1px solid rgba(var(--sc-carta),.09) !important;
 }
 html body #mio-panel .mio-nome{
-  font-family:'Space Mono',monospace !important;font-size:.58rem !important;
+  font-family:'Space Mono',monospace !important;font-size:.78rem !important;
   letter-spacing:.22em !important;text-transform:uppercase !important;color:var(--sc-tenue) !important;
 }
 html body #mio-panel .crediti-badge{
@@ -1173,6 +1173,9 @@ html body #mio-panel .crediti-badge{
   font-size:2.7rem !important;line-height:.88 !important;letter-spacing:-.028em !important;
   color:var(--sc-testo) !important;background:none !important;border:none !important;padding:0 !important;
 }
+html body #mio-panel .slot-chip { font-size: .85rem !important; }
+html body #mio-panel .slot-chip span { font-size: .95rem !important; }
+
 html body #mio-panel .slot-counter{
   display:grid !important;grid-template-columns:1fr 1fr !important;gap:12px !important;
   margin:0 !important;
@@ -1393,7 +1396,7 @@ html body .admin-panel{
 html body .admin-badge{
   background:none !important;border:1px solid rgba(var(--sc-ambra),.42) !important;
   border-radius:0 !important;color:var(--sc-ambra-piena) !important;
-  font-family:'Space Mono',monospace !important;font-size:.58rem !important;
+  font-family:'Space Mono',monospace !important;font-size:.78rem !important;
   letter-spacing:.18em !important;text-transform:uppercase !important;
 }
 html body .admin-btn-grid .btn{border-radius:2px !important;font-size:.72rem !important}
@@ -2080,6 +2083,9 @@ html body #budget-bar .budget-progress{bottom:1px !important;left:8px !important
     gap:12px !important;padding-bottom:0 !important;border-bottom:none !important;
   }
   html body #mio-panel .crediti-badge{font-size:1.9rem !important}
+html body #mio-panel .slot-chip { font-size: .85rem !important; }
+html body #mio-panel .slot-chip span { font-size: .95rem !important; }
+
   html body #mio-panel .slot-counter{
     flex:1 1 auto !important;display:flex !important;flex-wrap:wrap !important;
     gap:6px 20px !important;justify-content:flex-start !important;
