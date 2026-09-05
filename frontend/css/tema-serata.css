@@ -5891,7 +5891,12 @@ html[data-tema="lavagna"] { --text-on-gold: #ffffff; }
 /* ══ Fix globali quando Anteprima è aperta (spazio ridotto) ══ */
 .asta-live-layout:has(#tab-anteprima.drawer-open) #puja-panel-slot .cc-body {
     flex-direction: column !important;
-    align-items: flex-start !important;
+    align-items: flex-start !important; text-align: left !important;
+}
+.asta-live-layout:has(#tab-anteprima.drawer-open) #puja-panel-slot .cc-strategia-info,
+.asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-puja .cc-strategia-info {
+    text-align: left !important;
+    margin-left: 0 !important; 
 }
 
 .asta-live-layout:has(#tab-anteprima.drawer-open) #puja-panel-slot .cc-offerta-box,
