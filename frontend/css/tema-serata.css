@@ -3750,6 +3750,12 @@ html body.layout-admin #budget-bar .sidebar-squadra{
   grid-template-columns:auto minmax(0,1fr) auto !important;
   grid-template-areas:"pallino nome crediti" ". conteggi conteggi" !important;
 }
+html body.layout-admin #budget-bar .sq-nome{font-size:.65rem !important}
+html body.layout-admin #budget-bar .sq-bottom,
+html body.layout-admin #budget-bar .sq-portieri,
+html body.layout-admin #budget-bar .sq-svincoli{font-size:.58rem !important}
+html body.layout-admin #budget-bar .sq-crediti{font-size:.85rem !important; min-width:auto !important}
+html[data-tema="sala-giochi"] body.layout-admin #budget-bar .sq-crediti{font-size:.45rem !important; padding:2px 4px !important}
 html body.layout-admin #budget-bar .sq-bottom{justify-self:start !important}
 
 /* ═══════════════════════════════════════════════════════════════════
