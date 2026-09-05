@@ -1971,35 +1971,29 @@ html body.layout-admin .asta-row-puja .cc-nome{
    Il nome e' l'informazione principale: ora e' lui a resistere, e sono
    i conteggi a cedere per primi.
    ═══════════════════════════════════════════════════════════════════ */
-/* Nome e conteggi devono starci ENTRAMBI: non si nasconde niente.
-   Una riga sola per squadra, come una comanda:
-       pallino  nome .........  Tot/portieri/svincoli  crediti
-   E' una griglia, non un flex che va a capo: cosi' ogni cosa sta nella
-   sua colonna e a cedere per prima e' solo la coda del nome, con i
-   puntini. Nelle colonne strette (Anteprima aperta) i conteggi tornano
-   su una seconda riga — vedi @container piu' sotto: scendono, non
-   spariscono. */
+/* Il nome non deve MAI essere tagliato, quindi i conteggi passano
+   sempre sotto il nome, in una seconda riga. */
 html body #budget-bar .sidebar-squadra{
   display:grid !important;
-  grid-template-columns:auto minmax(52px,1fr) auto auto !important;
-  grid-template-areas:"pallino nome conteggi crediti" !important;
+  grid-template-columns:auto minmax(0,1fr) auto !important;
+  grid-template-areas:
+    "pallino nome crediti"
+    ". conteggi conteggi" !important;
   align-items:center !important;
-  column-gap:8px !important;row-gap:1px !important;
+  column-gap:8px !important;row-gap:3px !important;
 }
 html body #budget-bar .sq-dot-online{grid-area:pallino !important}
 html body #budget-bar .sq-nome{
   grid-area:nome !important;min-width:0 !important;max-width:100% !important;
-  overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;
+  overflow:visible !important;text-overflow:clip !important;white-space:normal !important;
+  font-size:.82rem !important;
 }
 html body #budget-bar .sq-crediti{grid-area:crediti !important;justify-self:end !important}
 html body #budget-bar .sq-bottom{
   grid-area:conteggi !important;min-width:0 !important;margin:0 !important;
-  justify-self:end !important;font-size:.76rem !important;letter-spacing:.01em !important;
+  justify-self:start !important;font-size:.76rem !important;letter-spacing:.01em !important;
   overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;
 }
-/* su una riga sola il nome ha meno colonna: scende di un soffio invece
-   di finire nei puntini */
-html body #budget-bar .sq-nome{font-size:.82rem !important}
 html body #budget-bar .sq-portieri,
 html body #budget-bar .sq-svincoli{font-size:.76rem !important}
 /* la barra del budget resta un filetto in fondo alla riga */
@@ -2121,14 +2115,7 @@ html body #budget-bar .budget-progress{bottom:1px !important;left:8px !important
 
   /* gli amici al tavolo: due colonne invece di quattro */
   html body #budget-bar{grid-template-columns:repeat(auto-fit,minmax(250px,1fr)) !important;gap:0 18px !important}
-  /* colonne strette: nome e crediti sopra, conteggi sotto. Scendono di
-     una riga, non spariscono — la riga resta comunque piu' bassa delle
-     tre originali. */
-  html body #budget-bar .sidebar-squadra{
-    grid-template-columns:auto minmax(0,1fr) auto !important;
-    grid-template-areas:"pallino nome crediti" ". conteggi conteggi" !important;
-  }
-  html body #budget-bar .sq-bottom{justify-self:start !important}
+  /* colonne strette: il layout a 2 righe è già il default, non serve sovrascriverlo */
   html body.layout-partecipante .asta-row-panels>.panel-budget{padding:12px 16px 14px !important}
 }
 
@@ -3743,20 +3730,10 @@ html[data-tema="sala-giochi"] body .timbro-preso span{border-color:#147A52 !impo
    i conteggi si accorciano con i puntini — mai sovrapposti al nome. */
 html body #budget-bar .sq-bottom{max-width:100% !important}
 
-/* 2) La correzione vera: in Admin due righe di default, la STESSA composizione
-   gia' scritta per le colonne strette del partecipante. I conteggi scendono
-   sotto il nome: non spariscono e non si sovrappongono. */
-html body.layout-admin #budget-bar .sidebar-squadra{
-  grid-template-columns:auto minmax(0,1fr) auto !important;
-  grid-template-areas:"pallino nome crediti" ". conteggi conteggi" !important;
-}
-html body.layout-admin #budget-bar .sq-nome{font-size:.65rem !important}
-html body.layout-admin #budget-bar .sq-bottom,
-html body.layout-admin #budget-bar .sq-portieri,
-html body.layout-admin #budget-bar .sq-svincoli{font-size:.58rem !important}
+/* La griglia base e' gia' a due righe, non serve sovrascriverla. */
+/* In Admin mode, keep the name big, just ensure credits don't take too much width */
 html body.layout-admin #budget-bar .sq-crediti{font-size:.85rem !important; min-width:auto !important}
 html[data-tema="sala-giochi"] body.layout-admin #budget-bar .sq-crediti{font-size:.45rem !important; padding:2px 4px !important}
-html body.layout-admin #budget-bar .sq-bottom{justify-self:start !important}
 
 /* ═══════════════════════════════════════════════════════════════════
    IL RITRATTO DENTRO UN CABINATO — solo tema "sala-giochi", solo la carta di puja
