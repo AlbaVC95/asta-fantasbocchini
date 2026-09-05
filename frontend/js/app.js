@@ -3132,7 +3132,7 @@ function renderRose(squadre) {
     return '<div class="rose-col' + (isAttiva ? ' attiva' : '') + '">' +
       '<div class="rose-col-header">' +
         '<span class="rose-col-nome">' + _escHtml(sq.nome) + '</span>' +
-        '<span class="rose-col-budget' + (isAttiva ? ' attiva' : '') + '">🪙 ' + sq.crediti + '</span>' +
+        '<span class="rose-col-budget' + (isAttiva ? ' attiva' : '') + '">💰 ' + sq.crediti + '</span>' +
       '</div>' +
       slotsRow +
       _renderRoseSez('⛳ Por', portieri, 'por', sq.nome) +
@@ -4256,7 +4256,7 @@ function _renderRoseSez(titolo, giocatori, tipo, sqNome) {
             return '<div class="rose-player ' + _roseRowRoleClass(g.ruolo) + '" data-rose-nome="' + _escAttr(g.nome) + '" data-rose-squadra="' + _escAttr(sqNome) + '">' +
               ruoloBadgeHTML +
               '<span class="rose-nome">' + _escHtml(g.nome) + '</span>' +
-              '<span class="rose-prezzo">🪙' + g.prezzo + '</span>' +
+              '<span class="rose-prezzo">' + g.prezzo + '</span>' +
             '</div>';
           }).join('')
       ) +
