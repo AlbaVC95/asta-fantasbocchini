@@ -877,17 +877,17 @@ html body #puja-panel-slot .btn-manuale{
 .sq-nome{
   font-family:'Archivo',sans-serif !important;font-weight:600;
   font-variation-settings:'wdth' 80;letter-spacing:.05em;
-  text-transform:uppercase;font-size:.7rem !important;color:var(--text-secondary) !important;
+  text-transform:uppercase;font-size:.80rem !important;color:var(--text-secondary) !important;
 }
 .sidebar-squadra.mia-squadra .sq-nome{color:var(--sc-testo) !important}
 .sq-crediti{
   font-family:'Archivo',sans-serif !important;font-weight:800;
   font-variation-settings:'wdth' 104;font-variant-numeric:tabular-nums;
-  color:var(--sc-testo) !important;text-shadow:none !important;font-size:.9rem !important;
+  color:var(--sc-testo) !important;text-shadow:none !important;font-size:1.05rem !important;
 }
 .sidebar-squadra.offerente-attuale .sq-crediti{color:var(--sc-ambra-piena) !important}
 .sq-svincoli,.slot-chip,.sq-slot{
-  font-family:var(--font-mono) !important;font-size:.58rem !important;
+  font-family:var(--font-mono) !important;font-size:.64rem !important;
   letter-spacing:.08em;color:var(--text-muted) !important;background:none !important;
   border:none !important;
 }
@@ -1767,32 +1767,32 @@ html[data-tema="serata"] body .asta-header::after{
    ═══════════════════════════════════════════════════════════════════ */
 html body #budget-bar .sidebar-squadra{
   display:flex !important;align-items:center !important;gap:9px !important;
-  padding:7px 10px 9px !important;position:relative !important;
+  padding:9px 12px 11px !important;position:relative !important;
   border-bottom:1px solid rgba(var(--sc-carta),.07) !important;
 }
 /* i figli di .sq-top entrano nella riga del padre, cosi' si possono ordinare */
 html body #budget-bar .sq-top{display:contents !important}
-html body #budget-bar .sq-dot-online{order:1;flex:0 0 auto;font-size:.5rem !important;opacity:.75}
+html body #budget-bar .sq-dot-online{order:1;flex:0 0 auto;font-size:.55rem !important;opacity:.75}
 html body #budget-bar .sq-nome{
   order:2;flex:1 1 auto;min-width:0;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  font-size:.68rem !important;
+  font-size:.78rem !important;
 }
 html body #budget-bar .sq-bottom{
   order:3;flex:0 0 auto;margin:0 !important;
-  font-family:'Space Mono',monospace !important;font-size:.54rem !important;
+  font-family:'Space Mono',monospace !important;font-size:.62rem !important;
   letter-spacing:.04em !important;color:var(--sc-tenue) !important;white-space:nowrap;
 }
 html body #budget-bar .sq-crediti{
-  order:4;flex:0 0 auto;min-width:34px;text-align:right;
-  font-size:.92rem !important;
+  order:4;flex:0 0 auto;min-width:38px;text-align:right;
+  font-size:1.05rem !important;
 }
 html body #budget-bar .budget-progress{
   order:5;position:absolute !important;left:10px;right:10px;bottom:2px;
   height:1px !important;margin:0 !important;background:rgba(var(--sc-carta),.06) !important;
 }
 html body #budget-bar .sq-portieri,
-html body #budget-bar .sq-svincoli{font-size:.54rem !important}
+html body #budget-bar .sq-svincoli{font-size:.62rem !important}
 
 /* ═══════════════════════════════════════════════════════════════════
    Il nome del giocatore continuava ad andare a capo: il badge del
@@ -1994,14 +1994,14 @@ html body #budget-bar .sq-nome{
 html body #budget-bar .sq-crediti{grid-area:crediti !important;justify-self:end !important}
 html body #budget-bar .sq-bottom{
   grid-area:conteggi !important;min-width:0 !important;margin:0 !important;
-  justify-self:end !important;font-size:.52rem !important;letter-spacing:.02em !important;
+  justify-self:end !important;font-size:.62rem !important;letter-spacing:.02em !important;
   overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;
 }
 /* su una riga sola il nome ha meno colonna: scende di un soffio invece
    di finire nei puntini */
-html body #budget-bar .sq-nome{font-size:.64rem !important}
+html body #budget-bar .sq-nome{font-size:.76rem !important}
 html body #budget-bar .sq-portieri,
-html body #budget-bar .sq-svincoli{font-size:.52rem !important}
+html body #budget-bar .sq-svincoli{font-size:.60rem !important}
 /* la barra del budget resta un filetto in fondo alla riga */
 html body #budget-bar .budget-progress{bottom:1px !important;left:8px !important;right:0 !important}
 
@@ -3328,9 +3328,9 @@ html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .cc-offerta-lab
 /* i crediti nella lista squadre: un gettone, non un numero qualsiasi */
 html[data-tema="sala-giochi"] .sq-crediti{
   font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
-  font-variation-settings:normal !important;font-size:.5rem !important;
+  font-variation-settings:normal !important;font-size:.65rem !important;
   color:#141024 !important;background:#F5B01A !important;
-  border:2px solid #141024 !important;padding:4px 5px 3px !important;
+  border:2px solid #141024 !important;padding:5px 6px 4px !important;
   display:inline-block !important;line-height:1 !important;
 }
 /* "chi sta vincendo ora" resta uno stato della riga, non un colore diverso del
@@ -3350,7 +3350,7 @@ html[data-tema="sala-giochi"] body #mio-panel .crediti-badge{
 html[data-tema="sala-giochi"] .crediti-badge{
   background:#F5B01A !important;border:2px solid #141024 !important;border-radius:0 !important;
   color:#141024 !important;font-family:'Press Start 2P',Archivo,sans-serif !important;
-  font-weight:400 !important;font-variation-settings:normal !important;font-size:.5rem !important;
+  font-weight:400 !important;font-variation-settings:normal !important;font-size:.62rem !important;
 }
 
 /* ── Le squadre al tavolo: il tabellone dei record ── */
@@ -3369,12 +3369,14 @@ html[data-tema="sala-giochi"] .sidebar-squadra:hover{background:rgba(20,16,36,.0
 html[data-tema="sala-giochi"] .sq-nome{
   font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
   font-variation-settings:normal !important;letter-spacing:.02em !important;color:#4A465E !important;
+  font-size:.72rem !important;
 }
 html[data-tema="sala-giochi"] .sidebar-squadra.mia-squadra .sq-nome{color:#141024 !important}
 html[data-tema="sala-giochi"] .sq-svincoli,
 html[data-tema="sala-giochi"] .slot-chip,
 html[data-tema="sala-giochi"] .sq-slot{
   font-family:'Silkscreen',var(--font-mono) !important;color:#66627C !important;
+  font-size:.58rem !important;
 }
 /* La barra dei crediti diventa una barra energia: stesso dato, stessi stati
    ok/warn/crit, solo tagliata a tacche invece che continua. */
