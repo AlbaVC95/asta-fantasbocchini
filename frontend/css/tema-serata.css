@@ -3544,8 +3544,8 @@ html[data-tema="sala-giochi"] .tabs-nav{
   border-bottom:none !important;
 }
 html[data-tema="sala-giochi"] .tab-btn{
-  font-family:'Silkscreen',var(--font-mono) !important;font-weight:700 !important;
-  font-size:.68rem !important;letter-spacing:.05em !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:900 !important;
+  font-size:.85rem !important;letter-spacing:.02em !important; text-transform:uppercase !important;
   background:var(--sg-carta2) !important;color:#4A465E !important;
   padding:12px 15px !important;border-radius:0 !important;
 }
