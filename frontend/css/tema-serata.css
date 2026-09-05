@@ -1977,12 +1977,23 @@ html body.layout-admin .asta-row-puja .cc-nome{
    Il nome e' l'informazione principale: ora e' lui a resistere, e sono
    i conteggi a cedere per primi.
    ═══════════════════════════════════════════════════════════════════ */
-/* Il nome non deve MAI essere tagliato, quindi i conteggi passano
-   sempre sotto il nome, in una seconda riga (definito sopra). */
+/* Il nome e' l'informazione principale, ma non puo' spaccare la griglia. 
+   Torna a una riga con puntini sospensivi se non ci sta. I conteggi stanno sotto. */
+html body #budget-bar .sidebar-squadra{
+  display:grid !important;
+  grid-template-columns:auto minmax(0,1fr) auto !important;
+  grid-template-areas:
+    "pallino nome crediti"
+    ". conteggi conteggi" !important;
+  align-items:center !important;
+  column-gap:6px !important;row-gap:2px !important;
+  padding:4px 8px 5px !important;position:relative !important;
+  border-bottom:1px solid rgba(var(--sc-carta),.07) !important;
+}
 html body #budget-bar .sq-dot-online{grid-area:pallino !important}
 html body #budget-bar .sq-nome{
   grid-area:nome !important;min-width:0 !important;max-width:100% !important;
-  overflow:visible !important;text-overflow:clip !important;white-space:normal !important;
+  overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;
   font-size:.82rem !important; line-height:1 !important;
 }
 html body #budget-bar .sq-crediti{grid-area:crediti !important;justify-self:end !important; line-height:1 !important;}
@@ -3141,7 +3152,7 @@ html[data-tema="sala-giochi"] body .home-title{
   animation:none !important;text-transform:uppercase !important;
 }
 html[data-tema="sala-giochi"] .asta-header-email{
-  font-family:'Silkscreen',var(--font-mono) !important;color:#66627C !important;
+  font-family:Archivo,var(--font-sans) !important;color:#66627C !important;
 }
 html[data-tema="sala-giochi"] .btn-sound,
 html[data-tema="sala-giochi"] .asta-header-right .btn-secondary{
@@ -3179,13 +3190,13 @@ html[data-tema="sala-giochi"] .tabs-panel{
 /* la testata di ogni piastra e' una targhetta cobalto, come sopra i pulsanti
    di un cabinato */
 html[data-tema="sala-giochi"] .panel-budget-hdr{
-  font-family:'Press Start 2P',var(--font-mono) !important;font-size:.48rem !important;
+  font-family:Archivo,var(--font-sans) !important;font-size:.48rem !important;
   letter-spacing:.06em !important;color:#FFFFFF !important;
   background:var(--primary) !important;padding:10px 11px !important;
 }
 html[data-tema="sala-giochi"] .mio-panel-header .mio-nome,
 html[data-tema="sala-giochi"] .admin-badge{
-  font-family:'Press Start 2P',var(--font-mono) !important;font-size:.46rem !important;
+  font-family:Archivo,var(--font-sans) !important;font-size:.46rem !important;
   letter-spacing:.05em !important;color:var(--primary) !important;
 }
 
@@ -3285,18 +3296,18 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .cc-nome{
   color:var(--text-primary) !important;text-shadow:3px 3px 0 rgba(66,95,196,.26) !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-meta{
-  font-family:'Silkscreen',var(--font-mono) !important;letter-spacing:.08em !important;
+  font-family:Archivo,var(--font-sans) !important;letter-spacing:.08em !important;
   font-size:.68rem !important;color:#4A465E !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-offerente,
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-strategia-info{
-  font-family:'Silkscreen',var(--font-mono) !important;color:#66627C !important;
+  font-family:Archivo,var(--font-sans) !important;color:#66627C !important;
 }
 
 /* ── Il denaro: l'unico oro del tema ── */
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-offerta,
 html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .cc-offerta{
-  font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:900 !important;
   font-variation-settings:normal !important;
   font-size:3.1rem !important;line-height:1.06 !important;letter-spacing:0 !important;
   color:var(--text-primary) !important;
@@ -3306,13 +3317,13 @@ html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .cc-offerta{
   text-shadow:5px 5px 0 var(--fire), 9px 9px 0 rgba(20,16,36,.14) !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-offerta-label{
-  font-family:'Press Start 2P',var(--font-mono) !important;font-size:.44rem !important;
+  font-family:Archivo,var(--font-sans) !important;font-size:.44rem !important;
   letter-spacing:.1em !important;color:#8A5A05 !important;
 }
 html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .cc-offerta-label{color:var(--fire) !important}
 /* i crediti nella lista squadre: un gettone, non un numero qualsiasi */
 html[data-tema="sala-giochi"] .sq-crediti{
-  font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:900 !important;
   font-variation-settings:normal !important;font-size:.60rem !important;
   color:var(--text-primary) !important;background:#E8B038 !important;
   border:2px solid var(--text-primary) !important;padding:2px 4px 1px !important;
@@ -3324,7 +3335,7 @@ html[data-tema="sala-giochi"] .sidebar-squadra.offerente-attuale .sq-crediti{
   color:var(--text-primary) !important;background:#E8B038 !important;
 }
 html[data-tema="sala-giochi"] body #mio-panel .crediti-badge{
-  font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:900 !important;
   font-variation-settings:normal !important;
   font-size:1.25rem !important;line-height:1 !important;letter-spacing:0 !important;
   display:inline-block !important;
@@ -3334,7 +3345,7 @@ html[data-tema="sala-giochi"] body #mio-panel .crediti-badge{
 }
 html[data-tema="sala-giochi"] .crediti-badge{
   background:#E8B038 !important;border:2px solid var(--text-primary) !important;border-radius:0 !important;
-  color:var(--text-primary) !important;font-family:'Press Start 2P',Archivo,sans-serif !important;
+  color:var(--text-primary) !important;font-family:Archivo,var(--font-sans) !important;
   font-weight:400 !important;font-variation-settings:normal !important;font-size:.62rem !important;
 }
 
@@ -3352,7 +3363,7 @@ html[data-tema="sala-giochi"] .sidebar-squadra.offerente-attuale{
 html[data-tema="sala-giochi"] .sidebar-squadra.critica{border-left-color:var(--fire) !important}
 html[data-tema="sala-giochi"] .sidebar-squadra:hover{background:rgba(20,16,36,.04) !important}
 html[data-tema="sala-giochi"] .sq-nome{
-  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:700 !important;
   font-variation-settings:normal !important;letter-spacing:.02em !important;color:#4A465E !important;
   font-size:.72rem !important;
 }
@@ -3360,7 +3371,7 @@ html[data-tema="sala-giochi"] .sidebar-squadra.mia-squadra .sq-nome{color:var(--
 html[data-tema="sala-giochi"] .sq-svincoli,
 html[data-tema="sala-giochi"] .slot-chip,
 html[data-tema="sala-giochi"] .sq-slot{
-  font-family:'Silkscreen',var(--font-mono) !important;color:#66627C !important;
+  font-family:Archivo,var(--font-sans) !important;color:#66627C !important;
   font-size:.58rem !important;
 }
 /* La barra dei crediti diventa una barra energia: stesso dato, stessi stati
@@ -3387,7 +3398,7 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .manual-bid-row{
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .btn-quick,
 html[data-tema="sala-giochi"] body #puja-panel-slot .btn-manuale{
-  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:700 !important;
   font-variation-settings:normal !important;color:var(--text-primary) !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .btn-quick:hover{background:#E8B038 !important}
@@ -3397,7 +3408,7 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .btn-manuale{
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .inp-rilancio{
   background:var(--sg-carta2) !important;color:var(--text-primary) !important;
-  font-family:'Silkscreen',var(--font-mono) !important;
+  font-family:Archivo,var(--font-sans) !important;
 }
 /* Il tasto rosso del cabinato. Il rosso qui non e' solo allarme ma anche
    l'azione — e' l'unico bottone che toglie crediti; il resto del rosso resta
@@ -3405,7 +3416,7 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .inp-rilancio{
    piastra (cornice, ombra, nastri, cronometro) e il tasto pulsa. */
 html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia{
   background:var(--fire) !important;color:#FFFFFF !important;
-  font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:900 !important;
   font-variation-settings:normal !important;
   font-size:.48rem !important;letter-spacing:.02em !important;
   padding:0 12px !important;
@@ -3414,7 +3425,7 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia{
   text-shadow:3px 3px 0 rgba(20,16,36,.45) !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia::after{
-  font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:900 !important;
   font-variation-settings:normal !important;font-size:.6rem !important;
   padding-left:10px !important;margin-left:10px !important;
   border-left:3px solid rgba(255,255,255,.55) !important;
@@ -3501,7 +3512,7 @@ html[data-tema="sala-giochi"] .arc-battito{
 html[data-tema="sala-giochi"] .arc-battito.acceso{opacity:.95}
 
 html[data-tema="sala-giochi"] .arc-etichetta{
-  font-family:'Press Start 2P',var(--font-mono);font-size:8px;
+  font-family:Archivo,var(--font-sans);font-size:8px;
   fill:#6E7BC8;letter-spacing:1.5px;
 }
 /* Ultimi secondi: lampeggia SOLO l'etichetta.
@@ -3524,7 +3535,7 @@ html[data-tema="sala-giochi"] body.puja-urgente .asta-row-puja .arc-etichetta{
 /* ── Il cronometro: cifre da punteggio ── */
 html[data-tema="sala-giochi"] body #puja-panel-slot .timer-number,
 html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .timer-number{
-  font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:900 !important;
   font-variation-settings:normal !important;
   font-size:1.8rem !important;letter-spacing:0 !important;
   color:var(--primary) !important;text-shadow:4px 4px 0 rgba(66,95,196,.20) !important;
@@ -3534,7 +3545,7 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .timer-ring-container.urgent
   color:var(--fire) !important;text-shadow:4px 4px 0 rgba(212,36,28,.22) !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .timer-label-text{
-  font-family:'Press Start 2P',var(--font-mono) !important;font-size:.4rem !important;
+  font-family:Archivo,var(--font-sans) !important;font-size:.4rem !important;
   letter-spacing:.08em !important;color:#66627C !important;
 }
 
@@ -3568,7 +3579,7 @@ html[data-tema="sala-giochi"] .text-accent{color:var(--primary) !important}
 html[data-tema="sala-giochi"] .storico-filtro-btn,
 html[data-tema="sala-giochi"] .filtro-btn{
   background:var(--sg-carta) !important;border:2px solid var(--text-primary) !important;border-radius:0 !important;
-  color:#4A465E !important;font-family:'Silkscreen',var(--font-mono) !important;
+  color:#4A465E !important;font-family:Archivo,var(--font-sans) !important;
 }
 html[data-tema="sala-giochi"] .storico-filtro-btn.active,
 html[data-tema="sala-giochi"] .filtro-btn.active{
@@ -3578,7 +3589,7 @@ html[data-tema="sala-giochi"] .filtro-btn.active{
 /* ── I bottoni: plastica stampata, nessun gradiente ── */
 html[data-tema="sala-giochi"] .btn{
   border-radius:0 !important;
-  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:700 !important;
   font-variation-settings:normal !important;letter-spacing:.04em !important;
 }
 html[data-tema="sala-giochi"] .btn::before{display:none !important}
@@ -3617,7 +3628,7 @@ html[data-tema="sala-giochi"] select{
    misure fisse per breakpoint (style.css), un bordo vero le sposterebbe. */
 html[data-tema="sala-giochi"] .badge-ruolo{
   border-radius:0 !important;box-shadow:inset 0 0 0 2px var(--text-primary) !important;
-  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:700 !important;
 }
 html[data-tema="sala-giochi"] .badge-ruolo.r-P,
 html[data-tema="sala-giochi"] .badge-ruolo.r-Por,
@@ -3640,11 +3651,11 @@ html[data-tema="sala-giochi"] .badge-ruolo.r-Pc{background:#FF8079 !important;co
    a quello degli altri temi; qui c'e' solo la cornice attorno. */
 html[data-tema="sala-giochi"] .ant-drawer-title,
 html[data-tema="sala-giochi"] .ant-panchina-title{
-  font-family:'Press Start 2P',var(--font-display) !important;font-weight:400 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:900 !important;
   font-size:.56rem !important;letter-spacing:.04em !important;color:var(--text-primary) !important;
 }
 html[data-tema="sala-giochi"] .ant-panchina-count{
-  font-family:'Press Start 2P',var(--font-mono) !important;font-size:.5rem !important;color:#4A465E !important;
+  font-family:Archivo,var(--font-sans) !important;font-size:.5rem !important;color:#4A465E !important;
 }
 html[data-tema="sala-giochi"] .ant-select,
 html[data-tema="sala-giochi"] .ant-zoom-controls{
@@ -3654,7 +3665,7 @@ html[data-tema="sala-giochi"] .ant-zoom-controls{
 html[data-tema="sala-giochi"] .ant-zoom-btn{color:var(--text-primary) !important;border-radius:0 !important}
 html[data-tema="sala-giochi"] .ant-zoom-btn:hover{background:#E8B038 !important}
 html[data-tema="sala-giochi"] .ant-subtab{
-  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:700 !important;
   background:var(--sg-carta2) !important;color:#4A465E !important;
   border:3px solid var(--text-primary) !important;border-radius:0 !important;
 }
@@ -3723,15 +3734,13 @@ html[data-tema="sala-giochi"] body .timbro-preso span{border-color:#147A52 !impo
    non per quanto e' larga la sala.
    ═══════════════════════════════════════════════════════════════════ */
 
-/* 1) Rete di sicurezza valida in ogni vista e in ogni tema: la casella dei
-   conteggi non puo' mai essere piu' larga della sua colonna. Nel caso peggiore
-   i conteggi si accorciano con i puntini — mai sovrapposti al nome. */
-html body #budget-bar .sq-bottom{max-width:100% !important}
-
-/* La griglia base e' gia' a due righe, non serve sovrascriverla. */
-/* In Admin mode, keep the name big, just ensure credits don't take too much width */
+/* Admin mode budget-bar typography tweaks */
+html body.layout-admin #budget-bar .sq-nome{font-size:.68rem !important}
+html body.layout-admin #budget-bar .sq-bottom,
+html body.layout-admin #budget-bar .sq-portieri,
+html body.layout-admin #budget-bar .sq-svincoli{font-size:.58rem !important}
 html body.layout-admin #budget-bar .sq-crediti{font-size:.85rem !important; min-width:auto !important}
-html[data-tema="sala-giochi"] body.layout-admin #budget-bar .sq-crediti{font-size:.45rem !important; padding:2px 4px !important}
+html[data-tema="sala-giochi"] body.layout-admin #budget-bar .sq-crediti{font-size:.58rem !important; padding:2px 4px !important}
 
 /* ═══════════════════════════════════════════════════════════════════
    IL RITRATTO DENTRO UN CABINATO — solo tema "sala-giochi", solo la carta di puja
@@ -3881,7 +3890,7 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo,
 html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo[class*="r-"]{
   border:0 !important;box-shadow:inset 0 0 0 2px var(--text-primary) !important;
   border-radius:0 !important;
-  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:700 !important;
   letter-spacing:.06em !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .badge-ruolo.r-P,
@@ -3941,13 +3950,13 @@ html[data-tema="sala-giochi"] .rose-col-header{border-bottom:2px solid var(--tex
    482px, +11% invece di +36%, e quel resto e' il filo d'inchiostro, cioe' il tema. */
 html[data-tema="sala-giochi"] .rose-col-header{gap:6px !important}
 html[data-tema="sala-giochi"] .rose-col-nome{
-  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:700 !important;
   font-variation-settings:normal !important;color:var(--text-primary) !important;
   font-size:.58rem !important;min-width:0 !important;
 }
 /* le cifre di credito: lo stesso gettone d'oro del Riepilogo squadre */
 html[data-tema="sala-giochi"] .rose-col-budget{
-  font-family:'Press Start 2P',Archivo,sans-serif !important;font-weight:400 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:900 !important;
   font-variation-settings:normal !important;font-size:.46rem !important;
   color:var(--text-primary) !important;background:#E8B038 !important;
   border:2px solid var(--text-primary) !important;padding:3px 4px 2px !important;
@@ -3959,7 +3968,7 @@ html[data-tema="sala-giochi"] .rose-col-budget.attiva{background:var(--fire) !im
 html[data-tema="sala-giochi"] .rose-sec-hdr{
   background:var(--primary) !important;border:2px solid var(--text-primary) !important;
   border-radius:0 !important;color:#FFFFFF !important;
-  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:700 !important;
   font-variation-settings:normal !important;letter-spacing:.04em !important;
 }
 html[data-tema="sala-giochi"] .rose-sec-hdr:hover{background:#1B2E9E !important;color:#FFFFFF !important;border-color:var(--text-primary) !important}
@@ -3982,7 +3991,7 @@ html[data-tema="sala-giochi"] .rose-player.rose-riga-rosso{background:rgba(255,1
 html[data-tema="sala-giochi"] .rose-badge{
   border-radius:0 !important;box-shadow:inset 0 0 0 2px var(--text-primary) !important;
   background:var(--sg-carta) !important;color:var(--text-primary) !important;
-  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:700 !important;
   font-variation-settings:normal !important;padding:1px 2px !important;
 }
 html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-por,html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-p,
@@ -3997,17 +4006,17 @@ html[data-tema="sala-giochi"] .rose-badge.ruolo-rose-pc{background:#FF8079 !impo
 
 /* ── il prezzo: gettone d'oro in miniatura ── */
 html[data-tema="sala-giochi"] .rose-prezzo{
-  font-family:'Silkscreen',Archivo,sans-serif !important;font-weight:700 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:700 !important;
   font-variation-settings:normal !important;
   color:var(--text-primary) !important;background:#E8B038 !important;
   border:2px solid var(--text-primary) !important;border-radius:0 !important;
   padding:0 2px !important;line-height:1.3 !important;
 }
-html[data-tema="sala-giochi"] .rose-empty{color:#66627C !important;font-family:'Silkscreen',Archivo,sans-serif !important}
+html[data-tema="sala-giochi"] .rose-empty{color:#66627C !important;font-family:Archivo,var(--font-sans) !important}
 
 /* ── l'interruttore "Visione compatta" ── */
 html[data-tema="sala-giochi"] .rose-compatta-toggle{
-  color:var(--text-primary) !important;font-family:'Silkscreen',Archivo,sans-serif !important;
+  color:var(--text-primary) !important;font-family:Archivo,var(--font-sans) !important;
   font-variation-settings:normal !important;
 }
 html[data-tema="sala-giochi"] .rose-compatta-slider{
@@ -4026,7 +4035,7 @@ html[data-tema="sala-giochi"] .rose-inp{background:var(--sg-carta) !important;co
 html[data-tema="sala-giochi"] .rose-cerca-btn{
   background:var(--primary) !important;color:#FFFFFF !important;
   border:2px solid var(--text-primary) !important;border-radius:0 !important;
-  font-family:'Silkscreen',Archivo,sans-serif !important;font-variation-settings:normal !important;
+  font-family:Archivo,var(--font-sans) !important;font-variation-settings:normal !important;
 }
 html[data-tema="sala-giochi"] .rose-cerca-btn:hover{background:#1B2E9E !important;color:#FFFFFF !important}
 html[data-tema="sala-giochi"] .rose-search-dropdown{
@@ -4365,13 +4374,13 @@ html[data-tema="sala-giochi"] body .puja-sticky .ps-rilancia{
    l'unico pezzo in Archivo dentro una schermata tutta a pixel */
 html[data-tema="sala-giochi"] body .puja-sticky .ps-nome,
 html[data-tema="sala-giochi"] body .puja-sticky .ps-rilancia{
-  font-family:'Press Start 2P',Archivo,sans-serif !important;
+  font-family:Archivo,var(--font-sans) !important;
   font-weight:400 !important;letter-spacing:0 !important;
   font-size:clamp(.58rem,1.7vw,.74rem) !important;
 }
 html[data-tema="sala-giochi"] body .puja-sticky .ps-offerta,
 html[data-tema="sala-giochi"] body .puja-sticky .ps-timer{
-  font-family:'Press Start 2P',var(--font-mono) !important;font-weight:400 !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:900 !important;
   font-size:clamp(.78rem,2.3vw,.98rem) !important;
 }
 html[data-tema="sala-giochi"] body .puja-sticky .ps-tempo{
@@ -4379,7 +4388,7 @@ html[data-tema="sala-giochi"] body .puja-sticky .ps-tempo{
 }
 html[data-tema="sala-giochi"] body .puja-sticky .ps-riga-meta,
 html[data-tema="sala-giochi"] body .puja-sticky .ps-offerente{
-  font-family:'Silkscreen',var(--font-mono) !important;
+  font-family:Archivo,var(--font-sans) !important;
 }
 
 /* ════════════════════════════════════════════════════════════════════
