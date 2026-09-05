@@ -5887,3 +5887,19 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .cc-offerente strong, html[d
 html[data-tema="serata"] body .cc-offerente strong, html:not([data-tema]) body .cc-offerente strong { color: #FFB04A !important; text-shadow: 0 0 32px rgba(251,191,36,0.65), 0 0 70px rgba(245,158,11,0.30), 0 2px 10px rgba(0,0,0,0.8) !important; }
 html[data-tema="cuoio"] { --text-on-gold: #ffffff; }
 html[data-tema="lavagna"] { --text-on-gold: #ffffff; }
+
+/* ══ Fix globali quando Anteprima è aperta (spazio ridotto) ══ */
+.asta-live-layout:has(#tab-anteprima.drawer-open) #puja-panel-slot .cc-offerta-box,
+.asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-puja .cc-offerta-box {
+    position: static !important;
+    margin-bottom: 8px !important;
+    align-self: flex-start !important;
+}
+.asta-live-layout:has(#tab-anteprima.drawer-open) #puja-panel-slot .cc-offerente strong,
+.asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-puja .cc-offerente strong {
+    font-size: clamp(1.2rem, 3vw, 1.5rem) !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    line-height: 1.15 !important;
+}
+
