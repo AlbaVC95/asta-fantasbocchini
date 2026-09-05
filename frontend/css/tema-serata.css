@@ -1716,6 +1716,8 @@ html[data-tema="serata"] body .tabs-panel{
 /* il piano del tavolo: legno + un riflesso di vetro che lo attraversa (scoped serata/default) */
 html:not([data-tema]) body #puja-panel-slot,
 html[data-tema="serata"] body #puja-panel-slot,
+html[data-tema="serata"] body.layout-partecipante #puja-panel-slot,
+html:not([data-tema]) body.layout-partecipante #puja-panel-slot,
 html:not([data-tema]) body.layout-admin .asta-row-puja,
 html[data-tema="serata"] body.layout-admin .asta-row-puja{
   background-image:
@@ -4791,6 +4793,8 @@ html:not([data-tema]) body .card-title {
 
 /* ─── IL PALCO CENTRALE D'ASTA: UNICO TONO CONTINUO DI BLU ───────────────── */
 html[data-tema="serata"] body #puja-panel-slot,
+html[data-tema="serata"] body.layout-partecipante #puja-panel-slot,
+html:not([data-tema]) body.layout-partecipante #puja-panel-slot,
 html:not([data-tema]) body #puja-panel-slot,
 html[data-tema="serata"] body.layout-admin .asta-row-puja,
 html:not([data-tema]) body.layout-admin .asta-row-puja {
@@ -4825,6 +4829,8 @@ html body.layout-admin .asta-row-puja .chiamata-card {
 
 /* La Miccia Dorata animata di gala */
 html[data-tema="serata"] body #puja-panel-slot::before,
+html[data-tema="serata"] body.layout-partecipante #puja-panel-slot::before,
+html:not([data-tema]) body.layout-partecipante #puja-panel-slot::before,
 html:not([data-tema]) body #puja-panel-slot::before,
 html[data-tema="serata"] body.layout-admin .asta-row-puja::before,
 html:not([data-tema]) body.layout-admin .asta-row-puja::before {
@@ -4853,6 +4859,8 @@ html:not([data-tema]) body.layout-admin .asta-row-puja::before {
 }
 
 html[data-tema="serata"] body #puja-panel-slot::after,
+html[data-tema="serata"] body.layout-partecipante #puja-panel-slot::after,
+html:not([data-tema]) body.layout-partecipante #puja-panel-slot::after,
 html:not([data-tema]) body #puja-panel-slot::after,
 html[data-tema="serata"] body.layout-admin .asta-row-puja::after,
 html:not([data-tema]) body.layout-admin .asta-row-puja::after {
