@@ -530,9 +530,9 @@ html[data-tema="sala-giochi"]{
   --sc-ambra:36,64,216;      /* il cobalto del cabinato: l'accento strutturale */
   --sc-brace:212,36,28;      /* rosso arcade, scurito quanto basta per leggersi su bianco */
   --sc-testo:var(--text-primary);
-  --sg-carta: #BDC3CD !important;
-  --sg-fondo: #AAB0BA !important;
-  --sg-carta2: #B3B9C3 !important;
+  --sg-carta: #D8DCE4 !important;
+  --sg-fondo: #C9CED6 !important;
+  --sg-carta2: #CFD4DB !important;
 
   --sc-medio:#4A465E;
   --sc-tenue:#66627C;        /* misurato 5.4:1 sulla carta */
