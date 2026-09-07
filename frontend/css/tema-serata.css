@@ -4016,7 +4016,12 @@ html[data-tema="sala-giochi"] .rose-col-header{gap:6px !important}
 html[data-tema="sala-giochi"] .rose-col-nome{
   font-family:Archivo,var(--font-sans) !important;font-weight:800 !important; text-shadow:none !important;
   font-variation-settings:normal !important;color:var(--text-primary) !important;
-  font-size:.80rem !important;min-width:0 !important;line-height:1.2 !important;
+  font-size:.72rem !important;min-width:0 !important;line-height:1.15 !important;
+  display:-webkit-box !important;-webkit-box-orient:vertical !important;
+  -webkit-line-clamp:2 !important;line-clamp:2 !important;
+  overflow:hidden !important;text-overflow:ellipsis !important;
+  word-break:normal !important;overflow-wrap:normal !important;
+  white-space:normal !important;max-height:2.3em !important;
 }
 /* le cifre di credito: lo stesso gettone d'oro del Riepilogo squadre */
 html[data-tema="sala-giochi"] .rose-col-budget{
@@ -6364,11 +6369,36 @@ html body .vivi-chip span {
   font-weight: 800 !important;
 }
 .rose-col-nome {
-  font-size: 0.84rem !important;
+  font-size: 0.82rem !important;
   font-weight: 800 !important;
-  line-height: 1.2 !important;
+  line-height: 1.15 !important;
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  white-space: normal !important;
+  max-height: 2.3em !important;
 }
 .rose-container.rose-compatta .rose-col-nome {
-  font-size: 0.80rem !important;
-  line-height: 1.2 !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  white-space: normal !important;
+  max-height: 2.3em !important;
+}
+.rose-container.rose-compatta .rose-col {
+  flex: 0 0 136px !important;
+  width: 136px !important;
 }
