@@ -1581,7 +1581,6 @@ io.on('connection', (socket) => {
   socket.on('rilancio', ({ astaId, offerta }) => {
     const asta = aste.get(astaId);
     if (!asta || !asta.chiamataAttuale || asta.chiamataAttuale.aspettandoConferma) return;
-    if (asta.chiamataAttuale.fase === 'attesa-conferma') return socket.emit('errore', { msg: 'In attesa di conferma admin' });
     const sq = getSquadraBySocket(asta, socket.id);
     if (!sq) return socket.emit('errore', { msg: 'Non sei in questa asta' });
     const chiamata = asta.chiamataAttuale;
@@ -1599,8 +1598,10 @@ io.on('connection', (socket) => {
     if (asta.tipoAsta === 'iniziale' && offerta > sq.crediti) return socket.emit('errore', { msg: `Crediti insufficienti (hai ${sq.crediti})` });
     if (sq.nome === chiamata.proprietarioPrecedente) chiamata.giocatore.dirittoRiacquistoPerso = true;
     chiamata.offertaAttuale = offerta; chiamata.squadraOfferente = sq.nome;
+    chiamata.fase = 'rilancio';
     io.to(astaId).emit('aggiorna-offerta', chiamata);
     resetTimer(astaId, 'rilancio');
+    broadcastStato(astaId);
   });
 
   // Admin: conferma assegnazione dopo timer

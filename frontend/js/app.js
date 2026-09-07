@@ -2308,6 +2308,12 @@ socket.on('chiamata-manuale-avviso', (data) => {
 
 socket.on('aggiorna-offerta', (chiamata) => {
   if (S.asta) S.asta.chiamataAttuale = chiamata;
+  S.attesaConferma = false;
+  nascondiConfermaBox();
+  const timerWrap = document.getElementById('timer-wrap');
+  const rilBox = document.getElementById('rilancio-box');
+  if (timerWrap) timerWrap.classList.remove('hidden');
+  if (rilBox) rilBox.classList.remove('hidden');
   renderChiamata(chiamata);
   flashChiamataCard();
   // Price bump animation
@@ -2315,6 +2321,7 @@ socket.on('aggiorna-offerta', (chiamata) => {
   if (prezzoEl) { prezzoEl.classList.remove('price-bump'); void prezzoEl.offsetWidth; prezzoEl.classList.add('price-bump'); setTimeout(function(){ prezzoEl.classList.remove('price-bump'); }, 400); }
   if (chiamata.squadraOfferente === S.miaSquadra) toast('Offerta accettata!', 'success');
   else playSound('rilancio');
+  aggiornaQuickBids();
 });
 
 socket.on('timer-start', ({ secondi, fase }) => { S.timerTotal = secondi; updateTimer(secondi, fase); });
@@ -2391,7 +2398,6 @@ socket.on('attesa-conferma', (chiamata) => {
   const offerta   = chiamata.offertaAttuale || chiamata.offerta || 0;
   const squadra   = chiamata.squadraOfferente || chiamata.squadra || null;
   S.attesaConferma = true;
-  document.getElementById('rilancio-box').classList.add('hidden');
   document.getElementById('timer-wrap').classList.add('hidden');
   if (S.isAdmin) {
     const cb = document.getElementById('admin-conferma-box');
@@ -2996,7 +3002,6 @@ function renderChiamata(chiamata) {
 
 function canBid() {
   if (!S.asta || !S.asta.chiamataAttuale) return false;
-  if (S.attesaConferma) return false;
   const sq = getMiaSquadra();
   return sq && getMaxOfferta() > S.asta.chiamataAttuale.offertaAttuale;
 }
