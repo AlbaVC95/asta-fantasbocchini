@@ -1131,8 +1131,8 @@ html body.layout-partecipante .asta-row-panels>.panel-budget{
    e' un promemoria, non la schermata: lo spazio che libera va alle tab. */
 html body #budget-bar{
   display:grid !important;
-  grid-template-columns:repeat(auto-fit,minmax(336px,1fr)) !important;
-  gap:0 18px !important;align-content:start !important;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr)) !important;
+  gap:0 14px !important;align-content:start !important;
 }
 html body #budget-bar .sidebar-squadra{
   padding:3px 0 4px 8px !important;
@@ -1440,8 +1440,8 @@ html body .riepilogo-grid .card{border-radius:2px !important}
    lista in due colonne perche' non diventi una colonna infinita. */
 html body.layout-admin #budget-bar{
   display:grid !important;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr)) !important;
-  gap:6px 14px !important;align-content:start !important;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr)) !important;
+  gap:6px 10px !important;align-content:start !important;
 }
 html body.layout-admin .asta-row-panels>.panel-budget{
   flex:2 1 480px !important;max-height:clamp(200px,32vh,300px) !important;
@@ -2136,7 +2136,7 @@ html body #mio-panel .slot-chip span { font-size: .95rem !important; }
   html body #puja-panel-slot .btn-quick{height:44px !important}
 
   /* gli amici al tavolo: due colonne invece di quattro */
-  html body #budget-bar{grid-template-columns:repeat(auto-fit,minmax(250px,1fr)) !important;gap:0 18px !important}
+  html body #budget-bar{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr)) !important;gap:0 14px !important}
   /* colonne strette: il layout a 2 righe è già il default, non serve sovrascriverlo */
   html body.layout-partecipante .asta-row-panels>.panel-budget{padding:12px 16px 14px !important}
 }
@@ -2173,7 +2173,7 @@ html body #mio-panel .slot-chip span { font-size: .95rem !important; }
     justify-content:center !important;gap:14px !important;width:100% !important;
   }
   html body #puja-panel-slot .timer-inner{align-items:flex-start !important}
-  html body #budget-bar{grid-template-columns:repeat(auto-fit,minmax(215px,1fr)) !important;gap:0 16px !important}
+  html body #budget-bar{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr)) !important;gap:0 10px !important}
 }
 
 /* ── STRETTISSIMA — colonna < 620px ─────────────────────────────────
@@ -5955,6 +5955,71 @@ html[data-tema="cuoio"] { --text-on-gold: #ffffff; }
 html[data-tema="lavagna"] { --text-on-gold: #ffffff; }
 
 /* ══ Fix globali quando Anteprima è aperta (spazio ridotto) ══ */
+.asta-live-layout:has(#tab-anteprima.drawer-open) .panel-budget {
+  min-width: 0 !important;
+  scrollbar-width: thin !important;
+}
+.asta-live-layout:has(#tab-anteprima.drawer-open) .panel-budget::-webkit-scrollbar {
+  width: 4px !important;
+}
+.asta-live-layout:has(#tab-anteprima.drawer-open) .panel-budget::-webkit-scrollbar-thumb {
+  background: rgba(var(--sc-carta, 0,0,0), 0.25) !important;
+  border-radius: 4px !important;
+}
+.asta-live-layout:has(#tab-anteprima.drawer-open) #budget-bar {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 185px), 1fr)) !important;
+  gap: 4px 8px !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+.asta-live-layout:has(#tab-anteprima.drawer-open) #budget-bar .sidebar-squadra {
+  min-width: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 3px 6px 4px 6px !important;
+  column-gap: 4px !important;
+}
+.asta-live-layout:has(#tab-anteprima.drawer-open) #budget-bar .sq-nome {
+  font-size: 0.78rem !important;
+  min-width: 0 !important;
+}
+.asta-live-layout:has(#tab-anteprima.drawer-open) #budget-bar .sq-crediti {
+  font-size: 0.88rem !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  justify-self: end !important;
+  padding-left: 4px !important;
+  padding-right: 2px !important;
+}
+.asta-live-layout:has(#tab-anteprima.drawer-open) #budget-bar .sq-bottom {
+  font-size: 0.72rem !important;
+  min-width: 0 !important;
+}
+.asta-live-layout:has(#tab-anteprima.drawer-open) #budget-bar .sq-portieri,
+.asta-live-layout:has(#tab-anteprima.drawer-open) #budget-bar .sq-svincoli {
+  font-size: 0.72rem !important;
+}
+
+body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-panels {
+  gap: 8px !important;
+}
+body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-panels > .panel-budget {
+  flex: 1.5 1 240px !important;
+  min-width: 200px !important;
+}
+body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-panels > #admin-panel {
+  flex: 1 1 200px !important;
+  min-width: 170px !important;
+}
+body.layout-admin .asta-live-layout:has(#tab-anteprima.drawer-open) .asta-row-panels > #mio-panel {
+  flex: 0.9 1 180px !important;
+  min-width: 140px !important;
+}
+
+html[data-tema="sala-giochi"] .asta-live-layout:has(#tab-anteprima.drawer-open) #budget-bar .sq-crediti {
+  font-size: 0.40rem !important;
+  padding: 2px 3px !important;
+}
 .asta-live-layout:has(#tab-anteprima.drawer-open) #puja-panel-slot .cc-body {
     flex-direction: column !important;
     align-items: flex-start !important; text-align: left !important;
@@ -6123,8 +6188,11 @@ html body:not(.layout-admin) #budget-bar .sq-svincoli {
 }
 html body #budget-bar .sq-crediti,
 html body.layout-admin #budget-bar .sq-crediti {
-  font-size: 0.98rem !important;
+  font-size: 0.96rem !important;
   font-weight: 800 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  justify-self: end !important;
 }
 html[data-tema="lavagna"] body #budget-bar .sq-bottom,
 html[data-tema="lavagna"] body.layout-admin #budget-bar .sq-bottom {
