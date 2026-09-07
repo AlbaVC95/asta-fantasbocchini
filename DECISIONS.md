@@ -2893,3 +2893,22 @@ Per rinforzare la coesione tematica, il cronometro nel tema "bar" non è più un
 Decisioni chiave dell'animazione:
 1. **Nessun ricalcolo di stato**: Come la clessidra originale, l'SVG non gestisce nessun timer ma osserva il progresso dal cerchio del DOM esistente (che contiene il tempo vero dettato dal server). 
 2. **Urgenza visiva coerente**: Una birra rossa è una birra rovinata. Negli ultimi 3 secondi di urgenza si è scelto di mantenere il colore ambrato del liquido, alterando invece il riflesso del vetro (alone rosso/neon) e accelerando le bolle, indicando l'urgenza senza rompere il realismo materiale.
+
+## Le offerte si chiudono in modo netto a 0 (niente buzzer-beater)
+
+Il timer si ferma esattamente a 0: il server non emette più il `timer-tick` finale, imposta
+`timer = 0` e passa subito ad `attesa-conferma`; `rilancio` rifiuta con "Tempo scaduto!" sia in fase
+`attesa-conferma` sia con `timer <= 0`. Era stato provato l'opposto pochi minuti prima (commit
+`ca48bce`: accettare il "buzzer-beater" a 1 secondo e anche durante `attesa-conferma`) ed è stato
+rivertito subito: si è scelta la regola delle aste standard (fantalab), oltre lo zero non si offre
+più — la finestra di offerta deve essere la stessa che tutti vedono sul timer. Lato client la stessa soglia è replicata
+(`timer-tick <= 0` nasconde subito il box rilancio e alza `S.attesaConferma`) solo per non lasciare
+visibile un bottone che il server rifiuterebbe comunque — l'autorità resta il server.
+
+## Le pause dell'asta sono un broadcast, non solo un popup mirato
+
+Svincolo obbligatorio e decisione post-asta (plusvalenza/recompra) bloccano l'asta per tutti, ma il
+popup arriva a una sola squadra: gli altri vedevano l'asta ferma senza spiegazione e scrivevano in
+chat. Oltre al popup mirato, `chiudiAsta()` emette quindi `avviso-pausa-asta` a tutta la room, e il
+client ricostruisce lo stato di pausa da `asta.popupAttivo` ad ogni `stato-asta` (`_gestisciPausaAsta`)
+invece che dal solo evento: così anche chi si ricollega a metà pausa vede banner e carta corretti.

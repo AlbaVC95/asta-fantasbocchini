@@ -57,10 +57,14 @@ asta) e orchestrato da funzioni chiave in `server.js`:
   recuperabili da eventuali svincoli).
 - Timer gestito interamente server-side (`startTimer`/`resetTimer`/`clearTimer`), ogni rilancio lo
   resetta; alla scadenza lo stato passa a `attesa-conferma` e serve un'azione esplicita dell'admin
-  (`conferma-assegnazione` o `riapri-asta`).
+  (`conferma-assegnazione` o `riapri-asta`). Il taglio è netto: a 0 non viene emesso `timer-tick` e
+  ogni `rilancio` con `timer <= 0` o in fase `attesa-conferma` viene rifiutato (vedi DECISIONS.md).
 - `chiudiAsta()` gestisce i casi speciali post-asta (proposta di plusvalenza/recompra al proprietario
   precedente se il giocatore RIC/PLUS è stato vinto da un'altra squadra; gestione svincolo se
   l'offerta vincente supera i crediti disponibili) prima dell'assegnazione definitiva.
+- Quando `chiudiAsta()` apre un popup bloccante (svincolo obbligatorio o decisione post-asta), oltre
+  al popup mirato viene emesso a tutta la room `avviso-pausa-asta`, che il client usa per mostrare a
+  tutti banner e carta "in pausa" (`_gestisciPausaAsta()` in `app.js`).
 - Ogni azione che modifica lo stato di gioco viene appesa a `asta.storico`, base per
   `annulla-assegnazione(-specifica)` (undo, ripristina crediti/slot/pool giocatori).
 
