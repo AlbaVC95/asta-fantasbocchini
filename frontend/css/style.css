@@ -320,6 +320,14 @@ html[data-tema="lavagna"] .chiamata-card{
 .crediti-badge{font-family:var(--font-display);font-size:.8rem;font-weight:800;color:var(--gold);background:var(--gold-subtle);border:1px solid rgba(255,184,0,.25);border-radius:8px;padding:2px 8px;flex-shrink:0;}
 .slot-counter{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}#mio-slot-counter{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:6px!important}
 .slot-chip{display:flex;align-items:center;justify-content:space-between;font-size:.78rem;padding:5px 10px;background:var(--bg-main);border-radius:7px;border:1px solid var(--border);min-width:0}#mio-slot-counter .slot-chip{flex-direction:column;align-items:flex-start;justify-content:center;gap:0;padding:2px 6px;font-size:.68rem}#mio-slot-counter .slot-chip>.slot-main{display:flex;align-items:center;justify-content:space-between;width:100%;gap:4px}#mio-slot-counter .slot-sub{align-self:flex-start;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+/* Asta INIZIALE: 4 chip in due colonne strette e "Recompra 0/1" e' la piu' lunga — su pannelli
+   stretti il testo usciva dalla sua cella e finiva SOPRA la chip "Max" accanto (si leggeva
+   "Recompra 0Max 493cr"). flex-wrap manda il valore a capo invece di traboccare, min-width:0
+   lascia davvero restringere i flex item e overflow:hidden e' la rete di sicurezza: nel caso
+   peggiore il testo si taglia dentro la propria chip, non invade quella di fianco.
+   L'asta di RIPARAZIONE non e' toccata: le sue chip non hanno .slot-main. */
+#mio-slot-counter .slot-chip{overflow:hidden;overflow-wrap:anywhere}
+#mio-slot-counter .slot-chip>.slot-main{flex-wrap:wrap;min-width:0;row-gap:0;overflow-wrap:anywhere}
 .slot-chip span{font-weight:700;color:var(--primary)}.slot-chip.esaurito span{color:var(--danger)}
 .slot-sub{font-size:.68rem;color:var(--text-muted)}#mio-slot-counter .slot-sub{font-size:.56rem;line-height:1.1}.mio-panel-actions{display:flex;flex-direction:row;gap:6px;margin-top:0}.mio-panel-actions .btn{flex:1;min-width:0;padding:5px 8px;font-size:.72rem}
 .admin-panel{background:var(--bg-glass);backdrop-filter:blur(12px);border:1px solid rgba(255,184,0,.25);border-radius:14px;padding:10px 12px;box-shadow:0 12px 28px rgba(0,0,0,.35),0 0 40px rgba(255,184,0,.05),inset 0 1px 0 rgba(255,255,255,.05)}
