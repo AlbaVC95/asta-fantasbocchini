@@ -4012,16 +4012,23 @@ html[data-tema="sala-giochi"] .rose-col-header{border-bottom:2px solid var(--tex
    minore, e i nomi dei GIOCATORI tornano alla font base: sono il contenuto denso e
    ripetuto, ed e' li' che si pagava quasi tutta la larghezza. Cosi' si scende a
    482px, +11% invece di +36%, e quel resto e' il filo d'inchiostro, cioe' il tema. */
-html[data-tema="sala-giochi"] .rose-col-header{gap:6px !important}
+html[data-tema="sala-giochi"] .rose-col-header{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:stretch !important;
+  gap:2px !important;
+  padding-bottom:3px !important;
+  margin-bottom:4px !important;
+}
 html[data-tema="sala-giochi"] .rose-col-nome{
   font-family:Archivo,var(--font-sans) !important;font-weight:800 !important; text-shadow:none !important;
   font-variation-settings:normal !important;color:var(--text-primary) !important;
-  font-size:.72rem !important;min-width:0 !important;line-height:1.15 !important;
+  font-size:.70rem !important;min-width:0 !important;width:100% !important;line-height:1.15 !important;
   display:-webkit-box !important;-webkit-box-orient:vertical !important;
   -webkit-line-clamp:2 !important;line-clamp:2 !important;
-  overflow:hidden !important;text-overflow:ellipsis !important;
-  word-break:normal !important;overflow-wrap:normal !important;
-  white-space:normal !important;max-height:2.3em !important;
+  overflow:hidden !important;
+  word-break:normal !important;overflow-wrap:break-word !important;
+  white-space:normal !important;max-height:2.35em !important;
 }
 /* le cifre di credito: lo stesso gettone d'oro del Riepilogo squadre */
 html[data-tema="sala-giochi"] .rose-col-budget{
@@ -4030,6 +4037,7 @@ html[data-tema="sala-giochi"] .rose-col-budget{
   color:var(--text-primary) !important;background:#E8B038 !important;
   border:2px solid var(--text-primary) !important;padding:3px 5px 2px !important;
   display:inline-block !important;line-height:1 !important;
+  align-self:flex-end !important;
 }
 html[data-tema="sala-giochi"] .rose-col-budget.attiva{background:var(--fire) !important;color:#FFFFFF !important}
 
@@ -6364,12 +6372,37 @@ html body .vivi-chip span {
   padding: 0 3px !important;
   flex-shrink: 0 !important;
 }
+.rose-col-header {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 2px !important;
+  padding-bottom: 3px !important;
+  margin-bottom: 4px !important;
+}
+.rose-container.rose-compatta .rose-col-header {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 1px !important;
+  padding-bottom: 2px !important;
+  margin-bottom: 3px !important;
+}
 .rose-col-budget {
-  font-size: 0.85rem !important;
+  align-self: flex-end !important;
+  font-size: 0.74rem !important;
   font-weight: 800 !important;
+  line-height: 1.1 !important;
+  white-space: nowrap !important;
+}
+.rose-container.rose-compatta .rose-col-budget {
+  align-self: flex-end !important;
+  font-size: 0.68rem !important;
+  line-height: 1.1 !important;
 }
 .rose-col-nome {
-  font-size: 0.82rem !important;
+  width: 100% !important;
+  font-size: 0.74rem !important;
   font-weight: 800 !important;
   line-height: 1.15 !important;
   display: -webkit-box !important;
@@ -6377,14 +6410,14 @@ html body .vivi-chip span {
   -webkit-line-clamp: 2 !important;
   line-clamp: 2 !important;
   overflow: hidden !important;
-  text-overflow: ellipsis !important;
   word-break: normal !important;
-  overflow-wrap: normal !important;
+  overflow-wrap: break-word !important;
   white-space: normal !important;
-  max-height: 2.3em !important;
+  max-height: 2.35em !important;
 }
 .rose-container.rose-compatta .rose-col-nome {
-  font-size: 0.72rem !important;
+  width: 100% !important;
+  font-size: 0.70rem !important;
   font-weight: 800 !important;
   line-height: 1.15 !important;
   display: -webkit-box !important;
@@ -6392,13 +6425,13 @@ html body .vivi-chip span {
   -webkit-line-clamp: 2 !important;
   line-clamp: 2 !important;
   overflow: hidden !important;
-  text-overflow: ellipsis !important;
   word-break: normal !important;
-  overflow-wrap: normal !important;
+  overflow-wrap: break-word !important;
   white-space: normal !important;
-  max-height: 2.3em !important;
+  max-height: 2.35em !important;
 }
 .rose-container.rose-compatta .rose-col {
-  flex: 0 0 136px !important;
-  width: 136px !important;
+  flex: 0 0 142px !important;
+  width: 142px !important;
 }
+

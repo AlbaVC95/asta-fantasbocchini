@@ -3173,7 +3173,7 @@ function renderRose(squadre) {
       '</div>' : '';
     return '<div class="rose-col' + (isAttiva ? ' attiva' : '') + '">' +
       '<div class="rose-col-header">' +
-        '<span class="rose-col-nome">' + _escHtml(sq.nome) + '</span>' +
+        '<span class="rose-col-nome" title="' + _escHtml(sq.nome) + '">' + _escHtml(sq.nome) + '</span>' +
         '<span class="rose-col-budget' + (isAttiva ? ' attiva' : '') + '">💰 ' + sq.crediti + '</span>' +
       '</div>' +
       slotsRow +
