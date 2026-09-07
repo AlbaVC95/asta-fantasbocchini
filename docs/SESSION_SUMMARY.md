@@ -25,6 +25,14 @@ script usa-e-getta `patch_*.py` / `fix_*.py` usati per applicare le patch CSS, p
   `aggiorna-offerta` riapre timer e box rilancio e rifà `aggiornaQuickBids()` (riprende bene dopo un
   rilancio arrivato al limite).
 
+### Riquadro "Mio Team" in asta iniziale
+- In asta iniziale il contatore ha 4 chip su due colonne strette e `Recompra 0/1` è la più lunga: su
+  pannelli stretti usciva dalla propria cella e finiva **sopra** il testo della chip `Max`. Ora il
+  valore va a capo invece di traboccare (`flex-wrap` + `min-width:0`, con `overflow:hidden` come rete
+  di sicurezza) — fix di questa sessione, in `style.css` accanto alle regole di `#mio-slot-counter`.
+- L'asta di riparazione (2 chip) è verificata invariata: 5 temi × larghezze 200→420px, nessuna chip
+  sborda e le altezze non cambiano da 230px in su.
+
 ### Pausa asta visibile a tutti
 - Nuovo evento broadcast `avviso-pausa-asta` (`{ tipo: 'svincolo' | 'post-asta', squadra, giocatore,
   prezzo }`) emesso a tutta la room nei tre punti di `chiudiAsta()` che aprivano un popup solo alla
