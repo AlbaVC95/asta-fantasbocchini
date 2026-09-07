@@ -643,13 +643,13 @@ body.layout-admin .quick-pill{display:flex}
 /* ══════ Liberi list — nuovo layout con Valore Algoritmico ══════ */
 .liberi-list li{gap:6px}
 .l-nome{flex:1;font-weight:600;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.l-tipo-badge{font-size:.62rem;font-weight:800;text-transform:uppercase;padding:2px 6px;border-radius:5px;flex-shrink:0}
+.l-tipo-badge{font-size:.76rem;font-weight:800;text-transform:uppercase;padding:2px 7px;border-radius:5px;flex-shrink:0}
 .l-tipo-badge.tipo-NN{background:var(--bg-elevated);color:var(--text-muted)}
-.l-orig{font-size:.68rem;color:var(--text-muted);flex-shrink:0;white-space:nowrap}
-.l-valore-wrap{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;min-width:44px}
-.l-valore{font-family:var(--font-display);font-weight:900;color:var(--gold-bright);font-size:1rem;line-height:1;text-shadow:0 0 12px var(--gold-glow)}
-.l-valore-label{font-size:.55rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em}
-.l-costo{font-size:.68rem;color:var(--text-muted);flex-shrink:0}
+.l-orig{font-size:.82rem;color:var(--text-secondary);flex-shrink:0;white-space:nowrap}
+.l-valore-wrap{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;min-width:48px}
+.l-valore{font-family:var(--font-display);font-weight:900;color:var(--gold-bright);font-size:1.1rem;line-height:1;text-shadow:0 0 12px var(--gold-glow)}
+.l-valore-label{font-size:.72rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.l-costo{font-size:.84rem;color:var(--text-secondary);flex-shrink:0;font-weight:700}
 /* ══════ Modal Assegna manuale / Chiama live search ══════ */
 .cm-filtri-ruolo{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0}
 .cm-filtri-ruolo .filtro-btn{padding:4px 9px;font-size:.72rem}
