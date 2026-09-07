@@ -5938,25 +5938,68 @@ html[data-tema="sala-giochi"] .asta-live-layout:has(#tab-anteprima.drawer-open) 
 }
 
 
-/* FIX: ingrandisci scritte di info strategia e etichette offerta in vista utente (lavagna), ma mantieni compatta la vista admin per non allungare la carta */
+/* ═══════════════════════════════════════════════════════════════════
+   FIX LAVAGNA: OTTIMIZZAZIONE VISTA ADMIN & LEGGIBILITÀ NOME/META/FASCIA
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* 1. Nome giocatore: mai tagliato alla fine (es. punto o lettere inclinate) */
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-nome,
+html[data-tema="lavagna"] body #puja-panel-slot .cc-nome {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  padding-right: 18px !important;
+  line-height: 1.05 !important;
+}
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-header,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-info,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-nome-row {
+  overflow: visible !important;
+}
+
+/* 2. Squadra ed età (meta): ben visibili, non microscopici, contrasto neon */
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-meta,
+html[data-tema="lavagna"] body #puja-panel-slot .cc-meta {
+  font-size: 0.88rem !important;
+  line-height: 1.25 !important;
+  gap: 8px !important;
+  margin-top: 4px !important;
+  color: #CBD5E1 !important;
+  overflow: visible !important;
+}
+html[data-tema="lavagna"] .cc-meta .cc-squadra {
+  color: #7DE8F7 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+}
+html[data-tema="lavagna"] .cc-meta .cc-eta {
+  color: #CBD5E1 !important;
+}
+
+/* 3. Fascia & Strategia: equilibrio perfetto tra leggibilità e compattezza */
+/* Vista Utente: grande e chiara da lontano */
 html[data-tema="lavagna"] body #puja-panel-slot .cc-strategia-info {
   font-size: 1.05rem !important;
 }
 html[data-tema="lavagna"] body #puja-panel-slot .cc-offerta-label {
   font-size: 0.95rem !important;
 }
+
+/* Vista Admin: dimensione intermedia (0.86rem), leggibile ma non gonfia la carta */
 html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-strategia-info {
-  font-size: 0.72rem !important;
-  line-height: 1.25 !important;
+  font-size: 0.86rem !important;
+  line-height: 1.3 !important;
   margin-top: 3px !important;
   padding: 2px 0 2px 6px !important;
 }
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-strategia-info strong {
+  font-size: 0.90rem !important;
+}
 html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-commento-preview {
-  font-size: 0.68rem !important;
-  line-height: 1.2 !important;
-  padding: 3px 6px !important;
-  margin-top: 2px !important;
+  font-size: 0.78rem !important;
+  line-height: 1.3 !important;
+  padding: 4px 8px !important;
+  margin-top: 3px !important;
 }
 html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-offerta-label {
-  font-size: 0.72rem !important;
+  font-size: 0.78rem !important;
 }
