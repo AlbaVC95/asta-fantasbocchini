@@ -12,12 +12,15 @@ script usa-e-getta `patch_*.py` / `fix_*.py` usati per applicare le patch CSS, p
 ## Cosa è cambiato
 
 ### Regole d'asta (`backend/server.js` + `frontend/js/app.js`)
-- **Le offerte si chiudono in modo netto a 0**, stile fantalab: il tick del timer non emette più
-  `timer-tick` a 0 (passa direttamente a `attesa-conferma` con `timer = 0`) e `rilancio` rifiuta con
-  "Tempo scaduto!" sia in fase `attesa-conferma` sia con `timer <= 0`. Lato client `timer-tick <= 0`
-  nasconde subito il box rilancio e alza `S.attesaConferma`, così non resta visibile un istante di
-  troppo. Un esperimento intermedio che permetteva il "buzzer-beater" durante `attesa-conferma`
-  (commit `ca48bce`) è stato **rivertito** dai due commit successivi.
+- **Le offerte si chiudono in modo netto a 0**, stile fantalab: `rilancio` rifiuta con "Tempo
+  scaduto!" sia in fase `attesa-conferma` sia con `timer <= 0`, e lato client `timer-tick <= 0`
+  nasconde subito il box rilancio e alza `S.attesaConferma`. Un esperimento intermedio che
+  permetteva il "buzzer-beater" durante `attesa-conferma` (commit `ca48bce`) è stato **rivertito**
+  dai due commit successivi.
+- **Il countdown finisce visibilmente a 0** (fix di questa sessione): il server emette un ultimo
+  `timer-tick` con `secondi: 0` prima di passare ad `attesa-conferma`, e il client non nasconde più
+  il cronometro in quel momento — resta fermo su 0 finché la chiamata non si chiude o l'admin
+  riapre. Prima il numero (e la clessidra/boccale) si fermavano a 1.
 - `rilancio` ora imposta `chiamata.fase = 'rilancio'` e chiama `broadcastStato()`; lato client
   `aggiorna-offerta` riapre timer e box rilancio e rifà `aggiornaQuickBids()` (riprende bene dopo un
   rilancio arrivato al limite).

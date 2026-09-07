@@ -2408,7 +2408,15 @@ socket.on('attesa-conferma', (chiamata) => {
   S.attesaConferma = true;
   const rilBox = document.getElementById('rilancio-box');
   if (rilBox) rilBox.classList.add('hidden');
-  document.getElementById('timer-wrap').classList.add('hidden');
+  // Il cronometro NON si nasconde qui: deve restare a schermo fermo su 0, perche' il countdown
+  // finisca visibilmente a zero (prima spariva mostrando ancora 1). Lo nascondono comunque
+  // 'giocatore-assegnato'/'giocatore-scartato' a fine chiamata, e 'nuova-chiamata' lo rimette
+  // in moto quando l'admin riapre l'asta. L'azzeramento e' fatto a mano invece che con
+  // updateTimer() per non rigiocare il tick sonoro su chi si e' collegato durante l'attesa.
+  const numEl = document.getElementById('timer-display');
+  if (numEl) numEl.textContent = '0';
+  const progEl = document.getElementById('timer-progress');
+  if (progEl) progEl.style.strokeDashoffset = 339.292;
   if (S.isAdmin) {
     const cb = document.getElementById('admin-conferma-box');
     const ab = document.getElementById('admin-actions-box');

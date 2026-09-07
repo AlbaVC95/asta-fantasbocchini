@@ -892,6 +892,11 @@ function startTimer(astaId, fase) {
     if (a.chiamataAttuale.timer <= 0) {
       clearTimer(astaId);
       a.chiamataAttuale.timer = 0;
+      // Lo zero va MOSTRATO: l'ultimo tick emesso e' 0 (con la fase ancora corrente, cosi'
+      // l'etichetta non cambia sull'ultimo fotogramma), altrimenti a schermo il countdown si
+      // fermava a 1. Non riapre nulla: il client su 0 blocca gia' i rilanci, e ogni 'rilancio'
+      // con timer <= 0 viene rifiutato qui sotto.
+      io.to(astaId).emit('timer-tick', { secondi: 0, fase: a.chiamataAttuale.fase });
       a.chiamataAttuale.fase = 'attesa-conferma';
       io.to(astaId).emit('attesa-conferma', a.chiamataAttuale);
       broadcastStato(astaId);

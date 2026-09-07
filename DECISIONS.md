@@ -2901,7 +2901,10 @@ Il timer si ferma esattamente a 0: il server non emette più il `timer-tick` fin
 `attesa-conferma` sia con `timer <= 0`. Era stato provato l'opposto pochi minuti prima (commit
 `ca48bce`: accettare il "buzzer-beater" a 1 secondo e anche durante `attesa-conferma`) ed è stato
 rivertito subito: si è scelta la regola delle aste standard (fantalab), oltre lo zero non si offre
-più — la finestra di offerta deve essere la stessa che tutti vedono sul timer. Lato client la stessa soglia è replicata
+più — la finestra di offerta deve essere la stessa che tutti vedono sul timer. Proprio per questo lo
+zero va **mostrato**: l'ultimo `timer-tick` emesso è 0 (non 1) e il cronometro resta a schermo fermo
+su 0 durante `attesa-conferma`, altrimenti il countdown sembrava finire a 1 e la regola risultava
+incoerente con quello che i partecipanti vedevano. Lato client la stessa soglia è replicata
 (`timer-tick <= 0` nasconde subito il box rilancio e alza `S.attesaConferma`) solo per non lasciare
 visibile un bottone che il server rifiuterebbe comunque — l'autorità resta il server.
 
