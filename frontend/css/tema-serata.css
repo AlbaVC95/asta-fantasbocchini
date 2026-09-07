@@ -747,7 +747,7 @@ html body #puja-panel-slot .cc-offerente{
   letter-spacing:.04em !important;white-space:nowrap !important;
 }
 html body #puja-panel-slot .cc-strategia-info{
-  font-family:'Space Mono',monospace !important;font-size:.56rem !important;
+  font-family:'Space Mono',monospace !important;font-size:.75rem !important;
   letter-spacing:.1em !important;color:var(--sc-tenue) !important;
   background:none !important;border:none !important;padding:8px 0 0 !important;
 }
@@ -767,7 +767,7 @@ html body #puja-panel-slot .timer-number{
 }
 html body.puja-urgente #puja-panel-slot .timer-number{color:var(--sc-brace-piena) !important;text-shadow:0 0 32px rgba(var(--sc-brace),.5) !important}
 html body #puja-panel-slot .timer-label-text{
-  font-family:'Space Mono',monospace !important;font-size:.56rem !important;
+  font-family:'Space Mono',monospace !important;font-size:.75rem !important;
   letter-spacing:.22em !important;text-transform:uppercase !important;
   color:var(--sc-tenue) !important;margin-top:6px !important;
 }
@@ -1012,7 +1012,7 @@ html body #puja-panel-slot .btn-manuale{
      un bottone che apre il testo intero. Si stringe, non sparisce. */
   html body #puja-panel-slot .cc-strategia-info{
     display:block !important;padding:6px 0 0 !important;margin:0 !important;
-    font-size:.52rem !important;letter-spacing:.06em !important;line-height:1.35 !important;
+    font-size:.65rem !important;letter-spacing:.06em !important;line-height:1.35 !important;
     max-width:100% !important;
     overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;
   }
