@@ -2398,6 +2398,8 @@ socket.on('attesa-conferma', (chiamata) => {
   const offerta   = chiamata.offertaAttuale || chiamata.offerta || 0;
   const squadra   = chiamata.squadraOfferente || chiamata.squadra || null;
   S.attesaConferma = true;
+  const rilBox = document.getElementById('rilancio-box');
+  if (rilBox) rilBox.classList.add('hidden');
   document.getElementById('timer-wrap').classList.add('hidden');
   if (S.isAdmin) {
     const cb = document.getElementById('admin-conferma-box');
@@ -3002,6 +3004,7 @@ function renderChiamata(chiamata) {
 
 function canBid() {
   if (!S.asta || !S.asta.chiamataAttuale) return false;
+  if (S.attesaConferma) return false;
   const sq = getMiaSquadra();
   return sq && getMaxOfferta() > S.asta.chiamataAttuale.offertaAttuale;
 }

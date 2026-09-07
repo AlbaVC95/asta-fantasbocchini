@@ -888,14 +888,15 @@ function startTimer(astaId, fase) {
   const interval = setInterval(() => {
     const a = aste.get(astaId);
     if (!a || !a.chiamataAttuale) { clearTimer(astaId); return; }
-    a.chiamataAttuale.timer--;
-    io.to(astaId).emit('timer-tick', { secondi: a.chiamataAttuale.timer, fase: a.chiamataAttuale.fase });
     if (a.chiamataAttuale.timer <= 0) {
       clearTimer(astaId);
       a.chiamataAttuale.fase = 'attesa-conferma';
       io.to(astaId).emit('attesa-conferma', a.chiamataAttuale);
       broadcastStato(astaId);
+      return;
     }
+    a.chiamataAttuale.timer--;
+    io.to(astaId).emit('timer-tick', { secondi: a.chiamataAttuale.timer, fase: a.chiamataAttuale.fase });
   }, 1000);
   timers.set(astaId, interval);
 }
@@ -1581,6 +1582,9 @@ io.on('connection', (socket) => {
   socket.on('rilancio', ({ astaId, offerta }) => {
     const asta = aste.get(astaId);
     if (!asta || !asta.chiamataAttuale || asta.chiamataAttuale.aspettandoConferma) return;
+    if (asta.chiamataAttuale.fase === 'attesa-conferma' || asta.chiamataAttuale.timer <= 0) {
+      return socket.emit('errore', { msg: 'Tempo scaduto!' });
+    }
     const sq = getSquadraBySocket(asta, socket.id);
     if (!sq) return socket.emit('errore', { msg: 'Non sei in questa asta' });
     const chiamata = asta.chiamataAttuale;
