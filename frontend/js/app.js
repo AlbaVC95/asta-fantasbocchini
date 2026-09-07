@@ -2953,9 +2953,9 @@ function renderChiamata(chiamata) {
           "<div class=\"cc-meta\">" + clubTxt + tipoBadge + u21Badge + etaTxt + origTxt + "</div>" +
         "</div>" +
       "</div>";
-
-        '</div>' +
+  card.innerHTML =
     cc_header_html +
+
     '<div class="cc-body">' +
       '<div class="cc-offerta-box">' +
         '<p class="cc-offerta" id="cc-prezzo">' + offertaDisplay + '</p>' +
