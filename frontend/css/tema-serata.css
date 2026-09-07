@@ -1440,8 +1440,8 @@ html body .riepilogo-grid .card{border-radius:2px !important}
    lista in due colonne perche' non diventi una colonna infinita. */
 html body.layout-admin #budget-bar{
   display:grid !important;
-  grid-template-columns:repeat(auto-fit,minmax(190px,1fr)) !important;
-  gap:0 18px !important;align-content:start !important;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr)) !important;
+  gap:6px 18px !important;align-content:start !important;
 }
 html body.layout-admin .asta-row-panels>.panel-budget{
   flex:1.4 1 380px !important;max-height:clamp(200px,32vh,300px) !important;
@@ -3751,7 +3751,19 @@ html[data-tema="sala-giochi"] body .timbro-preso span{border-color:#147A52 !impo
    ═══════════════════════════════════════════════════════════════════ */
 
 /* Admin mode budget-bar typography tweaks — ingrandite per piena leggibilità */
-html body.layout-admin #budget-bar .sq-nome{font-size:.85rem !important; font-weight:700 !important}
+html body.layout-admin #budget-bar .sidebar-squadra {
+  padding: 6px 10px 7px !important;
+  min-height: 44px !important;
+}
+html body.layout-admin #budget-bar .sq-nome {
+  font-size: .85rem !important;
+  font-weight: 700 !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  line-height: 1.15 !important;
+}
 html body.layout-admin #budget-bar .sq-bottom,
 html body.layout-admin #budget-bar .sq-portieri,
 html body.layout-admin #budget-bar .sq-svincoli{font-size:.82rem !important; line-height:1.25 !important; font-weight:600 !important}
