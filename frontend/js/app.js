@@ -2930,9 +2930,17 @@ function renderChiamata(chiamata) {
     : '<span class="chiamata-stato">In attesa 1ª offerta...</span>';
   const offertaDisplay = chiamata.offertaAttuale === 0 ? '—' : chiamata.offertaAttuale;
   const offertaLabel = chiamata.offertaAttuale === 0 ? 'Nessuna offerta' : 'crediti';
-  const attesaBadge = chiamata.aspettandoConferma
-    ? '<p class="cc-attesa-badge">⏳ In attesa decisione di <strong>' + _escHtml(chiamata.proprietario || chiamata.giocatore.squadraOriginale || 'squadra') + '</strong></p>'
-    : '';
+  let attesaBadge = "";
+  if (chiamata.aspettandoConferma) {
+    attesaBadge = "<p class=\"cc-attesa-badge\">⏳ In attesa decisione di <strong>" + _escHtml(chiamata.proprietario || chiamata.giocatore.squadraOriginale || "squadra") + "</strong></p>";
+  } else if (S.asta && S.asta.popupAttivo) {
+    if (S.asta.popupAttivo.tipo === "svincolo") {
+      attesaBadge = "<p class=\"cc-attesa-badge\" style=\"color:var(--danger);border-color:var(--danger);background:rgba(239,68,68,0.1)\">🚨 Svincolo obbligatorio: attesa per <strong>" + _escHtml(S.asta.popupAttivo.squadraVincitrice) + "</strong></p>";
+    } else if (S.asta.popupAttivo.tipo === "post-asta") {
+      attesaBadge = "<p class=\"cc-attesa-badge\">⏳ In attesa decisione (Plus/Recompra) di <strong>" + _escHtml(S.asta.popupAttivo.squadraVincitrice) + "</strong></p>";
+    }
+  }
+
   const manualeBadge = chiamata.manuale
     ? '<p class="cc-manuale-badge">🔨 Manuale Admin</p>'
     : '';
