@@ -888,15 +888,16 @@ function startTimer(astaId, fase) {
   const interval = setInterval(() => {
     const a = aste.get(astaId);
     if (!a || !a.chiamataAttuale) { clearTimer(astaId); return; }
+    a.chiamataAttuale.timer--;
     if (a.chiamataAttuale.timer <= 0) {
       clearTimer(astaId);
+      a.chiamataAttuale.timer = 0;
       a.chiamataAttuale.fase = 'attesa-conferma';
       io.to(astaId).emit('attesa-conferma', a.chiamataAttuale);
       broadcastStato(astaId);
-      return;
+    } else {
+      io.to(astaId).emit('timer-tick', { secondi: a.chiamataAttuale.timer, fase: a.chiamataAttuale.fase });
     }
-    a.chiamataAttuale.timer--;
-    io.to(astaId).emit('timer-tick', { secondi: a.chiamataAttuale.timer, fase: a.chiamataAttuale.fase });
   }, 1000);
   timers.set(astaId, interval);
 }

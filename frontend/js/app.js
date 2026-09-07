@@ -2325,7 +2325,15 @@ socket.on('aggiorna-offerta', (chiamata) => {
 });
 
 socket.on('timer-start', ({ secondi, fase }) => { S.timerTotal = secondi; updateTimer(secondi, fase); });
-socket.on('timer-tick', ({ secondi, fase }) => updateTimer(secondi, fase));
+socket.on('timer-tick', ({ secondi, fase }) => {
+  if (secondi <= 0) {
+    const rilBox = document.getElementById('rilancio-box');
+    if (rilBox) rilBox.classList.add('hidden');
+    S.attesaConferma = true;
+    aggiornaQuickBids();
+  }
+  updateTimer(secondi, fase);
+});
 
 socket.on('giocatore-assegnato', ({ giocatore, prezzo, squadra, tipo, guadagno, plusvalenzaA }) => {
   // Deve leggere la posizione di .cc-avatar PRIMA che il resto dell'handler la muti (sotto,
