@@ -766,6 +766,7 @@ function chiudiAsta(astaId) {
         asta.chiamataAttuale = null;
         emitToSquadra(astaId, giocatore.squadraOriginale, 'popup-post-asta', asta.popupAttivo);
         emitToAdmins(astaId, 'popup-post-asta-admin', asta.popupAttivo);
+        io.to(astaId).emit('avviso-pausa-asta', { tipo: 'post-asta', squadra: giocatore.squadraOriginale, giocatore, prezzo: offertaAttuale });
         broadcastStato(astaId); return;
       }
     }
@@ -776,6 +777,7 @@ function chiudiAsta(astaId) {
         asta.chiamataAttuale = null;
         emitToSquadra(astaId, giocatore.squadraOriginale, 'popup-post-asta', asta.popupAttivo);
         emitToAdmins(astaId, 'popup-post-asta-admin', asta.popupAttivo);
+        io.to(astaId).emit('avviso-pausa-asta', { tipo: 'post-asta', squadra: giocatore.squadraOriginale, giocatore, prezzo: offertaAttuale });
         broadcastStato(astaId); return;
       }
     }
@@ -815,6 +817,7 @@ function chiudiAsta(astaId) {
         // eseguire lo svincolo anche lui come backup, non solo vedere un messaggio di attesa
         // (esegui-svincolo accetta gia' l'Admin indipendentemente dalla squadra proprietaria).
         emitToAdmins(astaId, 'popup-svincolo-admin', { ...asta.popupAttivo, rosa: sq.rosa, fattoreSvincolo: asta.fattoreSvincolo || 0.5 });
+        io.to(astaId).emit('avviso-pausa-asta', { tipo: 'svincolo', squadra: squadraOfferente, giocatore, prezzo: offertaAttuale });
         broadcastStato(astaId); return;
       }
     }

@@ -2248,6 +2248,7 @@ socket.on('stato-asta', (asta) => {
     renderGiocatoriLiberi(asta.poolGiocatori);
     renderMioPanel();
     renderAdminPanel(asta);
+    _gestisciPausaAsta(asta);
   }
   // Always update lobby link (needed on reconnect, not just on first join).
   if (S.astaId) {
@@ -2264,7 +2265,18 @@ socket.on('asta-iniziata', () => {
   if (S.asta) renderAdminPanel(S.asta);
 });
 
+socket.on('avviso-pausa-asta', (data) => {
+  if (data && data.tipo === 'svincolo') {
+    toast('🚨 Asta in pausa: ' + (data.squadra || 'Una squadra') + ' sta effettuando uno svincolo obbligatorio', 'warning');
+    playSound('manuale');
+  } else if (data && data.tipo === 'post-asta') {
+    toast('⏳ Asta in pausa: in attesa decisione di ' + (data.squadra || 'una squadra'), 'info');
+  }
+});
+
 socket.on('nuova-chiamata', (chiamata) => {
+  const _pausaBnr = document.getElementById('asta-pausa-banner');
+  if (_pausaBnr) _pausaBnr.classList.add('hidden');
   S.attesaConferma = false;
   if (S.asta) S.asta.chiamataAttuale = chiamata;
   nascondiConfermaBox();
@@ -6375,3 +6387,69 @@ function setupStrategiaAsta() {
 // gli utenti. Non era piu' usato, quindi e' stato eliminato insieme alle sue rotte.
 // Spariscono con lui anche i keyframes `editor-anim-*`, che nessun altro CSS usava,
 // e il fetch di /api/theme che ogni visitatore faceva al caricamento della pagina.
+
+
+function _gestisciPausaAsta(asta) {
+  const card = document.getElementById('chiamata-card');
+  const timerWrap = document.getElementById('timer-wrap');
+  const rilBox = document.getElementById('rilancio-box');
+  const banner = document.getElementById('asta-pausa-banner');
+
+  if (asta && asta.popupAttivo && asta.popupAttivo.tipo === 'svincolo') {
+    const p = asta.popupAttivo;
+    const sqVinc = p.squadraVincitrice || 'una squadra';
+    const gNome = p.giocatore ? p.giocatore.nome : 'il giocatore';
+    const pr = p.prezzoFinale != null ? p.prezzoFinale : '—';
+    const isMe = (S.miaSquadra === sqVinc);
+
+    if (timerWrap) timerWrap.classList.add('hidden');
+    if (rilBox) rilBox.classList.add('hidden');
+
+    if (banner) {
+      banner.innerHTML = '<span>🚨</span> <div><strong>ASTA IN PAUSA</strong> — Attesa svincolo obbligatorio per <strong>' + _escHtml(sqVinc) + '</strong> (' + _escHtml(gNome) + ' a ' + pr + 'cr)</div>';
+      banner.classList.remove('hidden');
+    }
+
+    if (card && !asta.chiamataAttuale) {
+      card.className = 'chiamata-card in-pausa';
+      card.innerHTML =
+        '<div class="cc-pausa-svincolo">' +
+          '<div class="cc-pausa-badge">🚨 ASTA IN PAUSA · SVINCOLO OBBLIGATORIO</div>' +
+          '<h3 class="cc-pausa-squadra">Attesa per <strong>' + _escHtml(sqVinc) + '</strong></h3>' +
+          '<p class="cc-pausa-desc">Ha vinto la chiamata di <strong>' + _escHtml(gNome) + '</strong> a <strong>' + pr + ' cr</strong>. La squadra sta liberando spazio in rosa o crediti tramite svincolo per confermare l\'acquisto.</p>' +
+          (isMe
+            ? '<button class="btn btn-warning mt-12" onclick="riprendiSvincolo()" style="font-size:0.95rem;padding:8px 16px;font-weight:bold;cursor:pointer">📋 Clicca qui per selezionare chi svincolare</button>'
+            : '<p class="cc-pausa-attesa">⏳ L\'asta riprenderà automaticamente non appena lo svincolo sarà completato.</p>') +
+        '</div>';
+    }
+  } else if (asta && asta.popupAttivo && (asta.popupAttivo.tipo === 'post-asta' || (typeof asta.popupAttivo.tipo === 'string' && asta.popupAttivo.tipo.startsWith('post-asta')))) {
+    const p = asta.popupAttivo;
+    const sqChi = p.proprietarioPrecedente || p.squadraVincitrice || 'una squadra';
+    const gNome = p.giocatore ? p.giocatore.nome : 'il giocatore';
+
+    if (timerWrap) timerWrap.classList.add('hidden');
+    if (rilBox) rilBox.classList.add('hidden');
+
+    if (banner) {
+      banner.innerHTML = '<span>⏳</span> <div><strong>ASTA IN PAUSA</strong> — Decisione in corso (Plusvalenza / Recompra) di <strong>' + _escHtml(sqChi) + '</strong> per ' + _escHtml(gNome) + '</div>';
+      banner.classList.remove('hidden');
+    }
+
+    if (card && !asta.chiamataAttuale) {
+      card.className = 'chiamata-card in-pausa';
+      card.innerHTML =
+        '<div class="cc-pausa-svincolo">' +
+          '<div class="cc-pausa-badge">⏳ ASTA IN PAUSA · DECISIONE IN CORSO</div>' +
+          '<h3 class="cc-pausa-squadra">In attesa di <strong>' + _escHtml(sqChi) + '</strong></h3>' +
+          '<p class="cc-pausa-desc">Decisione su plusvalenza o recompra per <strong>' + _escHtml(gNome) + '</strong>.</p>' +
+          '<p class="cc-pausa-attesa">⏳ L\'asta riprenderà automaticamente a breve.</p>' +
+        '</div>';
+    }
+  } else {
+    if (banner) banner.classList.add('hidden');
+    if (card && card.classList.contains('in-pausa')) {
+      card.className = 'chiamata-card';
+      card.innerHTML = '<p class="chiamata-stato">⏳ In attesa di estrazione...</p>';
+    }
+  }
+}

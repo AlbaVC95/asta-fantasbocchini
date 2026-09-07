@@ -6003,3 +6003,34 @@ html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-commento-preview 
 html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-offerta-label {
   font-size: 0.78rem !important;
 }
+
+/* ══ LAVAGNA: PAUSA ASTA E BANNER ══ */
+html[data-tema="lavagna"] .asta-pausa-banner {
+  font-family: 'Kalam', Archivo, sans-serif !important;
+  font-size: 1.05rem !important;
+  letter-spacing: 0.04em !important;
+  border-bottom: 2px solid rgba(255, 45, 45, 0.4) !important;
+}
+html[data-tema="lavagna"] .chiamata-card.in-pausa {
+  background: rgba(255, 45, 45, 0.08) !important;
+  border: 2px dashed rgba(255, 45, 45, 0.7) !important;
+  box-shadow: 0 0 25px rgba(255, 45, 45, 0.3) !important;
+}
+html[data-tema="lavagna"] .cc-pausa-badge {
+  font-family: 'Kalam', Archivo, sans-serif !important;
+  font-size: 0.82rem !important;
+}
+html[data-tema="lavagna"] .cc-pausa-squadra {
+  font-family: 'Kalam', Archivo, sans-serif !important;
+  font-size: 1.4rem !important;
+}
+html[data-tema="lavagna"] .cc-pausa-squadra strong {
+  color: #FF5E82 !important;
+  text-shadow: 0 0 14px rgba(255, 45, 45, 0.6) !important;
+}
+html[data-tema="lavagna"] .cc-pausa-desc,
+html[data-tema="lavagna"] .cc-pausa-attesa {
+  font-family: 'Kalam', Archivo, sans-serif !important;
+  font-size: 0.98rem !important;
+  color: #CBD5E1 !important;
+}
