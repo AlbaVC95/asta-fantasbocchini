@@ -3144,7 +3144,7 @@ html[data-tema="sala-giochi"] ::selection{background:rgba(66,95,196,.24);color:v
 /* ── La testata: l'insegna del cabinato ── */
 html[data-tema="sala-giochi"] .asta-header{
   background:var(--sg-carta) !important;
-  border-bottom:4px solid var(--text-primary) !important;
+  border-bottom:2px solid var(--text-primary) !important;
   box-shadow:none !important;backdrop-filter:none !important;
 }
 /* La fascia dipinta sotto la testata — stesso punto d'aggancio della trave in
@@ -3170,7 +3170,7 @@ html[data-tema="sala-giochi"] .asta-header-email{
 html[data-tema="sala-giochi"] .btn-sound,
 html[data-tema="sala-giochi"] .asta-header-right .btn-secondary{
   background:var(--sg-carta2) !important;color:var(--text-primary) !important;
-  border:3px solid var(--text-primary) !important;border-radius:0 !important;box-shadow:none !important;
+  border:2px solid var(--text-primary) !important;border-radius:0 !important;box-shadow:none !important;
   transform: none !important;
 }
 html[data-tema="sala-giochi"] .btn-sound:hover,
@@ -3179,15 +3179,15 @@ html[data-tema="sala-giochi"] .asta-header-right .btn-secondary:hover{
 }
 html[data-tema="sala-giochi"] .home-header{
   background:var(--sg-carta) !important;border-radius:0 !important;
-  border-bottom:4px solid var(--text-primary) !important;box-shadow:none !important;
+  border-bottom:2px solid var(--text-primary) !important;box-shadow:none !important;
   transform: none !important;
 }
 html[data-tema="sala-giochi"] .home-header .btn-logout-link{color:#4A465E !important}
 html[data-tema="sala-giochi"] .home-header .btn-logout-link:hover{color:var(--primary) !important}
 html[data-tema="sala-giochi"] body .card{
   background:var(--sg-carta) !important;
-  border:3px solid var(--text-primary) !important;border-radius:0 !important;
-  box-shadow:6px 6px 0 var(--text-primary) !important;
+  border:2px solid var(--text-primary) !important;border-radius:0 !important;
+  box-shadow:3px 3px 0 var(--text-primary) !important;
 }
 html[data-tema="sala-giochi"] body .home-logo{filter:none !important}
 
@@ -3197,15 +3197,15 @@ html[data-tema="sala-giochi"] .mio-panel,
 html[data-tema="sala-giochi"] .admin-panel,
 html[data-tema="sala-giochi"] .tabs-panel{
   background:var(--sg-carta) !important;
-  border:3px solid var(--text-primary) !important;border-radius:0 !important;
-  box-shadow:6px 6px 0 var(--text-primary) !important;
+  border:2px solid var(--text-primary) !important;border-radius:0 !important;
+  box-shadow:3px 3px 0 var(--text-primary) !important;
 }
 /* la testata di ogni piastra e' una targhetta cobalto, come sopra i pulsanti
    di un cabinato */
 html[data-tema="sala-giochi"] .panel-budget-hdr{
-  font-family:Archivo,var(--font-sans) !important;font-size:.48rem !important;
+  font-family:Archivo,var(--font-sans) !important;font-size:.50rem !important;
   letter-spacing:.06em !important;color:#FFFFFF !important;
-  background:var(--primary) !important;padding:10px 11px !important;
+  background:var(--primary) !important;padding:5px 9px !important;
 }
 html[data-tema="sala-giochi"] .mio-panel-header .mio-nome,
 html[data-tema="sala-giochi"] .admin-badge{
@@ -3222,13 +3222,13 @@ html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja{
     radial-gradient(circle at 1px 1px, rgba(20,16,36,.10) 1px, transparent 1.7px) !important;
   background-size:8px 8px, 12px 12px !important;
   background-repeat:repeat, repeat !important;
-  border:4px solid var(--text-primary) !important;border-radius:0 !important;
-  box-shadow:8px 8px 0 var(--text-primary) !important;
+  border:2px solid var(--text-primary) !important;border-radius:0 !important;
+  box-shadow:4px 4px 0 var(--text-primary) !important;
 }
 html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot{
   background-color:#FFF3F2 !important;
   border-color:var(--fire) !important;
-  box-shadow:8px 8px 0 var(--fire) !important;
+  box-shadow:4px 4px 0 var(--fire) !important;
 }
 /* La miccia diventa due nastri: sopra la fascia dipinta (ferma), sotto il tempo
    che si consuma (la stessa larghezza percentuale di sempre, solo ridipinta). */
@@ -3269,8 +3269,8 @@ html[data-tema="sala-giochi"] body #mio-panel{
   background-color:var(--sg-carta) !important;
   background-image:repeating-conic-gradient(rgba(66,95,196,.05) 0% 25%, transparent 0% 50%) !important;
   background-size:8px 8px !important;
-  border:3px solid var(--text-primary) !important;border-radius:0 !important;
-  box-shadow:6px 6px 0 var(--text-primary) !important;
+  border:2px solid var(--text-primary) !important;border-radius:0 !important;
+  box-shadow:3px 3px 0 var(--text-primary) !important;
 }
 html[data-tema="sala-giochi"] body #mio-panel::before{background:var(--primary) !important}
 
@@ -3280,8 +3280,8 @@ html[data-tema="sala-giochi"] body #mio-panel::before{background:var(--primary) 
    Stesso difetto in Cuoio, corretto anche li' (sezione MATTINA AL BANCO). */
 html[data-tema="sala-giochi"] body .admin-conferma-box{
   background:#FFF6E0 !important;
-  border:3px solid var(--text-primary) !important;border-radius:0 !important;
-  box-shadow:4px 4px 0 var(--text-primary) !important;
+  border:2px solid var(--text-primary) !important;border-radius:0 !important;
+  box-shadow:3px 3px 0 var(--text-primary) !important;
 }
 html[data-tema="sala-giochi"] body .conferma-info-text{color:#4A465E !important}
 html[data-tema="sala-giochi"] body .slot-chip,
@@ -3290,8 +3290,8 @@ html[data-tema="sala-giochi"] body .slot-sub{color:#4A465E !important}
 /* ── Il ritratto: una card sotto vetro, angoli vivi ── */
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar{
   background:var(--primary) !important;
-  border:4px solid var(--text-primary) !important;border-radius:0 !important;
-  box-shadow:6px 6px 0 var(--text-primary) !important;
+  border:2px solid var(--text-primary) !important;border-radius:0 !important;
+  box-shadow:3px 3px 0 var(--text-primary) !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-avatar-img{
   filter:contrast(1.14) saturate(1.06) !important;
@@ -3322,12 +3322,12 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .cc-offerta,
 html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .cc-offerta{
   font-family:'Press Start 2P',var(--font-display) !important;font-weight:400 !important;
   font-variation-settings:normal !important;
-  font-size:3.1rem !important;line-height:1.06 !important;letter-spacing:0 !important;
+  font-size:2.4rem !important;line-height:1.06 !important;letter-spacing:0 !important;
   color:var(--text-primary) !important;
-  text-shadow:5px 5px 0 #E8B038, 9px 9px 0 rgba(20,16,36,.14) !important;
+  text-shadow:3px 3px 0 #E8B038, 5px 5px 0 rgba(20,16,36,.14) !important;
 }
 html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .cc-offerta{
-  text-shadow:5px 5px 0 var(--fire), 9px 9px 0 rgba(20,16,36,.14) !important;
+  text-shadow:3px 3px 0 var(--fire), 5px 5px 0 rgba(20,16,36,.14) !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .cc-offerta-label{
   font-family:Archivo,var(--font-sans) !important;font-size:.44rem !important;
@@ -3350,11 +3350,11 @@ html[data-tema="sala-giochi"] .sidebar-squadra.offerente-attuale .sq-crediti{
 html[data-tema="sala-giochi"] body #mio-panel .crediti-badge{
   font-family:'Press Start 2P',var(--font-display) !important;font-weight:400 !important;
   font-variation-settings:normal !important;
-  font-size:1.25rem !important;line-height:1 !important;letter-spacing:0 !important;
+  font-size:1.05rem !important;line-height:1 !important;letter-spacing:0 !important;
   display:inline-block !important;
   color:var(--text-primary) !important;background:#E8B038 !important;
-  border:3px solid var(--text-primary) !important;border-radius:0 !important;
-  padding:9px 11px 7px !important;
+  border:2px solid var(--text-primary) !important;border-radius:0 !important;
+  padding:5px 8px 4px !important;
 }
 html[data-tema="sala-giochi"] .crediti-badge{
   background:#E8B038 !important;border:2px solid var(--text-primary) !important;border-radius:0 !important;
@@ -3364,7 +3364,7 @@ html[data-tema="sala-giochi"] .crediti-badge{
 
 /* ── Le squadre al tavolo: il tabellone dei record ── */
 html[data-tema="sala-giochi"] .sidebar-squadra{
-  border-left:6px solid transparent !important;
+  border-left:4px solid transparent !important;
   border-bottom:2px solid rgba(20,16,36,.10) !important;
 }
 html[data-tema="sala-giochi"] .sidebar-squadra.mia-squadra{
@@ -3407,7 +3407,7 @@ html[data-tema="sala-giochi"] .budget-progress-fill.crit{
 /* ── La pulsantiera ── */
 html[data-tema="sala-giochi"] body #puja-panel-slot .quick-bids-row,
 html[data-tema="sala-giochi"] body #puja-panel-slot .manual-bid-row{
-  background:var(--sg-carta) !important;border:3px solid var(--text-primary) !important;border-radius:0 !important;
+  background:var(--sg-carta) !important;border:2px solid var(--text-primary) !important;border-radius:0 !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .btn-quick,
 html[data-tema="sala-giochi"] body #puja-panel-slot .btn-manuale{
@@ -3417,7 +3417,7 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .btn-manuale{
 html[data-tema="sala-giochi"] body #puja-panel-slot .btn-quick:hover{background:#E8B038 !important}
 html[data-tema="sala-giochi"] body #puja-panel-slot .btn-quick + .btn-quick,
 html[data-tema="sala-giochi"] body #puja-panel-slot .btn-manuale{
-  border-left:3px solid var(--text-primary) !important;
+  border-left:2px solid var(--text-primary) !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .inp-rilancio{
   background:var(--sg-carta2) !important;color:var(--text-primary) !important;
@@ -3433,27 +3433,26 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia{
   font-variation-settings:normal !important;
   font-size:.48rem !important;letter-spacing:.02em !important;
   padding:0 12px !important;
-  border:4px solid var(--text-primary) !important;border-radius:0 !important;
-  box-shadow:6px 6px 0 var(--text-primary) !important;
-  text-shadow:3px 3px 0 rgba(20,16,36,.45) !important;
+  border:2px solid var(--text-primary) !important;border-radius:0 !important;
+  box-shadow:3px 3px 0 var(--text-primary) !important;
+  text-shadow:2px 2px 0 rgba(20,16,36,.45) !important;
 }
 html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia::after{
   font-family:'Press Start 2P',var(--font-display) !important;font-weight:400 !important;
   font-variation-settings:normal !important;font-size:.6rem !important;
   padding-left:10px !important;margin-left:10px !important;
-  border-left:3px solid rgba(255,255,255,.55) !important;
+  border-left:2px solid rgba(255,255,255,.55) !important;
 }
 /* la pressione del bottone: si affonda nel suo stesso rilievo */
 html[data-tema="sala-giochi"] body #puja-panel-slot .btn-rilancia:active{
-  transform:translate(6px,6px) !important;box-shadow:none !important;
-  transform: none !important;
+  transform:translate(2px,2px) !important;box-shadow:none !important;
 }
 html[data-tema="sala-giochi"] body.puja-urgente #puja-panel-slot .btn-rilancia{
-  background:#B01710 !important;box-shadow:6px 6px 0 var(--text-primary) !important;
+  background:#B01710 !important;box-shadow:3px 3px 0 var(--text-primary) !important;
   animation:sg-pigia .45s steps(2) infinite !important;
 }
 @keyframes sg-pigia{
-  50%{transform:translate(3px,3px);box-shadow:3px 3px 0 var(--text-primary)}
+  50%{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--text-primary)}
 }
 
 /* ══ IL CRONOMETRO DEL CABINATO ══
@@ -3477,9 +3476,9 @@ html body .arc-timer{display:none}
 html[data-tema="sala-giochi"] body #puja-panel-slot .arc-timer,
 html[data-tema="sala-giochi"] body.layout-admin .asta-row-puja .arc-timer{
   display:block !important;flex:0 0 auto !important;
-  width:150px !important;height:auto !important;overflow:visible !important;
+  width:125px !important;height:auto !important;overflow:visible !important;
   /* l'ombra dura del tema, la stessa dei pannelli: e' un oggetto appoggiato */
-  filter:drop-shadow(5px 5px 0 rgba(20,16,36,.9));
+  filter:drop-shadow(3px 3px 0 rgba(20,16,36,.9));
 }
 /* il mobile: scocca scura, un filo di plastica piu' chiara sotto la luce,
    e la rima in cobalto — l'accento strutturale del tema */
@@ -3564,14 +3563,20 @@ html[data-tema="sala-giochi"] body #puja-panel-slot .timer-label-text{
 
 /* ── Le tab: la fila di pulsanti del cabinato ── */
 html[data-tema="sala-giochi"] .tabs-nav{
-  background:var(--text-primary) !important;padding:4px !important;gap:4px !important;
+  background:var(--text-primary) !important;padding:3px !important;gap:3px !important;
   border-bottom:none !important;
 }
-html[data-tema="sala-giochi"] .tab-btn{
+html[data-tema="sala-giochi"] .tab-btn,
+html[data-tema="sala-giochi"] .tab-btn .tab-label{
   font-family:'Press Start 2P',var(--font-display) !important;font-weight:400 !important;
-  font-size:.52rem !important;letter-spacing:0 !important; text-transform:uppercase !important;
+  font-size:.44rem !important;letter-spacing:0 !important; text-transform:uppercase !important;
+}
+html[data-tema="sala-giochi"] .tab-btn{
   background:var(--sg-carta2) !important;color:#4A465E !important;
-  padding:6px 10px !important;min-height:36px !important;border-radius:0 !important;
+  padding:4px 8px !important;min-height:28px !important;border-radius:0 !important;
+}
+html[data-tema="sala-giochi"] .tab-icon{
+  font-size:.72rem !important;
 }
 html[data-tema="sala-giochi"] .tab-btn:hover{background:var(--sg-carta) !important;color:var(--text-primary) !important}
 html[data-tema="sala-giochi"] .tab-btn.active{background:var(--primary) !important;color:#FFFFFF !important}
@@ -3610,33 +3615,33 @@ html[data-tema="sala-giochi"] .btn:hover{transform:none !important}
 html[data-tema="sala-giochi"] .btn:active{transform:translate(3px,3px) !important;box-shadow:none !important}
 html[data-tema="sala-giochi"] .btn-primary{
   background:var(--primary) !important;color:#FFFFFF !important;
-  border:3px solid var(--text-primary) !important;box-shadow:4px 4px 0 var(--text-primary) !important;
+  border:2px solid var(--text-primary) !important;box-shadow:3px 3px 0 var(--text-primary) !important;
 }
 html[data-tema="sala-giochi"] .btn-secondary{
-  font-family:'Press Start 2P',var(--font-display) !important; font-size:.48rem !important; letter-spacing:0 !important;
+  font-family:'Press Start 2P',var(--font-display) !important; font-size:.44rem !important; letter-spacing:0 !important;
   background:var(--sg-carta) !important;color:var(--text-primary) !important;
-  border:3px solid var(--text-primary) !important;box-shadow:4px 4px 0 var(--text-primary) !important;
+  border:2px solid var(--text-primary) !important;box-shadow:3px 3px 0 var(--text-primary) !important;
 }
 html[data-tema="sala-giochi"] .btn-accent{
-  font-family:'Press Start 2P',var(--font-display) !important; font-size:.48rem !important; letter-spacing:0 !important;
+  font-family:'Press Start 2P',var(--font-display) !important; font-size:.44rem !important; letter-spacing:0 !important;
   background:#E8B038 !important;color:var(--text-primary) !important;
-  border:3px solid var(--text-primary) !important;box-shadow:4px 4px 0 var(--text-primary) !important;
+  border:2px solid var(--text-primary) !important;box-shadow:3px 3px 0 var(--text-primary) !important;
 }
 html[data-tema="sala-giochi"] .btn-danger{
-  font-family:'Press Start 2P',var(--font-display) !important; font-size:.48rem !important; letter-spacing:0 !important;
+  font-family:'Press Start 2P',var(--font-display) !important; font-size:.44rem !important; letter-spacing:0 !important;
   background:var(--sg-carta) !important;color:var(--fire) !important;
-  border:3px solid var(--fire) !important;box-shadow:4px 4px 0 var(--fire) !important;
+  border:2px solid var(--fire) !important;box-shadow:3px 3px 0 var(--fire) !important;
 }
 html[data-tema="sala-giochi"] .btn-success{
-  font-family:'Press Start 2P',var(--font-display) !important; font-size:.48rem !important; letter-spacing:0 !important;
+  font-family:'Press Start 2P',var(--font-display) !important; font-size:.44rem !important; letter-spacing:0 !important;
   background:var(--sg-carta) !important;color:#147A52 !important;
-  border:3px solid #147A52 !important;box-shadow:4px 4px 0 #147A52 !important;
+  border:2px solid #147A52 !important;box-shadow:3px 3px 0 #147A52 !important;
 }
 html[data-tema="sala-giochi"] .rose-inp,
 html[data-tema="sala-giochi"] input[type=text],
 html[data-tema="sala-giochi"] input[type=number],
 html[data-tema="sala-giochi"] select{
-  background:var(--sg-carta) !important;border:3px solid var(--text-primary) !important;
+  background:var(--sg-carta) !important;border:2px solid var(--text-primary) !important;
   border-radius:0 !important;color:var(--text-primary) !important;
 }
 
@@ -3677,35 +3682,35 @@ html[data-tema="sala-giochi"] .ant-panchina-count{
 html[data-tema="sala-giochi"] .ant-select,
 html[data-tema="sala-giochi"] .ant-zoom-controls{
   background:var(--sg-carta) !important;color:var(--text-primary) !important;
-  border:3px solid var(--text-primary) !important;border-radius:0 !important;
+  border:2px solid var(--text-primary) !important;border-radius:0 !important;
 }
 html[data-tema="sala-giochi"] .ant-zoom-btn{color:var(--text-primary) !important;border-radius:0 !important}
 html[data-tema="sala-giochi"] .ant-zoom-btn:hover{background:#E8B038 !important}
 html[data-tema="sala-giochi"] .ant-subtab{
   font-family:Archivo,var(--font-sans) !important;font-weight:700 !important; text-shadow:none !important;
   background:var(--sg-carta2) !important;color:#4A465E !important;
-  border:3px solid var(--text-primary) !important;border-radius:0 !important;
+  border:2px solid var(--text-primary) !important;border-radius:0 !important;
 }
 html[data-tema="sala-giochi"] .ant-subtab.active{
   background:var(--primary) !important;color:#FFFFFF !important;border-color:var(--text-primary) !important;
 }
 html[data-tema="sala-giochi"] .ant-picker{
-  background:var(--sg-carta) !important;border:3px solid var(--text-primary) !important;
-  border-radius:0 !important;box-shadow:6px 6px 0 var(--text-primary) !important;
+  background:var(--sg-carta) !important;border:2px solid var(--text-primary) !important;
+  border-radius:0 !important;box-shadow:3px 3px 0 var(--text-primary) !important;
 }
 html[data-tema="sala-giochi"] .ant-picker-item{border-radius:0 !important;color:var(--text-primary) !important}
 html[data-tema="sala-giochi"] .ant-picker-item:hover{background:#E8B038 !important}
 
 html[data-tema="sala-giochi"] #tab-anteprima.ant-drawer{
-  background:var(--sg-carta) !important;border:3px solid var(--text-primary) !important;border-radius:0 !important;
+  background:var(--sg-carta) !important;border:2px solid var(--text-primary) !important;border-radius:0 !important;
 }
 html[data-tema="sala-giochi"] .ant-drawer-close{
-  background:var(--sg-carta2) !important;border:3px solid var(--text-primary) !important;
+  background:var(--sg-carta2) !important;border:2px solid var(--text-primary) !important;
   border-radius:0 !important;color:var(--text-primary) !important;
 }
 html[data-tema="sala-giochi"] .modal-content{
-  background:var(--sg-carta) !important;border:4px solid var(--text-primary) !important;
-  border-radius:0 !important;box-shadow:8px 8px 0 var(--text-primary) !important;
+  background:var(--sg-carta) !important;border:2px solid var(--text-primary) !important;
+  border-radius:0 !important;box-shadow:4px 4px 0 var(--text-primary) !important;
 }
 
 /* ── L'assegnazione: il verde resta solo qui, come negli altri temi ── */
