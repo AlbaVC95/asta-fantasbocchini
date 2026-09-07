@@ -3568,9 +3568,9 @@ html[data-tema="sala-giochi"] .tabs-nav{
 }
 html[data-tema="sala-giochi"] .tab-btn{
   font-family:'Press Start 2P',var(--font-display) !important;font-weight:400 !important;
-  font-size:.56rem !important;letter-spacing:0 !important; text-transform:uppercase !important;
+  font-size:.52rem !important;letter-spacing:0 !important; text-transform:uppercase !important;
   background:var(--sg-carta2) !important;color:#4A465E !important;
-  padding:15px 15px 14px !important;border-radius:0 !important;
+  padding:6px 10px !important;min-height:36px !important;border-radius:0 !important;
 }
 html[data-tema="sala-giochi"] .tab-btn:hover{background:var(--sg-carta) !important;color:var(--text-primary) !important}
 html[data-tema="sala-giochi"] .tab-btn.active{background:var(--primary) !important;color:#FFFFFF !important}
@@ -6033,6 +6033,24 @@ html[data-tema="lavagna"] .cc-pausa-attesa {
   font-family: 'Kalam', Archivo, sans-serif !important;
   font-size: 0.98rem !important;
   color: #CBD5E1 !important;
+}
+
+/* ══ SALA GIOCHI: PAUSA ASTA E SQUADRA IN ATTESA ══ */
+html[data-tema="sala-giochi"] .cc-pausa-squadra {
+  color: #141024 !important;
+}
+html[data-tema="sala-giochi"] .cc-pausa-squadra strong {
+  color: var(--primary) !important;
+  text-shadow: none !important;
+}
+html[data-tema="sala-giochi"] .cc-pausa-desc {
+  color: #332E48 !important;
+}
+html[data-tema="sala-giochi"] .cc-pausa-desc strong {
+  color: #141024 !important;
+}
+html[data-tema="sala-giochi"] .cc-pausa-attesa {
+  color: #555068 !important;
 }
 
 
