@@ -4014,16 +4014,16 @@ html[data-tema="sala-giochi"] .rose-col-header{border-bottom:2px solid var(--tex
    482px, +11% invece di +36%, e quel resto e' il filo d'inchiostro, cioe' il tema. */
 html[data-tema="sala-giochi"] .rose-col-header{gap:6px !important}
 html[data-tema="sala-giochi"] .rose-col-nome{
-  font-family:Archivo,var(--font-sans) !important;font-weight:700 !important; text-shadow:none !important;
+  font-family:Archivo,var(--font-sans) !important;font-weight:800 !important; text-shadow:none !important;
   font-variation-settings:normal !important;color:var(--text-primary) !important;
-  font-size:.58rem !important;min-width:0 !important;
+  font-size:.80rem !important;min-width:0 !important;line-height:1.2 !important;
 }
 /* le cifre di credito: lo stesso gettone d'oro del Riepilogo squadre */
 html[data-tema="sala-giochi"] .rose-col-budget{
   font-family:'Press Start 2P',var(--font-display) !important;font-weight:400 !important;
-  font-variation-settings:normal !important;font-size:.46rem !important;
+  font-variation-settings:normal !important;font-size:.50rem !important;
   color:var(--text-primary) !important;background:#E8B038 !important;
-  border:2px solid var(--text-primary) !important;padding:3px 4px 2px !important;
+  border:2px solid var(--text-primary) !important;padding:3px 5px 2px !important;
   display:inline-block !important;line-height:1 !important;
 }
 html[data-tema="sala-giochi"] .rose-col-budget.attiva{background:var(--fire) !important;color:#FFFFFF !important}
@@ -6362,4 +6362,13 @@ html body .vivi-chip span {
 .rose-col-budget {
   font-size: 0.85rem !important;
   font-weight: 800 !important;
+}
+.rose-col-nome {
+  font-size: 0.84rem !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+}
+.rose-container.rose-compatta .rose-col-nome {
+  font-size: 0.80rem !important;
+  line-height: 1.2 !important;
 }
