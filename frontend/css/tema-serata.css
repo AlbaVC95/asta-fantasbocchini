@@ -6246,11 +6246,40 @@ html body .vivi-chip span {
   font-size: 0.84rem !important;
 }
 .rose-player {
-  font-size: 0.82rem !important;
+  font-size: 0.70rem !important;
+}
+.rose-container.rose-compatta .rose-player {
+  font-size: 0.65rem !important;
+  gap: 2px !important;
 }
 .rose-badge {
-  font-size: 0.68rem !important;
+  font-size: 0.58rem !important;
   font-weight: 800 !important;
+  padding: 1px 2px !important;
+  min-width: 14px !important;
+}
+.rose-container.rose-compatta .rose-badge {
+  font-size: 0.52rem !important;
+  padding: 0 2px !important;
+  min-width: 12px !important;
+}
+.rose-nome {
+  font-size: 0.70rem !important;
+  line-height: 1.15 !important;
+}
+.rose-container.rose-compatta .rose-nome {
+  font-size: 0.64rem !important;
+  line-height: 1.1 !important;
+}
+.rose-prezzo {
+  font-size: 0.66rem !important;
+  padding: 1px 4px !important;
+  flex-shrink: 0 !important;
+}
+.rose-container.rose-compatta .rose-prezzo {
+  font-size: 0.60rem !important;
+  padding: 0 3px !important;
+  flex-shrink: 0 !important;
 }
 .rose-col-budget {
   font-size: 0.85rem !important;
