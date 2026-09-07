@@ -1129,10 +1129,17 @@ html body.layout-partecipante .asta-row-panels>.panel-budget{
 /* Colonne piu' strette = piu' colonne = meno righe: con 12 squadre si
    passa da quattro righe a tre (o due sui monitor larghi). Il riepilogo
    e' un promemoria, non la schermata: lo spazio che libera va alle tab. */
-html body #budget-bar{
+html body.layout-partecipante #budget-bar,
+html body:not(.layout-admin) #budget-bar{
   display:grid !important;
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr)) !important;
+  grid-template-columns:repeat(4, minmax(0, 1fr)) !important;
+  grid-template-rows:repeat(3, auto) !important;
   gap:0 14px !important;align-content:start !important;
+}
+html body.layout-admin #budget-bar{
+  display:grid !important;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr)) !important;
+  gap:6px 10px !important;align-content:start !important;
 }
 html body #budget-bar .sidebar-squadra{
   padding:3px 0 4px 8px !important;
@@ -6434,4 +6441,17 @@ html body .vivi-chip span {
   flex: 0 0 142px !important;
   width: 142px !important;
 }
+
+/* ── Vista Utente: Riepilogo squadre rigorosamente in 4 colonne di 3 righe (12 squadre) ── */
+@media (min-width: 769px) {
+  html body.layout-partecipante #budget-bar,
+  html body:not(.layout-admin) #budget-bar {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(3, auto) !important;
+    gap: 0 14px !important;
+    align-content: start !important;
+  }
+}
+
 
