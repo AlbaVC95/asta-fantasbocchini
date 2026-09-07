@@ -5938,12 +5938,25 @@ html[data-tema="sala-giochi"] .asta-live-layout:has(#tab-anteprima.drawer-open) 
 }
 
 
-/* FIX: ingrandisci scritte di info strategia e etichette offerta in lavagna, perche con il font Kalam risultano illeggibili e troppo piccole */
-html[data-tema="lavagna"] body #puja-panel-slot .cc-strategia-info,
-html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-strategia-info {
+/* FIX: ingrandisci scritte di info strategia e etichette offerta in vista utente (lavagna), ma mantieni compatta la vista admin per non allungare la carta */
+html[data-tema="lavagna"] body #puja-panel-slot .cc-strategia-info {
   font-size: 1.05rem !important;
 }
-html[data-tema="lavagna"] body #puja-panel-slot .cc-offerta-label,
+html[data-tema="lavagna"] body #puja-panel-slot .cc-offerta-label {
+  font-size: 0.95rem !important;
+}
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-strategia-info {
+  font-size: 0.72rem !important;
+  line-height: 1.25 !important;
+  margin-top: 3px !important;
+  padding: 2px 0 2px 6px !important;
+}
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-commento-preview {
+  font-size: 0.68rem !important;
+  line-height: 1.2 !important;
+  padding: 3px 6px !important;
+  margin-top: 2px !important;
+}
 html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-offerta-label {
-  font-size: 1.0rem !important;
+  font-size: 0.72rem !important;
 }
