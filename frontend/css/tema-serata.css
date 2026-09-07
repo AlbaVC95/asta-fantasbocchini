@@ -546,8 +546,8 @@ html[data-tema="lavagna"]{
   --sc-ambra:34,211,238;     /* il tubo al neon ciano, l'accento strutturale */
   --sc-brace:255,45,45;      /* rosso neon, solo allarme — mai il magenta del denaro */
   --sc-testo:#F0F4F8;
-  --sc-medio:#B8C4D0;
-  --sc-tenue:#8A96A3;
+  --sc-medio:#E2E8F0;
+  --sc-tenue:#CBD5E1;
   --sc-ambra-piena:#22D3EE;
   --sc-ambra-alta:#7DE8F7;
   --sc-brace-piena:#FF2D2D;
@@ -747,7 +747,7 @@ html body #puja-panel-slot .cc-offerente{
   letter-spacing:.04em !important;white-space:nowrap !important;
 }
 html body #puja-panel-slot .cc-strategia-info{
-  font-family:'Space Mono',monospace !important;font-size:.75rem !important;
+  font-family:'Space Mono',monospace !important;font-size:.85rem !important;
   letter-spacing:.1em !important;color:var(--sc-tenue) !important;
   background:none !important;border:none !important;padding:8px 0 0 !important;
 }
@@ -5937,3 +5937,13 @@ html[data-tema="sala-giochi"] .asta-live-layout:has(#tab-anteprima.drawer-open) 
     font-size: clamp(0.9rem, 2vw, 1.1rem) !important;
 }
 
+
+/* FIX: ingrandisci scritte di info strategia e etichette offerta in lavagna, perche con il font Kalam risultano illeggibili e troppo piccole */
+html[data-tema="lavagna"] body #puja-panel-slot .cc-strategia-info,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-strategia-info {
+  font-size: 1.05rem !important;
+}
+html[data-tema="lavagna"] body #puja-panel-slot .cc-offerta-label,
+html[data-tema="lavagna"] body.layout-admin .asta-row-puja .cc-offerta-label {
+  font-size: 1.0rem !important;
+}
