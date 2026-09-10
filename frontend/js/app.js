@@ -2315,6 +2315,10 @@ socket.on('aggiorna-offerta', (chiamata) => {
   if (timerWrap) timerWrap.classList.remove('hidden');
   if (rilBox) rilBox.classList.remove('hidden');
   renderChiamata(chiamata);
+  // Fuori dalla card, l'unica cosa a schermo che dipende da un rilancio e' l'evidenza di chi sta
+  // vincendo nella barra crediti (offerente-attuale): si ridisegna solo lei, in locale, invece
+  // di farsi rimandare dal server l'intera asta ad ogni offerta.
+  if (S.asta) renderBudgetBar(S.asta.squadre);
   flashChiamataCard();
   // Price bump animation
   const prezzoEl = document.getElementById('cc-prezzo');

@@ -1609,9 +1609,12 @@ io.on('connection', (socket) => {
     if (sq.nome === chiamata.proprietarioPrecedente) chiamata.giocatore.dirittoRiacquistoPerso = true;
     chiamata.offertaAttuale = offerta; chiamata.squadraOfferente = sq.nome;
     chiamata.fase = 'rilancio';
+    // Un rilancio cambia SOLO la chiamata (offerta, offerente, fase), e 'aggiorna-offerta' la
+    // porta gia' a tutti. Niente broadcastStato() qui: rimandava l'asta intera (pool giocatori,
+    // rose, storico) a ogni partecipante ad OGNI offerta, e ogni client ridisegnava tutto — nel
+    // momento peggiore, le raffiche di rilanci degli ultimi secondi (vedi DECISIONS.md).
     io.to(astaId).emit('aggiorna-offerta', chiamata);
     resetTimer(astaId, 'rilancio');
-    broadcastStato(astaId);
   });
 
   // Admin: conferma assegnazione dopo timer

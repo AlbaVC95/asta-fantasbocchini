@@ -2915,3 +2915,15 @@ popup arriva a una sola squadra: gli altri vedevano l'asta ferma senza spiegazio
 chat. Oltre al popup mirato, `chiudiAsta()` emette quindi `avviso-pausa-asta` a tutta la room, e il
 client ricostruisce lo stato di pausa da `asta.popupAttivo` ad ogni `stato-asta` (`_gestisciPausaAsta`)
 invece che dal solo evento: così anche chi si ricollega a metà pausa vede banner e carta corretti.
+
+## Un rilancio viaggia solo come `aggiorna-offerta`, mai con lo stato completo
+
+Un'offerta cambia solo `chiamataAttuale` (offerta, offerente, fase), e `aggiorna-offerta` la porta
+già a tutti. Il 7/09 era stato aggiunto anche `broadcastStato()` a ogni rilancio: rimandava l'asta
+intera (pool giocatori, rose, storico) a ogni partecipante e ogni client ridisegnava tutti i
+pannelli, proprio nelle raffiche di offerte degli ultimi secondi. Alla prima asta reale con
+partecipanti da paesi diversi l'app è risultata lenta per tutti. Stima sintetica (12 squadre, listino
+~550): ~294 KB per persona a offerta contro 0,5 KB. Tolto: lato client `aggiorna-offerta`
+ridisegna in locale solo la barra crediti, unico elemento fuori dalla card che dipende da chi sta
+vincendo. **Regola**: in un evento ad alta frequenza (rilancio, tick del timer) non si chiama
+`broadcastStato()`; si manda solo il delta.

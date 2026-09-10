@@ -68,9 +68,9 @@ asta) e orchestrato da funzioni chiave in `server.js`:
 - Ogni azione che modifica lo stato di gioco viene appesa a `asta.storico`, base per
   `annulla-assegnazione(-specifica)` (undo, ripristina crediti/slot/pool giocatori).
 
-Tutto lo stato viene ribroadcastato con `broadcastStato()` dopo ogni cambiamento rilevante — non ci
-sono aggiornamenti incrementali lato client, il client riceve sempre lo stato asta completo via evento
-`stato-asta`.
+Tutto lo stato viene ribroadcastato con `broadcastStato()` dopo ogni cambiamento rilevante — il
+client riceve lo stato asta completo via evento `stato-asta`. **Unica eccezione voluta: il rilancio**,
+che cambia solo la chiamata e viaggia solo come `aggiorna-offerta` (vedi DECISIONS.md).
 
 ## Frontend (`app.js`)
 
