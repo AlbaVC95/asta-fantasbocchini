@@ -9,6 +9,9 @@ accese nella videochiamata, distanza) non dipende dal codice.
 
 ## Cosa è cambiato
 
+- **L'export del risultato porta anche i svincoli** (`backend/server.js`, `/api/asta/:id/export`,
+  10/09): `astaId` e, per squadra, `svincoli: [{giocatore, ruolo, timestamp}]` dagli eventi
+  `con_svincolo`. Il gestionale li registra nel suo Registro al reimport. Solo campi aggiunti.
 - **Un rilancio non rimanda più l'asta intera** (`backend/server.js`, handler `rilancio`). Dal 7/09
   (commit Gemini `ca48bce`) ogni offerta faceva anche `broadcastStato()`: pool giocatori, rose e
   storico a ogni partecipante, e ogni client ridisegnava tutto. Stima sintetica (12 squadre, listino

@@ -1239,12 +1239,26 @@ function campiExtraGiocatorePerExport(g) {
   };
 }
 
+// Svincoli fatti da una squadra in questa asta: eventi 'con_svincolo' dello
+// storico, ognuno con i giocatori liberati per finanziare l'acquisto.
+function svincoliDiSquadra(asta, nomeSquadra) {
+  const out = [];
+  (asta.storico || []).forEach(ev => {
+    if (ev.tipo !== 'con_svincolo' || ev.squadra !== nomeSquadra || !Array.isArray(ev.svincolati)) return;
+    ev.svincolati.forEach(g => out.push({ giocatore: g.nome, ruolo: g.ruolo || '', timestamp: ev.timestamp || null }));
+  });
+  return out;
+}
+
 app.get('/api/asta/:id/export', (req, res) => {
   const asta = aste.get(req.params.id);
   if (!asta) return res.status(404).json({ error: 'Asta non trovata' });
   const anno = new Date().getFullYear();
   const exportData = {
     lega: 'FantaSbocchini', stagione: `${anno}/${anno + 1}`, tipoAsta: asta.tipoAsta,
+    // Serve al gestionale per non registrare due volte gli stessi svincoli se
+    // lo stesso file viene reimportato.
+    astaId: asta.id,
     // Il tetto configurato (non l'uso, gia' esportato sotto come svincoliUsati per squadra)
     // va esportato cosi' il tetto cumulativo tra Riparazione 1 e Riparazione 2 sopravvive
     // al reimport invece di ripartire ogni volta dal default.
@@ -1257,6 +1271,11 @@ app.get('/api/asta/:id/export', (req, res) => {
       // configurato, cosi' al reimport si riparte esattamente da dove si era rimasti.
       recompra: Math.max(0, (s.recompra != null ? s.recompra : 1) - (s.recompraUsati || 0)),
       svincoliUsati: s.svincoliUsati || 0,
+      // I giocatori svincolati da questa squadra in QUESTA asta, con l'ora reale
+      // (eventi 'con_svincolo' dello storico). Il gestionale li registra nel suo
+      // Registro Operazioni al reimport: prima usciva solo il conteggio
+      // (svincoliUsati) e i nomi andavano ricopiati a mano dal recap.
+      svincoli: svincoliDiSquadra(asta, s.nome),
       giocatori: s.rosa.map(g => ({
         nome: g.nome, ruolo: g.ruolo || '', tipo: g.tipo || 'NN', costo: g.prezzo, valore: g.valore ?? null,
         ...campiExtraGiocatorePerExport(g)

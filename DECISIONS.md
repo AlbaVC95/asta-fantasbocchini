@@ -2927,3 +2927,14 @@ partecipanti da paesi diversi l'app è risultata lenta per tutti. Stima sintetic
 ridisegna in locale solo la barra crediti, unico elemento fuori dalla card che dipende da chi sta
 vincendo. **Regola**: in un evento ad alta frequenza (rilancio, tick del timer) non si chiama
 `broadcastStato()`; si manda solo il delta.
+
+## Export risultato: anche i svincoli di ogni squadra (10/09/2026)
+
+`/api/asta/:id/export` porta ora `astaId` e, per ogni squadra, `svincoli: [{giocatore, ruolo,
+timestamp}]`, presi dagli eventi `con_svincolo` dello storico (in questa asta uno svincolo esiste solo
+dentro un acquisto: `esegui-svincolo` richiede il popup di tipo `svincolo`, quindi non se ne perde
+nessuno). Prima usciva solo il conteggio `svincoliUsati`, e il gestionale (fantasbocchini) non aveva
+modo di mettere nel suo Registro Operazioni chi aveva svincolato chi: i nomi andavano ricopiati a mano
+dal recap. Ora "Importa risultato Asta" del gestionale li registra da solo, e `astaId` gli serve per
+non registrarli due volte se lo stesso file viene reimportato. Campi aggiunti, nessuno tolto: un
+gestionale vecchio li ignora.
