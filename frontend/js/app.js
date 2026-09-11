@@ -1540,7 +1540,7 @@ async function usaListinoUfficialePerNuovaAsta() {
       ruolo: r.ruolo,
       squadra: r.squadra_reale,
       pgv: r.pgv, mv: r.mv, fm: r.fm,
-      fvmp600: r.fvm1000,
+      fvmp600: r.fvm1000, fvm1000: r.fvm1000,
       costo: r.quotazione, valore: r.quotazione,
       idFantaleghe: r.id,
       under: r.eta, u21: r.u21,
