@@ -835,10 +835,29 @@ function chiudiAsta(astaId) {
 // Helper: annulla item di storico
 function _annullaItem(asta, index) {
   const item = asta.storico[index]; if (!item) return;
+  // Svincolo manuale: se nel frattempo uno di quei giocatori e' stato ripreso all'asta da
+  // qualcuno, rimetterlo nella rosa originale lo duplicherebbe. Si rifiuta PRIMA di toccare
+  // qualsiasi cosa (i chiamanti trasformano 'riassegnato' in un errore per l'Admin).
+  if (item.tipo === 'svincolo_manuale' && (item.svincolati || []).some(sv => {
+    const p = asta.poolGiocatori.find(x => x.id === sv.id); return p && p.assegnato;
+  })) return 'riassegnato';
   asta.storico.splice(index, 1);
   if (item.tipo === 'scartato') {
     const g = asta.poolGiocatori.find(p => p.id === item.giocatore.id || p.nome === item.giocatore.nome);
     if (g) { g.estratto = false; g.scartato = false; }
+  } else if (item.tipo === 'svincolo_manuale') {
+    // Nessun acquisto da disfare, solo lo svincolo: crediti tolti, svincoliUsati restituiti,
+    // giocatori di nuovo in rosa e di nuovo "assegnati" nel pool.
+    const sq = getSquadra(asta, item.squadra);
+    if (sq) (item.svincolati || []).forEach(sv => {
+      sq.crediti -= (sv.creditiRecuperati || 0);
+      sq.svincoliUsati = Math.max(0, (sq.svincoliUsati || 0) - 1);
+      const { creditiRecuperati, ...giocatoreOriginale } = sv;
+      sq.rosa.push(giocatoreOriginale);
+      if (asta.svincoliVietati instanceof Set) asta.svincoliVietati.delete(sq.nome + '|' + sv.id);
+      const gPool = asta.poolGiocatori.find(p => p.id === sv.id);
+      if (gPool) { gPool.estratto = true; gPool.assegnato = true; gPool.scartato = false; }
+    });
   } else {
     const sq = getSquadra(asta, item.squadra);
     if (sq) {
@@ -1239,13 +1258,24 @@ function campiExtraGiocatorePerExport(g) {
   };
 }
 
-// Svincoli fatti da una squadra in questa asta: eventi 'con_svincolo' dello
-// storico, ognuno con i giocatori liberati per finanziare l'acquisto.
+// Svincoli fatti da una squadra in questa asta, di due origini: 'con_svincolo' (giocatori
+// liberati per finanziare un acquisto) e 'svincolo_manuale' (Admin, da Impostazioni Admin).
+// giocatore/ruolo/timestamp restano identici a prima (il gestionale li legge gia'); il resto
+// e' aggiunto: crediti del svincolo, prezzo pagato, id giocatore, origine, acquisto collegato
+// e un idOperazione stabile (astaId|timestamp|giocatoreId) per riconoscere l'operazione.
 function svincoliDiSquadra(asta, nomeSquadra) {
   const out = [];
   (asta.storico || []).forEach(ev => {
-    if (ev.tipo !== 'con_svincolo' || ev.squadra !== nomeSquadra || !Array.isArray(ev.svincolati)) return;
-    ev.svincolati.forEach(g => out.push({ giocatore: g.nome, ruolo: g.ruolo || '', timestamp: ev.timestamp || null }));
+    if ((ev.tipo !== 'con_svincolo' && ev.tipo !== 'svincolo_manuale') || ev.squadra !== nomeSquadra || !Array.isArray(ev.svincolati)) return;
+    ev.svincolati.forEach(g => out.push({
+      giocatore: g.nome, ruolo: g.ruolo || '', timestamp: ev.timestamp || null,
+      crediti: g.creditiRecuperati ?? null,
+      prezzoAcquisto: g.prezzo ?? null,
+      giocatoreId: g.id || null,
+      origine: ev.tipo === 'svincolo_manuale' ? 'manuale' : 'acquisto',
+      acquistoCollegato: (ev.tipo === 'con_svincolo' && ev.giocatore) ? { giocatore: ev.giocatore.nome, prezzo: ev.prezzo } : null,
+      idOperazione: asta.id + '|' + (ev.timestamp || '') + '|' + (g.id || g.nome)
+    }));
   });
   return out;
 }
@@ -1802,6 +1832,51 @@ io.on('connection', (socket) => {
     broadcastStato(astaId, true);
   });
 
+  // Admin: svincolo manuale da Impostazioni Admin, in ogni tipo d'asta (iniziale, riparazione
+  // 1 e 2). Stessi effetti di uno svincolo di 'esegui-svincolo' — giocatore fuori rosa e di
+  // nuovo nel pool, crediti alla squadra, +1 svincoliUsati per giocatore (stesso contatore,
+  // stessa regola) — ma senza un acquisto collegato: i crediti li indica l'Admin (il client li
+  // precompila con la stessa formula di calcolaRecuperoSvincolo). Resta nello storico come
+  // 'svincolo_manuale', da cui lo leggono l'export JSON e l'Annulla.
+  socket.on('admin-svincola', ({ astaId, squadraNome, svincoli }) => {
+    const asta = aste.get(astaId);
+    if (!asta || !isAdmin(asta, socket.id)) return;
+    // Un popup aperto (svincolo, post-asta, RIC) lavora sulla rosa/crediti attuali: cambiarli
+    // sotto i suoi piedi invaliderebbe i conti gia' mostrati alla squadra.
+    if (asta.popupAttivo) return socket.emit('errore', { msg: 'C\'è un\'operazione in corso (popup aperto): completala prima di svincolare' });
+    const squadra = getSquadra(asta, squadraNome);
+    if (!squadra) return socket.emit('errore', { msg: 'Squadra non trovata' });
+    if (!Array.isArray(svincoli) || !svincoli.length) return socket.emit('errore', { msg: 'Nessun giocatore selezionato' });
+    if (new Set(svincoli.map(v => v && v.giocatoreId)).size !== svincoli.length) return socket.emit('errore', { msg: 'Giocatore ripetuto nella selezione' });
+    const scelti = [];
+    for (const v of svincoli) {
+      const g = squadra.rosa.find(x => x.id === (v && v.giocatoreId));
+      if (!g) return socket.emit('errore', { msg: 'Uno o più giocatori selezionati non sono più in rosa' });
+      const crediti = Number(v.crediti);
+      if (!Number.isInteger(crediti) || crediti < 0) return socket.emit('errore', { msg: `Crediti non validi per ${g.nome}` });
+      scelti.push({ g, crediti });
+    }
+    // Riparazione: stesso tetto di 'esegui-svincolo'. In iniziale non esiste un tetto.
+    if (asta.tipoAsta === 'riparazione') {
+      const rimanenti = Math.max(0, asta.svincoliTotali - (squadra.svincoliUsati || 0));
+      if (scelti.length > rimanenti) return socket.emit('errore', { msg: `${squadra.nome} ha solo ${rimanenti} svincoli rimanenti` });
+    }
+    const svincolati = [];
+    scelti.forEach(({ g, crediti }) => {
+      squadra.rosa.splice(squadra.rosa.findIndex(x => x.id === g.id), 1);
+      squadra.crediti += crediti;
+      squadra.svincoliUsati = (squadra.svincoliUsati || 0) + 1;
+      if (asta.svincoliVietati instanceof Set) asta.svincoliVietati.add(squadra.nome + '|' + g.id);
+      const gPool = asta.poolGiocatori.find(p => p.id === g.id);
+      if (gPool) { gPool.estratto = false; gPool.assegnato = false; gPool.scartato = false; }
+      else asta.poolGiocatori.push({ id: g.id, nome: g.nome, ruolo: g.ruolo || '', tipo: 'NN', costoOriginale: g.prezzo, valore: g.valore || 0, squadraOriginale: null, estratto: false, assegnato: false, scartato: false, quotazione: g.quotazione ?? null });
+      svincolati.push({ ...g, creditiRecuperati: crediti });
+    });
+    asta.storico.push({ tipo: 'svincolo_manuale', squadra: squadra.nome, svincolati, manuale: true, timestamp: new Date().toISOString() });
+    broadcastStato(astaId, true);
+    socket.emit('admin-svincola-ok', { squadra: squadra.nome, n: svincolati.length, crediti: svincolati.reduce((t, g) => t + g.creditiRecuperati, 0) });
+  });
+
   socket.on('tradeoff', ({ astaId, tipo }) => {
     const asta = aste.get(astaId);
     if (!asta || asta.tipoAsta !== 'iniziale') return;
@@ -1868,7 +1943,7 @@ io.on('connection', (socket) => {
     const asta = aste.get(astaId);
     if (!asta || !isAdmin(asta, socket.id)) return;
     if (!asta.storico.length) return socket.emit('errore', { msg: 'Nessuna assegnazione da annullare' });
-    _annullaItem(asta, asta.storico.length - 1);
+    if (_annullaItem(asta, asta.storico.length - 1) === 'riassegnato') return socket.emit('errore', { msg: 'Non si può annullare: un giocatore di quello svincolo è già stato ripreso all\'asta' });
     broadcastStato(astaId, true); io.to(astaId).emit('assegnazione-annullata', {});
   });
 
@@ -1883,8 +1958,8 @@ io.on('connection', (socket) => {
       return socket.emit('errore', { msg: 'In Asta di riparazione puoi annullare solo l\'estrazione più recente' });
     }
     const item = asta.storico[index];
-    _annullaItem(asta, index);
-    broadcastStato(astaId, true); io.to(astaId).emit('assegnazione-annullata', { giocatore: item.giocatore });
+    if (_annullaItem(asta, index) === 'riassegnato') return socket.emit('errore', { msg: 'Non si può annullare: un giocatore di quello svincolo è già stato ripreso all\'asta' });
+    broadcastStato(astaId, true); io.to(astaId).emit('assegnazione-annullata', { giocatore: item.giocatore || { nome: (item.svincolati || []).map(g => g.nome).join(', ') } });
   });
 
   socket.on('scarta-manuale', ({ astaId }) => {

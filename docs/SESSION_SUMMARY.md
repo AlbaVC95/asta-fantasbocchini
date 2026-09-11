@@ -2,43 +2,36 @@
 
 ## Stato attuale
 
-Si è fatta la prima asta reale con partecipanti da **paesi diversi**. Tutti hanno notato che andava
-male; l'admin aveva una connessione pessima. Dopo l'asta si è corretto il problema tecnico più
-pesante trovato nel codice (vedi sotto). Il resto dei fattori (connessione dell'admin, telecamere
-accese nella videochiamata, distanza) non dipende dal codice.
+Nuova funzione **"Svincola giocatori"** in Impostazioni Admin, per asta iniziale, riparazione 1 e 2,
+e l'export JSON porta ora per ogni svincolo chi, per quanti crediti e come riconoscere l'operazione.
+Provato in locale con backup finti ripristinati da disco (lato server e da interfaccia). Da fare in
+parallelo: il gestionale (repo `fantasbocchini`) deve leggere i crediti nuovi.
 
 ## Cosa è cambiato
 
-- **L'export del risultato porta anche i svincoli** (`backend/server.js`, `/api/asta/:id/export`,
-  10/09): `astaId` e, per squadra, `svincoli: [{giocatore, ruolo, timestamp}]` dagli eventi
-  `con_svincolo`. Il gestionale li registra nel suo Registro al reimport. Solo campi aggiunti.
-- **Un rilancio non rimanda più l'asta intera** (`backend/server.js`, handler `rilancio`). Dal 7/09
-  (commit Gemini `ca48bce`) ogni offerta faceva anche `broadcastStato()`: pool giocatori, rose e
-  storico a ogni partecipante, e ogni client ridisegnava tutto. Stima sintetica (12 squadre, listino
-  ~550, metà asta): **~294 KB per persona a offerta → 0,5 KB**; ~3,4 MB in uscita dal server per ogni
-  rilancio → ~5 KB. Lato client `aggiorna-offerta` ridisegna in locale solo la barra crediti, l'unico
-  elemento fuori dalla card che dipende da chi sta vincendo (`offerente-attuale`).
-  `comportamenti-asta.js` resta aggiornato perché si aggancia a `renderChiamata`/`renderBudgetBar`,
-  non a `stato-asta`.
-- **Il countdown finisce a 0 a schermo** (non più a 1): ultimo `timer-tick` con `secondi: 0` e
-  cronometro visibile fermo su 0 durante `attesa-conferma`. Rilanci sempre bloccati a 0.
-- **Riquadro Mio Team in asta iniziale**: la chip `Recompra 0/1` non invade più `Max`
-  (`flex-wrap` + `overflow:hidden` su `#mio-slot-counter`). Riparazione verificata invariata.
-- Dal 7/09 (Gemini, già documentato in DECISIONS/ARCHITECTURE): taglio netto delle offerte a 0,
-  banner globale di pausa per svincolo/post-asta (`avviso-pausa-asta`), HTML servito `no-cache`,
-  Google Analytics, lunga passata su temi e font.
+- **Svincolo manuale dell'Admin** (`admin-svincola` in `server.js`): squadra + giocatori + crediti per
+  ciascuno (precompilati con la formula `calcolaRecuperoSvincolo`, modificabili). Stessi effetti di uno
+  svincolo normale: fuori rosa, di nuovo nel pool, crediti alla squadra, **+1 `svincoliUsati` sempre**
+  (anche in iniziale). In riparazione rispetta il tetto; bloccato se c'è un popup aperto.
+  Nello storico come `svincolo_manuale`. `esegui-svincolo` non è stato toccato.
+- **Annulla** gestisce `svincolo_manuale` (prima sarebbe andato in errore) e lo rifiuta se uno di quei
+  giocatori è già stato ripreso all'asta da qualcuno (lo duplicherebbe).
+- **Export JSON** (`/api/asta/:id/export`, bottone "📥 Esporta JSON"): ogni voce di `svincoli[]` tiene
+  `giocatore/ruolo/timestamp` come prima e aggiunge `crediti`, `prezzoAcquisto`, `giocatoreId`,
+  `origine` (`acquisto`|`manuale`), `acquistoCollegato`, `idOperazione` (`astaId|timestamp|giocatoreId`).
+  Anche il recap porta i crediti.
+- Storico, recap riparazione e lista Annulla mostrano il nuovo tipo con i crediti.
+- Già in produzione prima: rilancio senza `broadcastStato`, countdown che finisce a 0, chip Recompra.
 
 ## Pendenze
 
-- Il fix del rilancio non è stato provato in un'asta reale (crearne una richiede login Supabase): va
-  verificato alla prossima asta che offerte, evidenza dell'offerente e "ancora in gioco" si
-  aggiornino bene.
-- La stima del peso è sintetica: non è stata misurata su un'asta vera.
-- Consigli d'uso emersi (non codice): admin con buona connessione (o secondo admin via
-  "Copia link Admin"), telecamere spente in videochiamata, timer di rilancio più lungo con
-  partecipanti lontani.
+- **Bug preesistente da decidere** (logica di backup, serve conferma): dopo un ripristino da backup
+  `svincoliVietati` torna `{}` invece di `Set`, e in un'asta di riparazione ripristinata ogni
+  `rilancio` fallisce (`.has is not a function`); idem `esegui-svincolo` e l'Annulla di `con_svincolo`.
+  Il codice nuovo è protetto (`instanceof Set`), quello vecchio no.
+- Adattare il gestionale per registrare i crediti (in corso) e fare il deploy manuale su Hostinger.
+- Push dell'asta solo quando non c'è un'asta in corso.
 
 ## Prossimo passo
 
-Push e deploy **solo quando non c'è nessuna asta in corso** (il deploy riavvia il server). Poi
-verificare alla prossima asta reale.
+Gestionale → poi push di entrambi, poi prova con un export reale.

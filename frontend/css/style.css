@@ -3503,3 +3503,13 @@ html[data-tema="serata"] body.layout-admin .asta-row-puja .chiamata-card {
   color: #94A3B8;
   margin-top: 4px;
 }
+
+/* Impostazioni Admin → Svincola giocatori */
+.ac-svincola{margin-top:8px}
+.ac-svincola select{width:100%;margin-bottom:8px}
+.ac-sv-lista{max-height:260px;overflow-y:auto}
+.ac-sv-riga{display:flex;align-items:center;gap:8px;padding:6px 8px;margin-bottom:4px;border-radius:7px;background:var(--bg-main);cursor:pointer}
+.ac-sv-nome{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* .ac-sv-riga davanti: la regola globale input[type=number] (0,1,1) batte una classe sola (0,1,0)
+   e allargava il campo a tutta la riga, lasciando il nome del giocatore a 0px. */
+.ac-sv-riga .ac-sv-crediti{width:72px;flex-shrink:0;padding:6px 8px}

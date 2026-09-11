@@ -475,9 +475,9 @@ function _exportAstaRecap(asta, prefix) {
       ensure(s.plusvalenzaA).plusvalenze.push({ giocatore: s.giocatore.nome, guadagno: s.guadagno || 0 });
     } else if (s.tipo === 'recompra' && s.squadra && s.giocatore) {
       ensure(s.squadra).recompre.push({ giocatore: s.giocatore.nome, prezzo: s.prezzo });
-    } else if (s.tipo === 'con_svincolo' && s.squadra && s.svincolati) {
+    } else if ((s.tipo === 'con_svincolo' || s.tipo === 'svincolo_manuale') && s.squadra && s.svincolati) {
       const dest = ensure(s.squadra);
-      s.svincolati.forEach(g => dest.svincoli.push({ giocatore: g.nome }));
+      s.svincolati.forEach(g => dest.svincoli.push({ giocatore: g.nome, crediti: g.creditiRecuperati ?? null }));
     }
   });
   const data = { astaId: asta.id, tipoAsta: asta.tipoAsta, squadre };
@@ -2074,7 +2074,8 @@ function apriModalAnnullaStorico() {
     const ultimoIdx = asta.storico.length - 1;
     lista.innerHTML = [...items].reverse().map((item, i) => {
       const realIdx = asta.storico.lastIndexOf(item);
-      const g = item.giocatore || {};
+      const g = item.giocatore || (item.tipo === 'svincolo_manuale'
+        ? { nome: 'Svincolo: ' + (item.svincolati || []).map(x => x.nome).join(', ') } : {});
       const rb = g.ruolo ? '<span class="storico-ruolo ruolo-' + g.ruolo + '">' + g.ruolo + '</span>' : '';
       const bloccato = soloUltimoRip && realIdx !== ultimoIdx;
       const testoBtn = item.tipo === 'scartato' ? '↩️ Riapri' : 'Annulla';
@@ -2084,7 +2085,9 @@ function apriModalAnnullaStorico() {
       return '<div class="annulla-item">' + rb +
         '<span class="annulla-nome">' + _escHtml(g.nome || 'N/D') + '</span>' +
         '<span class="annulla-sq">' + _escHtml(item.squadra || '') + '</span>' +
-        '<span class="annulla-prezzo">' + (item.prezzo || 0) + 'cr</span>' +
+        '<span class="annulla-prezzo">' + (item.tipo === 'svincolo_manuale'
+          ? '+' + (item.svincolati || []).reduce((t, x) => t + (x.creditiRecuperati || 0), 0)
+          : (item.prezzo || 0)) + 'cr</span>' +
         '<span class="storico-tipo tipo-tag-' + item.tipo + '">' + item.tipo + '</span>' +
         btnHTML +
         '</div>';
@@ -3105,11 +3108,16 @@ function renderStorico(storico) {
   if (filtro === 'recap-iniziale') {
     items = items.filter(s => s.tipo === 'riconferma' || s.tipo === 'plusvalenza' || s.tipo === 'recompra');
   } else if (filtro === 'recap-riparazione') {
-    items = items.filter(s => s.tipo === 'con_svincolo');
+    items = items.filter(s => s.tipo === 'con_svincolo' || s.tipo === 'svincolo_manuale');
   }
   if (!items.length) { list.innerHTML = '<li class="text-muted" style="padding:8px">Nessun acquisto</li>'; return; }
   list.innerHTML = [...items].reverse().slice(0, 50).map(s => {
     if (s.tipo === 'tradeoff') return '<li><span class="storico-nome">' + _escHtml(s.squadra) + '</span><span class="storico-tipo tipo-tag-tradeoff">trade-off: ' + _escHtml(TRADEOFF_LABELS[s.tradeoffTipo] || s.tradeoffTipo) + '</span></li>';
+    if (s.tipo === 'svincolo_manuale') {
+      const dett = (s.svincolati || []).map(g => _escHtml(g.nome) + ' (+' + (g.creditiRecuperati || 0) + 'cr)').join(', ') || '—';
+      return '<li><span class="storico-manuale-tag" title="Svincolo manuale dell\'admin">🔨</span><span class="storico-nome">' + _escHtml(s.squadra) + '</span>' +
+        '<span class="storico-tipo tipo-tag-con_svincolo">svincolo: ' + dett + '</span></li>';
+    }
     if (s.tipo === 'scartato') return '<li><span class="storico-nome text-muted">' + _escHtml(s.giocatore.nome) + '</span><span class="storico-tipo tipo-tag-scartato">scartato</span></li>';
     const manualeTag = s.manuale ? '<span class="storico-manuale-tag" title="Chiamata/assegnazione manuale dell\'admin">🔨</span>' : '';
     if (s.tipo === 'con_svincolo' && filtro === 'recap-riparazione') {
@@ -4954,6 +4962,7 @@ window.apriModalAdminConfig = function() {
       '</div>' +
     '</div>';
   }).join('');
+  renderSvincolaAdmin();
   openModal('modal-admin-config');
 };
 
@@ -4991,6 +5000,69 @@ window.confermaAdminCrediti = function(squadraNome, crediti) {
   socket.emit('admin-update-crediti', { astaId: S.astaId, squadraNome, crediti: parseInt(crediti) });
   toast('Crediti di ' + squadraNome + ' aggiornati', 'success');
 };
+
+// ══ SVINCOLO MANUALE (Impostazioni Admin) ══════════════════════
+// Stessa formula del server (calcolaRecuperoSvincolo), solo per PRECOMPILARE i crediti: l'Admin
+// li puo' cambiare. Il fattore arriva con lo stato asta (0.5 Riparazione 1, 1/3 Riparazione 2).
+function _creditiSvincoloDefault(prezzo) {
+  const f = (S.asta && S.asta.fattoreSvincolo) || 0.5;
+  return Math.max(1, Math.round((prezzo || 0) * f));
+}
+
+function renderSvincolaAdmin() {
+  const box = document.getElementById('ac-svincola');
+  if (!box || !S.asta) return;
+  const squadre = S.asta.squadre || [];
+  const selPrima = document.getElementById('ac-svincola-squadra');
+  const scelta = selPrima && squadre.some(s => s.nome === selPrima.value) ? selPrima.value : '';
+  const sq = squadre.find(s => s.nome === scelta);
+  let righe = '';
+  if (sq) {
+    const rip = S.asta.tipoAsta === 'riparazione';
+    const rimanenti = Math.max(0, (S.asta.svincoliTotali || 0) - (sq.svincoliUsati || 0));
+    const rosa = sq.rosa || [];
+    righe = '<p class="hint-text">Svincoli usati: <strong>' + (sq.svincoliUsati || 0) + '</strong>' +
+        (rip ? ' · rimanenti: <strong>' + rimanenti + '</strong>' : '') + '</p>' +
+      (rosa.length
+        ? '<div class="ac-sv-lista">' + rosa.map(g =>
+            '<label class="ac-sv-riga">' +
+              '<input type="checkbox" class="ac-sv-chk" value="' + _escAttr(g.id) + '">' +
+              '<span class="ac-sv-nome">' + _escHtml(g.nome) + ' <span class="text-muted">(' + _escHtml(g.ruolo || '?') + ' · ' + (g.prezzo || 0) + 'cr)</span></span>' +
+              '<input type="number" min="0" step="1" class="ac-sv-crediti" data-id="' + _escAttr(g.id) + '" value="' + _creditiSvincoloDefault(g.prezzo) + '" title="Crediti del svincolo">' +
+            '</label>').join('') + '</div>' +
+          '<button class="btn btn-danger mt-12" onclick="confermaSvincolaAdmin()">🔓 Svincola selezionati</button>'
+        : '<p class="text-muted">Rosa vuota</p>');
+  }
+  box.innerHTML =
+    '<select id="ac-svincola-squadra" onchange="renderSvincolaAdmin()">' +
+      '<option value="">— Scegli squadra —</option>' +
+      squadre.map(s => '<option value="' + _escAttr(s.nome) + '"' + (s.nome === scelta ? ' selected' : '') + '>' + _escHtml(s.nome) + '</option>').join('') +
+    '</select>' + righe;
+}
+
+window.confermaSvincolaAdmin = function() {
+  const sel = document.getElementById('ac-svincola-squadra');
+  const squadraNome = sel ? sel.value : '';
+  const svincoli = [...document.querySelectorAll('#ac-svincola .ac-sv-chk:checked')].map(chk => {
+    const inp = [...document.querySelectorAll('#ac-svincola .ac-sv-crediti')].find(i => i.dataset.id === chk.value);
+    return { giocatoreId: chk.value, crediti: inp ? Number(inp.value) : NaN };
+  });
+  if (!squadraNome || !svincoli.length) return toast('Scegli una squadra e almeno un giocatore', 'error');
+  if (svincoli.some(v => !Number.isInteger(v.crediti) || v.crediti < 0)) return toast('Crediti non validi', 'error');
+  const tot = svincoli.reduce((t, v) => t + v.crediti, 0);
+  if (!confirm('Svincolare ' + svincoli.length + ' giocatori di ' + squadraNome + ' (+' + tot + ' crediti)?\n\n' +
+      'Conta come ' + svincoli.length + ' svincoli usati e resta nell\'export JSON.')) return;
+  socket.emit('admin-svincola', { astaId: S.astaId, squadraNome, svincoli });
+};
+
+// Dopo lo svincolo il server ha gia' rimandato lo stato (stesso socket, arriva prima di questo):
+// si ridisegna tutto il modal, cosi' anche il campo "Svincoli usati" delle squadre non resta
+// col valore vecchio (un blur su un valore vecchio lo riscriverebbe al server).
+socket.on('admin-svincola-ok', ({ squadra, n, crediti }) => {
+  toast('Svincolati ' + n + ' giocatori di ' + squadra + ' (+' + crediti + 'cr)', 'success');
+  const modal = document.getElementById('modal-admin-config');
+  if (modal && !modal.classList.contains('hidden')) apriModalAdminConfig();
+});
 
 window.confermaAdminSlot = function(squadraNome, slotsRIC, slotsPLUS, recompra, svincoliUsati) {
   const payload = { astaId: S.astaId, squadraNome };

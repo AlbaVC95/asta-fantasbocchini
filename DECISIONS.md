@@ -2938,3 +2938,18 @@ modo di mettere nel suo Registro Operazioni chi aveva svincolato chi: i nomi and
 dal recap. Ora "Importa risultato Asta" del gestionale li registra da solo, e `astaId` gli serve per
 non registrarli due volte se lo stesso file viene reimportato. Campi aggiunti, nessuno tolto: un
 gestionale vecchio li ignora.
+
+## Svincolo manuale dell'Admin: uno svincolo come gli altri, con i crediti decisi dall'Admin (11/09/2026)
+
+Da Impostazioni Admin si possono svincolare giocatori di qualunque squadra, in ogni tipo d'asta. Si è
+scelto di dargli **gli stessi effetti** di uno svincolo di `esegui-svincolo` (fuori rosa, di nuovo nel
+pool, `svincoliUsati` +1 con lo stesso contatore, blocco di ripuja per la stessa squadra) invece di un
+percorso a parte, così il conteggio che il gestionale importa resta uno solo. Conta **anche in asta
+iniziale** (scelta dell'utente), dove non esiste un tetto; in riparazione vale il tetto
+`svincoliTotali`. I crediti sono precompilati con `calcolaRecuperoSvincolo` ma li decide l'Admin:
+è proprio il caso in cui la formula non basta. `esegui-svincolo` resta invariato.
+
+Nell'export ogni svincolo ha un `idOperazione` deterministico (`astaId|timestamp|giocatoreId`),
+ricavato dallo storico invece di salvarlo: vale anche per gli svincoli `con_svincolo` già fatti, senza
+toccarne il codice. L'Annulla di uno svincolo manuale si rifiuta se il giocatore è stato ripreso
+all'asta nel frattempo: rimetterlo nella rosa originale lo duplicherebbe.

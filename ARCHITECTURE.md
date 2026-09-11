@@ -65,6 +65,10 @@ asta) e orchestrato da funzioni chiave in `server.js`:
 - Quando `chiudiAsta()` apre un popup bloccante (svincolo obbligatorio o decisione post-asta), oltre
   al popup mirato viene emesso a tutta la room `avviso-pausa-asta`, che il client usa per mostrare a
   tutti banner e carta "in pausa" (`_gestisciPausaAsta()` in `app.js`).
+- Svincoli: `esegui-svincolo` (dentro un acquisto, popup `svincolo`, solo riparazione) e
+  `admin-svincola` (manuale da Impostazioni Admin, ogni tipo d'asta). Entrambi finiscono nello
+  storico (`con_svincolo` / `svincolo_manuale`) con i crediti di ogni giocatore, da cui li legge
+  l'export JSON (`svincoli[]` per squadra).
 - Ogni azione che modifica lo stato di gioco viene appesa a `asta.storico`, base per
   `annulla-assegnazione(-specifica)` (undo, ripristina crediti/slot/pool giocatori).
 
