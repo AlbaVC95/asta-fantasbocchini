@@ -374,10 +374,23 @@ async function persistManutenzioneAttiva(valore) {
   } catch (e) { console.error('[persistManutenzioneAttiva] errore (non-fatale):', e.message); }
 }
 
+// svincoliVietati e' un Set, e un Set passato per JSON diventa {} (vuoto, senza .has/.add/.delete).
+// Nel backup va quindi scritto come array e, a ogni ripristino in memoria, ricostruito come Set:
+// senza, in un'asta di riparazione ripristinata ogni 'rilancio' andava in errore e l'offerta si
+// perdeva in silenzio (asta.svincoliVietati.has is not a function); idem esegui-svincolo e Annulla.
+// Accetta anche il {} dei backup scritti prima di questo fix (diventa un Set vuoto).
+function _astaSerializzabile(asta) {
+  return { ...asta, svincoliVietati: asta.svincoliVietati instanceof Set ? [...asta.svincoliVietati] : [] };
+}
+function _ricostruisciSvincoliVietati(asta) {
+  const v = asta.svincoliVietati;
+  asta.svincoliVietati = new Set(Array.isArray(v) || v instanceof Set ? v : []);
+}
+
 function saveBackup(asta) {
   if (!asta || !asta.id) return;
   try {
-    const astaJson = JSON.stringify(asta);
+    const astaJson = JSON.stringify(_astaSerializzabile(asta));
     const snap = { backup: true, timestamp: new Date().toISOString(), asta: JSON.parse(astaJson) };
     fs.writeFileSync(path.join(BACKUP_DIR, 'backup_asta_' + asta.id + '.json'), JSON.stringify(snap));
     const hash = crypto.createHash('sha1').update(astaJson).digest('hex');
@@ -436,6 +449,7 @@ async function loadBackups() {
             if (snap && snap.backup && snap.asta && snap.asta.id && !aste.has(snap.asta.id)) {
               snap.asta.adminSocketIds = [];
               snap.asta.squadre.forEach(s => { s.utenti = []; s.online = false; });
+              _ricostruisciSvincoliVietati(snap.asta);
               aste.set(snap.asta.id, snap.asta);
               n++;
               console.log('  ☁️  Ripristinata da Supabase: ' + (snap.asta.nome || snap.asta.id) + ' (' + row.updated_at + ')');
@@ -460,6 +474,7 @@ async function loadBackups() {
           // Restore arrays that may have been serialized
           data.asta.adminSocketIds = [];
           data.asta.squadre.forEach(s => { s.utenti = []; s.online = false; });
+          _ricostruisciSvincoliVietati(data.asta);
           aste.set(data.asta.id, data.asta);
           n++;
           console.log('  ♻️  Ripristinata da disco locale: ' + (data.asta.nome || data.asta.id) + ' (' + data.timestamp + ')');
@@ -1022,6 +1037,7 @@ app.post('/api/asta', limiteCreazioneAste, async (req, res) => {
             squadra: g.squadra || null,
             pgv: g.pgv ?? null, mv: g.mv ?? null, fm: g.fm ?? null,
             fvmp600: g.fvmp600 ?? null, qam: g.qam ?? null,
+            fvm1000: g.fvm1000 ?? null,
             idFantaleghe: g.idFantaleghe ?? null,
             under: g.under ?? null, u21: !!g.u21,
             quotazione: g.quotazione ?? null
@@ -1043,6 +1059,7 @@ app.post('/api/asta', limiteCreazioneAste, async (req, res) => {
         squadra: g.squadra || null,
         pgv: g.pgv ?? null, mv: g.mv ?? null, fm: g.fm ?? null,
         fvmp600: g.fvmp600 ?? null, qam: g.qam ?? null,
+        fvm1000: g.fvm1000 ?? null,
         idFantaleghe: g.idFantaleghe ?? null,
         under: g.under ?? null, u21: !!g.u21,
         quotazione: g.quotazione ?? null
@@ -1254,6 +1271,8 @@ function campiExtraGiocatorePerExport(g) {
   return {
     squadra: g.squadra || null, pgv: g.pgv ?? null, mv: g.mv ?? null, fm: g.fm ?? null,
     fvmp600: g.fvmp600 ?? null, qam: g.qam ?? null, idFantaleghe: g.idFantaleghe ?? null,
+    // FVM/1000 (base del Valore nel gestionale): senza, si perdeva a ogni giro asta↔gestionale
+    fvm1000: g.fvm1000 ?? null,
     under: g.under ?? null, u21: !!g.u21, quotazione: g.quotazione ?? null
   };
 }
@@ -2065,6 +2084,7 @@ function ripristinaAstaInMemoria(snap) {
   if (aste.has(snap.asta.id)) return aste.get(snap.asta.id);
   snap.asta.adminSocketIds = [];
   (snap.asta.squadre || []).forEach(s => { s.utenti = []; s.online = false; });
+  _ricostruisciSvincoliVietati(snap.asta);
   aste.set(snap.asta.id, snap.asta);
   return snap.asta;
 }

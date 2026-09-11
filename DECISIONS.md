@@ -2953,3 +2953,15 @@ Nell'export ogni svincolo ha un `idOperazione` deterministico (`astaId|timestamp
 ricavato dallo storico invece di salvarlo: vale anche per gli svincoli `con_svincolo` già fatti, senza
 toccarne il codice. L'Annulla di uno svincolo manuale si rifiuta se il giocatore è stato ripreso
 all'asta nel frattempo: rimetterlo nella rosa originale lo duplicherebbe.
+
+## `svincoliVietati` nel backup come array, ricostruito come `Set` a ogni ripristino (11/09/2026)
+
+`svincoliVietati` è un `Set` (blocco "chi ha svincolato un giocatore non può ripujarlo" in
+riparazione), e `saveBackup` serializzava l'asta con `JSON.stringify`: un `Set` diventa `{}`. Dopo un
+qualsiasi riavvio/deploy, un'asta di riparazione ripristinata aveva `{}` al posto del Set e ogni
+`rilancio` lanciava `asta.svincoliVietati.has is not a function`: l'offerta si perdeva senza errore
+per il client (il server sopravviveva solo grazie a `uncaughtException`). Idem `esegui-svincolo` e
+l'Annulla di `con_svincolo`. Si serializza come array (`_astaSerializzabile`) e lo si ricostruisce
+in **tutti** i punti in cui un'asta torna in memoria da dati salvati (`_ricostruisciSvincoliVietati`:
+Supabase, disco, "Riprendi"), accettando anche il `{}` dei backup già esistenti. Regola: un campo non
+JSON nello stato asta va serializzato e ricostruito esplicitamente, mai affidato a `JSON.stringify`.
